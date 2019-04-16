@@ -3,7 +3,7 @@
 Mycroft's multilingual text parsing and formatting library
 
 
-- [Mycroft Language Utils](#mycroft-language-utils)
+- [Lingua Franca](#lingua-franca)
   * [Format](#format)
     + [pronounce numbers](#pronounce-numbers)
     + [pronounce datetime objects](#pronounce-datetime-objects)
@@ -14,9 +14,7 @@ Mycroft's multilingual text parsing and formatting library
     + [Extract dates](#extract-dates)
   * [Credits](#credits)
   
-  
-[Read the docs](https://jarbasal.github.io/mycroft_lang_utils/)
-
+ 
 
 ## Format
 
@@ -27,7 +25,7 @@ Convert data into spoken equivalents
 spoken versions of numbers
 
 ```python
-from mycroft_lang_utils.format import nice_number, pronounce_number
+from lingua_franca.format import nice_number, pronounce_number
 
 assert nice_number(25/6) == "4 and a sixth"
 assert nice_number(201) == "201"
@@ -57,7 +55,7 @@ assert pronounce_number(100034000000299792458, short_scale=False) == \
 spoken date for datetime.datetime objects
 
 ```python
-from mycroft_lang_utils.format import nice_date, nice_date_time, nice_time
+from lingua_franca.format import nice_date, nice_date_time, nice_time
 import datetime
 
 dt = datetime.datetime(2017, 1, 31,  13, 22, 3)
@@ -81,7 +79,7 @@ assert nice_date_time(dt) == "tuesday, january thirty-first, twenty seventeen at
 spoken number of seconds or datetime.timedelta objects
 
 ```python
-from mycroft_lang_utils.format import nice_duration
+from lingua_franca.format import nice_duration
 
 
 assert nice_duration(1) ==   "one second"
@@ -108,7 +106,7 @@ Extract data from natural language text
 ### Numbers
 
 ```python
-from mycroft_lang_utils.parse import extract_number, extract_numbers
+from lingua_franca.parse import extract_number, extract_numbers
 
 # extract a number
 assert extract_number("nothing") is False
@@ -133,7 +131,7 @@ extract datetime.timedelta objects
 
 ```python
 ## extract durations
-from mycroft_lang_utils.parse import extract_duration
+from lingua_franca.parse import extract_duration
 from datetime import timedelta
 
 assert extract_duration("nothing") == (None, 'nothing')
@@ -158,7 +156,7 @@ extract datetime.datetime objects
 ```python
 ## extract date times
 from datetime import datetime
-from mycroft_lang_utils.parse import extract_datetime, normalize
+from lingua_franca.parse import extract_datetime, normalize
 
 def extractWithFormat(text):
     date = datetime(2017, 6, 27, 13, 4)  # Tue June 27, 2017 @ 1:04pm
