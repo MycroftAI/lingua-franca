@@ -1,20 +1,26 @@
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md) [![CLA](https://img.shields.io/badge/CLA%3F-Required-blue.svg)](https://mycroft.ai/cla) [![Team](https://img.shields.io/badge/Team-Languages-violetblue.svg)](https://github.com/MycroftAI/contributors/blob/master/team/Languages.md) ![Status](https://img.shields.io/badge/-Alpha-orange.svg)
+
+[![Build Status](https://travis-ci.org/MycroftAI/mycroft-core.svg?branch=master)](https://travis-ci.org/MycroftAI/mycroft-core) [![Coverage Status](https://coveralls.io/repos/github/MycroftAI/lingua-franca/badge.svg?branch=dev)](https://coveralls.io/github/MycroftAI/lingua-franca?branch=dev)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Join chat](https://img.shields.io/badge/Mattermost-join_chat-brightgreen.svg)](https://chat.mycroft.ai/community/channels/languages)
+
 # Lingua Franca
 
 Mycroft's multilingual text parsing and formatting library
 
+Lingua Franca (_noun_)<br>
+> a language that is adopted as the common language between speakers with different native tongues</dr>
+ 
 
 - [Lingua Franca](#lingua-franca)
-  * [Format](#format)
+  * [Formatting](#format)
     + [pronounce numbers](#pronounce-numbers)
     + [pronounce datetime objects](#pronounce-datetime-objects)
     + [pronounce durations](#pronounce-durations)
-  * [Parse](#parse)
+  * [Parsing](#parse)
     + [Numbers](#numbers)
     + [Durations](#durations)
     + [Extract dates](#extract-dates)
-  * [Credits](#credits)
-  
- 
 
 ## Format
 
@@ -193,8 +199,3 @@ testExtract("on the evening of june 5th 2017 remind me to call my mother",
             "2017-06-05 19:00:00", "remind me to call my mother")
 
 ```
-
-
-## Credits
-
-[MycroftAI](https://github.com/MycroftAI)
