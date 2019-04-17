@@ -9,24 +9,24 @@
 Mycroft's multilingual text parsing and formatting library
 
 Lingua Franca (_noun_)<br>
-> a language that is adopted as the common language between speakers with different native tongues</dr>
+> a framework that is adopted as the common language between speakers with different native tongues</dr>
  
 
 - [Lingua Franca](#lingua-franca)
   * [Formatting](#format)
-    + [pronounce numbers](#pronounce-numbers)
-    + [pronounce datetime objects](#pronounce-datetime-objects)
-    + [pronounce durations](#pronounce-durations)
+    + [Pronounce numbers](#pronounce-numbers)
+    + [Pronounce datetime objects](#pronounce-datetime-objects)
+    + [Pronounce durations](#pronounce-durations)
   * [Parsing](#parse)
     + [Numbers](#numbers)
     + [Durations](#durations)
     + [Extract dates](#extract-dates)
 
-## Format
+## Formatting
 
 Convert data into spoken equivalents
 
-### pronounce numbers
+### Pronounce numbers
 
 spoken versions of numbers
 
@@ -56,7 +56,7 @@ assert pronounce_number(100034000000299792458, short_scale=False) == \
        "two thousand, four hundred and fifty eight"
 ```
 
-### pronounce datetime objects
+### Pronounce datetime objects
 
 spoken date for datetime.datetime objects
 
@@ -80,7 +80,7 @@ assert nice_time(dt, use_24hour=True, use_ampm=False) == "thirteen twenty two"
 assert nice_date_time(dt) == "tuesday, january thirty-first, twenty seventeen at one twenty two"
 ```
 
-### pronounce durations
+### Pronounce durations
 
 spoken number of seconds or datetime.timedelta objects
 
@@ -105,7 +105,7 @@ from datetime import timedelta
 assert nice_duration(timedelta(seconds=500000), speech=False) ==  "5d 18:53:20"
 ```
 
-## Parse
+## Parsing
 
 Extract data from natural language text
 
