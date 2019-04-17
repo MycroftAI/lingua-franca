@@ -19,7 +19,7 @@ Lingua Franca (_noun_)<br>
     + [Pronounce durations](#pronounce-durations)
   * [Parsing](#parsing)
     + [Extract numbers](#extract-numbers)
-    + [Extract durations](#dextract-urations)
+    + [Extract durations](#extract-durations)
     + [Extract dates](#extract-dates)
 
 ## Formatting
