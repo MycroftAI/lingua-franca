@@ -13,11 +13,11 @@ Lingua Franca (_noun_)<br>
  
 
 - [Lingua Franca](#lingua-franca)
-  * [Formatting](#format)
+  * [Formatting](#formatting)
     + [Pronounce numbers](#pronounce-numbers)
     + [Pronounce datetime objects](#pronounce-datetime-objects)
     + [Pronounce durations](#pronounce-durations)
-  * [Parsing](#parse)
+  * [Parsing](#parsing)
     + [Numbers](#numbers)
     + [Durations](#durations)
     + [Extract dates](#extract-dates)
