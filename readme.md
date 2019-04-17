@@ -18,8 +18,8 @@ Lingua Franca (_noun_)<br>
     + [Pronounce datetime objects](#pronounce-datetime-objects)
     + [Pronounce durations](#pronounce-durations)
   * [Parsing](#parsing)
-    + [Numbers](#numbers)
-    + [Durations](#durations)
+    + [Extract numbers](#extract-numbers)
+    + [Extract durations](#dextract-urations)
     + [Extract dates](#extract-dates)
 
 ## Formatting
@@ -109,7 +109,7 @@ assert nice_duration(timedelta(seconds=500000), speech=False) ==  "5d 18:53:20"
 
 Extract data from natural language text
 
-### Numbers
+### Extract numbers
 
 ```python
 from lingua_franca.parse import extract_number, extract_numbers
@@ -131,7 +131,7 @@ assert extract_numbers("1 dog, seven pigs, macdonald had a farm, "
                        "3 times 5 macarena") == [1, 7, 3, 5]
 ```
 
-### Durations
+### Extract durations
 
 extract datetime.timedelta objects
 
