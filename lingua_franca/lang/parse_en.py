@@ -679,6 +679,10 @@ def extract_datetime_en(string, dateNow, default_time):
     date and the remainder string
        "what is weather forecast".
 
+    The "next" instance of a day or weekend is considered to be no earlier than
+    48 hours in the future. On Friday, "next Monday" would be in 3 days.
+    On Saturday, "next Monday" would be in 9 days.
+
     Args:
         string (str): string containing date words
         dateNow (datetime): A reference date/time for "tommorrow", etc
@@ -885,7 +889,8 @@ def extract_datetime_en(string, dateNow, default_time):
             if dayOffset < 0:
                 dayOffset += 7
             if wordPrev == "next":
-                dayOffset += 7
+                if dayOffset <= 2:
+                    dayOffset += 7
                 used += 1
                 start -= 1
             elif wordPrev == "last":
@@ -1790,7 +1795,8 @@ def annotate_datetime_en(string, dateNow=None, default_time=None):
             if dayOffset < 0:
                 dayOffset += 7
             if wordPrev == "next":
-                dayOffset += 7
+                if dayOffset <= 2:
+                    dayOffset += 7
                 used += 1
                 start -= 1
             elif wordPrev == "last":
