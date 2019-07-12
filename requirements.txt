@@ -1,1 +1,2 @@
 python-dateutil==2.6.0
+quantulum3==0.6.4

@@ -42,6 +42,8 @@ from lingua_franca.lang.format_da import pronounce_number_da
 from lingua_franca.bracket_expansion import SentenceTreeParser
 from lingua_franca import _log_unsupported_language
 
+from quantulum3 import parser as quantity_parser
+
 from collections import namedtuple
 import json
 import os
@@ -243,6 +245,63 @@ class DateTimeFormat:
 
 date_time_format = DateTimeFormat(os.path.join(os.path.dirname(__file__),
                                   'res/text'))
+
+
+def nice_unit(unit=None, context=None, lang=None):
+    """
+        Format a unit to a pronouncable string
+        Args:
+            unit (string): The unit abbreviation that is to be pronounced
+                (i.e. "C", "MW", "mW", "°F" etc)
+            context (string): A text in which the correct meaning of this
+                abbreviation becomes clear (i.e. "It's almost 30 C outside")
+                If given, the whole context will be parsed and the first unit
+                to be found returned
+            lang (string): the language to use, use Mycroft default language if
+                not provided
+        Returns:
+            (str): A fully de-abbreviated unit for insertion in a context like
+                    situation (i.e. "degree Celsius", "percent")
+            (object): The parsed value of the quantity, if any (else None)
+    """
+    lang = get_primary_lang_code(lang)
+    # Return an empty string for None and empty strings
+    if not unit and not context:
+        return ''
+    try:
+        # Quantulum expects a unit to be prefixed with a quantifier
+        quantity = quantity_parser.parse(
+            context or "1 {}".format(unit),
+            lang
+        )
+        if len(quantity) > 0:
+            quantity = quantity[0]
+            return (
+                quantity.unit.to_spoken(quantity.value, lang),
+                quantity.value if context else None
+            )
+        else:
+            return unit, None
+    except NotImplementedError:
+        return unit, None
+
+
+def expand_units(text, lang=None):
+    """
+        Format all units in a text and their amount into pronouncable strings
+        Args:
+            text (string): A text, ideally containing compact units
+                            (i.e. "It's almost 30 C outside")
+            lang (string): the language to use, use Mycroft default language if
+                not provided
+        Returns:
+            (str): A text with fully de-abbreviated units
+    """
+    lang = get_primary_lang_code(lang)
+    try:
+        return quantity_parser.inline_parse_and_expand(text, lang)
+    except NotImplementedError:
+        return text
 
 
 def nice_number(number, lang=None, speech=True, denominators=None):

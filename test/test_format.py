@@ -29,6 +29,9 @@ from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
+from lingua_franca.format import nice_unit
+from lingua_franca.format import expand_units
+
 
 NUMBERS_FIXTURE_EN = {
     1.435634: '1.436',
@@ -454,6 +457,40 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(join_list(["a", "b", "c", "d"], "or"), "a, b, c or d")
 
         self.assertEqual(join_list([1, "b", 3, "d"], "or"), "1, b, 3 or d")
+
+    def test_nice_unit(self):
+        test_examples = [
+            (["W"], ("watt", None)),
+            (["W", "100 W"], ("watts", 100)),
+            (
+                ["°F", "The outside temperature is 35°F"],
+                ("degrees fahrenheit", 35)
+            )
+        ]
+        for example in test_examples:
+            expected_unit, expected_value = example[1]
+            unit, value = nice_unit(*example[0])
+            self.assertEqual(unit, expected_unit)
+            self.assertEqual(value, expected_value)
+
+    def test_expand_units(self):
+        test_examples = [
+            (
+                ["This solar panel merely produces one W"],
+                "This solar panel merely produces one watt"
+            ),
+            (["100 W"], "one hundred watts"),
+            (
+                ["The outside temperature is 35°F"],
+                "The outside temperature is thirty-five degrees fahrenheit"
+            )
+        ]
+        for example in test_examples:
+            expected = example[1]
+            result = expand_units(*example[0])
+            self.assertEqual(result, expected)
+
+
 
 
 if __name__ == "__main__":
