@@ -349,14 +349,18 @@ class TestNormalize(unittest.TestCase):
                     "2022-06-27 00:00:00", "play happy birthday music")
         testExtract("Skype Mom at 12:45 pm next Thursday",
                     "2017-07-06 12:45:00", "skype mom")
+        testExtract("What's the weather next Friday?",
+                    "2017-06-30 00:00:00", "what weather")
+        testExtract("What's the weather next Wednesday?",
+                    "2017-07-05 00:00:00", "what weather")
         testExtract("What's the weather next Thursday?",
                     "2017-07-06 00:00:00", "what weather")
         testExtract("what is the weather next friday morning",
-                    "2017-07-07 08:00:00", "what is weather")
+                    "2017-06-30 08:00:00", "what is weather")
         testExtract("what is the weather next friday evening",
-                    "2017-07-07 19:00:00", "what is weather")
+                    "2017-06-30 19:00:00", "what is weather")
         testExtract("what is the weather next friday afternoon",
-                    "2017-07-07 15:00:00", "what is weather")
+                    "2017-06-30 15:00:00", "what is weather")
         testExtract("remind me to call mom on august 3rd",
                     "2017-08-03 00:00:00", "remind me to call mom")
         testExtract("Buy fireworks on the 4th of July",
@@ -461,9 +465,9 @@ class TestNormalize(unittest.TestCase):
         testExtract("remind me to call mom at 10am this saturday",
                     "2017-07-01 10:00:00", "remind me to call mom")
         testExtract("remind me to call mom at 10 next saturday",
-                    "2017-07-08 10:00:00", "remind me to call mom")
+                    "2017-07-01 10:00:00", "remind me to call mom")
         testExtract("remind me to call mom at 10am next saturday",
-                    "2017-07-08 10:00:00", "remind me to call mom")
+                    "2017-07-01 10:00:00", "remind me to call mom")
         # Below two tests, ensure that time is picked
         # even if no am/pm is specified
         # in case of weekdays/tonight
