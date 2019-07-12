@@ -17,8 +17,8 @@
 import unittest
 from datetime import datetime, timedelta
 
-from lingua_franca.parse import extract_datetime
-from lingua_franca.parse import extract_duration
+from lingua_franca.parse import extract_datetime, annotate_datetime
+from lingua_franca.parse import extract_duration, annotate_duration
 from lingua_franca.parse import extract_number, extract_numbers
 from lingua_franca.parse import fuzzy_match
 from lingua_franca.parse import get_gender
@@ -157,12 +157,12 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_duration("7.5 seconds"),
                          (timedelta(seconds=7.5), ""))
         self.assertEqual(extract_duration("eight and a half days thirty"
-                         " nine seconds"),
+                                          " nine seconds"),
                          (timedelta(days=8.5, seconds=39), ""))
         self.assertEqual(extract_duration("Set a timer for 30 minutes"),
                          (timedelta(minutes=30), "set a timer for"))
         self.assertEqual(extract_duration("Four and a half minutes until"
-                         " sunset"),
+                                          " sunset"),
                          (timedelta(minutes=4.5), "until sunset"))
         self.assertEqual(extract_duration("Nineteen minutes past the hour"),
                          (timedelta(minutes=19), "past the hour"))
@@ -170,11 +170,19 @@ class TestNormalize(unittest.TestCase):
                                           " hundred ninety seven days, and"
                                           " three hundred 91.6 seconds"),
                          (timedelta(weeks=3, days=497, seconds=391.6),
-                             "wake me up in , , and"))
+                          "wake me up in , , and"))
         self.assertEqual(extract_duration("The movie is one hour, fifty seven"
                                           " and a half minutes long"),
                          (timedelta(hours=1, minutes=57.5),
-                             "the movie is ,  long"))
+                          "the movie is ,  long"))
+
+    def test_annotate_duration_en(self):
+        self.assertEqual(annotate_duration("10 seconds ago"),
+                         (timedelta(seconds=10.0), "10 seconds"))
+        self.assertEqual(annotate_duration("5 minutes from now"),
+                         (timedelta(minutes=5), "5 minutes"))
+        self.assertEqual(annotate_duration("the movie is 2 hours long"),
+                         (timedelta(hours=2), "2 hours"))
 
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
@@ -476,6 +484,26 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 23:30:00", "remind me about game")
         testExtract("set alarm at 7:30 on weekdays",
                     "2017-06-27 19:30:00", "set alarm on weekdays")
+
+    def test_annotatedatetime_en(self):
+        def annotateWithFormat(text):
+            date = datetime(2017, 6, 27, 13, 4)  # Tue June 27, 2017 @ 1:04pm
+            [extractedDate, expected_text] = annotate_datetime(text, date)
+            extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
+            return [extractedDate, expected_text]
+
+        def testAnnotate(text, expected_date, expected_text):
+            res = annotateWithFormat(normalize(text))
+            self.assertEqual(res[0], expected_date, "for=" + text)
+            self.assertEqual(res[1], expected_text, "for=" + text)
+
+        # TODO Failing with "is time", should be "now"
+        # testAnnotate("now is the time",
+        #            "2017-06-27 13:04:00", "now")
+        # TODO do not normalize?
+        testAnnotate("in a couple minutes", "2017-06-27 13:06:00", "2 minutes")
+        testAnnotate("tomorrow is the day", "2017-06-28 00:00:00", "tomorrow")
+        testAnnotate("set alarm at 7:30 on monday", "2017-07-03 07:30:00", "monday 7:30")
 
     def test_extract_ambiguous_time_en(self):
         morning = datetime(2017, 6, 27, 8, 1, 2)
