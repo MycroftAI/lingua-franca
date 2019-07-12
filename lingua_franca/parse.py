@@ -39,6 +39,7 @@ from lingua_franca.lang.parse_da import normalize_da
 
 from lingua_franca import _log_unsupported_language
 
+from quantulum3 import parser as quantity_parser
 
 def fuzzy_match(x, against):
     """Perform a 'fuzzy' comparison between two strings.
@@ -333,6 +334,20 @@ def get_gender(word, context="", lang=None):
                               ['pt', 'it', 'es'])
     return None
 
+
+def extract_units(text, lang=None):
+    lang_code = get_primary_lang_code(lang)
+    bucket = []
+    quants = quantity_parser.parse(text, lang=lang_code)
+    remainder = text
+    for q in quants:
+        unit = q.unit.__dict__
+        unit["entity"] = unit["entity"].__dict__
+        unit["value"] = q.value
+        unit["text"] = q.surface
+        remainder = remainder.replace(q.surface, "")
+        bucket += [unit]
+    return bucket, remainder
 
 ## Extra
 # this is not part of mycroft-core

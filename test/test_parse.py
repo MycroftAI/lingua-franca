@@ -24,6 +24,7 @@ from lingua_franca.parse import fuzzy_match
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import match_one
 from lingua_franca.parse import normalize
+from lingua_franca.parse import extract_units
 
 
 class TestFuzzyMatch(unittest.TestCase):
@@ -157,12 +158,12 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_duration("7.5 seconds"),
                          (timedelta(seconds=7.5), ""))
         self.assertEqual(extract_duration("eight and a half days thirty"
-                         " nine seconds"),
+                                          " nine seconds"),
                          (timedelta(days=8.5, seconds=39), ""))
         self.assertEqual(extract_duration("Set a timer for 30 minutes"),
                          (timedelta(minutes=30), "set a timer for"))
         self.assertEqual(extract_duration("Four and a half minutes until"
-                         " sunset"),
+                                          " sunset"),
                          (timedelta(minutes=4.5), "until sunset"))
         self.assertEqual(extract_duration("Nineteen minutes past the hour"),
                          (timedelta(minutes=19), "past the hour"))
@@ -170,11 +171,11 @@ class TestNormalize(unittest.TestCase):
                                           " hundred ninety seven days, and"
                                           " three hundred 91.6 seconds"),
                          (timedelta(weeks=3, days=497, seconds=391.6),
-                             "wake me up in , , and"))
+                          "wake me up in , , and"))
         self.assertEqual(extract_duration("The movie is one hour, fifty seven"
                                           " and a half minutes long"),
                          (timedelta(hours=1, minutes=57.5),
-                             "the movie is ,  long"))
+                          "the movie is ,  long"))
 
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
@@ -521,6 +522,43 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 10:01:03", "lets meet")
         testExtract("lets meet in 5seconds",
                     "2017-06-27 10:01:07", "lets meet")
+
+    def test_extract_units_en(self):
+        self.assertEqual(extract_units("I want 2 liters of wine"),
+                         ([{'currency_code': None,
+                            'dimensions': [{'base': 'decimetre', 'power': 3}],
+                            'entity': {'dimensions': [{'base': 'length', 'power': 3}],
+                                       'name': 'volume',
+                                       'uri': 'Volume'},
+                            'lang': 'en_US',
+                            'name': 'litre',
+                            'original_dimensions': [{'base': 'litre', 'power': 1, 'surface': 'liters'}],
+                            'surfaces': ['cubic decimetre', 'cubic decimeter', 'litre', 'liter'],
+                            'symbols': ['l', 'L', 'ltr'],
+                            'text': '2 liters',
+                            'uri': 'Litre',
+                            'value': 2.0}],
+                          'I want  of wine')
+                         )
+        self.assertEqual(extract_units("The LHC smashes proton beams at 12.8–13.0 TeV"),
+                         ([{'currency_code': None,
+                            'dimensions': [{'base': 'teraelectronvolt', 'power': 1}],
+                            'entity': {'dimensions': [{'base': 'force', 'power': 1},
+                                                      {'base': 'length', 'power': 1}],
+                                       'name': 'energy',
+                                       'uri': 'Energy'},
+                            'lang': 'en_US',
+                            'name': 'teraelectronvolt',
+                            'original_dimensions': [{'base': 'teraelectronvolt',
+                                                     'power': 1,
+                                                     'surface': 'TeV'}],
+                            'surfaces': ['teraelectron volt', 'teraelectronvolt', 'teraelectron-volt'],
+                            'symbols': ['TeV'],
+                            'text': '12.8–13.0 TeV',
+                            'uri': 'Electronvolt',
+                            'value': 12.9}],
+                          'The LHC smashes proton beams at ')
+                         )
 
     def test_spaces(self):
         self.assertEqual(normalize("  this   is  a    test"),
