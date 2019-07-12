@@ -164,17 +164,6 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(209996), "two hundred and nine "
                                                    "thousand, nine hundred "
                                                    "and ninety six")
-        #self.assertEqual(pronounce_number(95505896639631893),
-        #                 "ninety five quadrillion, five hundred and five "
-        #                 "trillion, eight hundred and ninety six billion, six "
-        #                 "hundred and thirty nine million, six hundred and "
-        #                 "thirty one thousand, eight hundred and ninety three")
-        #self.assertEqual(pronounce_number(95505896639631893,
-        #                                  short_scale=False),
-        #                 "ninety five thousand five hundred and five billion, "
-        #                 "eight hundred and ninety six thousand six hundred "
-        #                 "and thirty nine million, six hundred and thirty one "
-        #                 "thousand, eight hundred and ninety three")
 
     def test_convert_scientific_notation(self):
         self.assertEqual(pronounce_number(0, scientific=True), "zero")
@@ -196,7 +185,7 @@ class TestPronounceNumber(unittest.TestCase):
             pronounce_number(1.1e-150), "one point one times ten to the "
                                         "power of negative one hundred "
                                         "and fifty")
-        # value is platform dependent?
+        # value is platform dependent so better not use in tests?
         #self.assertEqual(
         #    pronounce_number(sys.float_info.min), "two point two two times "
         #                                          "ten to the power of "
