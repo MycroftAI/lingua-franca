@@ -180,7 +180,7 @@ _SHORT_SCALE_EN = OrderedDict([
 ])
 
 
-_ORDINAL_STRING_BASE_EN = {
+_ORDINAL_BASE_EN = {
     1: 'first',
     2: 'second',
     3: 'third',
@@ -213,7 +213,7 @@ _ORDINAL_STRING_BASE_EN = {
 }
 
 
-_SHORT_ORDINAL_STRING_EN = {
+_SHORT_ORDINAL_EN = {
     1e6: "millionth",
     1e9: "billionth",
     1e12: "trillionth",
@@ -226,10 +226,10 @@ _SHORT_ORDINAL_STRING_EN = {
     1e33: "decillionth"
     # TODO > 1e-33
 }
-_SHORT_ORDINAL_STRING_EN.update(_ORDINAL_STRING_BASE_EN)
+_SHORT_ORDINAL_EN.update(_ORDINAL_BASE_EN)
 
 
-_LONG_ORDINAL_STRING_EN = {
+_LONG_ORDINAL_EN = {
     1e6: "millionth",
     1e12: "billionth",
     1e18: "trillionth",
@@ -242,4 +242,4 @@ _LONG_ORDINAL_STRING_EN = {
     1e60: "decillionth"
     # TODO > 1e60
 }
-_LONG_ORDINAL_STRING_EN.update(_ORDINAL_STRING_BASE_EN)
+_LONG_ORDINAL_EN.update(_ORDINAL_BASE_EN)
