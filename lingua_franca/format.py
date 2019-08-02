@@ -333,7 +333,7 @@ def nice_time(dt, lang=None, speech=True, use_24hour=False,
 
 
 def pronounce_number(number, lang=None, places=2, short_scale=True,
-                     scientific=False):
+                     scientific=False, ordinals=False):
     """
     Convert a number to it's spoken equivalent
 
@@ -344,6 +344,7 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
         short_scale (bool) : use short (True) or long scale (False)
             https://en.wikipedia.org/wiki/Names_of_large_numbers
         scientific (bool) : convert and pronounce in scientific notation
+        ordinals (bool): pronounce in ordinal form "first" instead of "one"
     Returns:
         (str): The pronounced number
     """
@@ -351,7 +352,8 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
     if lang_code == "en":
         return pronounce_number_en(number, places=places,
                                    short_scale=short_scale,
-                                   scientific=scientific)
+                                   scientific=scientific,
+                                   ordinals=ordinals)
     elif lang_code == "it":
         return pronounce_number_it(number, places=places,
                                    short_scale=short_scale,

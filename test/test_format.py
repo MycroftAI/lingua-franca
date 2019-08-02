@@ -220,6 +220,37 @@ class TestPronounceNumber(unittest.TestCase):
             pronounce_number(1000001, short_scale=True),
             "one million, one")
 
+    def test_ordinals(self):
+        self.assertEqual(pronounce_number(1, ordinals=True), "first")
+        self.assertEqual(pronounce_number(10, ordinals=True), "tenth")
+        self.assertEqual(pronounce_number(15, ordinals=True), "fifteenth")
+        self.assertEqual(pronounce_number(20, ordinals=True), "twentieth")
+        self.assertEqual(pronounce_number(27, ordinals=True), "twenty seventh")
+        self.assertEqual(pronounce_number(30, ordinals=True), "thirtieth")
+        self.assertEqual(pronounce_number(33, ordinals=True), "thirty third")
+        # TODO test failing with "one hundred"
+        #self.assertEqual(pronounce_number(100, ordinals=True), "hundredth")
+        self.assertEqual(pronounce_number(1000, ordinals=True), "thousandth")
+        self.assertEqual(pronounce_number(10000, ordinals=True),
+                         "ten thousandth")
+        self.assertEqual(pronounce_number(18691, ordinals=True),
+                         "eighteen thousand, six hundred and ninety first")
+        self.assertEqual(pronounce_number(1567, ordinals=True),
+                         "one thousand, five hundred and sixty seventh")
+        self.assertEqual(pronounce_number(1.672e-27, places=3,
+                                          scientific=True, ordinals=True),
+                         "one point six seven two times ten to the negative "
+                         "twenty seventh power")
+        self.assertEqual(pronounce_number(18e6, ordinals=True),
+                         "eighteen millionth")
+        self.assertEqual(pronounce_number(18e12, ordinals=True,
+                                          short_scale=False),
+                         "eighteen billionth")
+        self.assertEqual(pronounce_number(18e12, ordinals=True),
+                         "eighteen trillionth")
+        self.assertEqual(pronounce_number(18e18, ordinals=True,
+                                          short_scale=False), "eighteen "
+                                                              "trillionth")
 
 # def nice_time(dt, lang="en-us", speech=True, use_24hour=False,
 #              use_ampm=False):

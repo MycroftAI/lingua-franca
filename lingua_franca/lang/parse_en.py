@@ -21,12 +21,13 @@ from dateutil.relativedelta import relativedelta
 
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_en import _ARTICLES, _NUM_STRING_EN, \
-    _LONG_ORDINAL_STRING_EN, _LONG_SCALE_EN, \
-    _SHORT_SCALE_EN, _SHORT_ORDINAL_STRING_EN
+    _LONG_ORDINAL_EN, _LONG_SCALE_EN, \
+    _SHORT_SCALE_EN, _SHORT_ORDINAL_EN
 
 import re
 
 from lingua_franca.time import now_local
+
 
 def _invert_dict(original):
     """
@@ -87,8 +88,8 @@ _STRING_NUM_EN.update({
     "couple": 2
 })
 
-_STRING_SHORT_ORDINAL_EN = _invert_dict(_SHORT_ORDINAL_STRING_EN)
-_STRING_LONG_ORDINAL_EN = _invert_dict(_LONG_ORDINAL_STRING_EN)
+_STRING_SHORT_ORDINAL_EN = _invert_dict(_SHORT_ORDINAL_EN)
+_STRING_LONG_ORDINAL_EN = _invert_dict(_LONG_ORDINAL_EN)
 
 # _Token is intended to be used in the number processing functions in
 # this module. The parsing requires slicing and dividing of the original
@@ -1459,13 +1460,13 @@ def isFractional_en(input_str, short_scale=True):
 
     fracts = {"whole": 1, "half": 2, "halve": 2, "quarter": 4}
     if short_scale:
-        for num in _SHORT_ORDINAL_STRING_EN:
+        for num in _SHORT_ORDINAL_EN:
             if num > 2:
-                fracts[_SHORT_ORDINAL_STRING_EN[num]] = num
+                fracts[_SHORT_ORDINAL_EN[num]] = num
     else:
-        for num in _LONG_ORDINAL_STRING_EN:
+        for num in _LONG_ORDINAL_EN:
             if num > 2:
-                fracts[_LONG_ORDINAL_STRING_EN[num]] = num
+                fracts[_LONG_ORDINAL_EN[num]] = num
 
     if input_str.lower() in fracts:
         return 1.0 / fracts[input_str.lower()]
