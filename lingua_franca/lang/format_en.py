@@ -189,7 +189,7 @@ def pronounce_number_en(num, places=2, short_scale=True, scientific=False,
 
         def _short_scale(n):
             if n >= max(_SHORT_SCALE_EN.keys()):
-                return ""
+                return "infinity"
             ordi = ordinals
 
             if int(n) != n:
@@ -237,7 +237,7 @@ def pronounce_number_en(num, places=2, short_scale=True, scientific=False,
 
         def _long_scale(n):
             if n >= max(_LONG_SCALE_EN.keys()):
-                return ""
+                return "infinity"
             ordi = ordinals
             if int(n) != n:
                 ordi = False

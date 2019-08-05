@@ -28,6 +28,7 @@ import re
 
 from lingua_franca.time import now_local
 
+
 def _invert_dict(original):
     """
     Produce a dictionary with the keys and values
