@@ -467,8 +467,10 @@ def nice_duration(duration, lang=None, speech=True):
     Returns:
         str: timespan as a string
     """
+    if type(duration) is datetime.datetime:
+        duration = duration - datetime.datetime.now()
     if type(duration) is datetime.timedelta:
-        duration = duration.total_seconds()
+        duration = abs(duration.total_seconds())
 
     # Do traditional rounding: 2.5->3, 3.5->4, plus this
     # helps in a few cases of where calculations generate

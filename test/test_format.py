@@ -30,6 +30,7 @@ from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
 
+
 NUMBERS_FIXTURE_EN = {
     1.435634: '1.436',
     2: '2',
@@ -470,6 +471,13 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_duration(datetime.timedelta(seconds=500000),
                                        speech=False),
                          "5d 18:53:20")
+        # relative to datetime.now() / from lingua_franca.time import now_local
+        self.assertEqual(nice_duration(datetime.datetime.now() + datetime.timedelta(minutes=3),
+                                       speech=False),
+                         "3:00")
+        self.assertEqual(nice_duration(datetime.datetime.now() - datetime.timedelta(minutes=3),
+                                       speech=False),
+                         "3:00")
 
     def test_join(self):
         self.assertEqual(join_list(None, "and"), "")
