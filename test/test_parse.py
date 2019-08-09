@@ -477,6 +477,13 @@ class TestNormalize(unittest.TestCase):
         testExtract("set alarm at 7:30 on weekdays",
                     "2017-06-27 19:30:00", "set alarm on weekdays")
 
+        # TODO this test is imperfect due to "tonight" in the reminder, but let is pass since the date is correct
+        testExtract("lets meet tonight",
+                    "2017-06-27 22:00:00", "lets meet tonight")
+        # TODO this test is imperfect due to "at night" in the reminder, but let is pass since the date is correct
+        testExtract("lets meet later at night",
+                    "2017-06-27 22:00:00", "lets meet later at night")
+
     def test_extract_ambiguous_time_en(self):
         morning = datetime(2017, 6, 27, 8, 1, 2)
         evening = datetime(2017, 6, 27, 20, 1, 2)
