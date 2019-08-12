@@ -75,6 +75,7 @@ class TestNiceBytes(unittest.TestCase):
         self.assertEqual(nice_bytes(2000000000000000000, binary=False), "2.0 Exabytes")
         self.assertEqual(nice_bytes(2000000000000000000000, binary=False), "2.0 Zettabytes")
         self.assertEqual(nice_bytes(2000000000000000000000000, binary=False), "2.0 Yottabytes")
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
         self.assertEqual(nice_bytes(2000000000000000000000000000, binary=False), "2000.0 Yottabytes")
 
     def test_nice_bytes_non_binary(self):
@@ -88,6 +89,7 @@ class TestNiceBytes(unittest.TestCase):
         self.assertEqual(nice_bytes(2000000000000000000, speech=False, binary=False), "2.0 EB")
         self.assertEqual(nice_bytes(2000000000000000000000, speech=False, binary=False), "2.0 ZB")
         self.assertEqual(nice_bytes(2000000000000000000000000, speech=False, binary=False), "2.0 YB")
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
         self.assertEqual(nice_bytes(2000000000000000000000000000, speech=False, binary=False), "2000.0 YB")
 
     def test_nice_bytes_speech(self):
@@ -103,7 +105,7 @@ class TestNiceBytes(unittest.TestCase):
         self.assertEqual(nice_bytes(2000000000000000000), "1.7 Exbibytes")
         self.assertEqual(nice_bytes(2000000000000000000000), "1.7 Zebibytes")
         self.assertEqual(nice_bytes(2000000000000000000000000), "1.7 Yobibytes")
-        # no more named prefixes - https://en.wikipedia.org/wiki/Binary_prefix#Specific_uni
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
         self.assertEqual(nice_bytes(2000000000000000000000000000), "1654.4 Yobibytes")
 
     def test_nice_bytes(self):
@@ -117,6 +119,7 @@ class TestNiceBytes(unittest.TestCase):
         self.assertEqual(nice_bytes(2000000000000000000, speech=False), "1.7 EiB")
         self.assertEqual(nice_bytes(2000000000000000000000, speech=False), "1.7 ZiB")
         self.assertEqual(nice_bytes(2000000000000000000000000, speech=False), "1.7 YiB")
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
         self.assertEqual(nice_bytes(2000000000000000000000000000, speech=False), "1654.4 YiB")
 
     def test_nice_bytes_gnu(self):
@@ -135,7 +138,13 @@ class TestNiceBytes(unittest.TestCase):
         self.assertEqual(nice_bytes(2000000000000000000, speech=False, gnu=True), "1.7 E")
         self.assertEqual(nice_bytes(2000000000000000000000, speech=False, gnu=True), "1.7 Z")
         self.assertEqual(nice_bytes(2000000000000000000000000, speech=False, gnu=True), "1.7 Y")
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
         self.assertEqual(nice_bytes(2000000000000000000000000000, speech=False, gnu=True), "1654.4 Y")
+
+        self.assertEqual(nice_bytes(2000000, gnu=True, binary=False), "2.0 Mega")
+        self.assertEqual(nice_bytes(2000000000, gnu=True, binary=False), "2.0 Giga")
+        self.assertEqual(nice_bytes(2000000, speech=False, gnu=True, binary=False), "2.0 M")
+        self.assertEqual(nice_bytes(2000000000, speech=False, gnu=True, binary=False), "2.0 G")
 
 
 class TestNiceNumberFormat(unittest.TestCase):
