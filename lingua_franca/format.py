@@ -245,25 +245,47 @@ date_time_format = DateTimeFormat(os.path.join(os.path.dirname(__file__),
                                                'res/text'))
 
 
-def nice_bytes(number, lang=None, speech=True):
+def nice_bytes(number, lang=None, speech=True, binary=True, gnu=False):
+    """
+
+    :param number: number of bytes (int)
+    :param lang: lang_code, ignored for now (str)
+    :param speech: spoken form (True) or short units (False)
+    :param binary: 1 kilobyte = 1024 bytes (True) or 1 kilobyte = 1000 bytes (False)
+    :param gnu: Kilo Byte / KiB (False) vs K Byte / KB (True)
+    :return: nice bytes (str)
+    """
     # Attribution: http://stackoverflow.com/a/1094933/2444609
 
     lang_code = get_primary_lang_code(lang)
-    if not speech:
-        default_units = ['B', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi']
+
+    if speech and gnu:
+        default_units = ['Bytes', 'Kilo', 'Mega', 'Giga', 'Tera', 'Peta', 'Exa', 'Zetta', 'Yotta']
+    elif speech:
+        default_units = ['Bytes', 'Kilo bytes', 'Mega bytes', 'Giga bytes',
+                         'Tera bytes', 'Peta bytes', 'Exa bytes', 'Zetta bytes', 'Yotta bytes']
+    elif gnu:
+        default_units = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+    elif binary:
+        default_units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
     else:
-        default_units = ['Bytes', 'Kilo bytes', 'Mega bytes', 'Giga bytes', 'Tera bytes',
-                         'Peta bytes', 'Exa bytes', 'Zetta bytes', 'Yotta bytes']
+        default_units = ['B', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi']
+
     #if lang_code == "XX":
     #    units = ['Bytes', 'Kilo bytes', 'Mega bytes', 'Giga bytes', 'Tera bytes',
     #             'Peta bytes', 'Exa bytes', 'Yotta bytes']
     #else:
     units = default_units
 
+    if binary:
+        n = 1024
+    else:
+        n = 1000
+
     for unit in units[:-1]:
-        if abs(number) < 1024.0:
+        if abs(number) < n:
             return "%3.1f %s" % (number, unit)
-        number /= 1024.0
+        number /= n
 
     return "%.1f %s" % (number, units[-1])
 
