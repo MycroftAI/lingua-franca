@@ -245,14 +245,18 @@ date_time_format = DateTimeFormat(os.path.join(os.path.dirname(__file__),
                                                'res/text'))
 
 
-def nice_bytes(number, lang=None, speech=True, binary=True, gnu=False):
+def nice_bytes(number, lang=None, speech=True, binary=True, gnu=False, places=1):
     """
+    turns a number of bytes into a string using appropriate units
+
+    spoken binary units - https://en.wikipedia.org/wiki/Kibibyte
 
     :param number: number of bytes (int)
     :param lang: lang_code, ignored for now (str)
     :param speech: spoken form (True) or short units (False)
     :param binary: 1 kilobyte = 1024 bytes (True) or 1 kilobyte = 1000 bytes (False)
-    :param gnu: Kilo Byte / KiB (False) vs K Byte / KB (True)
+    :param gnu: say only order of magnitude (bool)  - 100 Kilo (True) or 100 Kilobytes (False)
+    :param places: decimal places (int)
     :return: nice bytes (str)
     """
     # Attribution: http://stackoverflow.com/a/1094933/2444609
@@ -261,6 +265,9 @@ def nice_bytes(number, lang=None, speech=True, binary=True, gnu=False):
 
     if speech and gnu:
         default_units = ['Bytes', 'Kilo', 'Mega', 'Giga', 'Tera', 'Peta', 'Exa', 'Zetta', 'Yotta']
+    elif speech and binary:
+        default_units = ['Bytes', 'Kibibytes', 'Mebibytes', 'Gibibytes',
+                         'Tebibytes', 'Pebibytes', 'Exbibytes', 'Zebibytes', 'Yobibytes']
     elif speech:
         default_units = ['Bytes', 'Kilobytes', 'Megabytes', 'Gigabytes',
                          'Terabytes', 'Petabytes', 'Exabytes', 'Zettabytes', 'Yottabytes']
@@ -269,11 +276,10 @@ def nice_bytes(number, lang=None, speech=True, binary=True, gnu=False):
     elif binary:
         default_units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
     else:
-        default_units = ['B', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi']
+        default_units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 
     #if lang_code == "XX":
-    #    units = ['Bytes', 'Kilo bytes', 'Mega bytes', 'Giga bytes', 'Tera bytes',
-    #             'Peta bytes', 'Exa bytes', 'Yotta bytes']
+    #    units = ['...']
     #else:
     units = default_units
 
