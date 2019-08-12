@@ -249,18 +249,18 @@ def nice_bytes(number, lang=None, speech=True, binary=True, gnu=False, places=1)
     """
     turns a number of bytes into a string using appropriate units
 
+    prefixes - https://en.wikipedia.org/wiki/Binary_prefix
     spoken binary units - https://en.wikipedia.org/wiki/Kibibyte
+    implementation - http://stackoverflow.com/a/1094933/2444609
 
     :param number: number of bytes (int)
     :param lang: lang_code, ignored for now (str)
     :param speech: spoken form (True) or short units (False)
     :param binary: 1 kilobyte = 1024 bytes (True) or 1 kilobyte = 1000 bytes (False)
     :param gnu: say only order of magnitude (bool)  - 100 Kilo (True) or 100 Kilobytes (False)
-    :param places: decimal places (int)
+    :param places: decimal places (int), TODO not yet implemented
     :return: nice bytes (str)
     """
-    # Attribution: http://stackoverflow.com/a/1094933/2444609
-
     lang_code = get_primary_lang_code(lang)
 
     if speech and gnu:
