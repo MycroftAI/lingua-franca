@@ -262,8 +262,8 @@ def nice_bytes(number, lang=None, speech=True, binary=True, gnu=False):
     if speech and gnu:
         default_units = ['Bytes', 'Kilo', 'Mega', 'Giga', 'Tera', 'Peta', 'Exa', 'Zetta', 'Yotta']
     elif speech:
-        default_units = ['Bytes', 'Kilo bytes', 'Mega bytes', 'Giga bytes',
-                         'Tera bytes', 'Peta bytes', 'Exa bytes', 'Zetta bytes', 'Yotta bytes']
+        default_units = ['Bytes', 'Kilobytes', 'Megabytes', 'Gigabytes',
+                         'Terabytes', 'Petabytes', 'Exabytes', 'Zettabytes', 'Yottabytes']
     elif gnu:
         default_units = ['B', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
     elif binary:
@@ -284,9 +284,11 @@ def nice_bytes(number, lang=None, speech=True, binary=True, gnu=False):
 
     for unit in units[:-1]:
         if abs(number) < n:
+            if number == 1 and speech:
+                # strip final "s"
+                unit = unit[:-1]
             return "%3.1f %s" % (number, unit)
         number /= n
-
     return "%.1f %s" % (number, units[-1])
 
 
