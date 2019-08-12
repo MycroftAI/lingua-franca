@@ -29,6 +29,7 @@ from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
+from lingua_franca.format import nice_bytes
 
 NUMBERS_FIXTURE_EN = {
     1.435634: '1.436',
@@ -59,6 +60,35 @@ NUMBERS_FIXTURE_EN = {
     7.421: '7 and 8 nineteenths',
     0.05: 'a twentyith'
 }
+
+
+class TestNiceBytes(unittest.TestCase):
+    def test_nice_bytes_speech(self):
+        self.assertEqual(nice_bytes(0), "0.0 Bytes")
+        self.assertEqual(nice_bytes(1000), "1000.0 Bytes")
+        self.assertEqual(nice_bytes(1024), "1.0 Kilo bytes")
+        self.assertEqual(nice_bytes(2000000), "1.9 Mega bytes")
+        self.assertEqual(nice_bytes(2000000000), "1.9 Giga bytes")
+        self.assertEqual(nice_bytes(2000000000000), "1.8 Tera bytes")
+        self.assertEqual(nice_bytes(2000000000000000), "1.8 Peta bytes")
+        self.assertEqual(nice_bytes(2000000000000000000), "1.7 Exa bytes")
+        self.assertEqual(nice_bytes(2000000000000000000000), "1.7 Zetta bytes")
+        self.assertEqual(nice_bytes(2000000000000000000000000), "1.7 Yotta bytes")
+        # no more named prefixes - https://en.wikipedia.org/wiki/Binary_prefix#Specific_units_of_IEC_60027-2_A.2_and_ISO.2FIEC_80000
+        self.assertEqual(nice_bytes(2000000000000000000000000000), "1654.4 Yotta bytes")
+
+    def test_nice_bytes(self):
+        self.assertEqual(nice_bytes(0, speech=False), "0.0 B")
+        self.assertEqual(nice_bytes(1000, speech=False), "1000.0 B")
+        self.assertEqual(nice_bytes(1024, speech=False), "1.0 Ki")
+        self.assertEqual(nice_bytes(2000000, speech=False), "1.9 Mi")
+        self.assertEqual(nice_bytes(2000000000, speech=False), "1.9 Gi")
+        self.assertEqual(nice_bytes(2000000000000, speech=False), "1.8 Ti")
+        self.assertEqual(nice_bytes(2000000000000000, speech=False), "1.8 Pi")
+        self.assertEqual(nice_bytes(2000000000000000000, speech=False), "1.7 Ei")
+        self.assertEqual(nice_bytes(2000000000000000000000, speech=False), "1.7 Zi")
+        self.assertEqual(nice_bytes(2000000000000000000000000, speech=False), "1.7 Yi")
+        self.assertEqual(nice_bytes(2000000000000000000000000000, speech=False), "1654.4 Yi")
 
 
 class TestNiceNumberFormat(unittest.TestCase):
@@ -419,7 +449,7 @@ class TestNiceDateFormat(unittest.TestCase):
                 self.assertTrue(len(nice_year(dt, lang=lang)) > 0)
                 # Looking through the date sequence can be helpful
 
-#                print(nice_year(dt, lang=lang))
+    #                print(nice_year(dt, lang=lang))
 
     def test_nice_duration(self):
         self.assertEqual(nice_duration(1), "one second")
