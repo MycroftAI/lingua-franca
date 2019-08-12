@@ -290,7 +290,7 @@ def nice_bytes(number, lang=None, speech=True, binary=True, gnu=False, places=1)
 
     for unit in units[:-1]:
         if abs(number) < n:
-            if number == 1 and speech:
+            if number == 1 and speech and not gnu:
                 # strip final "s"
                 unit = unit[:-1]
             return "%3.1f %s" % (number, unit)

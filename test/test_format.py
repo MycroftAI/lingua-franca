@@ -120,6 +120,7 @@ class TestNiceBytes(unittest.TestCase):
         self.assertEqual(nice_bytes(2000000000000000000000000000, speech=False), "1654.4 YiB")
 
     def test_nice_bytes_gnu(self):
+        self.assertEqual(nice_bytes(1024, gnu=True), "1.0 Kilo")
         self.assertEqual(nice_bytes(2000000, gnu=True), "1.9 Mega")
         self.assertEqual(nice_bytes(2000000000, gnu=True), "1.9 Giga")
         self.assertEqual(nice_bytes(2000000000000, gnu=True), "1.8 Tera")
