@@ -647,7 +647,7 @@ def extract_duration_en(text):
         'weeks': None
     }
 
-    pattern = r"(?P<value>\d+(?:\.?\d+)?)\s+{unit}s?"
+    pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}s?"
     text = _convert_words_to_numbers(text)
 
     for unit in time_units:
