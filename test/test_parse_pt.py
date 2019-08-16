@@ -42,15 +42,22 @@ class TestNormalize(unittest.TestCase):
                                    remove_articles=False), u"isto e o teste"
                                                            u" extra")
 
-    def test_extractnumber_pt(self):
-        self.assertEqual(extract_number("isto e o primeiro teste", lang="pt"), 1)
+    def test_extract_simple_numbers_pt(self):
+        # simple number lookup
         self.assertEqual(extract_number("isto e o 2 teste", lang="pt"), 2)
-        self.assertEqual(extract_number("isto e o segundo teste", lang="pt"), 2)
-        self.assertEqual(extract_number(u"isto e um terço de teste",  lang="pt"), 1.0 / 3.0)
-        self.assertEqual(extract_number("isto e o teste numero quatro",  lang="pt"), 4)
-        self.assertEqual(extract_number(u"um terço de chavena", lang="pt"), 1.0 / 3.0)
-        self.assertEqual(extract_number("3 canecos", lang="pt"), 3)
-        self.assertEqual(extract_number("1/3 canecos", lang="pt"), 1.0 / 3.0)
+        self.assertEqual(extract_number("3 canecos de cerveja", lang="pt"), 3)
+        self.assertEqual(extract_number("isto e o teste numero 3", lang="pt"), 3)
+        self.assertEqual(extract_number("isto e o teste numero um", lang="pt"), 1)
+        self.assertEqual(extract_number("isto e o teste numero tres", lang="pt"), 3)
+        self.assertEqual(extract_number("isto e o teste numero três", lang="pt"), 3)
+        self.assertEqual(extract_number("isto e o teste numero quatro", lang="pt"), 4)
+        self.assertEqual(extract_number("isto e o teste numero vinte", lang="pt"), 20)
+        self.assertEqual(extract_number("isto e o teste numero mil", lang="pt"), 1000)
+
+    def test_extract_fractional_numbers_pt(self):
+        self.assertEqual(extract_number("isto e um terço de teste", lang="pt"), 1.0 / 3.0)
+        self.assertEqual(extract_number("um terço de chavena", lang="pt"), 1.0 / 3.0)
+        self.assertEqual(extract_number("1/3 de coisas", lang="pt"), 1.0 / 3.0)
         self.assertEqual(extract_number("quarto de hora", lang="pt"), 0.25)
         self.assertEqual(extract_number("1/4 hora", lang="pt"), 0.25)
         self.assertEqual(extract_number("um quarto hora", lang="pt"), 0.25)
@@ -59,51 +66,41 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("1 e 3/4 cafe", lang="pt"), 1.75)
         self.assertEqual(extract_number("1 cafe e meio", lang="pt"), 1.5)
         self.assertEqual(extract_number("um cafe e um meio", lang="pt"), 1.5)
-        self.assertEqual(
-             extract_number("três quartos de chocolate", lang="pt"), 3.0 / 4.0)
+        self.assertEqual(extract_number("três quartos de chocolate", lang="pt"), 3.0 / 4.0)
         self.assertEqual(  # missing accent in "três"
-            extract_number("tres quartos de chocolate", lang="pt"),  3.0 / 4.0)
-        self.assertEqual(extract_number(u"três quarto de chocolate",
-                                        lang="pt"), 3.0 / 4.0)
+            extract_number("tres quartos de chocolate", lang="pt"), 3.0 / 4.0)
+        self.assertEqual(extract_number("três quarto de chocolate", lang="pt"), 3.0 / 4.0)
+        self.assertEqual(extract_number("sete e meio", lang="pt"), 7.5)
+        # number dot number
         self.assertEqual(extract_number("sete ponto cinco", lang="pt"), 7.5)
         self.assertEqual(extract_number("sete ponto 5", lang="pt"), 7.5)
-        self.assertEqual(extract_number("sete e meio", lang="pt"), 7.5)
-
-        # equivalent to "1st", "2nd", .."nth"
-        self.assertEqual(extract_number("isto e o 2º teste", lang="pt"), 2)
-        self.assertEqual(extract_number("foi a 3º vez", lang="pt"), 3)
-
-        # negative numbers
-        self.assertEqual(extract_number("menos dois", lang="pt"), -2)
-        self.assertEqual(extract_number("dois negativos", lang="pt"), -2)
-        self.assertEqual(extract_number("dois graus negativos", lang="pt"), -2)
-        # technically incorrect, makes use of double negative, but people say it
-        self.assertEqual(extract_number("menos dois graus negativos", lang="pt"), -2)
-
         # for non english speakers,  "X Y avos" means X / Y
         # Y must be > 10
         self.assertEqual(extract_number("vinte treze avos", lang="pt"), 20.0 / 13.0)
         self.assertEqual(extract_number("um quinze avos", lang="pt"), 1.0 / 15.0)
 
-        self.assertEqual(extract_number("vinte dois", lang="pt"), 22)
-
-        # TODO FIX ME
-        #  self.assertEqual(extract_number("vinte e dois", lang="pt"), 22)
+        # TODO fix me, should multiply N * fraction
 
         #  self.assertEqual(extract_number("dez vinte treze avos", lang="pt"),
         #                   10 * 20.0 / 13.0)
-        #        self.assertEqual(extract_number("seis virgula seiscentos e sessenta",
+
+        # TODO FIX ME, not parsing "e"
+
+        #  self.assertEqual(extract_number("seis virgula seiscentos e sessenta",
         #                                        lang="pt"), 6.66)
-        #        self.assertEqual(extract_number("seiscentos e sessenta e seis",
+        #  self.assertEqual(extract_number("seiscentos e sessenta e seis",
         #                                        lang="pt"), 666)
 
-        #        self.assertEqual(extract_number("seiscentos ponto zero seis",
+        # TODO FIX ME, not taking 0 into account on number dot zero number number
+
+        #  self.assertEqual(extract_number("seiscentos ponto zero seis",
         #                                        lang="pt"), 600.06)
-        #        self.assertEqual(extract_number("seiscentos ponto zero zero seis",
+        #  self.assertEqual(extract_number("seiscentos ponto zero zero seis",
         #                                        lang="pt"), 600.006)
-        #        self.assertEqual(extract_number("seiscentos ponto zero zero zero seis",
+        #   self.assertEqual(extract_number("seiscentos ponto zero zero zero seis",
         #                                        lang="pt"), 600.0006)
 
+        # TODO get feedback from other native speakers
         # NOTE "e" used as a decimal marker is technically incorrect but
         # often used in everyday language, specially when talking about currency
         # decided to disable for now for correctness
@@ -113,6 +110,33 @@ class TestNormalize(unittest.TestCase):
         #                                lang="pt"), 7.08)
         # self.assertEqual(extract_number("sete e zero zero oito",
         #                                lang="pt"), 7.008)
+
+    def test_extract_ordinal_numbers_pt(self):
+        # equivalent to "1st", "2nd", .."nth"
+        self.assertEqual(extract_number("isto e o 2º teste", lang="pt"), 2)
+        self.assertEqual(extract_number("foi a 3º vez", lang="pt"), 3)
+        # spoken ordinals
+        self.assertEqual(extract_number("isto e o primeiro teste", lang="pt"), 1)
+        self.assertEqual(extract_number("isto e o segundo teste", lang="pt"), 2)
+        self.assertEqual(extract_number("isto e o terceiro teste", lang="pt"), 3)
+        self.assertEqual(extract_number("isto e o quarto teste", lang="pt"), 1/4)
+        # spoken ordinals sharing name with fractions
+        # TODO fix me, ordinals flag being ignored
+        # self.assertEqual(extract_number("isto e o quarto teste", lang="pt", ordinals=True), 4)
+
+    def test_extract_negative_numbers_pt(self):
+        self.assertEqual(extract_number("menos dois", lang="pt"), -2)
+        self.assertEqual(extract_number("dois negativos", lang="pt"), -2)
+        self.assertEqual(extract_number("dois graus negativos", lang="pt"), -2)
+        # technically incorrect, makes use of double negative, but people say it
+        self.assertEqual(extract_number("menos dois graus negativos", lang="pt"), -2)
+
+    def test_extract_big_numbers_pt(self):
+        self.assertEqual(extract_number("vinte dois", lang="pt"), 22)
+        self.assertEqual(extract_number("mil cento trinta dois", lang="pt"), 1132)
+        # TODO FIX ME, not parsing "e"
+        #  self.assertEqual(extract_number("vinte e dois", lang="pt"), 22)
+        #  self.assertEqual(extract_number("mil cento e trinta e dois", lang="pt"), 1132)
 
     def test_agressive_pruning_pt(self):
         self.assertEqual(normalize("uma palavra", lang="pt"),
