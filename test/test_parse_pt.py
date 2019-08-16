@@ -106,10 +106,6 @@ class TestNormalize(unittest.TestCase):
         # decided to disable for now for correctness
         # self.assertEqual(extract_number("sete e oitenta", lang="pt"), 7.80)
         # self.assertEqual(extract_number("sete e oito", lang="pt"), 7.8)
-        # self.assertEqual(extract_number("sete e zero oito",
-        #                                lang="pt"), 7.08)
-        # self.assertEqual(extract_number("sete e zero zero oito",
-        #                                lang="pt"), 7.008)
 
     def test_extract_ordinal_numbers_pt(self):
         # equivalent to "1st", "2nd", .."nth"
