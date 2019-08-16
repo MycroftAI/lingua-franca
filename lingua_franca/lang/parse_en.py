@@ -648,14 +648,15 @@ def extract_duration_en(text):
     }
 
     pattern = r"(?P<value>\d+(?:\.?\d+)?)\s+{unit}s?"
-    text = _convert_words_to_numbers(text)
+    number_text = _convert_words_to_numbers(text)
 
     for unit in time_units:
         unit_pattern = pattern.format(unit=unit[:-1])  # remove 's' from unit
-        matches = re.findall(unit_pattern, text)
+        matches = re.findall(unit_pattern, number_text)
         value = sum(map(float, matches))
         time_units[unit] = value
         text = re.sub(unit_pattern, '', text)
+
 
     text = text.strip()
     duration = timedelta(**time_units) if any(time_units.values()) else None
