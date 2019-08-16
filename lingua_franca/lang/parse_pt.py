@@ -24,7 +24,7 @@ from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
 from lingua_franca.lang.common_data_pt import _PT_ARTICLES, _NUM_STRING_PT, \
     _LONG_ORDINAL_PT, _LONG_SCALE_PT, _SHORT_SCALE_PT, _SHORT_ORDINAL_PT, \
     _FRACTION_MARKER_PT, _DECIMAL_MARKER_PT, _PT_NUMBERS, _SUFFIX_FRACTION_MARKER_PT, \
-    _NEGATIVES_PT, _NEGATIVE_SUFFIX_MARKER_PT
+    _NEGATIVES_PT, _NEGATIVE_SUFFIX_MARKER_PT, _SUM_MARKER_PT
 
 
 def generate_plurals_pt(originals):
@@ -1293,8 +1293,6 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
     next_val = None
     to_sum = []
     for idx, token in enumerate(tokens):
-
-        current_val = None
         if next_val:
             next_val = None
             continue
@@ -1343,30 +1341,41 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
                 val = int(word)
             else:
                 val = float(word)
-            current_val = val
 
         # is this word the name of a number ?
         if word in _STRING_NUM_PT:
             val = _STRING_NUM_PT.get(word)
-            current_val = val
         elif word in string_num_scale:
             val = string_num_scale.get(word)
-            current_val = val
         elif ordinals and word in string_num_ordinal:
             val = string_num_ordinal[word]
-            current_val = val
-
-        # is the prev word a number and should we sum it?
-        # twenty two, fifty six
-        # if prev_word in _SUMS and val and val < 10:
-        #    val = prev_val + val
-
+        if word not in string_num_scale and \
+                word not in _STRING_NUM_PT and \
+                word not in multiplies and \
+                not (ordinals and word in string_num_ordinal) and \
+                not is_numeric(word) and \
+                not isFractional_pt(word, short_scale=short_scale) and \
+                not look_for_fractions(word.split('/')):
+            words_only = [token.word for token in number_words]
+            if number_words and not all([w in _PT_ARTICLES |
+                                         _NEGATIVES_PT for w in words_only]):
+                break
+            else:
+                number_words = []
+                continue
+        elif word not in multiplies \
+                and prev_word not in multiplies \
+                and not (ordinals and prev_word in string_num_ordinal) \
+                and prev_word not in _NEGATIVES_PT \
+                and prev_word not in _PT_ARTICLES:
+            number_words = [token]
+        else:
+            number_words.append(token)
         # is this a spoken fraction?
 
         # half cup
         if val is False:
             val = isFractional_pt(word, short_scale=short_scale)
-            current_val = val
 
         # 2 fifths
         if not ordinals:
@@ -1396,23 +1405,32 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
             aPieces = word.split('/')
             if look_for_fractions(aPieces):
                 val = float(aPieces[0]) / float(aPieces[1])
-                current_val = val
 
         else:
             # for non english speakers,  "X Y avos" means X / Y
-            # Y must be > 10
-            if val > 10 and prev_val and next_word in _SUFFIX_FRACTION_MARKER_PT:
+            if prev_val and next_word in _SUFFIX_FRACTION_MARKER_PT:
                 val = prev_val / val
                 number_words.append(tokens[idx + 1])
                 break
 
+            # "twenty two"
             if prev_val and prev_val > val:
-                val = prev_val + val
+                to_sum.append(prev_val)
+            # "hundred thousand"
+            if prev_val and prev_val < val:
+                val *= prev_val
 
             prev_val = val
 
-    #if val is not None and to_sum:
-    #    val += sum(to_sum)
+            # in portuguese "twenty two" can be said "twenty and two"
+            if next_word in _SUM_MARKER_PT:
+                number_words.append(tokens[idx + 1])
+                number_words.append(tokens[idx + 2])
+                next_val = extractnumber_pt(next_next_word)
+                val += next_val
+
+    if val is not None and to_sum:
+        val += sum(to_sum)
 
     return val, number_words
 

@@ -135,10 +135,11 @@ _NUM_STRING_PT = {
 }
 
 # split sentence parse separately and sum ( 2 and a half = 2 + 0.5 )
-_FRACTION_MARKER_PT = {"e"} # NOTE removed in normalization
+_FRACTION_MARKER_PT = {"e"}
 # for non english speakers,  "X Y avos" means X / Y ,  Y must be > 10
 _SUFFIX_FRACTION_MARKER_PT = {"avos"}
-
+# mean you should sum the next number , equivalent to "and", i.e, "two thousand and one"
+_SUM_MARKER_PT = {"e"}
 # decimal marker ( 1 point 5 = 1 + 0.5)
 _DECIMAL_MARKER_PT = {"ponto", "virgula", "vírgula"}
 

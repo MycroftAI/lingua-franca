@@ -27,6 +27,7 @@ class TestNormalize(unittest.TestCase):
     """
         Test cases for Portuguese parsing
     """
+
     def test_articles_pt(self):
         self.assertEqual(normalize(u"isto é o teste",
                                    lang="pt", remove_articles=True),
@@ -75,7 +76,6 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("sete ponto cinco", lang="pt"), 7.5)
         self.assertEqual(extract_number("sete ponto 5", lang="pt"), 7.5)
         # for non english speakers,  "X Y avos" means X / Y
-        # Y must be > 10
         self.assertEqual(extract_number("vinte treze avos", lang="pt"), 20.0 / 13.0)
         self.assertEqual(extract_number("um quinze avos", lang="pt"), 1.0 / 15.0)
 
@@ -86,10 +86,8 @@ class TestNormalize(unittest.TestCase):
 
         # TODO FIX ME, not parsing "e"
 
-        #  self.assertEqual(extract_number("seis virgula seiscentos e sessenta",
-        #                                        lang="pt"), 6.66)
-        #  self.assertEqual(extract_number("seiscentos e sessenta e seis",
-        #                                        lang="pt"), 666)
+        # self.assertEqual(extract_number("seis virgula seiscentos e sessenta",
+        #                                lang="pt"), 6.66)
 
         # TODO FIX ME, not taking 0 into account on number dot zero number number
 
@@ -115,7 +113,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("isto e o primeiro teste", lang="pt"), 1)
         self.assertEqual(extract_number("isto e o segundo teste", lang="pt"), 2)
         self.assertEqual(extract_number("isto e o terceiro teste", lang="pt"), 3)
-        self.assertEqual(extract_number("isto e o quarto teste", lang="pt"), 1/4)
+        self.assertEqual(extract_number("isto e o quarto teste", lang="pt"), 1 / 4)
         # spoken ordinals sharing name with fractions
         # TODO fix me, ordinals flag being ignored
         # self.assertEqual(extract_number("isto e o quarto teste", lang="pt", ordinals=True), 4)
@@ -124,15 +122,20 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("menos dois", lang="pt"), -2)
         self.assertEqual(extract_number("dois negativos", lang="pt"), -2)
         self.assertEqual(extract_number("dois graus negativos", lang="pt"), -2)
+        self.assertEqual(extract_number("um grau negativo", lang="pt"), -1)
         # technically incorrect, makes use of double negative, but people say it
         self.assertEqual(extract_number("menos dois graus negativos", lang="pt"), -2)
 
     def test_extract_big_numbers_pt(self):
+        # test sums, i.e,  "twenty two"
         self.assertEqual(extract_number("vinte dois", lang="pt"), 22)
         self.assertEqual(extract_number("mil cento trinta dois", lang="pt"), 1132)
-        # TODO FIX ME, not parsing "e"
-        #  self.assertEqual(extract_number("vinte e dois", lang="pt"), 22)
-        #  self.assertEqual(extract_number("mil cento e trinta e dois", lang="pt"), 1132)
+        self.assertEqual(extract_number("vinte e dois", lang="pt"), 22)
+        self.assertEqual(extract_number("seiscentos e sessenta e seis", lang="pt"), 666)
+        self.assertEqual(extract_number("mil cento e trinta e dois", lang="pt"), 1132)
+        self.assertEqual(extract_number("um milhão mil e trinta e dois", lang="pt"), 1001032)
+        # test multplication, i.e,  "hundred thousand"
+        self.assertEqual(extract_number("um milhão trezentos mil e trinta e dois", lang="pt"), 1300032)
 
     def test_agressive_pruning_pt(self):
         self.assertEqual(normalize("uma palavra", lang="pt"),
@@ -149,7 +152,7 @@ class TestNormalize(unittest.TestCase):
                          "isto teste")
         self.assertEqual(normalize("  isto   sao os    testes  ", lang="pt"),
                          "isto sao testes")
-        self.assertEqual(normalize("  isto   e  um    teste", lang="pt",  remove_articles=False),
+        self.assertEqual(normalize("  isto   e  um    teste", lang="pt", remove_articles=False),
                          "isto e 1 teste")
 
     def test_numbers_pt(self):
