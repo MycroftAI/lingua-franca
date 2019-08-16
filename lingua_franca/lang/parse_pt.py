@@ -14,26 +14,63 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""
-    Parse functions for Portuguese (PT-PT)
-
-    TODO: numbers greater than 999999
-    TODO: date time pt
-"""
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-from lingua_franca.lang.common_data_pt import _FRACTION_STRING_PT, \
-    _PT_ARTICLES, _PT_NUMBERS
+
+from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
+    invert_dict, ReplaceableNumber, partition_list, tokenize, Token
+
+from lingua_franca.lang.common_data_pt import _PT_ARTICLES, _NUM_STRING_PT, \
+    _LONG_ORDINAL_PT, _LONG_SCALE_PT, _SHORT_SCALE_PT, _SHORT_ORDINAL_PT, \
+    _FRACTION_MARKER_PT, _DECIMAL_MARKER_PT, _PT_NUMBERS, _SUFFIX_FRACTION_MARKER_PT, \
+    _NEGATIVES_PT, _NEGATIVE_SUFFIX_MARKER_PT
 
 
-def isFractional_pt(input_str):
+def generate_plurals_pt(originals):
+    """
+    Return a new set or dict containing the plural form of the original values,
+
+    In Portuguese this means all with 's' appended to them.
+
+    Args:
+        originals set(str) or dict(str, any): values to pluralize
+
+    Returns:
+        set(str) or dict(str, any)
+
+    """
+    if isinstance(originals, dict):
+        return {key + 's': value for key, value in originals.items()}
+    return {value + "s" for value in originals}
+
+
+_MULTIPLIES_LONG_SCALE_PT = set(_LONG_SCALE_PT.values()) | \
+                            generate_plurals_pt(_LONG_SCALE_PT.values())
+
+_MULTIPLIES_SHORT_SCALE_PT = set(_SHORT_SCALE_PT.values()) | \
+                             generate_plurals_pt(_SHORT_SCALE_PT.values())
+
+_STRING_NUM_PT = invert_dict(_NUM_STRING_PT)
+_STRING_NUM_PT.update(generate_plurals_pt(_STRING_NUM_PT))
+_STRING_NUM_PT.update({
+    "meio": 0.5,
+    "meios": 0.5,
+    "par": 2
+})
+_STRING_NUM_PT.update(_PT_NUMBERS)
+
+_STRING_SHORT_ORDINAL_PT = invert_dict(_SHORT_ORDINAL_PT)
+_STRING_LONG_ORDINAL_PT = invert_dict(_LONG_ORDINAL_PT)
+
+
+def isFractional_pt(input_str, short_scale=False):
     """
     This function takes the given text and checks if it is a fraction.
 
     Args:
         text (str): the string to check if fractional
+        short_scale (bool): use short scale if True, long scale if False
     Returns:
         (bool) or (float): False if not a fraction, otherwise the fraction
 
@@ -61,138 +98,7 @@ def isFractional_pt(input_str):
     return False
 
 
-def extractnumber_pt(text):
-    """
-    This function prepares the given text for parsing by making
-    numbers consistent, getting rid of contractions, etc.
-    Args:
-        text (str): the string to normalize
-    Returns:
-        (int) or (float): The value of extracted number
-
-    """
-    aWords = text.split()
-    count = 0
-    result = None
-    while count < len(aWords):
-        val = 0
-        word = aWords[count]
-        next_next_word = None
-        if count + 1 < len(aWords):
-            next_word = aWords[count + 1]
-            if count + 2 < len(aWords):
-                next_next_word = aWords[count + 2]
-        else:
-            next_word = None
-
-        # is current word a number?
-        if word in _PT_NUMBERS:
-            val = _PT_NUMBERS[word]
-        elif word.isdigit():  # doesn't work with decimals
-            val = int(word)
-        elif is_numeric(word):
-            val = float(word)
-        elif isFractional_pt(word):
-            if not result:
-                result = 1
-            result = result * isFractional_pt(word)
-            count += 1
-            continue
-
-        if not val:
-            # look for fractions like "2/3"
-            aPieces = word.split('/')
-            # if (len(aPieces) == 2 and is_numeric(aPieces[0])
-            #   and is_numeric(aPieces[1])):
-            if look_for_fractions(aPieces):
-                val = float(aPieces[0]) / float(aPieces[1])
-
-        if val:
-            if result is None:
-                result = 0
-            # handle fractions
-            if next_word != "avos":
-                result += val
-            else:
-                result = float(result) / float(val)
-
-        if next_word is None:
-            break
-
-        # number word and fraction
-        ands = ["e"]
-        if next_word in ands:
-            zeros = 0
-            if result is None:
-                count += 1
-                continue
-            newWords = aWords[count + 2:]
-            newText = ""
-            for word in newWords:
-                newText += word + " "
-
-            afterAndVal = extractnumber_pt(newText[:-1])
-            if afterAndVal:
-                if result < afterAndVal or result < 20:
-                    while afterAndVal > 1:
-                        afterAndVal = afterAndVal / 10.0
-                    for word in newWords:
-                        if word == "zero" or word == "0":
-                            zeros += 1
-                        else:
-                            break
-                for _ in range(0, zeros):
-                    afterAndVal = afterAndVal / 10.0
-                result += afterAndVal
-                break
-        elif next_next_word is not None:
-            if next_next_word in ands:
-                newWords = aWords[count + 3:]
-                newText = ""
-                for word in newWords:
-                    newText += word + " "
-                afterAndVal = extractnumber_pt(newText[:-1])
-                if afterAndVal:
-                    if result is None:
-                        result = 0
-                    result += afterAndVal
-                    break
-
-        decimals = ["ponto", "virgula", "vírgula", ".", ","]
-        if next_word in decimals:
-            zeros = 0
-            newWords = aWords[count + 2:]
-            newText = ""
-            for word in newWords:
-                newText += word + " "
-            for word in newWords:
-                if word == "zero" or word == "0":
-                    zeros += 1
-                else:
-                    break
-            afterDotVal = str(extractnumber_pt(newText[:-1]))
-            afterDotVal = zeros * "0" + afterDotVal
-            result = float(str(result) + "." + afterDotVal)
-            break
-        count += 1
-
-    if result is None:
-        return False
-
-    # Return the $str with the number related words removed
-    # (now empty strings, so strlen == 0)
-    # aWords = [word for word in aWords if len(word) > 0]
-    # text = ' '.join(aWords)
-    if "." in str(result):
-        integer, dec = str(result).split(".")
-        # cast float to int
-        if dec == "0":
-            result = int(integer)
-
-    return result
-
-
-def pt_number_parse(words, i):
+def _pt_number_parse_helper(words, i):
     def pt_cte(i, s):
         if i < len(words) and s == words[i]:
             return s, i + 1
@@ -200,7 +106,7 @@ def pt_number_parse(words, i):
 
     def pt_number_word(i, mi, ma):
         if i < len(words):
-            v = _PT_NUMBERS.get(words[i])
+            v = _STRING_NUM_PT.get(words[i])
             if v and v >= mi and v <= ma:
                 return v, i + 1
         return None
@@ -268,25 +174,22 @@ def pt_number_parse(words, i):
     return pt_number(i)
 
 
-def normalize_pt(text, remove_articles):
+def normalize_pt(text, remove_pt_articles):
     """ PT string normalization """
 
     words = text.split()  # this also removed extra spaces
-    normalized = ""
-    # Contractions are not common in PT
-
     # Convert numbers into digits, e.g. "dois" -> "2"
     normalized = ""
     i = 0
     while i < len(words):
         word = words[i]
         # remove articles
-        if remove_articles and word in _PT_ARTICLES:
+        if remove_pt_articles and word in _PT_ARTICLES:
             i += 1
             continue
 
         # Convert numbers into digits
-        r = pt_number_parse(words, i)
+        r = _pt_number_parse_helper(words, i)
         if r:
             v, i = r
             normalized += " " + str(v)
@@ -303,7 +206,7 @@ def normalize_pt(text, remove_articles):
     # this is experimental and some meaning may be lost
     # maybe agressive should default to False
     # only usage will tell, as a native speaker this seems reasonable
-    return pt_pruning(normalized[1:], agressive=remove_articles)
+    return pt_pruning(normalized[1:], agressive=remove_pt_articles)
 
 
 def extract_datetime_pt(input_str, currentDate, default_time):
@@ -1137,3 +1040,425 @@ def get_gender_pt(word, raw_string=""):
         if word[-1] == "o" or word[-1] == "e":
             gender = "m"
     return gender
+
+
+def _convert_words_to_numbers_pt(text, short_scale=False, ordinals=False):
+    """
+    Convert words in a string into their equivalent numbers.
+    Args:
+        text str:
+        short_scale boolean: True if short scale numbers should be used.
+        ordinals boolean: True if ordinals (e.g. first, second, third) should
+                          be parsed to their number values (1, 2, 3...)
+
+    Returns:
+        str
+        The original text, with numbers subbed in where appropriate.
+
+    """
+    text = text.lower()
+    tokens = tokenize(text)
+    numbers_to_replace = \
+        _extract_numbers_with_text_pt(tokens, short_scale, ordinals)
+    numbers_to_replace.sort(key=lambda number: number.start_index)
+
+    results = []
+    for token in tokens:
+        if not numbers_to_replace or \
+                token.index < numbers_to_replace[0].start_index:
+            results.append(token.word)
+        else:
+            if numbers_to_replace and \
+                    token.index == numbers_to_replace[0].start_index:
+                results.append(str(numbers_to_replace[0].value))
+            if numbers_to_replace and \
+                    token.index == numbers_to_replace[0].end_index:
+                numbers_to_replace.pop(0)
+
+    return ' '.join(results)
+
+
+def _extract_numbers_with_text_pt(tokens, short_scale=False,
+                                  ordinals=False, fractional_numbers=True):
+    """
+    Extract all numbers from a list of Tokens, with the words that
+    represent them.
+
+    Args:
+        [Token]: The tokens to parse.
+        short_scale bool: True if short scale numbers should be used, False for
+                          long scale. True by default.
+        ordinals bool: True if ordinal words (first, second, third, etc) should
+                       be parsed.
+        fractional_numbers bool: True if we should look for fractions and
+                                 decimals.
+
+    Returns:
+        [_ReplaceableNumber]: A list of tuples, each containing a number and a
+                         string.
+
+    """
+    placeholder = "<placeholder>"  # inserted to maintain correct indices
+    results = []
+    while True:
+        to_replace = \
+            _extract_number_with_text_pt(tokens, short_scale,
+                                         ordinals, fractional_numbers)
+
+        if not to_replace:
+            break
+
+        results.append(to_replace)
+
+        tokens = [
+            t if not
+            to_replace.start_index <= t.index <= to_replace.end_index
+            else
+            Token(placeholder, t.index) for t in tokens
+        ]
+    results.sort(key=lambda n: n.start_index)
+    return results
+
+
+def _extract_number_with_text_pt(tokens, short_scale=False,
+                                 ordinals=False, fractional_numbers=True):
+    """
+    This function extracts a number from a list of Tokens.
+
+    Args:
+        tokens str: the string to normalize
+        short_scale (bool): use short scale if True, long scale if False
+        ordinals (bool): consider ordinal numbers, third=3 instead of 1/3
+        fractional_numbers (bool): True if we should look for fractions and
+                                   decimals.
+    Returns:
+        _ReplaceableNumber
+
+    """
+    number, tokens = \
+        _extract_number_with_text_pt_helper(tokens, short_scale,
+                                            ordinals, fractional_numbers)
+    while tokens and tokens[0].word in _PT_ARTICLES:
+        tokens.pop(0)
+    return ReplaceableNumber(number, tokens)
+
+
+def _extract_number_with_text_pt_helper(tokens,
+                                        short_scale=False, ordinals=False,
+                                        fractional_numbers=True):
+    """
+    Helper for _extract_number_with_text_pt.
+
+    This contains the real logic for parsing, but produces
+    a result that needs a little cleaning (specific, it may
+    contain leading articles that can be trimmed off).
+
+    Args:
+        tokens [Token]:
+        short_scale boolean:
+        ordinals boolean:
+        fractional_numbers boolean:
+
+    Returns:
+        int or float, [Tokens]
+
+    """
+    if fractional_numbers:
+        fraction, fraction_text = \
+            _extract_fraction_with_text_pt(tokens, short_scale, ordinals)
+        if fraction:
+            return fraction, fraction_text
+
+        decimal, decimal_text = \
+            _extract_decimal_with_text_pt(tokens, short_scale, ordinals)
+        if decimal:
+            return decimal, decimal_text
+
+    return _extract_whole_number_with_text_pt(tokens, short_scale, ordinals)
+
+
+def _extract_fraction_with_text_pt(tokens, short_scale, ordinals):
+    """
+    Extract fraction numbers from a string.
+
+    This function handles text such as '2 and 3/4'. Note that "one half" or
+    similar will be parsed by the whole number function.
+
+    Args:
+        tokens [Token]: words and their indexes in the original string.
+        short_scale boolean:
+        ordinals boolean:
+
+    Returns:
+        (int or float, [Token])
+        The value found, and the list of relevant tokens.
+        (None, None) if no fraction value is found.
+
+    """
+    for c in _FRACTION_MARKER_PT:
+        partitions = partition_list(tokens, lambda t: t.word == c)
+
+        if len(partitions) == 3:
+            numbers1 = \
+                _extract_numbers_with_text_pt(partitions[0], short_scale,
+                                              ordinals, fractional_numbers=False)
+            numbers2 = \
+                _extract_numbers_with_text_pt(partitions[2], short_scale,
+                                              ordinals, fractional_numbers=True)
+
+            if not numbers1 or not numbers2:
+                return None, None
+
+            # ensure first is not a fraction and second is a fraction
+            num1 = numbers1[-1]
+            num2 = numbers2[0]
+            if num1.value >= 1 and 0 < num2.value < 1:
+                return num1.value + num2.value, \
+                       num1.tokens + partitions[1] + num2.tokens
+
+    return None, None
+
+
+def _extract_decimal_with_text_pt(tokens, short_scale, ordinals):
+    """
+    Extract decimal numbers from a string.
+
+    This function handles text such as '2 point 5'.
+
+    Notes:
+        While this is a helper for extractnumber_pt, it also depends on
+        extractnumber_pt, to parse out the components of the decimal.
+
+        This does not currently handle things like:
+            number dot number number number
+
+    Args:
+        tokens [Token]: The text to parse.
+        short_scale boolean:
+        ordinals boolean:
+
+    Returns:
+        (float, [Token])
+        The value found and relevant tokens.
+        (None, None) if no decimal value is found.
+
+    """
+    for c in _DECIMAL_MARKER_PT:
+        partitions = partition_list(tokens, lambda t: t.word == c)
+
+        if len(partitions) == 3:
+            numbers1 = \
+                _extract_numbers_with_text_pt(partitions[0], short_scale,
+                                              ordinals, fractional_numbers=False)
+            numbers2 = \
+                _extract_numbers_with_text_pt(partitions[2], short_scale,
+                                              ordinals, fractional_numbers=False)
+
+            if not numbers1 or not numbers2:
+                return None, None
+
+            number = numbers1[-1]
+            decimal = numbers2[0]
+
+            # TODO handle number dot number number number
+            if "." not in str(decimal.text):
+                return number.value + float('0.' + str(decimal.value)), \
+                       number.tokens + partitions[1] + decimal.tokens
+    return None, None
+
+
+def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
+    """
+    Handle numbers not handled by the decimal or fraction functions. This is
+    generally whole numbers. Note that phrases such as "one half" will be
+    handled by this function, while "one and a half" are handled by the
+    fraction function.
+
+    Args:
+        tokens [Token]:
+        short_scale boolean:
+        ordinals boolean:
+
+    Returns:
+        int or float, [Tokens]
+        The value parsed, and tokens that it corresponds to.
+
+    """
+    multiplies, string_num_ordinal, string_num_scale = \
+        _initialize_number_data_pt(short_scale)
+
+    number_words = []  # type: [Token]
+    val = False
+    prev_val = None
+    next_val = None
+    to_sum = []
+    for idx, token in enumerate(tokens):
+
+        current_val = None
+        if next_val:
+            next_val = None
+            continue
+
+        word = token.word
+        if word in _PT_ARTICLES or word in _NEGATIVES_PT:
+            number_words.append(token)
+            continue
+
+        # explicit ordinals, 1º, 2º, 3ª, 4th.... Nth
+        if word.endswith("º") and is_numeric(word[:-1]):
+            word = word[:-1]
+        elif word.endswith("ª") and is_numeric(word[:-1]):
+            word = word[:-1]
+
+        prev_word = tokens[idx - 1].word if idx > 0 else ""
+        next_word = tokens[idx + 1].word if idx + 1 < len(tokens) else ""
+        next_next_word = tokens[idx + 2].word if idx + 2 < len(tokens) else ""
+
+        if word not in string_num_scale and \
+                word not in _STRING_NUM_PT and \
+                word not in multiplies and \
+                not (ordinals and word in string_num_ordinal) and \
+                not is_numeric(word) and \
+                not isFractional_pt(word, short_scale=short_scale) and \
+                not look_for_fractions(word.split('/')):
+            words_only = [token.word for token in number_words]
+            if number_words and not all([w in _PT_ARTICLES |
+                                         _NEGATIVES_PT for w in words_only]):
+                break
+            else:
+                number_words = []
+                continue
+        elif word not in multiplies \
+                and prev_word not in multiplies \
+                and not (ordinals and prev_word in string_num_ordinal) \
+                and prev_word not in _NEGATIVES_PT \
+                and prev_word not in _PT_ARTICLES:
+            number_words = [token]
+        else:
+            number_words.append(token)
+
+        # is this word already a number ?
+        if is_numeric(word):
+            if word.isdigit():  # doesn't work with decimals
+                val = int(word)
+            else:
+                val = float(word)
+            current_val = val
+
+        # is this word the name of a number ?
+        if word in _STRING_NUM_PT:
+            val = _STRING_NUM_PT.get(word)
+            current_val = val
+        elif word in string_num_scale:
+            val = string_num_scale.get(word)
+            current_val = val
+        elif ordinals and word in string_num_ordinal:
+            val = string_num_ordinal[word]
+            current_val = val
+
+        # is the prev word a number and should we sum it?
+        # twenty two, fifty six
+        # if prev_word in _SUMS and val and val < 10:
+        #    val = prev_val + val
+
+        # is this a spoken fraction?
+
+        # half cup
+        if val is False:
+            val = isFractional_pt(word, short_scale=short_scale)
+            current_val = val
+
+        # 2 fifths
+        if not ordinals:
+            next_val = isFractional_pt(next_word, short_scale=short_scale)
+            if next_val:
+                if not val:
+                    val = 1
+                val = val * next_val
+                number_words.append(tokens[idx + 1])
+
+        # is this a negative number?
+        # "minus two"
+        if val and prev_word and prev_word in _NEGATIVES_PT:
+            val = 0 - val
+        # "two negative"
+        if val and val > 0 and next_word and next_word in _NEGATIVE_SUFFIX_MARKER_PT:
+            val = 0 - val
+            number_words.append(tokens[idx + 1])
+        # "two degrees negative"
+        if val and val > 0 and next_next_word and next_next_word in _NEGATIVE_SUFFIX_MARKER_PT:
+            val = 0 - val
+            number_words.append(tokens[idx + 2])
+
+        # let's make sure it isn't a fraction
+        if not val:
+            # look for fractions like "2/3"
+            aPieces = word.split('/')
+            if look_for_fractions(aPieces):
+                val = float(aPieces[0]) / float(aPieces[1])
+                current_val = val
+
+        else:
+            # for non english speakers,  "X Y avos" means X / Y
+            # Y must be > 10
+            if val > 10 and prev_val and next_word in _SUFFIX_FRACTION_MARKER_PT:
+                val = prev_val / val
+                number_words.append(tokens[idx + 1])
+                break
+
+            if prev_val and prev_val > val:
+                val = prev_val + val
+
+            prev_val = val
+
+    #if val is not None and to_sum:
+    #    val += sum(to_sum)
+
+    return val, number_words
+
+
+def _initialize_number_data_pt(short_scale):
+    """
+    Generate dictionaries of words to numbers, based on scale.
+
+    This is a helper function for _extract_whole_number.
+
+    Args:
+        short_scale boolean:
+
+    Returns:
+        (set(str), dict(str, number), dict(str, number))
+        multiplies, string_num_ordinal, string_num_scale
+
+    """
+    multiplies = _MULTIPLIES_SHORT_SCALE_PT if short_scale \
+        else _MULTIPLIES_LONG_SCALE_PT
+
+    string_num_ordinal_pt = _STRING_SHORT_ORDINAL_PT if short_scale \
+        else _STRING_LONG_ORDINAL_PT
+
+    string_num_scale_pt = _SHORT_SCALE_PT if short_scale else _LONG_SCALE_PT
+    string_num_scale_pt = invert_dict(string_num_scale_pt)
+    string_num_scale_pt.update(generate_plurals_pt(string_num_scale_pt))
+
+    return multiplies, string_num_ordinal_pt, string_num_scale_pt
+
+
+def extractnumber_pt(text, short_scale=False, ordinals=False):
+    """
+    This function extracts a number from a text string,
+    handles pronunciations in long scale and short scale
+
+    https://en.wikipedia.org/wiki/Names_of_large_numbers
+
+    Args:
+        text (str): the string to normalize
+        short_scale (bool): use short scale if True, long scale if False
+        ordinals (bool): consider ordinal numbers, third=3 instead of 1/3
+    Returns:
+        (int) or (float) or False: The extracted number or False if no number
+                                   was found
+
+    """
+    return _extract_number_with_text_pt(tokenize(text),
+                                        short_scale, ordinals).value
