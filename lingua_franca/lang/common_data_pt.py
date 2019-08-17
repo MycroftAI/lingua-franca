@@ -179,9 +179,9 @@ _LONG_SCALE_PT = OrderedDict([
 ])
 
 _SHORT_SCALE_PT = OrderedDict([
-    (100, 'hundred'),
-    (1000, 'thousand'),
-    (1000000, 'milião'),
+    (100, 'cem'),
+    (1000, 'mil'),
+    (1000000, 'milhão'),
     (1e9, "bilião"),
     (1e12, 'trilião'),
     (1e15, "quadrilião"),
