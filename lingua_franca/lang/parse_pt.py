@@ -1419,8 +1419,11 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
             if prev_val and prev_val > val:
                 to_sum.append(prev_val)
             # "hundred thousand"
-            if prev_val and prev_val < val and val >= 1000:
-                val *= prev_val
+            if prev_val and prev_val < val:
+                # N times fraction, "N X Y avos"  N * X/Y
+                is_frac = len([t.word for t in tokens[idx:] if t.word in _SUFFIX_FRACTION_MARKER_PT]) > 0
+                if val >= 1000 or is_frac:
+                    val *= prev_val
 
             prev_val = val
 
