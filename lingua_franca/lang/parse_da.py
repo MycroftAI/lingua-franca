@@ -915,7 +915,7 @@ def normalize_da(text, remove_articles):
     return normalized[1:]  # strip the initial space
 
 
-def extract_numbers_da(text, short_scale=True, ordinals=False):
+def extract_numbers_da(text, short_scale=None, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -929,5 +929,8 @@ def extract_numbers_da(text, short_scale=True, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
+    # TODO verify default value, falling back to english default
+    if short_scale is None:
+        short_scale = True
     return extract_numbers_generic(text, pronounce_number_da, extractnumber_da,
                                    short_scale=short_scale, ordinals=ordinals)

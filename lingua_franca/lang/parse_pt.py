@@ -19,12 +19,14 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
-    invert_dict, ReplaceableNumber, partition_list, tokenize, Token
+    invert_dict, ReplaceableNumber, partition_list, tokenize, Token, extract_numbers_generic
 
 from lingua_franca.lang.common_data_pt import _PT_ARTICLES, _NUM_STRING_PT, \
     _LONG_ORDINAL_PT, _LONG_SCALE_PT, _SHORT_SCALE_PT, _SHORT_ORDINAL_PT, \
     _FRACTION_MARKER_PT, _DECIMAL_MARKER_PT, _PT_NUMBERS, _SUFFIX_FRACTION_MARKER_PT, \
     _NEGATIVES_PT, _NEGATIVE_SUFFIX_MARKER_PT, _SUM_MARKER_PT
+
+from lingua_franca.lang.format_pt import pronounce_number_pt
 
 
 def generate_plurals_pt(originals):
@@ -1418,6 +1420,8 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
             # "twenty two"
             if prev_val and prev_val > val:
                 to_sum.append(prev_val)
+                if val < 11:
+                    break
             # "hundred thousand"
             if prev_val and prev_val < val:
                 # N times fraction, "N X Y avos"  N * X/Y
@@ -1490,3 +1494,24 @@ def extractnumber_pt(text, short_scale=None, ordinals=False):
         short_scale = False
     return _extract_number_with_text_pt(tokenize(text),
                                         short_scale, ordinals).value
+
+
+def extract_numbers_pt(text, short_scale=None, ordinals=False):
+    """
+        Takes in a string and extracts a list of numbers.
+
+    Args:
+        text (str): the string to extract a number from
+        short_scale (bool): Use "short scale" or "long scale" for large
+            numbers -- over a million.  The default is short scale, which
+            is now common in most English speaking countries.
+            See https://en.wikipedia.org/wiki/Names_of_large_numbers
+        ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
+    Returns:
+        list: list of extracted numbers as floats
+    """
+    # portuguese uses long scale by default
+    if short_scale is None:
+        short_scale = False
+    return extract_numbers_generic(text, pronounce_number_pt, extractnumber_pt,
+                                   short_scale=short_scale, ordinals=ordinals)

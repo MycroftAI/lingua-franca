@@ -382,7 +382,7 @@ def extractnumber_long_it(word):
     return value
 
 
-def extractnumber_it(text, short_scale=False, ordinals=False):
+def extractnumber_it(text, short_scale=None, ordinals=False):
     """
     This function extracts a number from a text string,
     handles pronunciations in long scale and short scale
@@ -398,6 +398,9 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
                                    was found
 
     """
+    # italian uses long scale by default
+    if short_scale is None:
+        short_scale = False
 
     string_num_ordinal_it = {}
     # first, second...

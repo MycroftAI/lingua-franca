@@ -20,6 +20,7 @@ from datetime import datetime, time
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number
+from lingua_franca.parse import extract_numbers
 from lingua_franca.parse import normalize
 
 
@@ -327,6 +328,16 @@ class TestExtractSingleNumber(unittest.TestCase):
         self.assertEqual(extract_number("um bilião", lang="pt", short_scale=True), 1e9)
         self.assertEqual(extract_number("um trilião", lang="pt", short_scale=True), 1e12)
 
+
+class TestExtractMulipleNumbesr(unittest.TestCase):
+    def test_extract_multple_numbers_pt(self):
+        self.assertEqual(extract_numbers("isto e o 2 teste", lang="pt"), [2])
+        self.assertEqual(extract_numbers("sete oito nove dez", lang="pt"), [7, 8, 9, 10])
+        self.assertEqual(extract_numbers("onze doze treze vinte", lang="pt"), [11, 12, 13, 20])
+        # TODO fix me, stops extracting after "e"
+        # self.assertEqual(extract_numbers("onze doze treze vinte e tres", lang="pt"), [11, 12, 13, 23])
+        # self.assertEqual(extract_numbers("mil cento e trinta e tres sete oito um porco nove vacas", lang="pt"),
+        #                 [1133, 7, 8, 1, 9])
 
 if __name__ == "__main__":
     unittest.main()

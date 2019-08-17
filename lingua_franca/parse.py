@@ -78,7 +78,7 @@ def match_one(query, choices):
         return best
 
 
-def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
+def extract_numbers(text, short_scale=None, ordinals=False, lang=None):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -104,9 +104,11 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
         return extract_numbers_it(text, short_scale, ordinals)
     elif lang_code == "da":
         return extract_numbers_da(text, short_scale, ordinals)
+    elif lang_code == "pt":
+        return extract_numbers_pt(text, short_scale, ordinals)
     # TODO: extractnumbers_xx for other languages
     _log_unsupported_language(lang_code,
-                              ['en', 'it', 'fr', 'de', 'da'])
+                              ['en', 'it', 'fr', 'de', 'da', 'pt'])
     return []
 
 
