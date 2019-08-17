@@ -115,8 +115,8 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("isto e o terceiro teste", lang="pt"), 3)
         self.assertEqual(extract_number("isto e o quarto teste", lang="pt"), 1 / 4)
         # spoken ordinals sharing name with fractions
-        # TODO fix me, ordinals flag being ignored
-        # self.assertEqual(extract_number("isto e o quarto teste", lang="pt", ordinals=True), 4)
+        self.assertEqual(extract_number("isto e o quarto teste", lang="pt", ordinals=True), 4)
+        self.assertEqual(extract_number("isto e o milésimo teste", lang="pt", ordinals=True), 1000)
 
     def test_extract_negative_numbers_pt(self):
         self.assertEqual(extract_number("menos dois", lang="pt"), -2)
