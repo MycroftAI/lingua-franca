@@ -72,9 +72,6 @@ class TestNormalize(unittest.TestCase):
             extract_number("tres quartos de chocolate", lang="pt"), 3.0 / 4.0)
         self.assertEqual(extract_number("três quarto de chocolate", lang="pt"), 3.0 / 4.0)
         self.assertEqual(extract_number("sete e meio", lang="pt"), 7.5)
-        # number dot number
-        self.assertEqual(extract_number("sete ponto cinco", lang="pt"), 7.5)
-        self.assertEqual(extract_number("sete ponto 5", lang="pt"), 7.5)
         # for non english speakers,  "X Y avos" means X / Y
         self.assertEqual(extract_number("vinte treze avos", lang="pt"), 20.0 / 13.0)
         self.assertEqual(extract_number("um quinze avos", lang="pt"), 1.0 / 15.0)
@@ -83,6 +80,10 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("dez vinte treze avos", lang="pt"),
                          10 * 20.0 / 13.0)
 
+    def test_extract_decimal_numbers_pt(self):
+        # number dot number
+        self.assertEqual(extract_number("sete ponto cinco", lang="pt"), 7.5)
+        self.assertEqual(extract_number("sete ponto 5", lang="pt"), 7.5)
         # TODO FIX ME, not parsing "e"
 
         # self.assertEqual(extract_number("seis virgula seiscentos e sessenta",
