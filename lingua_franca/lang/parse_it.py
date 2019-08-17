@@ -1307,7 +1307,7 @@ def get_gender_it(word, raw_string=""):
     return gender
 
 
-def extract_numbers_it(text, short_scale=False, ordinals=False):
+def extract_numbers_it(text, short_scale=None, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -1321,5 +1321,8 @@ def extract_numbers_it(text, short_scale=False, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
+    # italian uses long scale by default
+    if short_scale is None:
+        short_scale = False
     return extract_numbers_generic(text, pronounce_number_it, extractnumber_it,
                                    short_scale=short_scale, ordinals=ordinals)

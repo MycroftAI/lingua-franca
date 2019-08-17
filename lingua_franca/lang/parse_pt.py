@@ -1344,8 +1344,10 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
 
         # is this word the name of a number ?
         if word in _STRING_NUM_PT:
+            # numbers where short/long scale does not matter, < billion
             val = _STRING_NUM_PT.get(word)
         elif word in string_num_scale:
+            # long/short scale matters, >= 1 billion
             val = string_num_scale.get(word)
         elif ordinals and word in string_num_ordinal:
             val = string_num_ordinal[word]
@@ -1426,7 +1428,9 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
             if next_word in _SUM_MARKER_PT:
                 number_words.append(tokens[idx + 1])
                 number_words.append(tokens[idx + 2])
-                next_val = extractnumber_pt(next_next_word)
+                next_val = extractnumber_pt(next_next_word,
+                                            short_scale=short_scale,
+                                            ordinals=ordinals)
                 val += next_val
 
     if val is not None and to_sum:
@@ -1462,7 +1466,7 @@ def _initialize_number_data_pt(short_scale):
     return multiplies, string_num_ordinal_pt, string_num_scale_pt
 
 
-def extractnumber_pt(text, short_scale=False, ordinals=False):
+def extractnumber_pt(text, short_scale=None, ordinals=False):
     """
     This function extracts a number from a text string,
     handles pronunciations in long scale and short scale
@@ -1478,5 +1482,8 @@ def extractnumber_pt(text, short_scale=False, ordinals=False):
                                    was found
 
     """
+    # portuguese uses long_scale by default
+    if short_scale is None:
+        short_scale = False
     return _extract_number_with_text_pt(tokenize(text),
                                         short_scale, ordinals).value

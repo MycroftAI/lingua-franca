@@ -478,11 +478,10 @@ def _initialize_number_data(short_scale):
     string_num_scale_en = _SHORT_SCALE_EN if short_scale else _LONG_SCALE_EN
     string_num_scale_en = invert_dict(string_num_scale_en)
     string_num_scale_en.update(generate_plurals_en(string_num_scale_en))
-
     return multiplies, string_num_ordinal_en, string_num_scale_en
 
 
-def extractnumber_en(text, short_scale=True, ordinals=False):
+def extractnumber_en(text, short_scale=None, ordinals=False):
     """
     This function extracts a number from a text string,
     handles pronunciations in long scale and short scale
@@ -498,6 +497,9 @@ def extractnumber_en(text, short_scale=True, ordinals=False):
                                    was found
 
     """
+    # english uses short_scale by default
+    if short_scale is None:
+        short_scale = True
     return _extract_number_with_text_en(tokenize(text),
                                         short_scale, ordinals).value
 

@@ -137,6 +137,19 @@ class TestNormalize(unittest.TestCase):
         # test multplication, i.e,  "hundred thousand"
         self.assertEqual(extract_number("um milhão trezentos mil e trinta e dois", lang="pt"), 1300032)
 
+    def test_extract_numbers_long_scale_pt(self):
+        # portuguese is long_scale by default
+        self.assertEqual(extract_number("um bilião", lang="pt"),
+                         extract_number("um bilião", short_scale=False, lang="pt"))
+
+        self.assertEqual(extract_number("um bilião", lang="pt"), 1e12)
+        self.assertEqual(extract_number("um trilião", lang="pt"), 1e18)
+
+    def test_extract_numbers_short_scale_pt(self):
+        self.assertEqual(extract_number("um bilião", lang="pt", short_scale=False), 1e12)
+        self.assertEqual(extract_number("um bilião", lang="pt", short_scale=True), 1e9)
+        self.assertEqual(extract_number("um trilião", lang="pt", short_scale=True), 1e12)
+
     def test_agressive_pruning_pt(self):
         self.assertEqual(normalize("uma palavra", lang="pt"),
                          "1 palavra")

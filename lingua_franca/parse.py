@@ -110,7 +110,7 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
     return []
 
 
-def extract_number(text, short_scale=True, ordinals=False, lang=None):
+def extract_number(text, short_scale=None, ordinals=False, lang=None):
     """Takes in a string and extracts a number.
 
     Args:
@@ -132,7 +132,8 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
     elif lang_code == "es":
         return extractnumber_es(text)
     elif lang_code == "pt":
-        return extractnumber_pt(text)
+        return extractnumber_pt(text, short_scale=short_scale,
+                                ordinals=ordinals)
     elif lang_code == "it":
         return extractnumber_it(text, short_scale=short_scale,
                                 ordinals=ordinals)
