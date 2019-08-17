@@ -39,8 +39,8 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(normalize("esto es cuatro cinco seis prueba",
                                    lang="es"),
                          "esto es 4 5 6 prueba")
-        self.assertEqual(normalize(u"siete mï¿½s ocho mï¿½s nueve", lang="es"),
-                         u"7 mï¿½s 8 mï¿½s 9")
+        self.assertEqual(normalize(u"siete más ocho más nueve", lang="es"),
+                         u"7 más 8 más 9")
         self.assertEqual(normalize("diez once doce trece catorce quince",
                                    lang="es"),
                          "10 11 12 13 14 15")
@@ -56,9 +56,9 @@ class TestNormalize(unittest.TestCase):
                          "100 caballos")
         self.assertEqual(normalize(u"ciento once caballos", lang="es"),
                          "111 caballos")
-        self.assertEqual(normalize(u"habï¿½a cuatrocientas una vacas",
+        self.assertEqual(normalize(u"había cuatrocientas una vacas",
                                    lang="es"),
-                         u"habï¿½a 401 vacas")
+                         u"había 401 vacas")
         self.assertEqual(normalize(u"dos mil", lang="es"),
                          "2000")
         self.assertEqual(normalize(u"dos mil trescientas cuarenta y cinco",

@@ -135,7 +135,7 @@ def nice_number_es(number, speech, denominators):
         else:
             # else return "2 y 3 cuarto", for example
             strNumber = '{} y {} {}'.format(whole, num, den_str)
-        if num > 1 and den != 3:
+        if num > 1:
             # if the numerator is greater than 1 and the denominator
             # is not 3 ("tercio"), add an s for plural
             strNumber += 's'

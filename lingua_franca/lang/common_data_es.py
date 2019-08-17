@@ -20,7 +20,7 @@
 from collections import OrderedDict
 
 
-_ARTICLES = {'el', 'la', 'los', 'las'}
+_ARTICLES_ES = {'el', 'la', 'los', 'las'}
 
 
 NUM_STRING_ES = {
@@ -41,7 +41,7 @@ NUM_STRING_ES = {
     14: 'catorce',
     15: 'quince',
     16: 'dieciséis',
-    17: 'diecisete',
+    17: 'diecisiete',
     18: 'dieciocho',
     19: 'diecinueve',
     20: 'veinte',
