@@ -102,8 +102,17 @@ class TestNormalize(unittest.TestCase):
         # NOTE "e" used as a decimal marker is technically incorrect but
         # often used in everyday language, specially when talking about currency
         # decided to disable for now for correctness
+
         # self.assertEqual(extract_number("sete e oitenta", lang="pt"), 7.80)
+        # ambiguous, most likely should be 7.08
         # self.assertEqual(extract_number("sete e oito", lang="pt"), 7.8)
+
+        # to enable add "e" to common_data_pt._DECIMAL_MARKER_PT and disable tests bellow
+
+        # NOTE: contains multiple numbers
+        # extract_numbers should be used, only last number will be returned
+        self.assertEqual(extract_number("sete e oitenta", lang="pt"), 80)
+        self.assertEqual(extract_number("sete e oito", lang="pt"), 8)
 
     def test_extract_ordinal_numbers_pt(self):
         # equivalent to "1st", "2nd", .."nth"

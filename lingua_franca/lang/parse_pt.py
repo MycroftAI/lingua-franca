@@ -1419,7 +1419,7 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
             if prev_val and prev_val > val:
                 to_sum.append(prev_val)
             # "hundred thousand"
-            if prev_val and prev_val < val:
+            if prev_val and prev_val < val and val >= 1000:
                 val *= prev_val
 
             prev_val = val
