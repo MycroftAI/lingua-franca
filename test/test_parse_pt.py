@@ -79,10 +79,9 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("vinte treze avos", lang="pt"), 20.0 / 13.0)
         self.assertEqual(extract_number("um quinze avos", lang="pt"), 1.0 / 15.0)
 
-        # TODO fix me, should multiply N * fraction
-
-        #  self.assertEqual(extract_number("dez vinte treze avos", lang="pt"),
-        #                   10 * 20.0 / 13.0)
+        # N * fraction
+        self.assertEqual(extract_number("dez vinte treze avos", lang="pt"),
+                         10 * 20.0 / 13.0)
 
         # TODO FIX ME, not parsing "e"
 
