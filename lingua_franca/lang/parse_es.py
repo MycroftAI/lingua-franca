@@ -266,7 +266,7 @@ def es_number_parse(words, i):
     def es_number_word(i, mi, ma):
         if i < len(words):
             v = es_numbers.get(words[i])
-            if v and v >= mi and v <= ma:
+            if v is not None and v >= mi and v <= ma:
                 return v, i + 1
         return None
 
