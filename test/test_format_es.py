@@ -29,7 +29,7 @@ NUMBERS_FIXTURE_ES = {
     0.027: '0,027',
     0.5: 'un medio',
     1.333: '1 y 1 tercio',
-    2.667: '2 y 2 tercios',
+    2.666: '2 y 2 tercios',
     0.25: 'un cuarto',
     1.25: '1 y 1 cuarto',
     0.75: '3 cuartos',
