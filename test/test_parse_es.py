@@ -39,11 +39,15 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(normalize("esto es cuatro cinco seis prueba",
                                    lang="es"),
                          "esto es 4 5 6 prueba")
-        self.assertEqual(normalize(u"siete mï¿½s ocho mï¿½s nueve", lang="es"),
-                         u"7 mï¿½s 8 mï¿½s 9")
+        self.assertEqual(normalize(u"siete más ocho más nueve", lang="es"),
+                         u"7 más 8 más 9")
         self.assertEqual(normalize("diez once doce trece catorce quince",
                                    lang="es"),
                          "10 11 12 13 14 15")
+        self.assertEqual(normalize("dos cero uno", lang="es"),
+                         "2 0 1")
+        self.assertEqual(normalize("hay cero perros", lang="es"),
+                         "hay 0 perros")
         self.assertEqual(normalize(u"dieciséis diecisiete", lang="es"),
                          "16 17")
         self.assertEqual(normalize(u"dieciocho diecinueve", lang="es"),
@@ -52,13 +56,15 @@ class TestNormalize(unittest.TestCase):
                          "20 30 40")
         self.assertEqual(normalize(u"treinta y dos caballos", lang="es"),
                          "32 caballos")
+        self.assertEqual(normalize(u"éramos treinta y algunos caballos", lang="es"),
+                         "éramos 30 y algunos caballos")
         self.assertEqual(normalize(u"cien caballos", lang="es"),
                          "100 caballos")
         self.assertEqual(normalize(u"ciento once caballos", lang="es"),
                          "111 caballos")
-        self.assertEqual(normalize(u"habï¿½a cuatrocientas una vacas",
+        self.assertEqual(normalize(u"había cuatrocientas una vacas",
                                    lang="es"),
-                         u"habï¿½a 401 vacas")
+                         u"había 401 vacas")
         self.assertEqual(normalize(u"dos mil", lang="es"),
                          "2000")
         self.assertEqual(normalize(u"dos mil trescientas cuarenta y cinco",

@@ -53,8 +53,8 @@ es_numbers = {
     "diecinueve": 19,
     "veinte": 20,
     "veintiuno": 21,
-    u"veintidï¿½s": 22,
-    u"veintitrï¿½s": 23,
+    u"veintidós": 22,
+    u"veintitrés": 23,
     "veintidos": 22,
     "veintitres": 23,
     u"veintitrés": 23,
@@ -266,7 +266,7 @@ def es_number_parse(words, i):
     def es_number_word(i, mi, ma):
         if i < len(words):
             v = es_numbers.get(words[i])
-            if v and v >= mi and v <= ma:
+            if v is not None and v >= mi and v <= ma:
                 return v, i + 1
         return None
 

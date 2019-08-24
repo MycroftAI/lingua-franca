@@ -29,7 +29,7 @@ NUMBERS_FIXTURE_ES = {
     0.027: '0,027',
     0.5: 'un medio',
     1.333: '1 y 1 tercio',
-    2.666: '2 y 2 tercio',
+    2.666: '2 y 2 tercios',
     0.25: 'un cuarto',
     1.25: '1 y 1 cuarto',
     0.75: '3 cuartos',
@@ -106,12 +106,16 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(10, lang="es"), "diez")
         self.assertEqual(pronounce_number(15, lang="es"), "quince")
         self.assertEqual(pronounce_number(21, lang="es"), "veintiuno")
+        self.assertEqual(pronounce_number(22, lang="es"), "veintidós")
+        self.assertEqual(pronounce_number(23, lang="es"), "veintitrés")
+        self.assertEqual(pronounce_number(26, lang="es"), "veintiséis")
         self.assertEqual(pronounce_number(27, lang="es"), "veintisiete")
         self.assertEqual(pronounce_number(30, lang="es"), "treinta")
         self.assertEqual(pronounce_number(19, lang="es"), "diecinueve")
         self.assertEqual(pronounce_number(88, lang="es"), "ochenta y ocho")
         self.assertEqual(pronounce_number(46, lang="es"), "cuarenta y seis")
         self.assertEqual(pronounce_number(99, lang="es"), "noventa y nueve")
+        self.assertEqual(pronounce_number(100, lang="es"), "100")
 
     def test_convert_negative_int(self):
         self.assertEqual(pronounce_number(-1, lang="es"), "menos uno")
