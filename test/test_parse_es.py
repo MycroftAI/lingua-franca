@@ -56,8 +56,8 @@ class TestNormalize(unittest.TestCase):
                          "20 30 40")
         self.assertEqual(normalize(u"treinta y dos caballos", lang="es"),
                          "32 caballos")
-        self.assertEqual(normalize(u"eramos treinta y algunos caballos", lang="es"),
-                         "eramos 30 y algunos caballos")
+        self.assertEqual(normalize(u"éramos treinta y algunos caballos", lang="es"),
+                         "éramos 30 y algunos caballos")
         self.assertEqual(normalize(u"cien caballos", lang="es"),
                          "100 caballos")
         self.assertEqual(normalize(u"ciento once caballos", lang="es"),
