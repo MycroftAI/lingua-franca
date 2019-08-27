@@ -28,6 +28,7 @@ class TestNormalize(unittest.TestCase):
     """
         Test cases for Portuguese parsing
     """
+
     def test_articles_pt(self):
         self.assertEqual(normalize(u"isto é o teste",
                                    lang="pt", remove_articles=True),
@@ -262,19 +263,19 @@ class TestExtractSingleNumber(unittest.TestCase):
         # number dot number
         self.assertEqual(extract_number("sete ponto cinco", lang="pt"), 7.5)
         self.assertEqual(extract_number("sete ponto 5", lang="pt"), 7.5)
-        # TODO FIX ME, not parsing "e"
+        self.assertEqual(extract_number("sete virgula 5", lang="pt"), 7.5)
+        self.assertEqual(extract_number("sete vírgula 5", lang="pt"), 7.5)
 
-        # self.assertEqual(extract_number("seis virgula seiscentos e sessenta",
-        #                                lang="pt"), 6.66)
-
-        # TODO FIX ME, not taking 0 into account on number dot zero number number
-
-        #  self.assertEqual(extract_number("seiscentos ponto zero seis",
-        #                                        lang="pt"), 600.06)
-        #  self.assertEqual(extract_number("seiscentos ponto zero zero seis",
-        #                                        lang="pt"), 600.006)
-        #   self.assertEqual(extract_number("seiscentos ponto zero zero zero seis",
-        #                                        lang="pt"), 600.0006)
+        # number dot big number
+        self.assertEqual(extract_number("seis virgula seiscentos e sessenta",
+                                        lang="pt"), 6.66)
+        # number dot number number number
+        self.assertEqual(extract_number("seiscentos ponto zero seis",
+                                        lang="pt"), 600.06)
+        self.assertEqual(extract_number("seiscentos ponto zero zero seis",
+                                        lang="pt"), 600.006)
+        self.assertEqual(extract_number("seiscentos ponto zero zero zero seis", 
+                                        lang="pt"), 600.0006)
 
         # TODO get feedback from other native speakers
         # NOTE "e" used as a decimal marker is technically incorrect but
@@ -347,6 +348,7 @@ class TestExtractMulipleNumbesr(unittest.TestCase):
         # self.assertEqual(extract_numbers("onze doze treze vinte e tres", lang="pt"), [11, 12, 13, 23])
         # self.assertEqual(extract_numbers("mil cento e trinta e tres sete oito um porco nove vacas", lang="pt"),
         #                 [1133, 7, 8, 1, 9])
+
 
 if __name__ == "__main__":
     unittest.main()

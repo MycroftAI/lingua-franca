@@ -1276,12 +1276,23 @@ def _extract_decimal_with_text_pt(tokens, short_scale, ordinals):
                 return None, None
 
             number = numbers1[-1]
-            decimal = numbers2[0]
-
-            # TODO handle number dot number number number
-            if "." not in str(decimal.text):
-                return number.value + float('0.' + str(decimal.value)), \
-                       number.tokens + partitions[1] + decimal.tokens
+            number_val = number.value or 0
+            number_tokens = number.tokens + partitions[1]
+            fractional_part = None
+            for idx, decimal in enumerate(numbers2):
+                if "." not in str(decimal.text):
+                    if decimal.value < 10:
+                        # number dot number number number
+                        fractional_part = '0.' + '0' * idx + str(decimal.value)
+                    else:
+                        # number dot a big number
+                        fractional_part = '0.' + str(decimal.value)
+                    number_tokens += decimal.tokens
+                else:
+                    break
+            if fractional_part:
+                number_val += float(fractional_part)
+                return number_val, number_tokens
     return None, None
 
 
