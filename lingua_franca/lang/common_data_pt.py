@@ -21,6 +21,21 @@ from collections import OrderedDict
 
 _PT_ARTICLES = {"o", "a", "os", "as"}
 
+# word rules for gender
+_FEMALE_ENDINGS_PT = ["a", "as"]
+_MALE_ENDINGS_PT = ["o", "os"]
+
+# special cases, word lookup for words not covered by above rule
+_GENDERS_PT = {
+    "mulher": "f",
+    "mulheres": "f",
+    "homem": "m"
+}
+
+# context rules for gender
+_MALE_DETERMINANTS_PT = ["o", "os", "este", "estes", "esse", "esses"]
+_FEMALE_DETERMINANTS_PT = ["a", "as", "estas", "estas", "essa", "essas"]
+
 _PT_NUMBERS = {
     "zero": 0,
     "um": 1,

@@ -91,14 +91,23 @@ class TestNormalize(unittest.TestCase):
 
 class TestExtractGender(unittest.TestCase):
     def test_gender_pt(self):
+        # words with well defined grammatical gender rules
         self.assertEqual(get_gender("vaca", lang="pt"), "f")
         self.assertEqual(get_gender("cavalo", lang="pt"), "m")
         self.assertEqual(get_gender("vacas", lang="pt"), "f")
-        self.assertEqual(get_gender("boi", "o boi come erva", lang="pt"), "m")
+
+        # words specifically defined in a lookup dictionary
+        self.assertEqual(get_gender("homem", lang="pt"), "m")
+        self.assertEqual(get_gender("mulher", lang="pt"), "f")
+        self.assertEqual(get_gender("homems", lang="pt"), "m")
+        self.assertEqual(get_gender("mulheres", lang="pt"), "f")
+
+        # words where gender rules do not work but context does
         self.assertEqual(get_gender("boi", lang="pt"), None)
-        self.assertEqual(get_gender("homem", "estes homem come merda",
+        self.assertEqual(get_gender("boi", "o boi come erva", lang="pt"), "m")
+        self.assertEqual(get_gender("homem", "este homem come merda",
                                     lang="pt"), "m")
-        self.assertEqual(get_gender("ponte", lang="pt"), "m")
+        self.assertEqual(get_gender("ponte", lang="pt"), None)
         self.assertEqual(get_gender("ponte", "essa ponte caiu",
                                     lang="pt"), "f")
 
