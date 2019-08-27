@@ -105,7 +105,7 @@ class TestExtractGender(unittest.TestCase):
         # words where gender rules do not work but context does
         self.assertEqual(get_gender("boi", lang="pt"), None)
         self.assertEqual(get_gender("boi", "o boi come erva", lang="pt"), "m")
-        self.assertEqual(get_gender("homem", "este homem come merda",
+        self.assertEqual(get_gender("homem", "este homem come bois",
                                     lang="pt"), "m")
         self.assertEqual(get_gender("ponte", lang="pt"), None)
         self.assertEqual(get_gender("ponte", "essa ponte caiu",
