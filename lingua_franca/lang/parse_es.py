@@ -15,1027 +15,1040 @@
 # limitations under the License.
 #
 """
-    Parse functions for spanish (es)
-    TODO: numbers greater than 999999
+    Parse functions for Castillian (es_ES)
+
 """
+
+import collections
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-
-# Undefined articles ["un", "una", "unos", "unas"] can not be supressed,
-# in Spanish, "un caballo" means "a horse" or "one horse".
-es_articles = ["el", "la", "los", "las"]
-
-es_numbers = {
-    "cero": 0,
-    "un": 1,
-    "uno": 1,
-    "una": 1,
-    "dos": 2,
-    "tres": 3,
-    u"trés": 3,
-    "cuatro": 4,
-    "cinco": 5,
-    "seis": 6,
-    "siete": 7,
-    "ocho": 8,
-    "nueve": 9,
-    "diez": 10,
-    "once": 11,
-    "doce": 12,
-    "trece": 13,
-    "catorce": 14,
-    "quince": 15,
-    "dieciseis": 16,
-    u"dieciséis": 16,
-    "diecisiete": 17,
-    "dieciocho": 18,
-    "diecinueve": 19,
-    "veinte": 20,
-    "veintiuno": 21,
-    u"veintidï¿½s": 22,
-    u"veintitrï¿½s": 23,
-    "veintidos": 22,
-    "veintitres": 23,
-    u"veintitrés": 23,
-    "veinticuatro": 24,
-    "veinticinco": 25,
-    u"veintiséis": 26,
-    "veintiseis": 26,
-    "veintisiete": 27,
-    "veintiocho": 28,
-    "veintinueve": 29,
-    "treinta": 30,
-    "cuarenta": 40,
-    "cincuenta": 50,
-    "sesenta": 60,
-    "setenta": 70,
-    "ochenta": 80,
-    "noventa": 90,
-    "cien": 100,
-    "ciento": 100,
-    "doscientos": 200,
-    "doscientas": 200,
-    "trescientos": 300,
-    "trescientas": 300,
-    "cuatrocientos": 400,
-    "cuatrocientas": 400,
-    "quinientos": 500,
-    "quinientas": 500,
-    "seiscientos": 600,
-    "seiscientas": 600,
-    "setecientos": 700,
-    "setecientas": 700,
-    "ochocientos": 800,
-    "ochocientas": 800,
-    "novecientos": 900,
-    "novecientas": 900,
-    "mil": 1000}
+from mycroft.util.lang.parse_common import is_numeric, look_for_fractions, \
+    extract_numbers_generic
+from mycroft.util.lang.format_es import pronounce_number_es
+from mycroft.util.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES, \
+    _LONG_ORDINAL_STRING_ES, _LONG_SCALE_ES, _STRING_NUM_ES, \
+    _SHORT_SCALE_ES, _SHORT_ORDINAL_STRING_ES, _FRACTION_STRING_ES, \
+    _STRING_SHORT_ORDINAL_ES
 
 
-def isFractional_es(input_str):
+
+def _invert_dict(original):
+    """
+    Produce a dictionary with the keys and values
+    inverted, relative to the dict passed in.
+
+    Args:
+        original dict: The dict like object to invert
+
+    Returns:
+        dict
+
+    """
+    return {value: key for key, value in original.items()}
+
+
+def isFractional_es(input_str, short_scale=False):
     """
     This function takes the given text and checks if it is a fraction.
 
     Args:
-        text (str): the string to check if fractional
+        input_str (str): the string to check if fractional
+        short_scale (bool): use short scale if True, long scale if False
     Returns:
         (bool) or (float): False if not a fraction, otherwise the fraction
 
     """
+    input_str = input_str.lower()
     if input_str.endswith('s', -1):
         input_str = input_str[:len(input_str) - 1]  # e.g. "fifths"
+    # elif input_str.endswith('a', -1):
+    #     input_str = input_str[:len(input_str) - 1]         
+    # elif input_str.endswith('o', -1):
+    #     input_str = input_str[:len(input_str) - 1]     
 
-    aFrac = ["medio", "media", "tercio", "cuarto", "cuarta", "quinto",
-             "quinta", "sexto", "sexta", u"séptimo", u"séptima", "octavo",
-             "octava", "noveno", "novena", u"décimo", u"décima", u"onceavo",
-             u"onceava", u"doceavo", u"doceava"]
+    fracts_es = {"entero": 1, "medio": 2, "media": 2, "mitad": 2}
 
-    if input_str.lower() in aFrac:
-        return 1.0 / (aFrac.index(input_str) + 2)
-    if (input_str == "cuarto" or input_str == "cuarta"):
-        return 1.0 / 4
-    if (input_str == u"vigésimo" or input_str == u"vigésima"):
-        return 1.0 / 20
-    if (input_str == u"trigésimo" or input_str == u"trigésima"):
-        return 1.0 / 30
-    if (input_str == u"centésimo" or input_str == u"centésima"):
-        return 1.0 / 100
-    if (input_str == u"milésimo" or input_str == u"milésima"):
-        return 1.0 / 1000
+    if short_scale:
+        # for num in _SHORT_ORDINAL_STRING_ES:
+        # tercio is fractional while tercero is ordinal
+        for num in _FRACTION_STRING_ES:
+            if num > 2:
+                fracts_es[_FRACTION_STRING_ES[num]] = num
+    else:
+        for num in _SHORT_ORDINAL_STRING_ES:
+            if num > 2:
+                fracts_es[_SHORT_ORDINAL_STRING_ES[num]] = num
+
+    if input_str in fracts_es:
+        return 1.0 / fracts_es[input_str]
     return False
 
 
-def extractnumber_es(text):
+def extractnumber_long_es(word):
     """
-    This function prepares the given text for parsing by making
-    numbers consistent, getting rid of contractions, etc.
+     This function converts a long textual number like
+     milveintisiete -> 1027 o diezmilcuarentayuno -> 10041 in
+     integer value, covers from  0 to 999999999999999
+     for now limited to 999_e21 but ready for 999_e63
+     example:
+        milveintisiete -> 1027
+        diezmilcuarentayuno-> 10041
+        cientochomildoscientostrece -> 108213
+    Args:
+         word (str): the word to convert in number
+    Returns:
+         (bool) or (int): The extracted number or False if no number
+                          was found
+    """
+
+    units = {'cero': 0, 'uno': 1, 'dos': 2, 'tres': 3, 'cuatro': 4,
+             'cinco': 5, 'seis': 6, 'siete': 7, 'ocho': 8, 'nueve': 9}
+
+    tens = {'dieci': 10, 'veinti': 20, 'treinta': 30, 'cuarenta': 40,
+            'cincuenta': 50, 'sesenta': 60, 'setenta': 70, 'ocheanta': 80,
+            'noventa': 90}
+
+    tens_short = {'veinti': 20, 'treint': 30, 'cuarent': 40, 'cincuent': 50,
+                  'sesent': 60, 'setent': 70, 'ochent': 80, 'novent': 90}
+
+    nums_long = {'once': 11, 'doce': 12, 'trece': 13, 'catorce': 14,
+                 'quince': 15, 'dieciséis': 16, 'diecisiete': 17,
+                 'dieciocho': 18, 'diecinueve': 19}
+
+    multipli_es = collections.OrderedDict([
+        (1e24, 'cuatrillones'),    # yotta
+        (1e18, 'trillones'),       # exa
+        (1e12, 'billones'),        # tera
+        (1e9, 'millardos'),        # giga
+        (1e6, 'millones')          # mega
+    ])
+
+    multiplier = {}
+    un_multiplier = {}
+
+    for num in multipli_es:
+        if num > 1000 and num <= 1e24:
+            # plurales
+            multiplier[multipli_es[num]] = int(num)
+            # singular - modificar para la excepción *ardo
+            if multipli_es[num][-5:-1] == 'ardo':
+                un_multiplier['un' + multipli_es[num][:-1] + 'o'] = int(num)
+            else:
+                un_multiplier['un' + multipli_es[num][:-1] + 'e'] = int(num)
+
+    value = False
+
+    # normaliza ordinales individuales o plurales -esimo -esimi
+    if word[-5:-1] == 'esim':
+        base = word[:-5]
+        normalize_ita3 = {'tre': '', 'ttr': 'o', 'sei': '', 'ott': 'o'}
+        normalize_ita2 = {'un': 'o', 'du': 'e', 'qu': 'e', 'tt': 'e',
+                          'ov': 'e'}
+
+        if base[-3:] in normalize_ita3:
+            base += normalize_ita3[base[-3:]]
+        elif base[-2:] in normalize_ita2:
+            base += normalize_ita2[base[-2:]]
+
+        word = base
+
+    for item in un_multiplier:
+        components = word.split(item, 1)
+        if len(components) == 2 and not components[0]:
+            if not components[1]:  # unmilione
+                word = str(int(un_multiplier[item]))
+            else:                  # unmilione + x
+                word = str(int(un_multiplier[item]) +
+                            extractnumber_long_es(components[1]))
+
+    for item in multiplier:
+        components = word.split(item, 1)
+        if len(components) == 2:
+            if not components[0]:  # inizia con un1^x
+                word = str(int(multiplier[item]) +
+                           extractnumber_long_es(components[1]))
+            else:
+                if not components[1]:
+                    word = str(extractnumber_long_es(components[0])) + '*' \
+                        + str(int(multiplier[item]))
+                else:
+                    word = str(extractnumber_long_es(components[0])) + '*' \
+                        + str(int(multiplier[item])) + '+' \
+                        + str(extractnumber_long_es(components[1]))
+
+    for item in tens:
+        word = word.replace(item, '+' + str(tens[item]))
+
+    for item in tens_short:
+        word = word.replace(item, '+' + str(tens_short[item]))
+
+    for item in nums_long:
+        word = word.replace(item, '+' + str(nums_long[item]))
+
+    word = word.replace('cento', '+1xx')
+    word = word.replace('cent', '+1xx')
+    word = word.replace('mille', '+1000')   # unmilionemille
+    word = word.replace('mila', '*1000')   # unmilioneduemila
+
+    for item in units:
+        word = word.replace(item, '+' + str(units[item]))
+
+    # normalizzo i cento
+    occorrenze = word.count('+1xx')
+    for _ in range(0, occorrenze):
+        components = word.rsplit('+1xx', 1)
+        if len(components[0]) > 1 and components[0].endswith('0'):
+            word = components[0] + '+100' + components[1]
+        else:
+            word = components[0] + '*100' + components[1]
+
+    components = word.rsplit('*1000', 1)
+    if len(components) == 2:
+        if components[0].startswith('*'):  # centomila
+            components[0] = components[0][1:]
+        word = str(extractnumber_long_es(components[0])) + \
+            '*1000' + str(components[1])
+
+    # gestione eccezioni
+    if word.startswith('*') or word.startswith('+'):
+        word = word[1:]
+
+    addends = word.split('+')
+    for c, _ in enumerate(addends):
+        if '*' in addends[c]:
+            factors = addends[c].split('*')
+            result = int(factors[0]) * int(factors[1])
+            if len(factors) == 3:
+                result *= int(factors[2])
+            addends[c] = str(result)
+
+    # check if all token are numbers
+    if all([s.isdecimal() for s in addends]):
+        value = sum([int(s) for s in addends])
+    else:
+        value = False
+    return value
+
+
+def extractnumber_es(text, short_scale=False, ordinals=False):
+    """
+    This function extracts a number from a text string,
+    handles pronunciations in long scale and short scale
+
+    https://en.wikipedia.org/wiki/Names_of_large_numbers
+
     Args:
         text (str): the string to normalize
+        short_scale (bool): use short scale if True, long scale if False
+        ordinals (bool): consider ordinal numbers, third=3 instead of 1/3
     Returns:
-        (int) or (float): The value of extracted number
+        (int) or (float) or False: The extracted number or False if no number
+                                   was found
 
     """
-    aWords = text.split()
-    count = 0
-    result = None
-    while count < len(aWords):
-        val = 0
-        word = aWords[count]
-        next_next_word = None
-        if count + 1 < len(aWords):
-            next_word = aWords[count + 1]
-            if count + 2 < len(aWords):
-                next_next_word = aWords[count + 2]
+
+    string_num_ordinal_es = {}
+    # first, second...
+    if ordinals:
+        if short_scale:
+            for num in _SHORT_ORDINAL_STRING_ES:
+                num_string = _SHORT_ORDINAL_STRING_ES[num]
+                string_num_ordinal_es[num_string] = num
+                _STRING_NUM_ES[num_string] = num
         else:
-            next_word = None
+            for num in _LONG_ORDINAL_STRING_ES:
+                num_string = _LONG_ORDINAL_STRING_ES[num]
+                string_num_ordinal_es[num_string] = num
+                _STRING_NUM_ES[num_string] = num
 
-        # is current word a number?
-        if word in es_numbers:
-            val = es_numbers[word]
-        elif word.isdigit():  # doesn't work with decimals
-            val = int(word)
-        elif is_numeric(word):
-            val = float(word)
-        elif isFractional_es(word):
-            if not result:
-                result = 1
-            result = result * isFractional_es(word)
-            count += 1
-            continue
+    # negate next number (-2 = 0 - 2)
+    negatives = ['menos']  # 'negativo' no se usa en castellano
 
-        if not val:
-            # look for fractions like "2/3"
-            aPieces = word.split('/')
-            # if (len(aPieces) == 2 and is_numeric(aPieces[0])
-            #   and is_numeric(aPieces[1])):
-            if look_for_fractions(aPieces):
-                val = float(aPieces[0]) / float(aPieces[1])
+    # multiply the previous number (one hundred = 1 * 100)
+    multiplies = ['decena', 'decenas', 'docena', 'docenas', 'cien', 'cientos'
+                  'centena', 'centenar', 'miles', 'millar', 'mil', 'millares']
 
-        if val:
-            if result is None:
-                result = 0
-            # handle fractions
-            if next_word != "avos":
-                result += val
-            else:
-                result = float(result) / float(val)
+    # split sentence parse separately and sum ( 2 and a half = 2 + 0.5 )
+    fraction_marker = [' y ']
 
-        if next_word is None:
-            break
+    # decimal marker ( 1 point 5 = 1 + 0.5)
+    decimal_marker = [' punto ', ' coma ']
 
-        # number word and fraction
-        ands = ["e"]
-        if next_word in ands:
-            zeros = 0
-            if result is None:
-                count += 1
-                continue
-            newWords = aWords[count + 2:]
-            newText = ""
-            for word in newWords:
-                newText += word + " "
+    if short_scale:
+        for num in _SHORT_SCALE_ES:
+            num_string = _SHORT_SCALE_ES[num]
+            _STRING_NUM_ES[num_string] = num
+            multiplies.append(num_string)
+    else:
+        for num in _LONG_SCALE_ES:
+            num_string = _LONG_SCALE_ES[num]
+            _STRING_NUM_ES[num_string] = num
+            multiplies.append(num_string)
 
-            afterAndVal = extractnumber_es(newText[:-1])
-            if afterAndVal:
-                if result < afterAndVal or result < 20:
-                    while afterAndVal > 1:
-                        afterAndVal = afterAndVal / 10.0
-                    for word in newWords:
-                        if word == "cero" or word == "0":
-                            zeros += 1
-                        else:
-                            break
-                for _ in range(0, zeros):
-                    afterAndVal = afterAndVal / 10.0
-                result += afterAndVal
-                break
-        elif next_next_word is not None:
-            if next_next_word in ands:
-                newWords = aWords[count + 3:]
-                newText = ""
-                for word in newWords:
-                    newText += word + " "
-                afterAndVal = extractnumber_es(newText[:-1])
-                if afterAndVal:
-                    if result is None:
-                        result = 0
-                    result += afterAndVal
-                    break
+    # 2 y 3/4 y otros casos
+    for separator in fraction_marker:
+        components = text.split(separator)
+        zeros = 0
 
-        decimals = ["punto", "coma", ".", ","]
-        if next_word in decimals:
-            zeros = 0
-            newWords = aWords[count + 2:]
-            newText = ""
-            for word in newWords:
-                newText += word + " "
-            for word in newWords:
-                if word == "cero" or word == "0":
+        if len(components) == 2:
+            # count zeros in fraction part
+            sub_components = components[1].split(' ')
+            for element in sub_components:
+                if element == 'cero' or element == '0':
                     zeros += 1
                 else:
                     break
-            afterDotVal = str(extractnumber_es(newText[:-1]))
-            afterDotVal = zeros * "0" + afterDotVal
-            result = float(str(result) + "." + afterDotVal)
-            break
-        count += 1
+            # ensure first is not a fraction and second is a fraction
+            num1 = extractnumber_es(components[0])
+            num2 = extractnumber_es(components[1])
+            if num1 is not None and num2 is not None \
+                    and num1 >= 1 and 0 < num2 < 1:
+                return num1 + num2
+            # siete y cuarenta | siete y cero cero dos
+            elif num1 is not None and num2 is not None \
+                    and num1 >= 1 and num2 > 1:
+                return num1 + num2 / pow(10, len(str(num2)) + zeros)
 
-    if result is None:
-        return False
+    # 2 punto 5
+    for separator in decimal_marker:
+        zeros = 0
+        # count zeros in fraction part
+        components = text.split(separator)
 
-    # Return the $str with the number related words removed
-    # (now empty strings, so strlen == 0)
-    # aWords = [word for word in aWords if len(word) > 0]
-    # text = ' '.join(aWords)
-    if "." in str(result):
-        integer, dec = str(result).split(".")
-        # cast float to int
-        if dec == "0":
-            result = int(integer)
-
-    return result
-
-
-def es_number_parse(words, i):
-    def es_cte(i, s):
-        if i < len(words) and s == words[i]:
-            return s, i + 1
-        return None
-
-    def es_number_word(i, mi, ma):
-        if i < len(words):
-            v = es_numbers.get(words[i])
-            if v and v >= mi and v <= ma:
-                return v, i + 1
-        return None
-
-    def es_number_1_99(i):
-        r1 = es_number_word(i, 1, 29)
-        if r1:
-            return r1
-
-        r1 = es_number_word(i, 30, 90)
-        if r1:
-            v1, i1 = r1
-            r2 = es_cte(i1, "y")
-            if r2:
-                i2 = r2[1]
-                r3 = es_number_word(i2, 1, 9)
-                if r3:
-                    v3, i3 = r3
-                    return v1 + v3, i3
-            return r1
-        return None
-
-    def es_number_1_999(i):
-        # [2-9]cientos [1-99]?
-        r1 = es_number_word(i, 100, 900)
-        if r1:
-            v1, i1 = r1
-            r2 = es_number_1_99(i1)
-            if r2:
-                v2, i2 = r2
-                return v1 + v2, i2
-            else:
-                return r1
-
-        # [1-99]
-        r1 = es_number_1_99(i)
-        if r1:
-            return r1
-
-        return None
-
-    def es_number(i):
-        # check for cero
-        r1 = es_number_word(i, 0, 0)
-        if r1:
-            return r1
-
-        # check for [1-999] (mil [0-999])?
-        r1 = es_number_1_999(i)
-        if r1:
-            v1, i1 = r1
-            r2 = es_cte(i1, "mil")
-            if r2:
-                i2 = r2[1]
-                r3 = es_number_1_999(i2)
-                if r3:
-                    v3, i3 = r3
-                    return v1 * 1000 + v3, i3
+        if len(components) == 2:
+            sub_components = components[1].split(' ')
+            for element in sub_components:
+                if element == 'cero' or element == '0':
+                    zeros += 1
                 else:
-                    return v1 * 1000, i2
-            else:
-                return r1
-        return None
+                    break
 
-    return es_number(i)
+            number = int(extractnumber_es(components[0]))
+            decimal = int(extractnumber_es(components[1]))
+            if number is not None and decimal is not None:
+                if '.' not in str(decimal):
+                    return number + decimal / pow(10,
+                                                  len(str(decimal)) + zeros)
+
+    all_words = text.split()
+    val = False
+    prev_val = None
+    to_sum = []
+    for idx, word in enumerate(all_words):
+
+        if not word:
+            continue
+        prev_word = all_words[idx - 1] if idx > 0 else ''
+        next_word = all_words[idx + 1] if idx + 1 < len(all_words) else ''
+
+        # is this word already a number ?
+        if is_numeric(word):
+            val = float(word)
+
+        # is this word the name of a number ?
+        if word in _STRING_NUM_ES:
+            val = _STRING_NUM_ES[word]
+
+        #  tres cuartos | un cuarto | treinta segundos
+        if isFractional_es(word) and prev_val:
+            if word[:-1] == 'segund' and not ordinals:
+                val = prev_val * 2
+            else:
+                val = prev_val
+
+        # is the prev word a number and should we multiply it?
+        # twenty hundred, six hundred
+        if word in multiplies:
+            if not prev_val:
+                prev_val = 1
+            val = prev_val * val
+
+        # is this a spoken fraction?
+        # media taza
+        if val is False:
+            val = isFractional_es(word, short_scale=short_scale)
+
+        # 2 quintos
+        if not ordinals:
+            next_value = isFractional_es(next_word, short_scale=short_scale)
+            if next_value:
+                if not val:
+                    val = 1
+                val = val * next_value
+
+        # is this a negative number?
+        if val and prev_word and prev_word in negatives:
+            val = 0 - val
+
+        if not val:
+            val = extractnumber_long_es(word)
+
+        # let's make sure it isn't a fraction
+        if not val:
+            # look for fractions like '2/3'
+            all_pieces = word.split('/')
+            if look_for_fractions(all_pieces):
+                val = float(all_pieces[0]) / float(all_pieces[1])
+        else:
+            prev_val = val
+            # handle long numbers
+            # six hundred sixty six
+            # two million five hundred thousand
+            if word in multiplies and next_word not in multiplies:
+                to_sum.append(val)
+                val = 0
+                prev_val = 0
+            elif extractnumber_long_es(word) > 100 and \
+                extractnumber_long_es(next_word) and \
+                    next_word not in multiplies:
+                to_sum.append(val)
+                val = 0
+                prev_val = 0
+
+    if val is not None:
+        for addend in to_sum:
+            val = val + addend
+    return val
 
 
 def normalize_es(text, remove_articles):
-    """ Spanish string normalization """
+    """ ES string normalization """
+    # replace ambiguous words
+    text = text.replace('un par', 'dos')
 
     words = text.split()  # this also removed extra spaces
-
-    normalized = ""
+    # Contractions are not used in ES
+    # Convert numbers into digits, e.g. 'cuarentaydos' -> '42'
+    normalized = ''
     i = 0
+
     while i < len(words):
         word = words[i]
-
-        if remove_articles and word in es_articles:
+        # remove articles
+        # Spanish requires the article to define the grammatical gender
+        if remove_articles and word in _ARTICLES_ES:
             i += 1
             continue
 
-        # Convert numbers into digits
-        r = es_number_parse(words, i)
-        if r:
-            v, i = r
-            normalized += " " + str(v)
-            continue
+        if word in _STRING_NUM_ES:
+            word = str(_STRING_NUM_ES[word])
 
-        normalized += " " + word
+        val = int(extractnumber_es(word))    # era extractnumber_long_es
+
+        if val:
+            word = str(val)
+
+        normalized += ' ' + word
         i += 1
+    # indefinite articles in es_ES can not be removed
 
-    return normalized[1:]  # strip the initial space
+    return normalized[1:]
 
 
-def extract_datetime_es(input_str, currentDate=None, default_time=None):
+def extract_datetime_es(string, dateNow, default_time):
     def clean_string(s):
-        # cleans the input string of unneeded punctuation and capitalization
-        # among other things
-        symbols = [".", ",", ";", "?", "!", u"º", u"ª"]
-        noise_words = ["entre", "la", "del", "al", "el", "de",
-                       "por", "para", "una", "cualquier", "a",
-                       "e'", "esta", "este"]
+        """
+            cleans the input string of unneeded punctuation and capitalization
+            among other things.
+            Normalize spanish plurals
+        """
+        symbols = ['.', ',', ';', '¿', '?', '¡', '!', 'º', 'ª', '°']
 
         for word in symbols:
-            s = s.replace(word, "")
-        for word in noise_words:
-            s = s.replace(" " + word + " ", " ")
-        s = s.lower().replace(
-            u"á",
-            "a").replace(
-            u"é",
-            "e").replace(
-            u"ó",
-            "o").replace(
-            "-",
-            " ").replace(
-            "_",
-            "")
-        # handle synonims and equivalents, "tomorrow early = tomorrow morning
-        synonims = {u"mañana": ["amanecer", "temprano", "muy temprano"],
-                    "tarde": ["media tarde", "atardecer"],
-                    "noche": ["anochecer", "tarde"]}
-        for syn in synonims:
-            for word in synonims[syn]:
-                s = s.replace(" " + word + " ", " " + syn + " ")
-        # relevant plurals, cant just extract all s in pt
-        wordlist = [u"mañanas", "tardes", "noches", u"días", "semanas",
-                    u"años", "minutos", "segundos", "las", "los", "siguientes",
-                    u"próximas", u"próximos", "horas"]
-        for _, word in enumerate(wordlist):
-            s = s.replace(word, word.rstrip('s'))
-        s = s.replace("meses", "mes").replace("anteriores", "anterior")
-        return s
+            s = s.replace(word, '')
+
+        s = s.lower().replace('á', 'a').replace('é', "e").replace('í', 'i')\
+            .replace('ó', 'o').replace('ú', 'u').replace('-', ' ')\
+            .replace('_', '')
+
+        # Normaliza los plurales para simplificar el análisis.
+        s = s.replace('segundos', 'segundo').replace('minutos', 'minuto')\
+            .replace('horas', 'hora').replace('dias', 'dia')\
+            .replace('semanas', 'semana').replace('meses', 'mes')\
+            .replace('años', 'año').replace('mañanas', 'mañana')\
+            .replace('proxima', 'proximo').replace('esta', 'este')\
+            .replace('cuartos', 'cuarto').replace('en punto', 'en_punto')\
+            .replace('decada', 'decadas').replace('siglos', 'siglo')\
+            .replace('milenio', 'milenios').replace(' un ', ' uno ')\
+            .replace('pasada', 'pasado').replace('un par', 'dos')
+        # añadir .replace('la mañana', 'la_mañana')??
+
+        # Preposiciones?
+        # https://es.wikipedia.org/wiki/Preposici%C3%B3n
+        noise_words = ['de', 'del', 'la', 'las', 'el', 'los', 'entre', 'lo',
+                       'para', 'tras', 'pasados', 'un', 'una', 'esta', 'este',
+                       'y', 'en', '  ']
+
+        word_list = s.split()
+        word_list = [x for x in word_list if x not in noise_words]
+        # normaliza algunos formatos de tiempo
+        for idx in range(0, len(word_list) - 1):
+            if word_list[idx][0].isdigit() and word_list[idx+1][0].isdigit():
+                num0 = int(word_list[idx])
+                num1 = int(word_list[idx+1])
+                if 0 <= num0 <= 23 and 10 <= num1 <= 59:
+                    word_list[idx] = str(num0) + ':' + str(num1)
+                    word_list[idx+1] = ''
+
+        word_list = [x for x in word_list if x]
+
+        return word_list
 
     def date_found():
         return found or \
-            (
-                datestr != "" or
-                yearOffset != 0 or monthOffset != 0 or
-                dayOffset is True or hrOffset != 0 or
-                hrAbs or minOffset != 0 or
-                minAbs or secOffset != 0
-            )
+            (datestr != '' or time_str != '' or year_offset != 0 or
+             month_offset != 0 or day_offset is True or hr_offset != 0 or
+             hr_abs or min_offset != 0 or min_abs or sec_offset != 0)
 
-    if input_str == "":
+    if string == '' or not dateNow:
         return None
-    if currentDate is None:
-        currentDate = datetime.now()
 
     found = False
-    daySpecified = False
-    dayOffset = False
-    monthOffset = 0
-    yearOffset = 0
-    dateNow = currentDate
-    today = dateNow.strftime("%w")
-    currentYear = dateNow.strftime("%Y")
-    fromFlag = False
-    datestr = ""
-    hasYear = False
-    timeQualifier = ""
-
-    words = clean_string(input_str).split(" ")
-    timeQualifiersList = [u'mañana', 'tarde', 'noche']
-    time_indicators = ["en", "la", "al", "por", "pasados",
-                       "pasadas", u"día", "hora"]
-    days = ['lunes', 'martes', u'miércoles',
-            'jueves', 'viernes', u'sábado', 'domingo']
+    day_specified = False
+    day_offset = False
+    month_offset = 0
+    year_offset = 0
+    today = dateNow.strftime('%w')
+    current_year = dateNow.strftime('%Y')
+    from_flag = False
+    datestr = ''
+    has_year = False
+    time_qualifier = ''
+    time_qualifiers_am = ['mañana', 'madrugada']
+    time_qualifiers_pm = ['tarde', 'noche']
+    time_qualifiers_list = set(time_qualifiers_am + time_qualifiers_pm)
+    markers = ['para', 'en', 'este', 'de', 'entre', 'dentro']
+    days = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado',
+            'domingo']
     months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
               'julio', 'agosto', 'septiembre', 'octubre', 'noviembre',
               'diciembre']
-    monthsShort = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago',
-                   'sep', 'oct', 'nov', 'dic']
-    nexts = ["siguiente", u"próximo", u"próxima"]
-    suffix_nexts = ["siguientes", "subsecuentes"]
-    lasts = [u"último", u"última"]
-    suffix_lasts = ["pasada", "pasado", "anterior", "antes"]
-    nxts = [u"después", "siguiente", u"próximo", u"próxima"]
-    prevs = ["antes", "previa", "previo", "anterior"]
-    froms = ["desde", "en", "para", u"después de", "por", u"próximo",
-             u"próxima", "de"]
-    thises = ["este", "esta"]
-    froms += thises
-    lists = nxts + prevs + froms + time_indicators
-    for idx, word in enumerate(words):
-        if word == "":
-            continue
-        wordPrevPrev = words[idx - 2] if idx > 1 else ""
-        wordPrev = words[idx - 1] if idx > 0 else ""
-        wordNext = words[idx + 1] if idx + 1 < len(words) else ""
-        wordNextNext = words[idx + 2] if idx + 2 < len(words) else ""
-        wordNextNextNext = words[idx + 3] if idx + 3 < len(words) else ""
+    months_short = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago',
+                    'sep', 'oct', 'nov', 'dic']
+    year_multiples = ['decadas', 'siglos', 'milenios']  # decada <- decadas
+    time_multiples = ['hora', 'minuto', 'segundo']
+    day_multiples = ['semana', 'mes', 'año']
+    noise_words_2 = ['entre', 'de', 'por', 'un ', 'uno', 'la', 'del',
+                     'en_punto', ' ', 'en']
 
+    words = clean_string(string)
+
+    for idx, word in enumerate(words):
+        if word == '':
+            continue
+        word_prev_prev = words[idx - 2] if idx > 1 else ''
+        word_prev = words[idx - 1] if idx > 0 else ''
+        word_next = words[idx + 1] if idx + 1 < len(words) else ''
+        word_next_next = words[idx + 2] if idx + 2 < len(words) else ''
         start = idx
         used = 0
         # save timequalifier for later
-        if word in timeQualifiersList:
-            timeQualifier = word
+        if word == 'ahora' and not datestr:
+            # TODO: quitar --> word == 'ora' va in conflitto con 'tra un ora'
+            words = [x for x in words if x != 'ahora']
+            words = [x for x in words if x]
+            result_str = ' '.join(words)
+            extracted_date = dateNow.replace(microsecond=0)
+            return [extracted_date, result_str]
 
-        # parse today, tomorrow, yesterday
-        elif word == "hoy" and not fromFlag:
-            dayOffset = 0
+        # un par de  o  en tres semanas --> secoli
+        elif extractnumber_es(word) and (word_next in year_multiples or
+                                         word_next in day_multiples):
+            multiplier = int(extractnumber_es(word))
+            used += 2
+            if word_next == 'decadas':
+                year_offset = multiplier * 10
+            elif word_next == 'siglos':
+                year_offset = multiplier * 100
+            elif word_next == 'milenios':
+                year_offset = multiplier * 1000
+            elif word_next == 'año':
+                year_offset = multiplier
+            elif word_next == 'mes':
+                month_offset = multiplier
+            elif word_next == 'semana':
+                day_offset = multiplier * 7
+        elif word in time_qualifiers_list:
+            time_qualifier = word
+        # parse today, tomorrow, day after tomorrow
+        elif word == 'hoy' and not from_flag:
+            day_offset = 0
             used += 1
-        elif word == u"mañana" and not fromFlag:
-            dayOffset = 1
+        elif word == 'mañana' and not from_flag:
+            day_offset = 1
             used += 1
-        elif word == "ayer" and not fromFlag:
-            dayOffset -= 1
+        elif word == 'ayer' and not from_flag:
+            day_offset -= 1
             used += 1
-        # "before yesterday" and "before before yesterday"
-        elif (word == "anteayer" or
-              (word == "ante" and wordNext == "ayer")) and not fromFlag:
-            dayOffset -= 2
-            used += 1
-            if wordNext == "ayer":
-                used += 1
-        elif word == "ante" and wordNext == "ante" and wordNextNext == \
-                "ayer" and not fromFlag:
-            dayOffset -= 3
-            used += 3
-        elif word == "ante anteayer" and not fromFlag:
-            dayOffset -= 3
-            used += 1
-        # day after tomorrow
-        elif word == "pasado" and wordNext == u"mañana" and not fromFlag:
-            dayOffset += 2
-            used = 2
-        # day before yesterday
-        elif word == "ante" and wordNext == "ayer" and not fromFlag:
-            dayOffset -= 2
-            used = 2
-        # parse 5 days, 10 weeks, last week, next week, week after
-        elif word == u"día":
-            if wordNext == "pasado" or wordNext == "ante":
-                used += 1
-                if wordPrev and wordPrev[0].isdigit():
-                    dayOffset += int(wordPrev)
-                    start -= 1
-                    used += 1
-            elif (wordPrev and wordPrev[0].isdigit() and
-                    wordNext not in months and
-                    wordNext not in monthsShort):
-                dayOffset += int(wordPrev)
+        elif (word == 'pasado' and 
+              word_next == "mañana" and 
+              not from_flag):
+            day_offset += 2
+            used += 2
+        elif word == 'dia':
+            if word_prev[0].isdigit():
+                day_offset += int(word_prev)
                 start -= 1
+                used = 2
+                if word_next == 'despues' and word_next_next == 'mañana':
+                    day_offset += 1
+                    used += 2
+        elif word == 'semana' and not from_flag:
+            if word_prev == 'proximo':
+                day_offset = 7
+                start -= 1
+                used = 2
+            elif word_prev == 'pasado':
+                day_offset = -7
+                start -= 1
+                used = 2
+            elif word_next == 'proximo':
+                day_offset = 7
                 used += 2
-            elif wordNext and wordNext[0].isdigit() and wordNextNext not in \
-                    months and wordNextNext not in monthsShort:
-                dayOffset += int(wordNext)
-                start -= 1
+            elif word_next == 'pasado':
+                day_offset = -7
                 used += 2
-
-        elif word == "semana" and not fromFlag:
-            if wordPrev[0].isdigit():
-                dayOffset += int(wordPrev) * 7
+            elif word_next == 'que' and word_next_next == 'viene':
+                day_offset = 7
+                used += 3
+        # parse next month, last month
+        elif word == 'mes' and not from_flag:
+            if word_prev == 'proximo':
+                month_offset = 1
                 start -= 1
                 used = 2
-            for w in nexts:
-                if wordPrev == w:
-                    dayOffset = 7
-                    start -= 1
-                    used = 2
-            for w in lasts:
-                if wordPrev == w:
-                    dayOffset = -7
-                    start -= 1
-                    used = 2
-            for w in suffix_nexts:
-                if wordNext == w:
-                    dayOffset = 7
-                    start -= 1
-                    used = 2
-            for w in suffix_lasts:
-                if wordNext == w:
-                    dayOffset = -7
-                    start -= 1
-                    used = 2
-        # parse 10 months, next month, last month
-        elif word == "mes" and not fromFlag:
-            if wordPrev[0].isdigit():
-                monthOffset = int(wordPrev)
+            elif word_prev == 'pasado' or word_prev == 'anterior':
+                month_offset = -1
                 start -= 1
                 used = 2
-            for w in nexts:
-                if wordPrev == w:
-                    monthOffset = 7
-                    start -= 1
-                    used = 2
-            for w in lasts:
-                if wordPrev == w:
-                    monthOffset = -7
-                    start -= 1
-                    used = 2
-            for w in suffix_nexts:
-                if wordNext == w:
-                    monthOffset = 7
-                    start -= 1
-                    used = 2
-            for w in suffix_lasts:
-                if wordNext == w:
-                    monthOffset = -7
-                    start -= 1
-                    used = 2
-        # parse 5 years, next year, last year
-        elif word == u"año" and not fromFlag:
-            if wordPrev[0].isdigit():
-                yearOffset = int(wordPrev)
+            elif word_next == 'proximo':
+                month_offset = 1
+                used += 2
+            elif word_next == 'pasado' or word_next == 'anterior':
+                month_offset = -1
+                used += 2
+            elif word_next == 'que' and word_next_next == 'viene':
+                month_offset = 1
+                used += 3        
+        # parse next year, last year
+        elif word == 'año' and not from_flag:
+            if word_prev == 'proximo':
+                year_offset = 1
                 start -= 1
                 used = 2
-            for w in nexts:
-                if wordPrev == w:
-                    yearOffset = 7
-                    start -= 1
-                    used = 2
-            for w in lasts:
-                if wordPrev == w:
-                    yearOffset = -7
-                    start -= 1
-                    used = 2
-            for w in suffix_nexts:
-                if wordNext == w:
-                    yearOffset = 7
-                    start -= 1
-                    used = 2
-            for w in suffix_lasts:
-                if wordNext == w:
-                    yearOffset = -7
-                    start -= 1
-                    used = 2
+            elif word_next == 'proximo':
+                year_offset = 1
+                used = 2
+            elif word_prev == 'pasado' or word_prev == 'anterior':
+                year_offset = -1
+                start -= 1
+                used = 2
+            elif word_next == 'pasado' or word_next == 'anterior':
+                year_offset = -1
+                used = 2
+            elif word_next == 'que' and word_next_next == 'viene':
+                year_offset = 1
+                used = 3                 
+        elif word == 'decada' and not from_flag:
+            if word_prev == 'proximo':
+                year_offset = 10
+                start -= 1
+                used = 2
+            elif word_next == 'proximo':
+                year_offset = 10
+                used = 2
+            elif word_prev == 'pasado' or word_prev == 'anterior':
+                year_offset = -10
+                start -= 1
+                used = 2
+            elif word_next == 'pasado' or word_next == 'anterior':
+                year_offset = -10
+                used = 2
+            elif word_next == 'que' and word_next_next == 'viene':
+                year_offset = 10
+                used = 3                    
         # parse Monday, Tuesday, etc., and next Monday,
         # last Tuesday, etc.
-        elif word in days and not fromFlag:
-            d = days.index(word)
-            dayOffset = (d + 1) - int(today)
+        elif word in days and not from_flag:
+            ddd = days.index(word)
+            day_offset = (ddd + 1) - int(today)
             used = 1
-            if dayOffset < 0:
-                dayOffset += 7
-            if wordPrev == "siguiente":
-                dayOffset += 7
-                used += 1
+            if day_offset < 0:
+                day_offset += 7
+            if word_prev == 'proximo':
+                day_offset += 7
                 start -= 1
-            elif wordPrev == "pasado":
-                dayOffset -= 7
                 used += 1
+            elif word_prev == 'pasado' or word_prev == 'anterior':
+                day_offset -= 7
                 start -= 1
-            if wordNext == "siguiente":
-                # dayOffset += 7
                 used += 1
-            elif wordNext == "pasado":
-                # dayOffset -= 7
+            if word_next == 'proximo':
+                day_offset += 7
                 used += 1
+            elif word_next == 'pasado' or word_next == 'anterior':
+                day_offset -= 7
+                used += 1
+            elif word_next == 'que' and word_next_next == 'viene':
+                day_offset = 7
+                used += 2                
         # parse 15 of July, June 20th, Feb 18, 19 of February
-        elif word in months or word in monthsShort:
+        elif word in months or word in months_short and not from_flag:
             try:
-                m = months.index(word)
+                mmm = months.index(word)
             except ValueError:
-                m = monthsShort.index(word)
+                mmm = months_short.index(word)
             used += 1
-            datestr = months[m]
-            if wordPrev and wordPrev[0].isdigit():
-                # 13 mayo
-                datestr += " " + wordPrev
+            datestr = months[mmm]
+            if word_prev and extractnumber_es(word_prev):
+                datestr += ' ' + str(int(extractnumber_es(word_prev)))
                 start -= 1
                 used += 1
-                if wordNext and wordNext[0].isdigit():
-                    datestr += " " + wordNext
+                if word_next and extractnumber_es(word_next):
+                    datestr += ' ' + str(int(extractnumber_es(word_next)))
                     used += 1
-                    hasYear = True
+                    has_year = True
                 else:
-                    hasYear = False
-
-            elif wordNext and wordNext[0].isdigit():
-                # mayo 13
-                datestr += " " + wordNext
+                    has_year = False
+            elif word_next and word_next[0].isdigit():
+                datestr += ' ' + word_next
                 used += 1
-                if wordNextNext and wordNextNext[0].isdigit():
-                    datestr += " " + wordNextNext
+                if word_next_next and word_next_next[0].isdigit():
+                    datestr += ' ' + word_next_next
                     used += 1
-                    hasYear = True
+                    has_year = True
                 else:
-                    hasYear = False
-
-            elif wordPrevPrev and wordPrevPrev[0].isdigit():
-                # 13 dia mayo
-                datestr += " " + wordPrevPrev
-
-                start -= 2
-                used += 2
-                if wordNext and word[0].isdigit():
-                    datestr += " " + wordNext
-                    used += 1
-                    hasYear = True
-                else:
-                    hasYear = False
-
-            elif wordNextNext and wordNextNext[0].isdigit():
-                # mayo dia 13
-                datestr += " " + wordNextNext
-                used += 2
-                if wordNextNextNext and wordNextNextNext[0].isdigit():
-                    datestr += " " + wordNextNextNext
-                    used += 1
-                    hasYear = True
-                else:
-                    hasYear = False
-
-            if datestr in months:
-                datestr = ""
-
+                    has_year = False
         # parse 5 days from tomorrow, 10 weeks from next thursday,
         # 2 months from July
-        validFollowups = days + months + monthsShort
-        validFollowups.append("hoy")
-        validFollowups.append(u"mañana")
-        validFollowups.append("ayer")
-        validFollowups.append("anteayer")
-        validFollowups.append("ahora")
-        validFollowups.append("ya")
-        validFollowups.append("ante")
+        validFollowups = days + months + months_short
+        validFollowups.append('hoy')
+        validFollowups.append('mañana')
+        validFollowups.append('proximo')
+        validFollowups.append('pasado')
+        validFollowups.append('ahora')
 
-        # TODO debug word "depois" that one is failing for some reason
-        if word in froms and wordNext in validFollowups:
+        if (word == 'de' or word == 'pasado') and word_next in validFollowups:
+            used = 0
+            from_flag = True
+            if word_next == 'mañana':
+                day_offset += 1
+                used += 2
+            elif word_next == 'hoy' or word_next == 'ahora':
+                used += 2
+            elif word_next in days:
+                ddd = days.index(word_next)
+                tmp_offset = (ddd + 1) - int(today)
+                used += 2
+                if tmp_offset < 0:
+                    tmp_offset += 7
+                if word_next_next == 'proximo':
+                    tmp_offset += 7
+                    used += 1
+                elif word_next_next == 'pasado' or word_next_next == 'anterior':
+                    tmp_offset = (ddd + 1) - int(today)
+                    used += 1
+                day_offset += tmp_offset
+            elif word_next_next and word_next_next in days:
+                ddd = days.index(word_next_next)
+                tmp_offset = (ddd + 1) - int(today)
+                if word_next == 'proximo':
+                    tmp_offset += 7
+                # elif word_next == 'passato' or word_next == 'scorso':
+                #    tmp_offset -= 7
+                day_offset += tmp_offset
+                used += 3
 
-            if not (wordNext == u"mañana" and wordNext == "ayer") and not (
-                    word == "pasado" or word == "antes"):
-                used = 2
-                fromFlag = True
-            if wordNext == u"mañana" and word != "pasado":
-                dayOffset += 1
-            elif wordNext == "ayer":
-                dayOffset -= 1
-            elif wordNext == "anteayer":
-                dayOffset -= 2
-            elif wordNext == "ante" and wordNextNext == "ayer":
-                dayOffset -= 2
-            elif (wordNext == "ante" and wordNext == "ante" and
-                  wordNextNextNext == "ayer"):
-                dayOffset -= 3
-            elif wordNext in days:
-                d = days.index(wordNext)
-                tmpOffset = (d + 1) - int(today)
-                used = 2
-                # if wordNextNext == "feira":
-                #     used += 1
-                if tmpOffset < 0:
-                    tmpOffset += 7
-                if wordNextNext:
-                    if wordNextNext in nxts:
-                        tmpOffset += 7
-                        used += 1
-                    elif wordNextNext in prevs:
-                        tmpOffset -= 7
-                        used += 1
-                dayOffset += tmpOffset
-            elif wordNextNext and wordNextNext in days:
-                d = days.index(wordNextNext)
-                tmpOffset = (d + 1) - int(today)
-                used = 3
-                if wordNextNextNext:
-                    if wordNextNextNext in nxts:
-                        tmpOffset += 7
-                        used += 1
-                    elif wordNextNextNext in prevs:
-                        tmpOffset -= 7
-                        used += 1
-                dayOffset += tmpOffset
-                # if wordNextNextNext == "feira":
-                #     used += 1
-        if wordNext in months:
-            used -= 1
         if used > 0:
-
-            if start - 1 > 0 and words[start - 1] in lists:
+            if start - 1 > 0 and words[start - 1] == 'este':
                 start -= 1
                 used += 1
 
             for i in range(0, used):
-                words[i + start] = ""
+                words[i + start] = ''
 
-            if start - 1 >= 0 and words[start - 1] in lists:
-                words[start - 1] = ""
+            if start - 1 >= 0 and words[start - 1] in markers:
+                words[start - 1] = ''
             found = True
-            daySpecified = True
+            day_specified = True
 
     # parse time
-    hrOffset = 0
-    minOffset = 0
-    secOffset = 0
-    hrAbs = None
-    minAbs = None
+    time_str = ''
+    hr_offset = 0
+    min_offset = 0
+    sec_offset = 0
+    hr_abs = None
+    min_abs = None
+    military = False
 
     for idx, word in enumerate(words):
-        if word == "":
+        if word == '':
             continue
-
-        wordPrevPrev = words[idx - 2] if idx > 1 else ""
-        wordPrev = words[idx - 1] if idx > 0 else ""
-        wordNext = words[idx + 1] if idx + 1 < len(words) else ""
-        wordNextNext = words[idx + 2] if idx + 2 < len(words) else ""
-        wordNextNextNext = words[idx + 3] if idx + 3 < len(words) else ""
+        word_prev_prev = words[idx - 2] if idx > 1 else ''
+        word_prev = words[idx - 1] if idx > 0 else ''
+        word_next = words[idx + 1] if idx + 1 < len(words) else ''
+        word_next_next = words[idx + 2] if idx + 2 < len(words) else ''
         # parse noon, midnight, morning, afternoon, evening
         used = 0
-        if word == "medio" and wordNext == u"día":
-            hrAbs = 12
-            used += 2
-        elif word == "media" and wordNext == "noche":
-            hrAbs = 0
-            used += 2
-        elif word == u"mañana":
-            if not hrAbs:
-                hrAbs = 8
+        if word == 'mediodia':
+            hr_abs = 12
             used += 1
-        elif word == "tarde":
-            if not hrAbs:
-                hrAbs = 15
+        elif word == 'medianoche':
+            hr_abs = 24
             used += 1
-        elif word == "media" and wordNext == "tarde":
-            if not hrAbs:
-                hrAbs = 17
+        if word == 'medio' and word_next == 'dia':
+            hr_abs = 12
             used += 2
-        elif word == "tarde" and wordNext == "noche":
-            if not hrAbs:
-                hrAbs = 20
+        elif word == 'media' and word_next == 'noche':
+            hr_abs = 24
             used += 2
-        elif word == "media" and wordNext == u"mañana":
-            if not hrAbs:
-                hrAbs = 10
-            used += 2
-        # elif word == "fim" and wordNext == "tarde":
-        #     if not hrAbs:
-        #         hrAbs = 19
-        #     used += 2
-        # elif word == "fim" and wordNext == "manha":
-        #     if not hrAbs:
-        #         hrAbs = 11
-        #     used += 2
-        elif word == "madrugada":
-            if not hrAbs:
-                hrAbs = 1
-            used += 2
-        elif word == "noche":
-            if not hrAbs:
-                hrAbs = 21
+        elif word == 'mañana' and word_prev == 'la':
+            if not hr_abs:
+                hr_abs = 8
             used += 1
-        # parse half an hour, quarter hour
-        elif word == "hora" and \
-                (wordPrev in time_indicators or wordPrevPrev in
-                    time_indicators):
-            if wordPrev == "media":
-                minOffset = 30
-            elif wordPrev == "cuarto":
-                minOffset = 15
-            elif wordPrevPrev == "cuarto":
-                minOffset = 15
-                if idx > 2 and words[idx - 3] in time_indicators:
-                    words[idx - 3] = ""
-                words[idx - 2] = ""
-            else:
-                hrOffset = 1
-            if wordPrevPrev in time_indicators:
-                words[idx - 2] = ""
-            words[idx - 1] = ""
+            if word_next and word_next[0].isdigit():  # mattina alle 5
+                hr_abs = int(word_next)
+                used += 1
+        elif word == 'tarde':
+            if not hr_abs:
+                hr_abs = 15
             used += 1
-            hrAbs = -1
-            minAbs = -1
-        # parse 5:00 am, 12:00 p.m., etc
+            if word_next and word_next[0].isdigit():  # pomeriggio alle 5
+                hr_abs = int(word_next)
+                used += 1
+                if (hr_abs or 0) < 12:
+                    hr_abs = (hr_abs or 0) + 12
+        elif word == 'noche':
+            if not hr_abs:
+                hr_abs = 19
+            used += 1
+            if word_next and word_next[0].isdigit() \
+               and ':' not in word_next:
+                hr_abs = int(word_next)
+                used += 1
+                if (hr_abs or 0) < 12:
+                    hr_abs = (hr_abs or 0) + 12
+        # da verificare più a fondo
+        elif word == 'pronto':
+            hr_abs -= 1
+            used += 1
+        elif word == 'tarde':
+            hr_abs += 1
+            used += 1
+        # un par de minutos | en cinco minutos | en cinco horas
+        elif extractnumber_es(word) and (word_next in time_multiples):
+            d_time = int(extractnumber_es(word))
+            used += 2
+            if word_next == 'hora':
+                hr_offset = d_time
+                isTime = False
+                hr_abs = -1
+                min_abs = -1
+            elif word_next == 'minuto':
+                min_offset = d_time
+                isTime = False
+                hr_abs = -1
+                min_abs = -1
+            elif word_next == 'segundo':
+                sec_offset = d_time
+                isTime = False
+                hr_abs = -1
+                min_abs = -1
+        elif word == 'mezzora':
+            min_offset = 30
+            used = 1
+            isTime = False
+            hr_abs = -1
+            min_abs = -1
+            # if word_prev == 'uno' or word_prev == 'una':
+            #    start -= 1
+            #    used += 1
+        elif extractnumber_es(word) and word_next and \
+                word_next == 'cuarto' and word_next_next == 'hora':
+            if int(extractnumber_es(word)) == 1 \
+               or int(extractnumber_es(word)) == 3:
+                min_offset = 15 * int(extractnumber_es(word))
+            else:  # elimina eventuali errori
+                min_offset = 15
+            used = 3
+            start -= 1
+            isTime = False
+            hr_abs = -1
+            min_abs = -1
         elif word[0].isdigit():
             isTime = True
-            strHH = ""
-            strMM = ""
-            remainder = ""
+            str_hh = ''
+            str_mm = ''
+            remainder = ''
             if ':' in word:
                 # parse colons
-                # "3:00 in the morning"
-                stage = 0
-                length = len(word)
-                for i in range(length):
-                    if stage == 0:
-                        if word[i].isdigit():
-                            strHH += word[i]
-                        elif word[i] == ":":
-                            stage = 1
-                        else:
-                            stage = 2
-                            i -= 1
-                    elif stage == 1:
-                        if word[i].isdigit():
-                            strMM += word[i]
-                        else:
-                            stage = 2
-                            i -= 1
-                    elif stage == 2:
-                        remainder = word[i:].replace(".", "")
-                        break
-                if remainder == "":
-                    nextWord = wordNext.replace(".", "")
-                    if nextWord == "am" or nextWord == "pm":
-                        remainder = nextWord
-                        used += 1
-                    elif wordNext == u"mañana" or wordNext == "madrugada":
-                        remainder = "am"
-                        used += 1
-                    elif wordNext == "tarde":
-                        remainder = "pm"
-                        used += 1
-                    elif wordNext == "noche":
-                        if 0 < int(word[0]) < 6:
-                            remainder = "am"
-                        else:
-                            remainder = "pm"
-                        used += 1
-                    elif wordNext in thises and wordNextNext == u"mañana":
-                        remainder = "am"
-                        used = 2
-                    elif wordNext in thises and wordNextNext == "tarde":
-                        remainder = "pm"
-                        used = 2
-                    elif wordNext in thises and wordNextNext == "noche":
-                        remainder = "pm"
-                        used = 2
-                    else:
-                        if timeQualifier != "":
-                            if strHH <= 12 and \
-                                    (timeQualifier == u"mañana" or
-                                     timeQualifier == "tarde"):
-                                strHH += 12
-
-            else:
-                # try to parse # s without colons
-                # 5 hours, 10 minutes etc.
-                length = len(word)
-                strNum = ""
-                remainder = ""
-                for i in range(length):
-                    if word[i].isdigit():
-                        strNum += word[i]
-                    else:
-                        remainder += word[i]
-
-                if remainder == "":
-                    remainder = wordNext.replace(".", "").lstrip().rstrip()
-
-                if (
-                        remainder == "pm" or
-                        wordNext == "pm" or
-                        remainder == "p.m." or
-                        wordNext == "p.m."):
-                    strHH = strNum
-                    remainder = "pm"
-                    used = 1
-                elif (
-                        remainder == "am" or
-                        wordNext == "am" or
-                        remainder == "a.m." or
-                        wordNext == "a.m."):
-                    strHH = strNum
-                    remainder = "am"
-                    used = 1
+                # '3:00 in the morning'
+                components = word.split(':')
+                if len(components) == 2:
+                    num0 = int(extractnumber_es(components[0]))
+                    num1 = int(extractnumber_es(components[1]))
+                    if num0 is not False and num1 is not False \
+                            and 0 <= num0 <= 23 and 0 <= num1 <= 59:
+                        str_hh = str(num0)
+                        str_mm = str(num1)
+            elif 0 < int(extractnumber_es(word)) < 24 \
+                    and word_next != 'cuarto':
+                str_hh = str(int(word))
+                str_mm = '00'
+            elif 100 <= int(word) <= 2400:
+                str_hh = int(word) / 100
+                str_mm = int(word) - str_hh * 100
+                military = True
+                isTime = False
+            if extractnumber_es(word) and word_next \
+               and word_next == 'cuarto' and word_next_next != 'hora':
+                if int(extractnumber_es(word)) == 1 \
+                   or int(extractnumber_es(word)) == 3:
+                    str_mm = str(15 * int(extractnumber_es(word)))
+                else:  # elimina eventuali errori
+                    str_mm = '0'
+                str_hh = str(hr_abs)
+                used = 2
+                words[idx + 1] = ''
+                isTime = False
+            if extractnumber_es(word) and word_next \
+               and word_next == 'en_punto':
+                str_hh = str(int(extractnumber_es(word)))
+                used = 2
+            if word_next == 'pm':
+                remainder = 'pm'
+                hr_abs = int(str_hh)
+                min_abs = int(str_mm)
+                if hr_abs <= 12:
+                    hr_abs = hr_abs + 12
+                used = 2
+            elif word_next == 'am':
+                remainder = 'am'
+                hr_abs = int(str_hh)
+                min_abs = int(str_mm)
+                used = 2
+            elif word_next == 'la' and word_next_next == 'mañana':
+                # ' 11 del mattina'
+                hh = int(str_hh)
+                mm = int(str_mm)
+                used = 2
+                remainder = 'am'
+                isTime = False
+                hr_abs = hh
+                min_abs = mm
+            elif word_next == 'tarde':
+                # ' 2 del pomeriggio'
+                hh = int(str_hh)
+                mm = int(str_mm)
+                if hh < 12:
+                    hh += 12
+                used = 2
+                remainder = 'pm'
+                isTime = False
+                hr_abs = hh
+                min_abs = mm
+            elif word_next == 'noche':
+                # 'alle 8 di sera'
+                hh = int(str_hh)
+                mm = int(str_mm)
+                if hh < 12:
+                    hh += 12
+                used = 2
+                remainder = 'pm'
+                isTime = False
+                hr_abs = hh
+                min_abs = mm
+            elif word_next == 'noche':  # madrugrada
+                hh = int(str_hh)
+                mm = int(str_mm)
+                if hh > 5:
+                    remainder = 'pm'
                 else:
-                    if (wordNext == "pm" or
-                            wordNext == "p.m." or
-                            wordNext == "tarde"):
-                        strHH = strNum
-                        remainder = "pm"
-                        used = 1
-                    elif (wordNext == "am" or
-                          wordNext == "a.m." or
-                          wordNext == u"mañana"):
-                        strHH = strNum
-                        remainder = "am"
-                        used = 1
-                    elif (int(word) > 100 and
-                            (
-                                # wordPrev == "o" or
-                                # wordPrev == "oh" or
-                                wordPrev == "cero"
-                            )):
-                        # 0800 hours (pronounced oh-eight-hundred)
-                        strHH = int(word) / 100
-                        strMM = int(word) - strHH * 100
-                        if wordNext == "hora":
-                            used += 1
-                    elif (
-                            wordNext == "hora" and
-                            word[0] != '0' and
-                            (
-                                int(word) < 100 and
-                                int(word) > 2400
-                            )):
-                        # ignores military time
-                        # "in 3 hours"
-                        hrOffset = int(word)
-                        used = 2
-                        isTime = False
-                        hrAbs = -1
-                        minAbs = -1
+                    remainder = 'am'
+                used = 2
+                isTime = False
+                hr_abs = hh
+                min_abs = mm
+            # parse half an hour : undici e mezza
+            elif word_next and word_next == 'media':
+                hr_abs = int(str_hh)
+                min_abs = 30
+                used = 2
+                isTime = False
+            elif word_next and word_next == 'en_punto':
+                hr_abs = int(str_hh)
+                min_abs = 0
+                str_mm = '0'
+                used = 2
+                isTime = False
+            else:
+                # 17:30
+                remainder = ''
+                hr_abs = int(str_hh)
+                min_abs = int(str_mm)
+                used = 1
+                isTime = False
+                if word_prev == 'hora':
+                    words[idx - 1] = ''
 
-                    elif wordNext == "minuto":
-                        # "in 10 minutes"
-                        minOffset = int(word)
-                        used = 2
-                        isTime = False
-                        hrAbs = -1
-                        minAbs = -1
-                    elif wordNext == "segundo":
-                        # in 5 seconds
-                        secOffset = int(word)
-                        used = 2
-                        isTime = False
-                        hrAbs = -1
-                        minAbs = -1
-                    elif int(word) > 100:
-                        strHH = int(word) / 100
-                        strMM = int(word) - strHH * 100
-                        if wordNext == "hora":
-                            used += 1
+            if time_qualifier != '':
+                # military = True
+                if str_hh and int(str_hh) <= 12 and \
+                   (time_qualifier in time_qualifiers_pm):
+                    str_hh = str(int(str_hh) + 12)
+            else:
+                isTime = False
 
-                    elif wordNext == "" or (
-                            wordNext == "en" and wordNextNext == "punto"):
-                        strHH = word
-                        strMM = 00
-                        if wordNext == "en" and wordNextNext == "punto":
-                            used += 2
-                            if wordNextNextNext == "tarde":
-                                remainder = "pm"
-                                used += 1
-                            elif wordNextNextNext == u"mañana":
-                                remainder = "am"
-                                used += 1
-                            elif wordNextNextNext == "noche":
-                                if 0 > strHH > 6:
-                                    remainder = "am"
-                                else:
-                                    remainder = "pm"
-                                used += 1
+            str_hh = int(str_hh) if str_hh else 0
+            str_mm = int(str_mm) if str_mm else 0
 
-                    elif wordNext[0].isdigit():
-                        strHH = word
-                        strMM = wordNext
-                        used += 1
-                        if wordNextNext == "hora":
-                            used += 1
-                    else:
-                        isTime = False
+            str_hh = str_hh + 12 if remainder == 'pm' \
+                and str_hh < 12 else str_hh
+            str_hh = str_hh - 12 if remainder == 'am' \
+                and str_hh >= 12 else str_hh
 
-            strHH = int(strHH) if strHH else 0
-            strMM = int(strMM) if strMM else 0
-            strHH = strHH + 12 if (remainder == "pm" and
-                                   0 < strHH < 12) else strHH
-            strHH = strHH - 12 if (remainder == "am" and
-                                   0 < strHH >= 12) else strHH
-            if strHH > 24 or strMM > 59:
+            if (not military and
+                    remainder not in ['am', 'pm'] and
+                    ((not day_specified) or day_offset < 1)):
+                # ambiguous time, detect whether they mean this evening or
+                # the next morning based on whether it has already passed
+                hr_abs = str_hh
+                if dateNow.hour < str_hh:
+                    pass  # No modification needed
+                elif dateNow.hour < str_hh + 12:
+                    str_hh += 12
+                    hr_abs = str_hh
+                else:
+                    # has passed, assume the next morning
+                    day_offset += 1
+
+            if time_qualifier in time_qualifiers_pm and str_hh < 12:
+                str_hh += 12
+
+            if str_hh > 24 or str_mm > 59:
                 isTime = False
                 used = 0
             if isTime:
-                hrAbs = strHH * 1
-                minAbs = strMM * 1
+                hr_abs = str_hh * 1
+                min_abs = str_mm * 1
                 used += 1
+
+            if (hr_abs or 0) <= 12 and (time_qualifier == 'noche' or
+                                        time_qualifier == 'tarde'):
+                hr_abs = (hr_abs or 0) + 12
 
         if used > 0:
             # removed parsed words from the sentence
             for i in range(used):
-                words[idx + i] = ""
+                words[idx + i] = ''
 
-            if wordPrev == "en" or wordPrev == "punto":
-                words[words.index(wordPrev)] = ""
+            if word_prev == 'o' or word_prev == 'oh':
+                words[words.index(word_prev)] = ''
 
-            if idx > 0 and wordPrev in time_indicators:
-                words[idx - 1] = ""
-            if idx > 1 and wordPrevPrev in time_indicators:
-                words[idx - 2] = ""
+            if idx > 0 and word_prev in markers:
+                words[idx - 1] = ''
+            if idx > 1 and word_prev_prev in markers:
+                words[idx - 2] = ''
 
             idx += used - 1
             found = True
@@ -1044,94 +1057,139 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
     if not date_found:
         return None
 
-    if dayOffset is False:
-        dayOffset = 0
+    if day_offset is False:
+        day_offset = 0
 
     # perform date manipulation
 
-    extractedDate = dateNow
-    extractedDate = extractedDate.replace(microsecond=0,
-                                          second=0,
-                                          minute=0,
-                                          hour=0)
-    if datestr != "":
+    extracted_date = dateNow.replace(microsecond=0)
+
+    if datestr != '':
         en_months = ['january', 'february', 'march', 'april', 'may', 'june',
                      'july', 'august', 'september', 'october', 'november',
                      'december']
-        en_monthsShort = ['jan', 'feb', 'mar', 'apr', 'may', 'june', 'july',
-                          'aug',
-                          'sept', 'oct', 'nov', 'dec']
+        en_months_short = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul',
+                           'aug', 'sept', 'oct', 'nov', 'dec']
+
         for idx, en_month in enumerate(en_months):
             datestr = datestr.replace(months[idx], en_month)
-        for idx, en_month in enumerate(en_monthsShort):
-            datestr = datestr.replace(monthsShort[idx], en_month)
 
-        temp = datetime.strptime(datestr, "%B %d")
-        if not hasYear:
-            temp = temp.replace(year=extractedDate.year)
-            if extractedDate < temp:
-                extractedDate = extractedDate.replace(year=int(currentYear),
-                                                      month=int(
-                                                          temp.strftime(
-                                                              "%m")),
-                                                      day=int(temp.strftime(
-                                                          "%d")))
+        for idx, en_month in enumerate(en_months_short):
+            datestr = datestr.replace(months_short[idx], en_month)
+
+        try:
+            temp = datetime.strptime(datestr, '%B %d')
+        except ValueError:
+            # Try again, allowing the year
+            temp = datetime.strptime(datestr, '%B %d %Y')
+        extracted_date = extracted_date.replace(hour=0, minute=0, second=0)
+        if not has_year:
+            temp = temp.replace(year=extracted_date.year,
+                                tzinfo=extracted_date.tzinfo)
+            if extracted_date < temp:
+                extracted_date = extracted_date.replace(
+                    year=int(current_year),
+                    month=int(temp.strftime('%m')),
+                    day=int(temp.strftime('%d')),
+                    tzinfo=extracted_date.tzinfo)
             else:
-                extractedDate = extractedDate.replace(
-                    year=int(currentYear) + 1,
-                    month=int(temp.strftime("%m")),
-                    day=int(temp.strftime("%d")))
+                extracted_date = extracted_date.replace(
+                    year=int(current_year) + 1,
+                    month=int(temp.strftime('%m')),
+                    day=int(temp.strftime('%d')),
+                    tzinfo=extracted_date.tzinfo)
         else:
-            extractedDate = extractedDate.replace(
-                year=int(temp.strftime("%Y")),
-                month=int(temp.strftime("%m")),
-                day=int(temp.strftime("%d")))
+            extracted_date = extracted_date.replace(
+                year=int(temp.strftime('%Y')),
+                month=int(temp.strftime('%m')),
+                day=int(temp.strftime('%d')),
+                tzinfo=extracted_date.tzinfo)
+    else:
+        # ignore the current HH:MM:SS if relative using days or greater
+        if hr_offset == 0 and min_offset == 0 and sec_offset == 0:
+            extracted_date = extracted_date.replace(hour=0, minute=0, second=0)
 
-    if yearOffset != 0:
-        extractedDate = extractedDate + relativedelta(years=yearOffset)
-    if monthOffset != 0:
-        extractedDate = extractedDate + relativedelta(months=monthOffset)
-    if dayOffset != 0:
-        extractedDate = extractedDate + relativedelta(days=dayOffset)
+    if year_offset != 0:
+        extracted_date = extracted_date + relativedelta(years=year_offset)
+    if month_offset != 0:
+        extracted_date = extracted_date + relativedelta(months=month_offset)
+    if day_offset != 0:
+        extracted_date = extracted_date + relativedelta(days=day_offset)
+    if hr_abs != -1 and min_abs != -1:
+        # If no time was supplied in the string set the time to default
+        # time if it's available
+        if hr_abs is None and min_abs is None and default_time is not None:
+            hr_abs, min_abs = default_time.hour, default_time.minute
+        else:
+            hr_abs = hr_abs or 0
+            min_abs = min_abs or 0
 
-    if hrAbs is None and minAbs is None and default_time:
-        hrAbs = default_time.hour
-        minAbs = default_time.minute
+        extracted_date = extracted_date + relativedelta(hours=hr_abs,
+                                                        minutes=min_abs)
+        if (hr_abs != 0 or min_abs != 0) and datestr == '':
+            if not day_specified and dateNow > extracted_date:
+                extracted_date = extracted_date + relativedelta(days=1)
+    if hr_offset != 0:
+        extracted_date = extracted_date + relativedelta(hours=hr_offset)
+    if min_offset != 0:
+        extracted_date = extracted_date + relativedelta(minutes=min_offset)
+    if sec_offset != 0:
+        extracted_date = extracted_date + relativedelta(seconds=sec_offset)
 
-    if hrAbs != -1 and minAbs != -1:
-        extractedDate = extractedDate + relativedelta(hours=hrAbs or 0,
-                                                      minutes=minAbs or 0)
-        if (hrAbs or minAbs) and datestr == "":
-            if not daySpecified and dateNow > extractedDate:
-                extractedDate = extractedDate + relativedelta(days=1)
-    if hrOffset != 0:
-        extractedDate = extractedDate + relativedelta(hours=hrOffset)
-    if minOffset != 0:
-        extractedDate = extractedDate + relativedelta(minutes=minOffset)
-    if secOffset != 0:
-        extractedDate = extractedDate + relativedelta(seconds=secOffset)
+    words = [x for x in words if x not in noise_words_2]
+    words = [x for x in words if x]
+    result_str = ' '.join(words)
 
-    resultStr = " ".join(words)
-    resultStr = ' '.join(resultStr.split())
-    # resultStr = pt_pruning(resultStr)
-    return [extractedDate, resultStr]
+    return [extracted_date, result_str]
 
 
 def get_gender_es(word, raw_string=""):
-    # Next rules are imprecise and incompleted, but is a good starting point.
-    # For more detailed explanation, see
-    # http://www.wikilengua.org/index.php/Género_gramatical
-    word = word.rstrip("s")
-    gender = False
-    words = raw_string.split(" ")
+    """
+    In Spanish to define the grammatical gender of a word is necessary
+    analyze the article that precedes the word and not only the last
+    letter of the word.
+
+    TODO: check http://www.interigual.com/el-masculino-y-femenino-en-espanol/
+    To see if it can be simplified
+    """
+
+    gender = None
+    words = raw_string.split(' ')
     for idx, w in enumerate(words):
         if w == word and idx != 0:
             previous = words[idx - 1]
             gender = get_gender_es(previous)
             break
+
     if not gender:
-        if word[-1] == "a":
-            gender = "f"
-        if word[-1] == "o" or word[-1] == "e":
-            gender = "m"
+        # Si acaba en "a" o "as", tanto la palabra como
+        # la palabra que le precede (eg: "las reses")
+        if word[-1] == 'a' or word[-2:] == 'as' \
+                or word[-2:] == 'iz':
+            gender = 'f'
+        # Si acaba en "o" u "os", tanto la palabra como
+        # la palabra que le precede (eg: "los perales")
+        if word[-2:] == 'el' or word[-2:] == 'os' \
+                or word[-1] == 'o' or word[-2:] == 'or' \
+                or word[-1] == 'e':
+            gender = 'm'
+
     return gender
+
+
+def extract_numbers_es(text, short_scale=False, ordinals=False):
+    """
+        Takes in a string and extracts a list of numbers.
+
+    Args:
+        text (str): the string to extract a number from
+        short_scale (bool): Use "short scale" or "long scale" for large
+            numbers -- over a million.  The default is short scale, which
+            is now common in most English speaking countries.
+            See https://en.wikipedia.org/wiki/Names_of_large_numbers
+        ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
+    Returns:
+        list: list of extracted numbers as floats
+    """
+    return extract_numbers_generic(text, pronounce_number_es, extractnumber_es,
+                                   short_scale=short_scale, ordinals=ordinals)

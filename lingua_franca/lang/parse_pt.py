@@ -667,7 +667,7 @@ def extract_datetime_pt(input_str, currentDate, default_time):
                 dayOffset -= 2
             elif wordNext == "ante" and wordNextNext == "ontem":
                 dayOffset -= 2
-            elif (wordNext == "ante" and wordNext == "ante" and
+            elif (wordNext == "ante" and wordNextNext == "ante" and
                   wordNextNextNext == "ontem"):
                 dayOffset -= 3
             elif wordNext in days:
