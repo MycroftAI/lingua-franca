@@ -18,7 +18,8 @@
 Format functions for castillian (es-es)
 
 """
-from mycroft.util.lang.format_common import convert_to_mixed_fraction
+
+from lingua_franca.lang.format_common import convert_to_mixed_fraction
 
 NUM_STRING_ES = {
     0: 'cero',

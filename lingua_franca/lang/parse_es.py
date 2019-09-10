@@ -22,10 +22,10 @@
 import collections
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from mycroft.util.lang.parse_common import is_numeric, look_for_fractions, \
+from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic
-from mycroft.util.lang.format_es import pronounce_number_es
-from mycroft.util.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES, \
+from lingua_franca.lang.format_es import pronounce_number_es
+from lingua_franca.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES, \
     _LONG_ORDINAL_STRING_ES, _LONG_SCALE_ES, _STRING_NUM_ES, \
     _SHORT_SCALE_ES, _SHORT_ORDINAL_STRING_ES, _FRACTION_STRING_ES, \
     _STRING_SHORT_ORDINAL_ES
