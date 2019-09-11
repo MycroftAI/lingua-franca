@@ -58,8 +58,10 @@ _STRING_NUM_PT = invert_dict(_NUM_STRING_PT)
 _STRING_NUM_PT.update(generate_plurals_pt(_STRING_NUM_PT))
 _STRING_NUM_PT.update({
     "meio": 0.5,
-    "meios": 0.5,
-    "par": 2
+    "meios": 0.5
+    # NOTE: further discussion required for this one
+    # https://github.com/MycroftAI/lingua-franca/pull/17#discussion_r319212903
+    # "par": 2
 })
 _STRING_NUM_PT.update(_PT_NUMBERS)
 
