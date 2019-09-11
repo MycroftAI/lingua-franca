@@ -17,7 +17,6 @@
 import unittest
 from datetime import datetime, time
 
-
 from lingua_franca.parse import normalize
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number
@@ -29,6 +28,7 @@ class TestNormalize(unittest.TestCase):
     """
         Test cases for Spanish parsing
     """
+
     def test_articles_es(self):
         """
         Test cases for Spanish remove_articles
@@ -165,8 +165,8 @@ class TestNormalize(unittest.TestCase):
         # TODO: Fail sesenta y seis
         # self.assertEqual(extract_number('seis coma sesenta y seis',
         #                                 lang='es'), 6.66)
-    #     self.assertEqual(extract_number('seis punto sesenta y seis',
-    #                                     lang='es'), 6.66)
+        #     self.assertEqual(extract_number('seis punto sesenta y seis',
+        #                                     lang='es'), 6.66)
         # TODO: Fail seiscientos + sesenta y seis
         # self.assertEqual(extract_number('seiscientos sesenta y seis',
         #                                 lang='es'), 666)
@@ -205,7 +205,7 @@ class TestNormalize(unittest.TestCase):
         # TODO: es veintiún
         # self.assertEqual(extract_number('veintiún años ',
         #                                 lang='es'), 21)
-        
+
         # TODO: Fail
         # self.assertEqual(extract_number('doce y cuarenta y cinco ',
         #                                 lang='es'), 12.45)
@@ -243,12 +243,14 @@ class TestNormalize(unittest.TestCase):
         Test cases for Spanish datetime parsing
 
         """
+
         def extractWithFormat_es(text):
             date = datetime(2018, 1, 13, 13, 4)  # Sab 13 Ene, 2018 @ 13:04
             [extractedDate, leftover] = extract_datetime(text, date,
                                                          lang='es')
             extractedDate = extractedDate.strftime('%Y-%m-%d %H:%M:%S')
             return [extractedDate, leftover]
+
         # The following is a test taken from english, I don't really know what
         # is supposed is doing here.
         def testExtract_es(text, expected_date, expected_leftover):
@@ -337,13 +339,13 @@ class TestNormalize(unittest.TestCase):
         #                '2018-01-14 00:00:00', 'que tiempo hara')
         testExtract_es('cuál es el pronóstico del tiempo para esta tarde',
                        '2018-01-13 15:00:00', 'cual es pronostico tiempo')
-    #     testExtract_es('quali sono le previsioni meteo di oggi tarde '
-    #                    'presto',
-    #                    '2018-01-13 14:00:00', 'cuál es el pronóstico del tiempo')
+        #     testExtract_es('quali sono le previsioni meteo di oggi tarde '
+        #                    'presto',
+        #                    '2018-01-13 14:00:00', 'cuál es el pronóstico del tiempo')
         testExtract_es('cuál es el pronóstico del tiempo para esta noche',
                        '2018-01-13 19:00:00', 'cual es pronostico tiempo')
-    #     testExtract_es('quali sono le previsioni meteo di estas sera tardi',
-    #                    '2018-01-13 20:00:00', 'cuál es el pronóstico del tiempo')
+        #     testExtract_es('quali sono le previsioni meteo di estas sera tardi',
+        #                    '2018-01-13 20:00:00', 'cuál es el pronóstico del tiempo')
         testExtract_es('cuál es el pronóstico del tiempo para este mediodía',
                        '2018-01-14 12:00:00', 'cual es pronostico tiempo')
         testExtract_es('cuál es el pronóstico del tiempo para esta medianoche',
@@ -358,8 +360,8 @@ class TestNormalize(unittest.TestCase):
                        '2018-08-03 00:00:00', 'recuerdame que llame mama')
         # testExtract_es('recuérdame que llame a mamá mañana a las 7 de la mañana',
         #                '2018-01-14 07:00:00', 'recuerdame que llame mama')
-    #     testExtract_es('recuérdame que llame a mamá mañana a las 7 de la tarde',
-    #                    '2018-01-13 19:00:00', 'recuerdame que llame mama')
+        #     testExtract_es('recuérdame que llame a mamá mañana a las 7 de la tarde',
+        #                    '2018-01-13 19:00:00', 'recuerdame que llame mama')
         # testExtract_es('llamar a mamá en una hora',
         #                '2018-01-13 14:04:00', 'llamar mama')
         testExtract_es('recuérdame que llame a mamá a las 0600',
@@ -404,7 +406,7 @@ class TestNormalize(unittest.TestCase):
                        '2018-01-18 14:00:00', 'recuerdame que llame mama')
         testExtract_es('recuérdame que llame a mamá el jueves a las 2:00 '
                        'de la tarde',
-                       '2018-01-18 14:00:00', 'recuerdame que llame mama')                       
+                       '2018-01-18 14:00:00', 'recuerdame que llame mama')
         testExtract_es('recuérdame que llame a mamá miércoles tarde a las 8',
                        '2018-01-17 20:00:00', 'recuerdame que llame mama')
         testExtract_es('recuérdame que llame a mamá en dos horas',
@@ -550,7 +552,7 @@ class TestNormalize(unittest.TestCase):
         testExtract_es('recuérdame que llame a mamá la semana próxima',
                        '2018-01-20 00:00:00', 'recuerdame que llame mama')
         testExtract_es('recuérdame que llame a mamá la semana que viene',
-                       '2018-01-20 00:00:00', 'recuerdame que llame mama')               
+                       '2018-01-20 00:00:00', 'recuerdame que llame mama')
         testExtract_es('recuérdame que controle el gasto de la semana pasada',
                        '2018-01-06 00:00:00', 'recuerdame que controle gasto')
         testExtract_es('recuérdame que controle el gasto de la pasada semana',
@@ -562,7 +564,7 @@ class TestNormalize(unittest.TestCase):
         testExtract_es('recuérdame que controle el gasto del mes anterior',
                        '2017-12-13 00:00:00', 'recuerdame que controle gasto')
         testExtract_es('recuérdame que controle el gasto del anterior mes',
-                       '2017-12-13 00:00:00', 'recuerdame que controle gasto')              
+                       '2017-12-13 00:00:00', 'recuerdame que controle gasto')
         testExtract_es('recuérdame que controle el gasto del mes próximo',
                        '2018-02-13 00:00:00', 'recuerdame que controle gasto')
         testExtract_es('recuérdame que controle el gasto del próximo mes',
@@ -697,9 +699,9 @@ class TestNormalize(unittest.TestCase):
         testExtract_es('llama a mamá a las 17 y 30',
                        '2018-01-13 17:30:00', 'llama a mama a')
         # TODO: fail
-    #     testExtract_es('recuérdame que llame a mamá el sábado a las 10 ' +
-    #                    'de la mañana',
-    #                    '2018-01-13 10:00:00', 'recuerdame que llame a mama a mañana')
+        #     testExtract_es('recuérdame que llame a mamá el sábado a las 10 ' +
+        #                    'de la mañana',
+        #                    '2018-01-13 10:00:00', 'recuerdame que llame a mama a mañana')
         # testExtract_es('recuérdame que llame a mamá a las 10 de la mañana de'
         #                ' este sábado',
         #                '2018-01-13 10:00:00', 'recuerdame que llame a mama a mañana')
@@ -738,6 +740,7 @@ class TestNormalize(unittest.TestCase):
         """
         Test cases for relative datetime
         """
+
         def extractWithFormat(text):
             date = datetime(2017, 6, 27, 10, 1, 2)
             [extractedDate, leftover] = extract_datetime(text, date,
@@ -764,6 +767,7 @@ class TestNormalize(unittest.TestCase):
                        '2017-06-27 10:01:03', 'encontremonos')
         testExtract_es('encontrémonos en 25 horas',
                        '2017-06-28 11:01:02', 'encontremonos')
+
     def test_spaces_es(self):
         """
         Test cases for Spanish remove spaces
@@ -803,61 +807,61 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(normalize('test veintiuno y veintisiete',
                                    lang='es'), 'test 21 y 27')
 
-    # def test_multiple_numbers_es(self):
-        # self.assertEqual(extract_numbers('esto es la prueba uno dos tres',
-        #                                  lang='es'), [1.0, 2.0, 3.0])
-        # self.assertEqual(extract_numbers('esto es la prueba cuatro siete' +
-        #                                  ' cuatro',
-        #                                  lang='es'), [4.0, 7.0, 4.0])
-        # self.assertEqual(extract_numbers('esto  es el test cinco seis siete',
-        #                                  lang='es'), [5.0, 6.0, 7.0])
-        # self.assertEqual(extract_numbers('esto es  test diez once doce',
-        #                                  lang='es'), [10.0, 11.0, 12.0])
-        # self.assertEqual(extract_numbers('test doce gatos veintiuno',
-        #                                  lang='es'), [21.0, 12.0])
-        # self.assertEqual(extract_numbers('1 perro, siete cerdos, macdonald ' +
-        #                                  'tenía la granja, 3 bodegas' +
-        #                                  ' 5 macarena',
-        #                                  lang='es'), [1, 7, 3, 5])
-        # self.assertEqual(extract_numbers('dos cervezas para dos osos',
-        #                                  lang='es'), [2.0, 2.0])
-        # self.assertEqual(extract_numbers('veinte cuarenta treinta',
-        #                                  lang='es'), [20, 40, 30])
-        # self.assertEqual(extract_numbers('veinte 20 22',
-        #                                  lang='es'), [20, 20, 22])
-        # self.assertEqual(extract_numbers('veintidós locos veinte ratas '
-        #                                  'veinte gatos',
-        #                                  lang='es'), [22, 20, 20])
-        # self.assertEqual(extract_numbers('veinte 20 veinte 2',
-        #                                  lang='es'), [20, 20, 20, 2])
-        # self.assertEqual(extract_numbers('un tercio uno',
-        #                                  lang='es'), [1 / 3, 1])
-        # TODO: Fail
-        # self.assertEqual(extract_numbers('un tercio uno',
-        #                       lang='es', ordinals=True), [3])
-        # self.assertEqual(extract_numbers('seis millardos', lang='es',
-        #                                  short_scale=True), [6e9])
-        # self.assertEqual(extract_numbers('seis millones', lang='es',
-        #                                  short_scale=False), [6e6])
-        # self.assertEqual(extract_numbers('doce cerdos acompañan a \
-        #  seis mil millones de bacterias', lang='es', short_scale=True), [6e9, 12])
+    def test_multiple_numbers_es(self):
+        self.assertEqual(extract_numbers('esto es la prueba uno dos tres',
+                                     lang='es'), [1.0, 2.0, 3.0])
+    # self.assertEqual(extract_numbers('esto es la prueba cuatro siete' +
+    #                                  ' cuatro',
+    #                                  lang='es'), [4.0, 7.0, 4.0])
+    # self.assertEqual(extract_numbers('esto  es el test cinco seis siete',
+    #                                  lang='es'), [5.0, 6.0, 7.0])
+    # self.assertEqual(extract_numbers('esto es  test diez once doce',
+    #                                  lang='es'), [10.0, 11.0, 12.0])
+    # self.assertEqual(extract_numbers('test doce gatos veintiuno',
+    #                                  lang='es'), [21.0, 12.0])
+    # self.assertEqual(extract_numbers('1 perro, siete cerdos, macdonald ' +
+    #                                  'tenía la granja, 3 bodegas' +
+    #                                  ' 5 macarena',
+    #                                  lang='es'), [1, 7, 3, 5])
+    # self.assertEqual(extract_numbers('dos cervezas para dos osos',
+    #                                  lang='es'), [2.0, 2.0])
+    # self.assertEqual(extract_numbers('veinte cuarenta treinta',
+    #                                  lang='es'), [20, 40, 30])
+    # self.assertEqual(extract_numbers('veinte 20 22',
+    #                                  lang='es'), [20, 20, 22])
+    # self.assertEqual(extract_numbers('veintidós locos veinte ratas '
+    #                                  'veinte gatos',
+    #                                  lang='es'), [22, 20, 20])
+    # self.assertEqual(extract_numbers('veinte 20 veinte 2',
+    #                                  lang='es'), [20, 20, 20, 2])
+    # self.assertEqual(extract_numbers('un tercio uno',
+    #                                  lang='es'), [1 / 3, 1])
+    # TODO: Fail
+    # self.assertEqual(extract_numbers('un tercio uno',
+    #                       lang='es', ordinals=True), [3])
+    # self.assertEqual(extract_numbers('seis millardos', lang='es',
+    #                                  short_scale=True), [6e9])
+    # self.assertEqual(extract_numbers('seis millones', lang='es',
+    #                                  short_scale=False), [6e6])
+    # self.assertEqual(extract_numbers('doce cerdos acompañan a \
+    #  seis mil millones de bacterias', lang='es', short_scale=True), [6e9, 12])
 
-        # TODO case when pronounced/extracted number don't match
-        # fractional numbers often fail
-        # self.assertEqual(extract_numbers('esto es un siete ocho \
-        #                  nueve y medio test',lang='es'), [7.0, 8.0, 9.5])
-        # TODO pronounce number should accept short_scale flag
-        # self.assertEqual(extract_numbers('two pigs and six trillion
-        # bacteria', short_scale=False), [2, 6e18])
-        # TODO pronounce_number should accept ordinals flag
-        # self.assertEqual(extract_numbers('thirty second or first',
-        #                                 ordinals=True), [32, 1])
+    # TODO case when pronounced/extracted number don't match
+    # fractional numbers often fail
+    # self.assertEqual(extract_numbers('esto es un siete ocho \
+    #                  nueve y medio test',lang='es'), [7.0, 8.0, 9.5])
+    # TODO pronounce number should accept short_scale flag
+    # self.assertEqual(extract_numbers('two pigs and six trillion
+    # bacteria', short_scale=False), [2, 6e18])
+    # TODO pronounce_number should accept ordinals flag
+    # self.assertEqual(extract_numbers('thirty second or first',
+    #                                 ordinals=True), [32, 1])
 
     def test_extractdatetime_default_es(self):
         default = time(9, 0, 0)
         anchor = datetime(2017, 6, 27, 0, 0)
         res = extract_datetime('¿Qué tiempo hará en 3 días?',
-                                anchor, lang='es', default_time=default)
+                               anchor, lang='es', default_time=default)
         self.assertEqual(default, res[0].time())
 
     def test_gender_es(self):
