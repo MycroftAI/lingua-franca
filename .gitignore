@@ -109,3 +109,6 @@ sonar-project.properties
 
 # VisualStudio Code
 .vscode/
+
+# Pycharm files
+.idea/
