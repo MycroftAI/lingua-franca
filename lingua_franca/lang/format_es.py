@@ -18,6 +18,7 @@
 Format functions for castillian (es-es)
 
 """
+
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 
 NUM_STRING_ES = {
@@ -103,7 +104,7 @@ def nice_number_es(number, speech, denominators):
     if not speech:
         if num == 0:
             strNumber = '{:,}'.format(whole)
-            strNumber = strNumber.replace(",", " ")
+            strNumber = strNumber.replace(",", " ")
             strNumber = strNumber.replace(".", ",")
             return strNumber
         else:

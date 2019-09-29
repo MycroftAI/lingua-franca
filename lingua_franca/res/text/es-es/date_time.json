@@ -1,0 +1,124 @@
+{
+  "decade_format": {
+    "default": "{number}"
+  },
+    "hundreds_format": {
+    "default": "{number}"
+  },
+    "thousand_format": {
+    "default": "{number}"
+  },
+    "year_format": {
+    "default": "{year} {bc}",
+    "bc": "a.C."
+  },
+  "date_comments": {
+    "url":"https://www.ampersand.net/es/como-se-escriben-las-fechas-en-espanol/"
+  },
+    "date_format": {
+    "date_full": "{weekday}, {day} de {month} de {formatted_year}",
+    "date_full_no_year": "{weekday}, {day} de {month}",
+    "date_full_no_year_month": "{weekday}, día {day}",
+    "today": "hoy",
+    "tomorrow": "mañana",
+    "yesterday": "ayer"
+  },
+    "date_time_format": {
+    "date_time": "{formatted_date} a las {formatted_time}"
+  },
+    "weekday": {
+    "0": "lunes",
+    "1": "martes",
+    "2": "miércoles",
+    "3": "jueves",
+    "4": "viernes",
+    "5": "sábado",
+    "6": "domingo"
+  },
+  "date": {
+    "1": "uno",
+    "2": "dos",
+    "3": "tres",
+    "4": "cuatro",
+    "5": "cinco",
+    "6": "seis",
+    "7": "siete",
+    "8": "ocho",
+    "9": "nueve",
+    "10": "diez",
+    "11": "once",
+    "12": "doce",
+    "13": "trece",
+    "14": "catorce",
+    "15": "quince",
+    "16": "dieciséis",
+    "17": "diecisiete",
+    "18": "dieciocho",
+    "19": "diecinueve",
+    "20": "veinte",
+    "21": "veintiuno",
+    "22": "veintidós",
+    "23": "veintitrés",
+    "24": "veinticuatro",
+    "25": "veinticinco",
+    "26": "veintiséis",
+    "27": "veintisiete",
+    "28": "veintiocho",
+    "29": "veintinueve",
+    "30": "treinta",
+    "31": "treinta y uno"
+  },
+  "month": {
+    "1": "enero",
+    "2": "febrero",
+    "3": "marzo",
+    "4": "abril",
+    "5": "mayo",
+    "6": "junio",
+    "7": "julio",
+    "8": "agosto",
+    "9": "septiembre",
+    "10": "octubre",
+    "11": "noviembre",
+    "12": "deciembre"
+  },
+  "number": {
+    "0": "cero",
+    "1": "uno",
+    "2": "dos",
+    "3": "tres",
+    "4": "cuatro",
+    "5": "cinco",
+    "6": "seis",
+    "7": "siete",
+    "8": "ocho",
+    "9": "nueve",
+    "10": "diez",
+    "11": "once",
+    "12": "doce",
+    "13": "trece",
+    "14": "catorce",
+    "15": "quince",
+    "16": "dieciséis",
+    "17": "diecisiete",
+    "18": "dieciocho",
+    "19": "diecinueve",
+    "20": "veinte",
+    "21": "veintiuno",
+    "22": "veintidós",
+    "23": "veintitrés",
+    "24": "veinticuatro",
+    "25": "veinticinco",
+    "26": "veintiséis",
+    "27": "veintisiete",
+    "28": "veintiocho",
+    "29": "veintinueve",
+    "30": "treinta",
+    "40": "cuarenta",
+    "50": "cincuenta",
+    "60": "sesenta",
+    "70": "setenta",
+    "80": "ochenta",
+    "90": "noventa"
+  }
+}
