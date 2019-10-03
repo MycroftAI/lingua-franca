@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+.scannerwork/
+.vscode/
+sonar-project.properties
