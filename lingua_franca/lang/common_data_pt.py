@@ -1,9 +1,9 @@
 # Undefined articles ["um", "uma", "uns", "umas"] can not be supressed,
 # in PT, "um cavalo" means "a horse" or "one horse".
 
-_PT_ARTICLES = ["o", "a", "os", "as"]
+_ARTICLES_PT = ["o", "a", "os", "as"]
 
-_PT_NUMBERS = {
+_NUMBERS_PT = {
     "zero": 0,
     "um": 1,
     "uma": 1,

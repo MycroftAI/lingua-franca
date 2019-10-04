@@ -25,7 +25,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_pt import _FRACTION_STRING_PT, \
-    _PT_ARTICLES, _PT_NUMBERS
+    _ARTICLES_PT, _NUMBERS_PT
 
 
 def isFractional_pt(input_str):
@@ -86,8 +86,8 @@ def extractnumber_pt(text):
             next_word = None
 
         # is current word a number?
-        if word in _PT_NUMBERS:
-            val = _PT_NUMBERS[word]
+        if word in _NUMBERS_PT:
+            val = _NUMBERS_PT[word]
         elif word.isdigit():  # doesn't work with decimals
             val = int(word)
         elif is_numeric(word):
@@ -200,7 +200,7 @@ def pt_number_parse(words, i):
 
     def pt_number_word(i, mi, ma):
         if i < len(words):
-            v = _PT_NUMBERS.get(words[i])
+            v = _NUMBERS_PT.get(words[i])
             if v and v >= mi and v <= ma:
                 return v, i + 1
         return None
@@ -281,7 +281,7 @@ def normalize_pt(text, remove_articles):
     while i < len(words):
         word = words[i]
         # remove articles
-        if remove_articles and word in _PT_ARTICLES:
+        if remove_articles and word in _ARTICLES_PT:
             i += 1
             continue
 
@@ -293,8 +293,8 @@ def normalize_pt(text, remove_articles):
             continue
 
         # NOTE temporary , handle some numbers above >999
-        if word in _PT_NUMBERS:
-            word = str(_PT_NUMBERS[word])
+        if word in _NUMBERS_PT:
+            word = str(_NUMBERS_PT[word])
         # end temporary
 
         normalized += " " + word
