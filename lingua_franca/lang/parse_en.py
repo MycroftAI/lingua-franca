@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-from lingua_franca.lang.common_data_en import _ARTICLES, _NUM_STRING_EN, \
+from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
     _LONG_ORDINAL_STRING_EN, _LONG_SCALE_EN, \
     _SHORT_SCALE_EN, _SHORT_ORDINAL_STRING_EN
 
@@ -281,7 +281,7 @@ def _extract_number_with_text_en(tokens, short_scale=True,
     number, tokens = \
         _extract_number_with_text_en_helper(tokens, short_scale,
                                             ordinals, fractional_numbers)
-    while tokens and tokens[0].word in _ARTICLES:
+    while tokens and tokens[0].word in _ARTICLES_EN:
         tokens.pop(0)
     return _ReplaceableNumber(number, tokens)
 
@@ -442,7 +442,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
             continue
 
         word = token.word
-        if word in _ARTICLES or word in _NEGATIVES:
+        if word in _ARTICLES_EN or word in _NEGATIVES:
             number_words.append(token)
             continue
 
@@ -458,7 +458,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 not isFractional_en(word, short_scale=short_scale) and \
                 not look_for_fractions(word.split('/')):
             words_only = [token.word for token in number_words]
-            if number_words and not all([w in _ARTICLES |
+            if number_words and not all([w in _ARTICLES_EN |
                                          _NEGATIVES for w in words_only]):
                 break
             else:
@@ -469,7 +469,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 and prev_word not in _SUMS \
                 and not (ordinals and prev_word in string_num_ordinal) \
                 and prev_word not in _NEGATIVES \
-                and prev_word not in _ARTICLES:
+                and prev_word not in _ARTICLES_EN:
             number_words = [token]
         elif prev_word in _SUMS and word in _SUMS:
             number_words = [token]
