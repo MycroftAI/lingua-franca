@@ -1363,7 +1363,7 @@ def isFractional_en(input_str, short_scale=True):
     return False
 
 
-def extract_numbers_en(text, short_scale=None, ordinals=False):
+def extract_numbers_en(text, short_scale=True, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -1377,9 +1377,6 @@ def extract_numbers_en(text, short_scale=None, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
-    # english uses short_scale by default
-    if short_scale is None:
-        short_scale = True
     results = _extract_numbers_with_text_en(tokenize(text),
                                             short_scale, ordinals)
     return [float(result.value) for result in results]
