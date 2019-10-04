@@ -23,7 +23,7 @@ from collections import OrderedDict
 _ARTICLES_ES = {'el', 'la', 'los', 'las'}
 
 
-NUM_STRING_ES = {
+_NUM_STRING_ES = {
     0: 'cero',
     1: 'uno',
     2: 'dos',

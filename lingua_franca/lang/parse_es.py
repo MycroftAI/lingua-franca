@@ -21,74 +21,7 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-from lingua_franca.lang.common_data_es import _ARTICLES_ES
-
-
-es_numbers = {
-    "cero": 0,
-    "un": 1,
-    "uno": 1,
-    "una": 1,
-    "dos": 2,
-    "tres": 3,
-    u"trés": 3,
-    "cuatro": 4,
-    "cinco": 5,
-    "seis": 6,
-    "siete": 7,
-    "ocho": 8,
-    "nueve": 9,
-    "diez": 10,
-    "once": 11,
-    "doce": 12,
-    "trece": 13,
-    "catorce": 14,
-    "quince": 15,
-    "dieciseis": 16,
-    u"dieciséis": 16,
-    "diecisiete": 17,
-    "dieciocho": 18,
-    "diecinueve": 19,
-    "veinte": 20,
-    "veintiuno": 21,
-    u"veintidï¿½s": 22,
-    u"veintitrï¿½s": 23,
-    "veintidos": 22,
-    "veintitres": 23,
-    u"veintitrés": 23,
-    "veinticuatro": 24,
-    "veinticinco": 25,
-    u"veintiséis": 26,
-    "veintiseis": 26,
-    "veintisiete": 27,
-    "veintiocho": 28,
-    "veintinueve": 29,
-    "treinta": 30,
-    "cuarenta": 40,
-    "cincuenta": 50,
-    "sesenta": 60,
-    "setenta": 70,
-    "ochenta": 80,
-    "noventa": 90,
-    "cien": 100,
-    "ciento": 100,
-    "doscientos": 200,
-    "doscientas": 200,
-    "trescientos": 300,
-    "trescientas": 300,
-    "cuatrocientos": 400,
-    "cuatrocientas": 400,
-    "quinientos": 500,
-    "quinientas": 500,
-    "seiscientos": 600,
-    "seiscientas": 600,
-    "setecientos": 700,
-    "setecientas": 700,
-    "ochocientos": 800,
-    "ochocientas": 800,
-    "novecientos": 900,
-    "novecientas": 900,
-    "mil": 1000}
+from lingua_franca.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES
 
 
 def isFractional_es(input_str):
@@ -149,8 +82,8 @@ def extractnumber_es(text):
             next_word = None
 
         # is current word a number?
-        if word in es_numbers:
-            val = es_numbers[word]
+        if word in _NUM_STRING_ES:
+            val = _NUM_STRING_ES[word]
         elif word.isdigit():  # doesn't work with decimals
             val = int(word)
         elif is_numeric(word):
@@ -263,7 +196,7 @@ def es_number_parse(words, i):
 
     def es_number_word(i, mi, ma):
         if i < len(words):
-            v = es_numbers.get(words[i])
+            v = _NUM_STRING_ES.get(words[i])
             if v and v >= mi and v <= ma:
                 return v, i + 1
         return None
