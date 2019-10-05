@@ -21,9 +21,9 @@ from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     invert_dict, ReplaceableNumber, partition_list, tokenize, Token, extract_numbers_generic
 
-from lingua_franca.lang.common_data_pt import _PT_ARTICLES, _NUM_STRING_PT, \
+from lingua_franca.lang.common_data_pt import _ARTICLES_PT, _NUM_STRING_PT, \
     _LONG_ORDINAL_PT, _LONG_SCALE_PT, _SHORT_SCALE_PT, _SHORT_ORDINAL_PT, \
-    _FRACTION_MARKER_PT, _DECIMAL_MARKER_PT, _PT_NUMBERS, _SUFFIX_FRACTION_MARKER_PT, \
+    _FRACTION_MARKER_PT, _DECIMAL_MARKER_PT, _NUMBERS_PT, _SUFFIX_FRACTION_MARKER_PT, \
     _NEGATIVES_PT, _NEGATIVE_SUFFIX_MARKER_PT, _SUM_MARKER_PT,\
     _FEMALE_ENDINGS_PT, _MALE_ENDINGS_PT, _MALE_DETERMINANTS_PT, _FEMALE_DETERMINANTS_PT, _GENDERS_PT
 
@@ -63,7 +63,7 @@ _STRING_NUM_PT.update({
     # https://github.com/MycroftAI/lingua-franca/pull/17#discussion_r319212903
     # "par": 2
 })
-_STRING_NUM_PT.update(_PT_NUMBERS)
+_STRING_NUM_PT.update(_NUMBERS_PT)
 
 _STRING_SHORT_ORDINAL_PT = invert_dict(_SHORT_ORDINAL_PT)
 _STRING_LONG_ORDINAL_PT = invert_dict(_LONG_ORDINAL_PT)
@@ -179,7 +179,7 @@ def _pt_number_parse_helper(words, i):
     return pt_number(i)
 
 
-def normalize_pt(text, remove_pt_articles):
+def normalize_pt(text, remove_ARTICLES_PT):
     """ PT string normalization """
 
     words = text.split()  # this also removed extra spaces
@@ -189,7 +189,7 @@ def normalize_pt(text, remove_pt_articles):
     while i < len(words):
         word = words[i]
         # remove articles
-        if remove_pt_articles and word in _PT_ARTICLES:
+        if remove_ARTICLES_PT and word in _ARTICLES_PT:
             i += 1
             continue
 
@@ -201,8 +201,8 @@ def normalize_pt(text, remove_pt_articles):
             continue
 
         # NOTE temporary , handle some numbers above >999
-        if word in _PT_NUMBERS:
-            word = str(_PT_NUMBERS[word])
+        if word in _NUMBERS_PT:
+            word = str(_NUMBERS_PT[word])
         # end temporary
 
         normalized += " " + word
@@ -211,7 +211,7 @@ def normalize_pt(text, remove_pt_articles):
     # this is experimental and some meaning may be lost
     # maybe agressive should default to False
     # only usage will tell, as a native speaker this seems reasonable
-    return pt_pruning(normalized[1:], agressive=remove_pt_articles)
+    return pt_pruning(normalized[1:], agressive=remove_ARTICLES_PT)
 
 
 def extract_datetime_pt(input_str, currentDate, default_time):
@@ -1158,7 +1158,7 @@ def _extract_number_with_text_pt(tokens, short_scale=False,
     number, tokens = \
         _extract_number_with_text_pt_helper(tokens, short_scale,
                                             ordinals, fractional_numbers)
-    while tokens and tokens[0].word in _PT_ARTICLES:
+    while tokens and tokens[0].word in _ARTICLES_PT:
         tokens.pop(0)
     return ReplaceableNumber(number, tokens)
 
@@ -1329,7 +1329,7 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
             continue
 
         word = token.word
-        if word in _PT_ARTICLES or word in _NEGATIVES_PT:
+        if word in _ARTICLES_PT or word in _NEGATIVES_PT:
             number_words.append(token)
             continue
 
@@ -1351,7 +1351,7 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
                 not isFractional_pt(word, short_scale=short_scale) and \
                 not look_for_fractions(word.split('/')):
             words_only = [token.word for token in number_words]
-            if number_words and not all([w in _PT_ARTICLES |
+            if number_words and not all([w in _ARTICLES_PT |
                                          _NEGATIVES_PT for w in words_only]):
                 break
             else:
@@ -1361,7 +1361,7 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
                 and prev_word not in multiplies \
                 and not (ordinals and prev_word in string_num_ordinal) \
                 and prev_word not in _NEGATIVES_PT \
-                and prev_word not in _PT_ARTICLES:
+                and prev_word not in _ARTICLES_PT:
             number_words = [token]
         else:
             number_words.append(token)
@@ -1390,7 +1390,7 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
                 not isFractional_pt(word, short_scale=short_scale) and \
                 not look_for_fractions(word.split('/')):
             words_only = [token.word for token in number_words]
-            if number_words and not all([w in _PT_ARTICLES |
+            if number_words and not all([w in _ARTICLES_PT |
                                          _NEGATIVES_PT for w in words_only]):
                 break
             else:
@@ -1400,7 +1400,7 @@ def _extract_whole_number_with_text_pt(tokens, short_scale, ordinals):
                 and prev_word not in multiplies \
                 and not (ordinals and prev_word in string_num_ordinal) \
                 and prev_word not in _NEGATIVES_PT \
-                and prev_word not in _PT_ARTICLES:
+                and prev_word not in _ARTICLES_PT:
             number_words = [token]
         else:
             number_words.append(token)

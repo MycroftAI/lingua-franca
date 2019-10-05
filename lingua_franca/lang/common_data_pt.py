@@ -19,7 +19,7 @@ from collections import OrderedDict
 # Undefined articles ["um", "uma", "uns", "umas"] can not be supressed,
 # in PT, "um cavalo" means "a horse" or "one horse".
 
-_PT_ARTICLES = {"o", "a", "os", "as"}
+_ARTICLES_PT = {"o", "a", "os", "as"}
 
 # word rules for gender
 _FEMALE_ENDINGS_PT = ["a", "as"]
@@ -36,7 +36,7 @@ _GENDERS_PT = {
 _MALE_DETERMINANTS_PT = ["o", "os", "este", "estes", "esse", "esses"]
 _FEMALE_DETERMINANTS_PT = ["a", "as", "estas", "estas", "essa", "essas"]
 
-_PT_NUMBERS = {
+_NUMBERS_PT = {
     "zero": 0,
     "um": 1,
     "uma": 1,
