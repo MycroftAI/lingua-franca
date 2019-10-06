@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from lingua_franca.lang.parse_en import annotate_datetime_en, \
+    annotate_duration_en
 from difflib import SequenceMatcher
 from lingua_franca.time import now_local
 from lingua_franca.lang import get_primary_lang_code
@@ -104,6 +106,8 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
         return extract_numbers_it(text, short_scale, ordinals)
     elif lang_code == "da":
         return extract_numbers_da(text, short_scale, ordinals)
+    elif lang_code == "es":
+        return extract_numbers_es(text, short_scale, ordinals)
     # TODO: extractnumbers_xx for other languages
     _log_unsupported_language(lang_code,
                               ['en', 'it', 'fr', 'de', 'da'])
@@ -144,9 +148,11 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
         return extractnumber_de(text)
     elif lang_code == "da":
         return extractnumber_da(text)
+    elif lang_code == "es":
+        return extract_numbers_es(text, short_scale, ordinals)
     # TODO: extractnumber_xx for other languages
     _log_unsupported_language(lang_code,
-                              ['en', 'es', 'pt', 'it', 'fr', 'sv', 'de', 'da'])
+                              ['en', 'pt', 'it', 'fr', 'sv', 'de', 'da'])
     return text
 
 
@@ -301,7 +307,7 @@ def normalize(text, lang=None, remove_articles=True):
         return normalize_da(text, remove_articles)
     # TODO: Normalization for other languages
     _log_unsupported_language(lang_code,
-                              ['en', 'es', 'pt', 'it', 'fr', 'sv', 'de', 'da'])
+                              ['en', 'pt', 'it', 'fr', 'sv', 'de', 'da'])
     return text
 
 
@@ -334,11 +340,8 @@ def get_gender(word, context="", lang=None):
     return None
 
 
-## Extra
+# Extra
 # this is not part of mycroft-core
-
-from lingua_franca.lang.parse_en import annotate_datetime_en, \
-    annotate_duration_en
 
 
 def annotate_duration(text, lang=None):

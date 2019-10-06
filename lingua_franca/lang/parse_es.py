@@ -20,7 +20,8 @@
 """
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
+from lingua_franca.lang.format_es import pronounce_number_es
+from lingua_franca.lang.parse_common import *
 from lingua_franca.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES
 
 
@@ -57,7 +58,12 @@ def isFractional_es(input_str):
     return False
 
 
-def extractnumber_es(text):
+# TODO: short_scale and ordinals don't do anything here.
+# The parameters are present in the function signature for API compatibility
+# reasons.
+#
+# Returns incorrect output on certain fractional phrases like, "cuarto de dos"
+def extractnumber_es(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -108,7 +114,7 @@ def extractnumber_es(text):
                 result = 0
             # handle fractions
             if next_word != "avos":
-                result += val
+                result = val
             else:
                 result = float(result) / float(val)
 
@@ -262,6 +268,24 @@ def es_number_parse(words, i):
         return None
 
     return es_number(i)
+
+def extract_numbers_es(text, short_scale=True, ordinals=False):
+    """
+        Takes in a string and extracts a list of numbers.
+
+    Args:
+        text (str): the string to extract a number from
+        short_scale (bool): Use "short scale" or "long scale" for large
+            numbers -- over a million.  The default is short scale, which
+            is now common in most English speaking countries.
+            See https://en.wikipedia.org/wiki/Names_of_large_numbers
+        ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
+    Returns:
+        list: list of extracted numbers as floats
+    """
+    return extract_numbers_generic(text, pronounce_number_es, extractnumber_es,
+                                   short_scale=short_scale, ordinals=ordinals)
+
 
 
 def normalize_es(text, remove_articles):
