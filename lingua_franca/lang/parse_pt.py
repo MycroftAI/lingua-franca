@@ -25,7 +25,8 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_pt import _FRACTION_STRING_PT, \
-    _ARTICLES_PT, _NUMBERS_PT
+    _ARTICLES_PT, _NUMBERS_PT, _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT,\
+    _MALE_DETERMINANTS_PT, _MALE_ENDINGS_PT, _GENDERS_PT
 
 
 def isFractional_pt(input_str):
@@ -667,7 +668,7 @@ def extract_datetime_pt(input_str, currentDate, default_time):
                 dayOffset -= 2
             elif wordNext == "ante" and wordNextNext == "ontem":
                 dayOffset -= 2
-            elif (wordNext == "ante" and wordNext == "ante" and
+            elif (wordNext == "ante" and wordNextNext == "ante" and
                   wordNextNextNext == "ontem"):
                 dayOffset -= 3
             elif wordNext in days:
@@ -1122,18 +1123,33 @@ def pt_pruning(text, symbols=True, accents=True, agressive=True):
     return text
 
 
-def get_gender_pt(word, raw_string=""):
-    word = word.rstrip("s")
-    gender = None
-    words = raw_string.split(" ")
+def get_gender_pt(word, text=""):
+    # parse gender taking context into account
+    word = word.lower()
+    words = text.lower().split(" ")
     for idx, w in enumerate(words):
         if w == word and idx != 0:
-            previous = words[idx - 1]
-            gender = get_gender_pt(previous)
-            break
-    if not gender:
-        if word[-1] == "a":
-            gender = "f"
-        if word[-1] == "o" or word[-1] == "e":
-            gender = "m"
-    return gender
+            # in portuguese usually the previous word (a determinant)
+            # assigns gender to the next word
+            previous = words[idx - 1].lower()
+            if previous in _MALE_DETERMINANTS_PT:
+                return "m"
+            elif previous in _FEMALE_DETERMINANTS_PT:
+                return "f"
+
+    # get gender using only the individual word
+    # see if this word has the gender defined
+    if word in _GENDERS_PT:
+        return _GENDERS_PT[word]
+    singular = word.rstrip("s")
+    if singular in _GENDERS_PT:
+        return _GENDERS_PT[singular]
+    # in portuguese the last vowel usually defines the gender of a word
+    # the gender of the determinant takes precedence over this rule
+    for end_str in _FEMALE_ENDINGS_PT:
+        if word.endswith(end_str):
+            return "f"
+    for end_str in _MALE_ENDINGS_PT:
+        if word.endswith(end_str):
+            return "m"
+    return None
