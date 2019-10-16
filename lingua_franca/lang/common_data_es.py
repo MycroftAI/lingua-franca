@@ -35,7 +35,26 @@ _GENDERS_ES = {
     "mujeres": "f",
     "madre": "f",
     "hombre": "m",
-    "padre": "m"
+    "padre": "m",
+    "mapa": "m",
+    "poema": "m",
+    "problema": "m",
+    "día": "m",
+    "moto": "f",
+    "radio": "f",
+    "mano": "f",
+    "foto": "f",
+    "amor": "m",
+    "corazón": "m",
+    "árbol": "m",
+    "canción": "f",
+    "ciudad": "f",
+    "flor": "f",
+    "jefe": "m",
+    "café": "m",
+    "baile": "m",
+    "gente": "f",
+    "serie": "f"
 }
 
 # context rules for gender
