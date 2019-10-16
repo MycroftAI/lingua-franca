@@ -19,18 +19,40 @@
 
 from collections import OrderedDict
 
+# Undefined articles ["un", "unos", "una", "unas"] can not be supressed,
+# in ES, "un cavallo" means "a horse" or "one horse".
 
 _ARTICLES_ES = {'el', 'la', 'los', 'las'}
 
+# word rules for gender
+# TODO: review rules to see exceptions
+_FEMALE_ENDINGS_ES = ["a", "as"]
+_MALE_ENDINGS_ES = ["o", "os"]
 
-_NUM_STRING_ES = {
+# special cases, word lookup for words not covered by above rule
+_GENDERS_ES = {
+    "mujer": "f",
+    "mujeres": "f",
+    "madre": "f",
+    "hombre": "m",
+    "padre": "m"
+}
+
+# context rules for gender
+_MALE_DETERMINANTS_ES = ["lo", "los", "este", "estos", "ese", "esos"]
+_FEMALE_DETERMINANTS_ES = ["la", "las", "esta", "estas", "esa", "esas"]
+
+
+_NUMBERS_ES = {
     "cero": 0,
     "un": 1,
     "uno": 1,
     "una": 1,
+    "primero": 1,
+    "segundo": 2,
+    "tercero": 3,
     "dos": 2,
     "tres": 3,
-    u"trés": 3,
     "cuatro": 4,
     "cinco": 5,
     "seis": 6,
@@ -43,28 +65,23 @@ _NUM_STRING_ES = {
     "trece": 13,
     "catorce": 14,
     "quince": 15,
-    "dieciseis": 16,
-    u"dieciséis": 16,
+    "dieciséis": 16,
     "diecisiete": 17,
     "dieciocho": 18,
     "diecinueve": 19,
     "veinte": 20,
     "veintiuno": 21,
-    u"veintidï¿½s": 22,
-    u"veintitrï¿½s": 23,
-    "veintidos": 22,
-    "veintitres": 23,
-    u"veintitrés": 23,
+    "veintidós": 22,
+    "veintitrés": 23,
     "veinticuatro": 24,
     "veinticinco": 25,
-    u"veintiséis": 26,
-    "veintiseis": 26,
+    "veintiséis": 26,
     "veintisiete": 27,
     "veintiocho": 28,
     "veintinueve": 29,
     "treinta": 30,
     "cuarenta": 40,
-    "cincuenta": 50,
+    "cinquenta": 50,
     "sesenta": 60,
     "setenta": 70,
     "ochenta": 80,
@@ -73,8 +90,8 @@ _NUM_STRING_ES = {
     "ciento": 100,
     "doscientos": 200,
     "doscientas": 200,
-    "trescientos": 300,
-    "trescientas": 300,
+    "trecientos": 300,
+    "trecientas": 300,
     "cuatrocientos": 400,
     "cuatrocientas": 400,
     "quinientos": 500,
@@ -87,9 +104,18 @@ _NUM_STRING_ES = {
     "ochocientas": 800,
     "novecientos": 900,
     "novecientas": 900,
-    "mil": 1000}
+    "mil": 1000
+    }
 
-
+# Fractions can be noun (e.g: 1/2, 3/4) or adjectives (e.g.: 1/4 part of 
+# something). As a noun is commonly expressed as masculine while when is an
+# adjective is always femenine 
+# https://espanol.lingolia.com/es/vocabulario/numeros-fechas-horas/fracciones
+# Because the femenine particle (adjective) can be extrapolated thanks to the
+# article, we put here just the noun.
+# As a noun, fractions for décimas, centésimas, milésimas, cienmilésimas, etc
+# are expressed in femenine in Spain, while in some Latam countries are 
+# expressed in masculine.
 _FRACTION_STRING_ES = {
     2: 'medio',
     3: 'tercio',
@@ -109,9 +135,72 @@ _FRACTION_STRING_ES = {
     17: 'diecisieteavo',
     18: 'dieciochoavo',
     19: 'diecinueveavo',
-    20: 'veinteavo'
+    20: 'veinteavo',
+    30: 'treintavo',
+    100: 'centésima',
+    1000: 'milésima'
 }
 
+
+_NUM_STRING_ES = {
+    0: 'cero',
+    1: 'uno',
+    2: 'dos',
+    3: 'tres',
+    4: 'cuatro',
+    5: 'cinco',
+    6: 'seis',
+    7: 'siete',
+    8: 'ocho',
+    9: 'nueve',
+    10: 'diez',
+    11: 'once',
+    12: 'doce',
+    13: 'trece',
+    14: 'catorce',
+    15: 'quince',
+    16: 'dieciséis',
+    17: 'diecisete',
+    18: 'dieciocho',
+    19: 'diecinueve',
+    20: 'veinte',
+    21: 'veintiuno',
+    22: 'veintidos',
+    23: 'veintitres',
+    24: 'veinticuatro',
+    25: 'veinticinco',
+    26: 'veintiséis',
+    27: 'veintisiete',
+    28: 'veintiocho',
+    29: 'veintinueve',
+    30: 'treinta',
+    40: 'cuarenta',
+    50: 'cincuenta',
+    60: 'sesenta',
+    70: 'setenta',
+    80: 'ochenta',
+    90: 'noventa'
+}
+
+# split sentence parse separately and sum ( 2 and a half = 2 + 0.5 )
+_FRACTION_MARKER_ES = {"y"}
+# for non english speakers,  "X Y avos" means X / Y ,  Y must be > 10
+_SUFFIX_FRACTION_MARKER_ES = {"avos"}
+# mean you should sum the next number , equivalent to "and", i.e, "two thousand and one"
+# WARNING: In spanish we use this ONLY between tens and units (i.e. treinta y seis)
+_SUM_MARKER_ES = {"y"}
+# decimal marker ( 1 point 5 = 1 + 0.5)
+# WARNING: In proper Spanish, the only valid term is "coma", we put here "punto" for
+# compatibility, but is wrong, as the decimals are written with comma, so even when 
+# we read loud a text in english like 0.5 we said "cero coma cinco"
+_DECIMAL_MARKER_ES = {"coma", "punto"}
+
+# negate next number (-2 = 0 - 2)
+_NEGATIVES_ES = {"menos"}
+# negate previous number, "2 negative" -> -2
+_NEGATIVE_SUFFIX_MARKER_ES = {"negativo", "negativos"}
+
+# Long scale is the default scale on Spain
 # https://www.grobauer.at/es_eur/zahlnamen.php
 _LONG_SCALE_ES = OrderedDict([
     (100, 'centena'),
@@ -143,7 +232,7 @@ _LONG_SCALE_ES = OrderedDict([
     (1e366, "unsexagintillón")
 ])
 
-
+# Short scale is the default scale on America
 _SHORT_SCALE_ES = OrderedDict([
     (100, 'centena'),
     (1000, 'millar'),
@@ -219,7 +308,7 @@ _SHORT_SCALE_ES = OrderedDict([
 ])
 
 # TODO: female forms.
-_ORDINAL_STRING_BASE_ES = {
+_ORDINAL_BASE_ES = {
     1: 'primero',
     2: 'segundo',
     3: 'tercero',
@@ -252,7 +341,7 @@ _ORDINAL_STRING_BASE_ES = {
 }
 
 
-_SHORT_ORDINAL_STRING_ES = {
+_SHORT_ORDINAL_ES = {
     1e6: "millonésimo",
     1e9: "milmillonésimo",
     1e12: "billonésimo",
@@ -265,10 +354,10 @@ _SHORT_ORDINAL_STRING_ES = {
     1e33: "milquintillonésimo"
     # TODO > 1e-33
 }
-_SHORT_ORDINAL_STRING_ES.update(_ORDINAL_STRING_BASE_ES)
+_SHORT_ORDINAL_ES.update(_ORDINAL_BASE_ES)
 
 
-_LONG_ORDINAL_STRING_ES = {
+_LONG_ORDINAL_ES = {
     1e6: "millonésimo",
     1e12: "billionth",
     1e18: "trillonésimo",
@@ -281,4 +370,4 @@ _LONG_ORDINAL_STRING_ES = {
     1e60: "decillonésimo"
     # TODO > 1e60
 }
-_LONG_ORDINAL_STRING_ES.update(_ORDINAL_STRING_BASE_ES)
+_LONG_ORDINAL_ES.update(_ORDINAL_BASE_ES)
