@@ -49,6 +49,26 @@ import datetime
 import re
 
 
+def singularize(word, lang=None):
+    lang_code = get_primary_lang_code(lang)
+    if lang_code == "en":
+        return singularize_en(word)
+
+    # TODO: Other languages
+    _log_unsupported_language(lang_code, ['en'])
+    return word
+
+
+def pluralize(word, lang=None):
+    lang_code = get_primary_lang_code(lang)
+    if lang_code == "en":
+        return pluralize_en(word)
+
+    # TODO: Other languages
+    _log_unsupported_language(lang_code, ['en'])
+    return word
+
+
 def _translate_word(name, lang):
     """ Helper to get word tranlations
 
@@ -63,7 +83,7 @@ def _translate_word(name, lang):
 
     lang_code = get_full_lang_code(lang)
 
-    filename = resolve_resource_file(join("text", lang_code, name+".word"))
+    filename = resolve_resource_file(join("text", lang_code, name + ".word"))
     if filename:
         # open the file
         try:
@@ -141,7 +161,7 @@ class DateTimeFormat:
         x_in_x000 = self.lang_config[lang]['number'].get(str(int(
             number % 10000 / 1000))) or str(int(number % 10000 / 1000))
         x0_in_x000 = self.lang_config[lang]['number'].get(str(int(
-            number % 10000 / 1000)*10)) or str(int(number % 10000 / 1000)*10)
+            number % 10000 / 1000) * 10)) or str(int(number % 10000 / 1000) * 10)
         x_in_0x00 = self.lang_config[lang]['number'].get(str(int(
             number % 1000 / 100)) or str(int(number % 1000 / 100)))
 
@@ -242,7 +262,7 @@ class DateTimeFormat:
 
 
 date_time_format = DateTimeFormat(os.path.join(os.path.dirname(__file__),
-                                  'res/text'))
+                                               'res/text'))
 
 
 def nice_number(number, lang=None, speech=True, denominators=None):
@@ -520,7 +540,7 @@ def nice_duration(duration, lang=None, speech=True):
             out += str(hours) + ":"
         if minutes < 10 and (hours > 0 or days > 0):
             out += "0"
-        out += str(minutes)+":"
+        out += str(minutes) + ":"
         if seconds < 10:
             out += "0"
         out += str(seconds)
