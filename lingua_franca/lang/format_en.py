@@ -18,6 +18,7 @@
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_en import _NUM_STRING_EN, \
     _FRACTION_STRING_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN, _LONG_ORDINAL_EN
+import inflection
 
 
 def nice_number_en(number, speech, denominators=range(1, 21)):
@@ -382,3 +383,11 @@ def nice_time_en(dt, speech=True, use_24hour=False, use_ampm=False):
                 speak += " a.m."
 
         return speak
+
+
+def singularize_en(word):
+    return inflection.singularize(word)
+
+
+def pluralize_en(word):
+    return inflection.pluralize(word)
