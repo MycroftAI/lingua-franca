@@ -661,7 +661,9 @@ def extract_datetime_en(string, dateNow, default_time):
         start = idx
         used = 0
         # save timequalifier for later
-
+        if word == "ago" and dayOffset:
+            dayOffset = - dayOffset
+            used += 1
         if word == "now" and not datestr:
             resultStr = " ".join(words[idx + 1:])
             resultStr = ' '.join(resultStr.split())

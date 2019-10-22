@@ -504,6 +504,15 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-28 00:00:00", "my birthday is")
         testExtract("my birthday is 2 days after yesterday",
                     "2017-06-28 00:00:00", "my birthday is")
+        #  "# days ago>"
+        testExtract("my birthday was 1 day ago",
+                    "2017-06-26 00:00:00", "my birthday was")
+        testExtract("my birthday was 2 days ago",
+                    "2017-06-25 00:00:00", "my birthday was")
+        testExtract("my birthday was 3 days ago",
+                    "2017-06-24 00:00:00", "my birthday was")
+        testExtract("my birthday was 4 days ago",
+                    "2017-06-23 00:00:00", "my birthday was")
 
     def test_extract_ambiguous_time_en(self):
         morning = datetime(2017, 6, 27, 8, 1, 2)
