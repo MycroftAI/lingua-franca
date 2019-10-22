@@ -252,6 +252,8 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 13:34:00", "set ambush")
         testExtract("Set the ambush for 5 days from today",
                     "2017-07-02 00:00:00", "set ambush")
+        testExtract("day after tomorrow",
+                    "2017-06-29 00:00:00", "")
         testExtract("What is the day after tomorrow's weather?",
                     "2017-06-29 00:00:00", "what is weather")
         testExtract("Remind me at 10:45 pm",
@@ -485,6 +487,14 @@ class TestNormalize(unittest.TestCase):
         noonish = datetime(2017, 6, 27, 12, 1, 2)
         self.assertEqual(
             extract_datetime('feed the fish'), None)
+        self.assertEqual(
+            extract_datetime('day'), None)
+        self.assertEqual(
+            extract_datetime('week'), None)
+        self.assertEqual(
+            extract_datetime('month'), None)
+        self.assertEqual(
+            extract_datetime('year'), None)
         self.assertEqual(
             extract_datetime(' '), None)
         self.assertEqual(

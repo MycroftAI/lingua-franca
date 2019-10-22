@@ -714,7 +714,7 @@ def extract_datetime_en(string, dateNow, default_time):
               wordNext == "after" and
               wordNextNext == "tomorrow" and
               not fromFlag and
-              not wordPrev[0].isdigit()):
+              (not wordPrev or not wordPrev[0].isdigit())):
             dayOffset = 2
             used = 3
             if wordPrev == "the":
@@ -722,11 +722,11 @@ def extract_datetime_en(string, dateNow, default_time):
                 used += 1
                 # parse 5 days, 10 weeks, last week, next week
         elif word == "day":
-            if wordPrev[0].isdigit():
+            if wordPrev and wordPrev[0].isdigit():
                 dayOffset += int(wordPrev)
                 start -= 1
                 used = 2
-        elif word == "week" and not fromFlag:
+        elif word == "week" and not fromFlag and wordPrev:
             if wordPrev[0].isdigit():
                 dayOffset += int(wordPrev) * 7
                 start -= 1
@@ -740,7 +740,7 @@ def extract_datetime_en(string, dateNow, default_time):
                 start -= 1
                 used = 2
                 # parse 10 months, next month, last month
-        elif word == "month" and not fromFlag:
+        elif word == "month" and not fromFlag and wordPrev:
             if wordPrev[0].isdigit():
                 monthOffset = int(wordPrev)
                 start -= 1
@@ -754,7 +754,7 @@ def extract_datetime_en(string, dateNow, default_time):
                 start -= 1
                 used = 2
         # parse 5 years, next year, last year
-        elif word == "year" and not fromFlag:
+        elif word == "year" and not fromFlag and wordPrev:
             if wordPrev[0].isdigit():
                 yearOffset = int(wordPrev)
                 start -= 1
