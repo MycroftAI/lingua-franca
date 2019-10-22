@@ -831,6 +831,7 @@ def extract_datetime_en(string, dateNow, default_time):
         validFollowups = days + months + monthsShort
         validFollowups.append("today")
         validFollowups.append("tomorrow")
+        validFollowups.append("yesterday")
         validFollowups.append("next")
         validFollowups.append("last")
         validFollowups.append("now")
@@ -839,6 +840,8 @@ def extract_datetime_en(string, dateNow, default_time):
             fromFlag = True
             if wordNext == "tomorrow":
                 dayOffset += 1
+            elif wordNext == "yesterday":
+                dayOffset -= 1
             elif wordNext in days:
                 d = days.index(wordNext)
                 tmpOffset = (d + 1) - int(today)
