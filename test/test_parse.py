@@ -330,6 +330,8 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 13:19:00", "remind me to call mom")
         testExtract("remind me to call mom in a quarter of an hour",
                     "2017-06-27 13:19:00", "remind me to call mom")
+        testExtract("remind me to call mom at 10am 2 days after this saturday",
+                    "2017-07-03 10:00:00", "remind me to call mom")
         testExtract("Play Rick Astley music 2 days from Friday",
                     "2017-07-02 00:00:00", "play rick astley music")
         testExtract("Begin the invasion at 3:45 pm on Thursday",

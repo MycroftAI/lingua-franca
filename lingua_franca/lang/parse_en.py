@@ -825,6 +825,7 @@ def extract_datetime_en(string, dateNow, default_time):
         validFollowups.append("next")
         validFollowups.append("last")
         validFollowups.append("now")
+        validFollowups.append("this")
         if (word == "from" or word == "after") and wordNext in validFollowups:
             used = 2
             fromFlag = True
