@@ -710,6 +710,9 @@ def extract_datetime_en(string, dateNow, default_time):
         elif word == "tomorrow" and not fromFlag:
             dayOffset = 1
             used += 1
+        elif word == "yesterday" and not fromFlag:
+            dayOffset = -1
+            used += 1
         elif (word == "day" and
               wordNext == "after" and
               wordNextNext == "tomorrow" and
@@ -1201,7 +1204,8 @@ def extract_datetime_en(string, dateNow, default_time):
                     remainder not in ['am', 'pm', 'hours', 'minutes',
                                       "second", "seconds",
                                       "hour", "minute"] and
-                    ((not daySpecified) or dayOffset < 1)):
+                    ((not daySpecified) or 0 <= dayOffset < 1)):
+
                 # ambiguous time, detect whether they mean this evening or
                 # the next morning based on whether it has already passed
                 if dateNow.hour < HH or (dateNow.hour == HH and
