@@ -458,6 +458,8 @@ class TestNormalize(unittest.TestCase):
         # test yesterday
         testExtract("what day was yesterday",
                     "2017-06-26 00:00:00", "what day was")
+        testExtract("what day was the day before yesterday",
+                    "2017-06-25 00:00:00", "what day was")
         testExtract("i had dinner yesterday at 6",
                     "2017-06-26 06:00:00", "i had dinner")
         testExtract("i had dinner yesterday at 6 am",

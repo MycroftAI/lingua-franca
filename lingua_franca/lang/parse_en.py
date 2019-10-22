@@ -710,6 +710,12 @@ def extract_datetime_en(string, dateNow, default_time):
         elif word == "tomorrow" and not fromFlag:
             dayOffset = 1
             used += 1
+        elif word == "day" and wordNext == "before" and wordNextNext == "yesterday" and not fromFlag:
+            dayOffset = -2
+            used += 3
+        elif word == "before" and wordNext == "yesterday" and not fromFlag:
+            dayOffset = -2
+            used += 2
         elif word == "yesterday" and not fromFlag:
             dayOffset = -1
             used += 1
