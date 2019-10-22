@@ -455,6 +455,16 @@ class TestNormalize(unittest.TestCase):
                     "2017-07-08 10:00:00", "remind me to call mom")
         testExtract("remind me to call mom at 10am next saturday",
                     "2017-07-08 10:00:00", "remind me to call mom")
+        # test yesterday
+        testExtract("what day was yesterday",
+                    "2017-06-26 00:00:00", "what day was")
+        testExtract("i had dinner yesterday at 6",
+                    "2017-06-26 06:00:00", "i had dinner")
+        testExtract("i had dinner yesterday at 6 am",
+                    "2017-06-26 06:00:00", "i had dinner")
+        testExtract("i had dinner yesterday at 6 pm",
+                    "2017-06-26 18:00:00", "i had dinner")
+
         # Below two tests, ensure that time is picked
         # even if no am/pm is specified
         # in case of weekdays/tonight
