@@ -338,18 +338,27 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
             number_words.append(token)
             continue
 
-        # explicit ordinals, 1st, 2nd, 3rd, 4th.... Nth
-        if word.endswith("st") and is_numeric(word[:-2]) and word[:-2].endswith("1"):
-            word = word[:-2]
-        elif word.endswith("nd") and is_numeric(word[:-2]) and word[:-2].endswith("2"):
-            word = word[:-2]
-        elif word.endswith("rd") and is_numeric(word[:-2]) and word[:-2].endswith("3"):
-            word = word[:-2]
-        elif word.endswith("th") and is_numeric(word[:-2]):
-            word = word[:-2]
-
         prev_word = tokens[idx - 1].word if idx > 0 else ""
         next_word = tokens[idx + 1].word if idx + 1 < len(tokens) else ""
+
+        if is_numeric(word[:-2]) and \
+                (word.endswith("st") or word.endswith("nd") or word.endswith("rd") or word.endswith("th")):
+
+            # explicit ordinals, 1st, 2nd, 3rd, 4th.... Nth
+            if word.endswith("st") and word[:-2].endswith("1"):
+                word = word[:-2]
+            elif word.endswith("nd") and word[:-2].endswith("2"):
+                word = word[:-2]
+            elif word.endswith("rd") and word[:-2].endswith("3"):
+                word = word[:-2]
+            else:
+                word = word[:-2]
+
+            # handle nth one
+            if next_word == "one":
+                # would return 1 instead otherwise
+                tokens[idx + 1] = _Token("", idx)
+                next_word = ""
 
         if word not in string_num_scale and \
                 word not in _STRING_NUM_EN and \
