@@ -323,9 +323,10 @@ def get_gender(word, context="", lang=None):
 
     lang_code = get_primary_lang_code(lang)
 
-    if lang_code in ["pt", "es"]:
-        # spanish follows same rules
+    if lang_code == "pt":
         return get_gender_pt(word, context)
+    elif lang_code == "es":
+        return get_gender_es(word, context)
     elif lang_code == "it":
         return get_gender_it(word, context)
     # TODO: get_gender_xx for other languages

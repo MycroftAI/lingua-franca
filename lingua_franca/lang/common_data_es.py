@@ -26,7 +26,7 @@ _ARTICLES_ES = {'el', 'la', 'los', 'las'}
 
 # word rules for gender
 # TODO: review rules to see exceptions
-_FEMALE_ENDINGS_ES = ["a", "as"]
+_FEMALE_ENDINGS_ES = ["a", "as", "triz"]
 _MALE_ENDINGS_ES = ["o", "os"]
 
 # special cases, word lookup for words not covered by above rule
@@ -58,8 +58,10 @@ _GENDERS_ES = {
 }
 
 # context rules for gender
-_MALE_DETERMINANTS_ES = ["lo", "los", "este", "estos", "ese", "esos"]
-_FEMALE_DETERMINANTS_ES = ["la", "las", "esta", "estas", "esa", "esas"]
+_MALE_DETERMINANTS_ES = ["lo", "los", "este", "estos", "ese", "esos", 
+                         "un", "unos"]
+_FEMALE_DETERMINANTS_ES = ["la", "las", "esta", "estas", "esa", "esas", 
+                           "una", "unas"]
 
 
 _NUMBERS_ES = {
