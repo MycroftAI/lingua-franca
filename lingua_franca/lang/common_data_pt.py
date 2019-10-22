@@ -1,3 +1,5 @@
+from lingua_franca.lang.parse_common import invert_dict
+
 # Undefined articles ["um", "uma", "uns", "umas"] can not be supressed,
 # in PT, "um cavalo" means "a horse" or "one horse".
 
@@ -18,6 +20,59 @@ _GENDERS_PT = {
 _MALE_DETERMINANTS_PT = ["o", "os", "este", "estes", "esse", "esses"]
 _FEMALE_DETERMINANTS_PT = ["a", "as", "estas", "estas", "essa", "essas"]
 
+# constants used for singularize / pluralize
+_VOWELS_PT = ["a", "ã", "á", "à",
+              "e", "é", "è",
+              "i", "ì", "í",
+              "o", "ó", "ò", "õ",
+              "u", "ú", "ù"]
+
+_INVARIANTS_PT = ["ontem", "depressa", "ali", "além", "sob", "por", "contra", "desde", "entre",
+                  "até", "perante", "porém", "contudo", "todavia", "entretanto", "senão", "portanto",
+                  "oba", "eba", "exceto", "excepto", "apenas", "menos", "também", "inclusive", "aliás",
+                  "que", "onde", "isto", "isso", "aquilo", "algo", "alguém", "nada", "ninguém", "tudo", "cada",
+                  "outrem", "quem", "mais", "menos", "demais",
+                  # NOTE some words ommited because it depends on POS_TAG
+                  # NOTE these multi word expressions are also invariant
+                  "ou melhor", "isto é", "por exemplo", "a saber", "digo", "ou seja",
+                  "por assim dizer", "com efeito", "ou antes"]
+
+_PLURAL_EXCEPTIONS_PT = {
+    "cânon": "cânones",
+    "cós": "coses",  # cós (unchanged word) is also valid
+    "cais": "cais",
+    "xis": "xis",
+    "mal": "males",
+    "cônsul": "cônsules",
+    "mel": "méis",  # "meles" also valid
+    "fel": "féis",  # "feles" also valid
+    "cal": "cais",  # "cales" also valid
+    "aval": "avais",  # "avales also valid
+    "mol": "móis",  # "moles also valid
+    "real": "réis",
+    "fax": "faxes",
+    "cálix": "cálices",
+    "índex": "índices",
+    "apêndix": "apêndices",
+    "hélix": "hélices",
+    "hálux": "háluces",
+    "códex": "códices",
+    "fénix": "fénixes",  # "fénix" also valid
+    "til": "tis",  # "tiles" also valid
+    "pão": "pães",
+    "cão": "cães",
+    "alemão": "alemães",
+    "balão": "balões",
+    "anão": "anões",
+    "dez": "dez",
+    "três": "três",
+    "seis": "seis"
+}
+
+# in general words that end with "s" in singular form should be added bellow
+_SINGULAR_EXCEPTIONS_PT = invert_dict(_PLURAL_EXCEPTIONS_PT)
+
+# constants for number handling
 _NUMBERS_PT = {
     "zero": 0,
     "um": 1,
