@@ -328,8 +328,7 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(27, ordinals=True), "twenty seventh")
         self.assertEqual(pronounce_number(30, ordinals=True), "thirtieth")
         self.assertEqual(pronounce_number(33, ordinals=True), "thirty third")
-        # TODO test failing with "one hundred"
-        #self.assertEqual(pronounce_number(100, ordinals=True), "hundredth")
+        self.assertEqual(pronounce_number(100, ordinals=True), "hundredth")
         self.assertEqual(pronounce_number(1000, ordinals=True), "thousandth")
         self.assertEqual(pronounce_number(10000, ordinals=True),
                          "ten thousandth")
