@@ -175,6 +175,10 @@ class TestNormalize(unittest.TestCase):
                                           " and a half minutes long"),
                          (timedelta(hours=1, minutes=57.5),
                              "the movie is ,  long"))
+        self.assertEqual(extract_duration("10-seconds"),
+                         (timedelta(seconds=10.0), ""))
+        self.assertEqual(extract_duration("5-minutes"),
+                         (timedelta(minutes=5), ""))
 
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
