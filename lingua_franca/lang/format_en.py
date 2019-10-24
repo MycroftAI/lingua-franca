@@ -68,7 +68,7 @@ def nice_number_en(number, speech, denominators):
 def pronounce_number_en(num, places=2, short_scale=True, scientific=False,
                         ordinals=False):
     """
-    Convert a number to its spoken equivalent
+    Convert a number to it's spoken equivalent
 
     For example, '5.2' would return 'five point two'
 
@@ -82,6 +82,11 @@ def pronounce_number_en(num, places=2, short_scale=True, scientific=False,
     Returns:
         (str): The pronounced number
     """
+    # deal with infinity
+    if num == float("inf"):
+        return "infinity"
+    elif num == float("-inf"):
+        return "negative infinity"
     if scientific:
         number = '%E' % num
         n, power = number.replace("+", "").split("E")
@@ -279,8 +284,11 @@ def pronounce_number_en(num, places=2, short_scale=True, scientific=False,
         else:
             result += _long_scale(num)
 
+    # deal with scientific notation unpronounceable as number
+    if not result and "e" in str(num):
+        return pronounce_number_en(num, places, short_scale, scientific=True)
     # Deal with fractional part
-    if not num == int(num) and places > 0:
+    elif not num == int(num) and places > 0:
         result += " point"
         place = 10
         while int(num * place) % 10 > 0 and places > 0:

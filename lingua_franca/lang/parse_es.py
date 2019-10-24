@@ -21,76 +21,7 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-
-# Undefined articles ["un", "una", "unos", "unas"] can not be supressed,
-# in Spanish, "un caballo" means "a horse" or "one horse".
-es_articles = ["el", "la", "los", "las"]
-
-es_numbers = {
-    "cero": 0,
-    "un": 1,
-    "uno": 1,
-    "una": 1,
-    "dos": 2,
-    "tres": 3,
-    u"trés": 3,
-    "cuatro": 4,
-    "cinco": 5,
-    "seis": 6,
-    "siete": 7,
-    "ocho": 8,
-    "nueve": 9,
-    "diez": 10,
-    "once": 11,
-    "doce": 12,
-    "trece": 13,
-    "catorce": 14,
-    "quince": 15,
-    "dieciseis": 16,
-    u"dieciséis": 16,
-    "diecisiete": 17,
-    "dieciocho": 18,
-    "diecinueve": 19,
-    "veinte": 20,
-    "veintiuno": 21,
-    u"veintidï¿½s": 22,
-    u"veintitrï¿½s": 23,
-    "veintidos": 22,
-    "veintitres": 23,
-    u"veintitrés": 23,
-    "veinticuatro": 24,
-    "veinticinco": 25,
-    u"veintiséis": 26,
-    "veintiseis": 26,
-    "veintisiete": 27,
-    "veintiocho": 28,
-    "veintinueve": 29,
-    "treinta": 30,
-    "cuarenta": 40,
-    "cincuenta": 50,
-    "sesenta": 60,
-    "setenta": 70,
-    "ochenta": 80,
-    "noventa": 90,
-    "cien": 100,
-    "ciento": 100,
-    "doscientos": 200,
-    "doscientas": 200,
-    "trescientos": 300,
-    "trescientas": 300,
-    "cuatrocientos": 400,
-    "cuatrocientas": 400,
-    "quinientos": 500,
-    "quinientas": 500,
-    "seiscientos": 600,
-    "seiscientas": 600,
-    "setecientos": 700,
-    "setecientas": 700,
-    "ochocientos": 800,
-    "ochocientas": 800,
-    "novecientos": 900,
-    "novecientas": 900,
-    "mil": 1000}
+from lingua_franca.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES
 
 
 def isFractional_es(input_str):
@@ -151,8 +82,8 @@ def extractnumber_es(text):
             next_word = None
 
         # is current word a number?
-        if word in es_numbers:
-            val = es_numbers[word]
+        if word in _NUM_STRING_ES:
+            val = _NUM_STRING_ES[word]
         elif word.isdigit():  # doesn't work with decimals
             val = int(word)
         elif is_numeric(word):
@@ -265,7 +196,7 @@ def es_number_parse(words, i):
 
     def es_number_word(i, mi, ma):
         if i < len(words):
-            v = es_numbers.get(words[i])
+            v = _NUM_STRING_ES.get(words[i])
             if v and v >= mi and v <= ma:
                 return v, i + 1
         return None
@@ -343,7 +274,7 @@ def normalize_es(text, remove_articles):
     while i < len(words):
         word = words[i]
 
-        if remove_articles and word in es_articles:
+        if remove_articles and word in _ARTICLES_ES:
             i += 1
             continue
 
@@ -402,13 +333,13 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
 
     def date_found():
         return found or \
-            (
-                datestr != "" or
-                yearOffset != 0 or monthOffset != 0 or
-                dayOffset is True or hrOffset != 0 or
-                hrAbs or minOffset != 0 or
-                minAbs or secOffset != 0
-            )
+               (
+                       datestr != "" or
+                       yearOffset != 0 or monthOffset != 0 or
+                       dayOffset is True or hrOffset != 0 or
+                       hrAbs or minOffset != 0 or
+                       minAbs or secOffset != 0
+               )
 
     if input_str == "":
         return None
@@ -506,8 +437,8 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
                     start -= 1
                     used += 1
             elif (wordPrev and wordPrev[0].isdigit() and
-                    wordNext not in months and
-                    wordNext not in monthsShort):
+                  wordNext not in months and
+                  wordNext not in monthsShort):
                 dayOffset += int(wordPrev)
                 start -= 1
                 used += 2
@@ -812,7 +743,7 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
         # parse half an hour, quarter hour
         elif word == "hora" and \
                 (wordPrev in time_indicators or wordPrevPrev in
-                    time_indicators):
+                 time_indicators):
             if wordPrev == "media":
                 minOffset = 30
             elif wordPrev == "cuarto":
@@ -937,11 +868,11 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
                         remainder = "am"
                         used = 1
                     elif (int(word) > 100 and
-                            (
-                                # wordPrev == "o" or
-                                # wordPrev == "oh" or
-                                wordPrev == "cero"
-                            )):
+                          (
+                                  # wordPrev == "o" or
+                                  # wordPrev == "oh" or
+                                  wordPrev == "cero"
+                          )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = int(word) / 100
                         strMM = int(word) - strHH * 100
@@ -951,8 +882,8 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
                             wordNext == "hora" and
                             word[0] != '0' and
                             (
-                                int(word) < 100 and
-                                int(word) > 2400
+                                    int(word) < 100 and
+                                    int(word) > 2400
                             )):
                         # ignores military time
                         # "in 3 hours"

@@ -1,9 +1,24 @@
 # Undefined articles ["um", "uma", "uns", "umas"] can not be supressed,
 # in PT, "um cavalo" means "a horse" or "one horse".
 
-_PT_ARTICLES = ["o", "a", "os", "as"]
+_ARTICLES_PT = ["o", "a", "os", "as"]
 
-_PT_NUMBERS = {
+# word rules for gender
+_FEMALE_ENDINGS_PT = ["a", "as"]
+_MALE_ENDINGS_PT = ["o", "os"]
+
+# special cases, word lookup for words not covered by above rule
+_GENDERS_PT = {
+    "mulher": "f",
+    "mulheres": "f",
+    "homem": "m"
+}
+
+# context rules for gender
+_MALE_DETERMINANTS_PT = ["o", "os", "este", "estes", "esse", "esses"]
+_FEMALE_DETERMINANTS_PT = ["a", "as", "estas", "estas", "essa", "essas"]
+
+_NUMBERS_PT = {
     "zero": 0,
     "um": 1,
     "uma": 1,
