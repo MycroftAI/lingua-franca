@@ -24,7 +24,8 @@ from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
     _LONG_ORDINAL_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN
 
 import re
-
+import json
+from lingua_franca import resolve_resource_file
 from lingua_franca.time import now_local
 
 
@@ -1381,125 +1382,14 @@ def extract_numbers_en(text, short_scale=True, ordinals=False):
 
 
 class EnglishNormalizer(Normalizer):
-    default_config = {
-        "lowercase": False,
-        "numbers_to_digits": True,
-        "expand_contractions": True,
-        "remove_symbols": False,
-        "remove_accents": False,
-        "remove_articles": False,
-        "remove_stopwords": False,
-
-        "contractions": {"I'd": 'I would',
-                         "I'll": 'I will',
-                         "I'm": 'I am',
-                         "I've": 'I have',
-                         "ain't": 'is not',
-                         "aren't": 'are not',
-                         "can't": 'can not',
-                         "could've": 'could have',
-                         "couldn't": 'could not',
-                         "didn't": 'did not',
-                         "doesn't": 'does not',
-                         "don't": 'do not',
-                         'gonna': 'going to',
-                         'gotta': 'got to',
-                         "hadn't": 'had not',
-                         "hasn't": 'has not',
-                         "haven't": 'have not',
-                         "he'd": 'he would',
-                         "he'll": 'he will',
-                         "he's": 'he is',
-                         "how'd": 'how did',
-                         "how'll": 'how will',
-                         "how's": 'how is',
-                         "isn't": 'is not',
-                         "it'd": 'it would',
-                         "it'll": 'it will',
-                         "it's": 'it is',
-                         "might've": 'might have',
-                         "mightn't": 'might not',
-                         "must've": 'must have',
-                         "mustn't": 'must not',
-                         "needn't": 'need not',
-                         "oughtn't": 'ought not',
-                         "shan't": 'shall not',
-                         "she'd": 'she would',
-                         "she'll": 'she will',
-                         "she's": 'she is',
-                         "should've": 'should have',
-                         "shouldn't": 'should not',
-                         "somebody's": 'somebody is',
-                         "someone'd": 'someone would',
-                         "someone'll": 'someone will',
-                         "someone's": 'someone is',
-                         "that'd": 'that would',
-                         "that'll": 'that will',
-                         "that's": 'that is',
-                         "there'd": 'there would',
-                         "there're": 'there are',
-                         "there's": 'there is',
-                         "they'd": 'they would',
-                         "they'll": 'they will',
-                         "they're": 'they are',
-                         "they've": 'they have',
-                         "wasn't": 'was not',
-                         "we'd": 'we would',
-                         "we'll": 'we will',
-                         "we're": 'we are',
-                         "we've": 'we have',
-                         "weren't": 'were not',
-                         "what'd": 'what did',
-                         "what'll": 'what will',
-                         "what're": 'what are',
-                         "what's": 'what is',
-                         "what've": 'what have',
-                         'whats': 'what is',  # technically incorrect but some STT outputs
-                         "when'd": 'when did',
-                         "when's": 'when is',
-                         "where'd": 'where did',
-                         "where's": 'where is',
-                         "where've": 'where have',
-                         "who'd": 'who would',
-                         "who'd've": 'who would have',
-                         "who'll": 'who will',
-                         "who're": 'who are',
-                         "who's": 'who is',
-                         "who've": 'who have',
-                         "why'd": 'why did',
-                         "why're": 'why are',
-                         "why's": 'why is',
-                         "won't": 'will not',
-                         "won't've": 'will not have',
-                         "would've": 'would have',
-                         "wouldn't": 'would not',
-                         "wouldn't've": 'would not have',
-                         "y'ain't": 'you are not',
-                         "y'aint": 'you are not',
-                         "y'all": 'you all',
-                         "ya'll": 'you all',
-                         "you'd": 'you would',
-                         "you'd've": 'you would have',
-                         "you'll": 'you will',
-                         "you're": 'you are',
-                         "you've": 'you have'},
-        "word_replacements": {},
-        "number_replacements": {
-            'zero': "0", 'one': "1", 'two': "2", 'three': "3", 'four': "4",
-            'five': "5", 'six': "6", 'seven': "7", 'eight': "8", 'nine': "9",
-            'ten': "10", 'eleven': "11", 'twelve': "12", 'thirteen': "13", 'fourteen': "14",
-            'fifteen': "15", 'sixteen': "16", 'seventeen': "17", 'eighteen': "18",
-            'nineteen': "19", 'twenty': "20", 'thirty': "30", 'forty': "40", 'fifty': "50",
-            'sixty': "60", 'seventy': "70", 'eighty': "80", 'ninety': "90"
-        },
-        "stopwords": [],
-        "articles": ["the", "a", "an"]
-
-    }
+    _config_cache = None
 
     def __init__(self):
-        # TODO read from json and cache
-        super().__init__(self.default_config)
+        if self._config_cache is None:
+            path = resolve_resource_file("text/en-us/normalize.json")
+            with open(path) as f:
+                self._config_cache = json.load(f)
+        super().__init__(self._config_cache)
 
 
 def normalize_en(text, remove_articles):
