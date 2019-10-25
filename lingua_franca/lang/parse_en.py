@@ -1382,14 +1382,9 @@ def extract_numbers_en(text, short_scale=True, ordinals=False):
 
 
 class EnglishNormalizer(Normalizer):
-    _config_cache = None
-
-    def __init__(self):
-        if self._config_cache is None:
-            path = resolve_resource_file("text/en-us/normalize.json")
-            with open(path) as f:
-                self._config_cache = json.load(f)
-        super().__init__(self._config_cache)
+    path = resolve_resource_file("text/en-us/normalize.json")
+    with open(path) as f:
+        _default_config = json.load(f)
 
 
 def normalize_en(text, remove_articles):
