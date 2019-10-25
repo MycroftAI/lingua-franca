@@ -1382,8 +1382,7 @@ def extract_numbers_en(text, short_scale=True, ordinals=False):
 
 
 class EnglishNormalizer(Normalizer):
-    path = resolve_resource_file("text/en-us/normalize.json")
-    with open(path) as f:
+    with open(resolve_resource_file("text/en-us/normalize.json")) as f:
         _default_config = json.load(f)
 
 
