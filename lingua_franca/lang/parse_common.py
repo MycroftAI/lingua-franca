@@ -23,9 +23,10 @@ class Normalizer:
 
     normalize_XX should pass a valid config read from json
     """
+    _default_config = {}
 
     def __init__(self, config=None):
-        self.config = config or {}
+        self.config = config or self._default_config
 
     @property
     def should_lowercase(self):
