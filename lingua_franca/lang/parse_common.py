@@ -133,7 +133,7 @@ class Normalizer:
 
     def remove_symbols(self, utterance):
         for s in self.symbols:
-            utterance = utterance.replace(s, "")
+            utterance = utterance.replace(s, " ")
         return utterance
 
     def remove_accents(self, utterance):
