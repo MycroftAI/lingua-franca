@@ -28,6 +28,10 @@ class Normalizer:
     def __init__(self, config=None):
         self.config = config or self._default_config
 
+    @staticmethod
+    def tokenize(utterance):
+        return utterance.split()
+
     @property
     def should_lowercase(self):
         return self.config.get("lowercase", False)
@@ -94,13 +98,13 @@ class Normalizer:
     @property
     def symbols(self):
         return self.config.get("symbols",
-                               [",", ";", "-", "_", "!", "?", ".", ":", "<", ">",
+                               [";", "_", "!", "?", "<", ">",
                                 "|", "(", ")", "=", "[", "]", "{",
-                                "}", "»", "«", "*", "+", "~", "^", "'", "`"])
+                                "}", "»", "«", "*", "~", "^", "`"])
 
     def expand_contractions(self, utterance):
         """ Expand common contractions, e.g. "isn't" -> "is not" """
-        words = utterance.split()
+        words = self.tokenize(utterance)
         for idx, w in enumerate(words):
             if w in self.contractions:
                 words[idx] = self.contractions[w]
@@ -108,7 +112,7 @@ class Normalizer:
         return utterance
 
     def numbers_to_digits(self, utterance):
-        words = utterance.split()
+        words = self.tokenize(utterance)
         for idx, w in enumerate(words):
             if w in self.number_replacements:
                 words[idx] = self.number_replacements[w]
@@ -116,7 +120,7 @@ class Normalizer:
         return utterance
 
     def remove_articles(self, utterance):
-        words = utterance.split()
+        words = self.tokenize(utterance)
         for idx, w in enumerate(words):
             if w in self.articles:
                 words[idx] = ""
@@ -124,7 +128,7 @@ class Normalizer:
         return utterance
 
     def remove_stopwords(self, utterance):
-        words = utterance.split()
+        words = self.tokenize(utterance)
         for idx, w in enumerate(words):
             if w in self.stopwords:
                 words[idx] = ""
@@ -142,7 +146,7 @@ class Normalizer:
         return utterance
 
     def replace_words(self, utterance):
-        words = utterance.split()
+        words = self.tokenize(utterance)
         for idx, w in enumerate(words):
             if w in self.word_replacements:
                 words[idx] = self.word_replacements[w]
