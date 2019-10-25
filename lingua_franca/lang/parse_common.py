@@ -163,9 +163,10 @@ class Normalizer:
             utterance = self.remove_symbols(utterance)
         if self.should_remove_accents:
             utterance = self.remove_accents(utterance)
-        # TODO deprecate remove_articles, backwards compat
-        remove_articles = remove_articles or self.should_remove_articles
-        if remove_articles:
+        # TODO deprecate remove_articles param, backwards compat
+        if remove_articles is not None and remove_articles:
+            utterance = self.remove_articles(utterance)
+        elif self.should_remove_articles:
             utterance = self.remove_articles(utterance)
         if self.should_remove_stopwords:
             utterance = self.remove_stopwords(utterance)
