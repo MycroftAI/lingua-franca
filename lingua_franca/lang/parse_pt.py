@@ -199,6 +199,13 @@ class PortugueseNormalizer(Normalizer):
     with open(resolve_resource_file("text/pt-pt/normalize.json")) as f:
         _default_config = json.load(f)
 
+    @staticmethod
+    def tokenize(utterance):
+        tokens = []
+        for w in utterance.split():
+            tokens += w.split("-")
+        return tokens
+
 
 def normalize_pt(text, remove_articles):
     """ PT string normalization """
