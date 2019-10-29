@@ -22,7 +22,7 @@ def required(requirements_file):
 
 extra_files = package_files('lingua_franca')
 
-with open("README.md", "r") as fh:
+with open("readme.md", "r") as fh:
     long_description = fh.read()
 
 setup(
@@ -34,8 +34,8 @@ setup(
     package_data={'': extra_files},
     include_package_data=True,
     install_requires=required('requirements.txt'),
-    author='jarbasAI',
-    author_email='jarbasai@mailfence.com',
+    author='Mycroft AI',
+    author_email='dev@mycroft.ai',
     description='Mycroft\'s multilingual text parsing and formatting library',
     long_description=long_description,
     long_description_content_type="text/markdown",
