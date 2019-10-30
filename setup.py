@@ -22,16 +22,32 @@ def required(requirements_file):
 
 extra_files = package_files('lingua_franca')
 
+with open("readme.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name='lingua_franca',
-    version='0.1',
+    version='0.1.0',
     packages=['test', 'lingua_franca', 'lingua_franca.lang'],
     url='https://github.com/MycroftAi/lingua_franca',
     license='Apache2.0',
     package_data={'': extra_files},
     include_package_data=True,
     install_requires=required('requirements.txt'),
-    author='jarbasAI',
-    author_email='jarbasai@mailfence.com',
-    description='Mycroft\'s multilingual text parsing and formatting library'
+    author='Mycroft AI',
+    author_email='dev@mycroft.ai',
+    description='Mycroft\'s multilingual text parsing and formatting library',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'Topic :: Text Processing :: Linguistic',
+        'License :: OSI Approved :: Apache Software License',
+
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+    ],
 )
