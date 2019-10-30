@@ -29,7 +29,7 @@ setup(
     name='lingua_franca',
     version='0.1.0',
     packages=['test', 'lingua_franca', 'lingua_franca.lang'],
-    url='https://github.com/MycroftAi/lingua_franca',
+    url='https://github.com/MycroftAI/lingua-franca',
     license='Apache2.0',
     package_data={'': extra_files},
     include_package_data=True,
