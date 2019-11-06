@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.md) [![CLA](https://img.shields.io/badge/CLA%3F-Required-blue.svg)](https://mycroft.ai/cla) [![Team](https://img.shields.io/badge/Team-Languages-violetblue.svg)](https://github.com/MycroftAI/contributors/blob/master/team/Languages.md) ![Status](https://img.shields.io/badge/-Alpha-orange.svg)
 
-[![Build Status](https://travis-ci.org/MycroftAI/mycroft-core.svg?branch=master)](https://travis-ci.org/MycroftAI/mycroft-core) [![Coverage Status](https://coveralls.io/repos/github/MycroftAI/lingua-franca/badge.svg?branch=dev)](https://coveralls.io/github/MycroftAI/lingua-franca?branch=dev)
+[![Build Status](https://travis-ci.org/MycroftAI/lingua-franca.svg?branch=master)](https://travis-ci.org/MycroftAI/lingua-franca) [![Coverage Status](https://coveralls.io/repos/github/MycroftAI/lingua-franca/badge.svg?branch=master)](https://coveralls.io/github/MycroftAI/lingua-franca?branch=master)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 [![Join chat](https://img.shields.io/badge/Mattermost-join_chat-brightgreen.svg)](https://chat.mycroft.ai/community/channels/languages)
 
