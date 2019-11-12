@@ -919,8 +919,6 @@ def extract_datetime_en(string, dateNow, default_time):
             elif wordPrevPrev == "quarter":
                 minOffset = 15
                 if idx > 2 and words[idx - 3] in markers:
-                    if words[idx - 3] == "this":
-                        daySpecified = True
                     words[idx - 3] = ""
                 words[idx - 2] = ""
             elif wordPrev == "within":
