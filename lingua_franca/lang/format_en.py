@@ -240,10 +240,8 @@ def pronounce_number_en(num, places=2, short_scale=True, scientific=False):
 def nice_time_en(dt, speech=True, use_24hour=False, use_ampm=False):
     """
     Format a time to a comfortable human format
-
     For example, generate 'five thirty' for speech or '5:30' for
     text display.
-
     Args:
         dt (datetime): date to format (assumes already in local timezone)
         speech (bool): format for speech (default/True) or display (False)=Fal
@@ -292,24 +290,27 @@ def nice_time_en(dt, speech=True, use_24hour=False, use_ampm=False):
     else:
         if dt.hour == 0 and dt.minute == 0:
             return "midnight"
-        if dt.hour == 12 and dt.minute == 0:
+        elif dt.hour == 12 and dt.minute == 0:
             return "noon"
-        # TODO: "half past 3", "a quarter of 4" and other idiomatic times
-
-        if dt.hour == 0:
-            speak = pronounce_number_en(12)
-        elif dt.hour < 13:
-            speak = pronounce_number_en(dt.hour)
+        
+        hour = dt.hour % 12 or 12  # 12 hour clock and 0 is spoken as 12
+        if dt.minute == 15:
+            speak = "quarter past " + pronounce_number_en(hour)
+        elif dt.minute == 30:
+            speak = "half past " + pronounce_number_en(hour)
+        elif dt.minute == 45:
+            next_hour = (dt.hour + 1) % 12 or 12
+            speak = "quarter to " + pronounce_number_en(next_hour)
         else:
-            speak = pronounce_number_en(dt.hour - 12)
+            speak = pronounce_number_en(hour)
 
-        if dt.minute == 0:
-            if not use_ampm:
-                return speak + " o'clock"
-        else:
-            if dt.minute < 10:
-                speak += " oh"
-            speak += " " + pronounce_number_en(dt.minute)
+            if dt.minute == 0:
+                if not use_ampm:
+                    return speak + " o'clock"
+            else:
+                if dt.minute < 10:
+                    speak += " oh"
+                speak += " " + pronounce_number_en(dt.minute)
 
         if use_ampm:
             if dt.hour > 11:
