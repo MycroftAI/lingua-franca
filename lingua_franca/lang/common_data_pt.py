@@ -30,7 +30,7 @@ _NUMBERS_PT = {
     "dois": 2,
     "duas": 2,
     "tres": 3,
-    u"três": 3,
+    "três": 3,
     "quatro": 4,
     "cinco": 5,
     "seis": 6,
@@ -74,18 +74,18 @@ _NUMBERS_PT = {
     "novecentos": 900,
     "novecentas": 900,
     "mil": 1000,
-    u"milhï¿½o": 1000000}
+    "milhï¿½o": 1000000}
 
 _FRACTION_STRING_PT = {
     2: 'meio',
-    3: u'terço',
+    3: 'terço',
     4: 'quarto',
     5: 'quinto',
     6: 'sexto',
-    7: u'sétimo',
+    7: 'sétimo',
     8: 'oitavo',
     9: 'nono',
-    10: u'décimo',
+    10: 'décimo',
     11: 'onze avos',
     12: 'doze avos',
     13: 'treze avos',
@@ -95,10 +95,10 @@ _FRACTION_STRING_PT = {
     17: 'dezassete avos',
     18: 'dezoito avos',
     19: 'dezanove avos',
-    20: u'vigésimo',
-    30: u'trigésimo',
-    100: u'centésimo',
-    1000: u'milésimo'
+    20: 'vigésimo',
+    30: 'trigésimo',
+    100: 'centésimo',
+    1000: 'milésimo'
 }
 
 _NUM_STRING_PT = {
