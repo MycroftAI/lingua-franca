@@ -357,7 +357,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
             # handle nth one
             if next_word == "one":
                 # would return 1 instead otherwise
-                tokens[idx + 1] = _Token("", idx)
+                tokens[idx + 1] = Token("", idx)
                 next_word = ""
 
         if word not in string_num_scale and \
