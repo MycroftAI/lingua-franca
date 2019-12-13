@@ -899,6 +899,11 @@ def extract_datetime_en(string, dateNow, default_time):
             if hrAbs is None:
                 hrAbs = 19
             used += 1
+        elif word == "tonight" or word == "night":
+            if hrAbs is None:
+                hrAbs = 22
+            #used += 1 ## NOTE this breaks other tests, TODO refactor me!
+
         # couple of time_unit
         elif word == "2" and wordNext == "of" and \
                 wordNextNext in ["hours", "minutes", "seconds"]:
