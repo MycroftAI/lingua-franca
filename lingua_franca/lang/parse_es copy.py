@@ -15,18 +15,13 @@
 # limitations under the License.
 #
 """
-    Parse functions for Spanish (es_ES)
-
+    Parse functions for spanish (es)
     TODO: numbers greater than 999999
-    TODO: date time es
 """
-
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-from lingua_franca.lang.common_data_es import _FRACTION_STRING_ES, \
-    _ARTICLES_ES, _NUMBERS_ES, _FEMALE_DETERMINANTS_ES, _FEMALE_ENDINGS_ES,\
-    _MALE_DETERMINANTS_ES, _MALE_ENDINGS_ES, _GENDERS_ES
+from lingua_franca.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES
 
 
 def isFractional_es(input_str):
@@ -42,18 +37,22 @@ def isFractional_es(input_str):
     if input_str.endswith('s', -1):
         input_str = input_str[:len(input_str) - 1]  # e.g. "fifths"
 
-    aFrac = ["medio", "tercio", "cuarto", "quinto", "sexto",
-             "séptimo", "octavo", "noveno", "décimo"]
+    aFrac = ["medio", "media", "tercio", "cuarto", "cuarta", "quinto",
+             "quinta", "sexto", "sexta", u"séptimo", u"séptima", "octavo",
+             "octava", "noveno", "novena", u"décimo", u"décima", u"onceavo",
+             u"onceava", u"doceavo", u"doceava"]
 
     if input_str.lower() in aFrac:
         return 1.0 / (aFrac.index(input_str) + 2)
-    if input_str == "vigésimo":
+    if (input_str == "cuarto" or input_str == "cuarta"):
+        return 1.0 / 4
+    if (input_str == u"vigésimo" or input_str == u"vigésima"):
         return 1.0 / 20
-    if input_str == "trigésimo":
+    if (input_str == u"trigésimo" or input_str == u"trigésima"):
         return 1.0 / 30
-    if input_str == "centésimo":
+    if (input_str == u"centésimo" or input_str == u"centésima"):
         return 1.0 / 100
-    if input_str == "milésimo":
+    if (input_str == u"milésimo" or input_str == u"milésima"):
         return 1.0 / 1000
     return False
 
@@ -83,8 +82,8 @@ def extractnumber_es(text):
             next_word = None
 
         # is current word a number?
-        if word in _NUMBERS_ES:
-            val = _NUMBERS_ES[word]
+        if word in _NUM_STRING_ES:
+            val = _NUM_STRING_ES[word]
         elif word.isdigit():  # doesn't work with decimals
             val = int(word)
         elif is_numeric(word):
@@ -117,7 +116,7 @@ def extractnumber_es(text):
             break
 
         # number word and fraction
-        ands = ["y"]
+        ands = ["e"]
         if next_word in ands:
             zeros = 0
             if result is None:
@@ -188,7 +187,7 @@ def extractnumber_es(text):
 
     return result
 
-# TODO: specify lang at the end on function names
+
 def es_number_parse(words, i):
     def es_cte(i, s):
         if i < len(words) and s == words[i]:
@@ -197,7 +196,7 @@ def es_number_parse(words, i):
 
     def es_number_word(i, mi, ma):
         if i < len(words):
-            v = _NUMBERS_ES.get(words[i])
+            v = _NUM_STRING_ES.get(words[i])
             if v and v >= mi and v <= ma:
                 return v, i + 1
         return None
@@ -266,18 +265,15 @@ def es_number_parse(words, i):
 
 
 def normalize_es(text, remove_articles):
-    """ ES string normalization """
+    """ Spanish string normalization """
 
     words = text.split()  # this also removed extra spaces
-    normalized = ""
-    # Contractions are not common in ES
 
-    # Convert numbers into digits, e.g. "dois" -> "2"
     normalized = ""
     i = 0
     while i < len(words):
         word = words[i]
-        # remove articles
+
         if remove_articles and word in _ARTICLES_ES:
             i += 1
             continue
@@ -289,60 +285,47 @@ def normalize_es(text, remove_articles):
             normalized += " " + str(v)
             continue
 
-        # NOTE temporary , handle some numbers above >999
-        if word in _NUMBERS_ES:
-            word = str(_NUMBERS_ES[word])
-        # end temporary
-
         normalized += " " + word
         i += 1
-    # some articles in es_ES can not be removed, but many words can
-    # this is experimental and some meaning may be lost
-    # maybe agressive should default to False
-    # only usage will tell, as a native speaker this seems reasonable
-    return es_pruning(normalized[1:], agressive=remove_articles)
+
+    return normalized[1:]  # strip the initial space
 
 
-def extract_datetime_es(input_str, currentDate, default_time):
+def extract_datetime_es(input_str, currentDate=None, default_time=None):
     def clean_string(s):
         # cleans the input string of unneeded punctuation and capitalization
         # among other things
-        symbols = [".", ",", ";", "?", "!", "º", "ª"]
-        noise_words = ["lo", "los", "la", "las", "de", "para"]
+        symbols = [".", ",", ";", "?", "!", u"º", u"ª"]
+        noise_words = ["entre", "la", "del", "al", "el", "de",
+                       "por", "para", "una", "cualquier", "a",
+                       "e'", "esta", "este"]
 
         for word in symbols:
             s = s.replace(word, "")
         for word in noise_words:
             s = s.replace(" " + word + " ", " ")
-        # TODO: need to replace "ñ" as well?
         s = s.lower().replace(
-            "á",
+            u"á",
             "a").replace(
-            "é",
+            u"é",
             "e").replace(
-            "í",
-            "i").replace(
-            "ó",
+            u"ó",
             "o").replace(
-            "ú",
-            "u").replace(
             "-",
             " ").replace(
             "_",
             "")
         # handle synonims and equivalents, "tomorrow early = tomorrow morning
-        synonims = {"mañana": ["matutino", "temprano", "pronto"],
-                    "tarde": ["atardecer", "tarde"],
-                    "noche": ["nocturno", "anochecer"],
-                    "todos": ["al", "hacia"],
-                    "en": ["de"]}
+        synonims = {u"mañana": ["amanecer", "temprano", "muy temprano"],
+                    "tarde": ["media tarde", "atardecer"],
+                    "noche": ["anochecer", "tarde"]}
         for syn in synonims:
             for word in synonims[syn]:
                 s = s.replace(" " + word + " ", " " + syn + " ")
-        # relevant plurals, cant just extract all s in es
-        wordlist = ["mañanas", "noches", "tardes", "dias", "semanas", "años",
-                    "minutos", "segundos", "nas", "nos", "proximas",
-                    "seguintes", "horas"]
+        # relevant plurals, cant just extract all s in pt
+        wordlist = [u"mañanas", "tardes", "noches", u"días", "semanas",
+                    u"años", "minutos", "segundos", "las", "los", "siguientes",
+                    u"próximas", u"próximos", "horas"]
         for _, word in enumerate(wordlist):
             s = s.replace(word, word.rstrip('s'))
         s = s.replace("meses", "mes").replace("anteriores", "anterior")
@@ -351,15 +334,17 @@ def extract_datetime_es(input_str, currentDate, default_time):
     def date_found():
         return found or \
                (
-                       datestr != "" or timeStr != "" or
+                       datestr != "" or
                        yearOffset != 0 or monthOffset != 0 or
                        dayOffset is True or hrOffset != 0 or
                        hrAbs or minOffset != 0 or
                        minAbs or secOffset != 0
                )
 
-    if input_str == "" or not currentDate:
+    if input_str == "":
         return None
+    if currentDate is None:
+        currentDate = datetime.now()
 
     found = False
     daySpecified = False
@@ -375,31 +360,25 @@ def extract_datetime_es(input_str, currentDate, default_time):
     timeQualifier = ""
 
     words = clean_string(input_str).split(" ")
-    timeQualifiersList = ['mañana', 'tarde', 'noche']
-    # TODO: need to remove "la" from the following?
-    # There are also other compound time indicators like
-    # "después de", "pasadas las", "pasada la", "dentro de", etc
-    time_indicators = ["por", "las", "la", "esta", "pasada", "tras", "estas",
-                       "desde", "dia", "hora"]
-    days = ['lunes', 'martes', 'miercoles',
-            'jueves', 'viernes', 'sabado', 'domingo']
+    timeQualifiersList = [u'mañana', 'tarde', 'noche']
+    time_indicators = ["en", "la", "al", "por", "pasados",
+                       "pasadas", u"día", "hora"]
+    days = ['lunes', 'martes', u'miércoles',
+            'jueves', 'viernes', u'sábado', 'domingo']
     months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
               'julio', 'agosto', 'septiembre', 'octubre', 'noviembre',
               'diciembre']
     monthsShort = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago',
                    'sep', 'oct', 'nov', 'dic']
-    nexts = ["proximo", "proxima"]
-    # TODO: most used suffix is "que viene"
-    suffix_nexts = ["siguiente", "subsiguiente"]
-    lasts = ["ultimo", "ultima"]
+    nexts = ["siguiente", u"próximo", u"próxima"]
+    suffix_nexts = ["siguientes", "subsecuentes"]
+    lasts = [u"último", u"última"]
     suffix_lasts = ["pasada", "pasado", "anterior", "antes"]
-    nxts = ["después", "siguiente", "proxima", "proximo"]
-    prevs = ["antes", "ante", "previa", "previamente", "anterior"]
-    # TODO: there are many compound particles, like
-    # "desde aquí" "después de", "a partir de" etc
-    froms = ["partir", "en", "para", "despues","por", "proxima", 
-             "proximo", "de"]
-    thises = ["este", "esta", "ese", "esa", "esos", "esas", "estos", "estas"]
+    nxts = [u"después", "siguiente", u"próximo", u"próxima"]
+    prevs = ["antes", "previa", "previo", "anterior"]
+    froms = ["desde", "en", "para", u"después de", "por", u"próximo",
+             u"próxima", "de"]
+    thises = ["este", "esta"]
     froms += thises
     lists = nxts + prevs + froms + time_indicators
     for idx, word in enumerate(words):
@@ -421,7 +400,7 @@ def extract_datetime_es(input_str, currentDate, default_time):
         elif word == "hoy" and not fromFlag:
             dayOffset = 0
             used += 1
-        elif word == "mañana" and not fromFlag:
+        elif word == u"mañana" and not fromFlag:
             dayOffset = 1
             used += 1
         elif word == "ayer" and not fromFlag:
@@ -438,11 +417,11 @@ def extract_datetime_es(input_str, currentDate, default_time):
                 "ayer" and not fromFlag:
             dayOffset -= 3
             used += 3
-        elif word == "anteanteayer" and not fromFlag:
+        elif word == "ante anteayer" and not fromFlag:
             dayOffset -= 3
             used += 1
         # day after tomorrow
-        elif word == "pasado" and wordNext == "mañana" and not fromFlag:
+        elif word == "pasado" and wordNext == u"mañana" and not fromFlag:
             dayOffset += 2
             used = 2
         # day before yesterday
@@ -450,8 +429,8 @@ def extract_datetime_es(input_str, currentDate, default_time):
             dayOffset -= 2
             used = 2
         # parse 5 days, 10 weeks, last week, next week, week after
-        elif word == "dia":
-            if wordNext == "pasado" or wordNext == "antes":
+        elif word == u"día":
+            if wordNext == "pasado" or wordNext == "ante":
                 used += 1
                 if wordPrev and wordPrev[0].isdigit():
                     dayOffset += int(wordPrev)
@@ -521,7 +500,7 @@ def extract_datetime_es(input_str, currentDate, default_time):
                     start -= 1
                     used = 2
         # parse 5 years, next year, last year
-        elif word == "año" and not fromFlag:
+        elif word == u"año" and not fromFlag:
             if wordPrev[0].isdigit():
                 yearOffset = int(wordPrev)
                 start -= 1
@@ -549,33 +528,24 @@ def extract_datetime_es(input_str, currentDate, default_time):
         # parse Monday, Tuesday, etc., and next Monday,
         # last Tuesday, etc.
         elif word in days and not fromFlag:
-
             d = days.index(word)
             dayOffset = (d + 1) - int(today)
             used = 1
             if dayOffset < 0:
                 dayOffset += 7
-            for w in nexts:
-                if wordPrev == w:
-                    dayOffset += 7
-                    used += 1
-                    start -= 1
-            for w in lasts:
-                if wordPrev == w:
-                    dayOffset -= 7
-                    used += 1
-                    start -= 1
-            for w in suffix_nexts:
-                if wordNext == w:
-                    dayOffset += 7
-                    used += 1
-                    start -= 1
-            for w in suffix_lasts:
-                if wordNext == w:
-                    dayOffset -= 7
-                    used += 1
-                    start -= 1
-            if wordNext == "día":
+            if wordPrev == "siguiente":
+                dayOffset += 7
+                used += 1
+                start -= 1
+            elif wordPrev == "pasado":
+                dayOffset -= 7
+                used += 1
+                start -= 1
+            if wordNext == "siguiente":
+                # dayOffset += 7
+                used += 1
+            elif wordNext == "pasado":
+                # dayOffset -= 7
                 used += 1
         # parse 15 of July, June 20th, Feb 18, 19 of February
         elif word in months or word in monthsShort:
@@ -639,21 +609,21 @@ def extract_datetime_es(input_str, currentDate, default_time):
         # 2 months from July
         validFollowups = days + months + monthsShort
         validFollowups.append("hoy")
-        validFollowups.append("mañana")
+        validFollowups.append(u"mañana")
         validFollowups.append("ayer")
         validFollowups.append("anteayer")
         validFollowups.append("ahora")
         validFollowups.append("ya")
         validFollowups.append("ante")
 
-        # TODO debug word "pasado" that one is failing for some reason
+        # TODO debug word "depois" that one is failing for some reason
         if word in froms and wordNext in validFollowups:
 
-            if not (wordNext == "mañana" and wordNext == "ayer") and not (
-                    word == "pasado" or word == "antes" or word == "en"):
+            if not (wordNext == u"mañana" and wordNext == "ayer") and not (
+                    word == "pasado" or word == "antes"):
                 used = 2
                 fromFlag = True
-            if wordNext == "mañana" and word != "pasado":
+            if wordNext == u"mañana" and word != "pasado":
                 dayOffset += 1
             elif wordNext == "ayer":
                 dayOffset -= 1
@@ -661,15 +631,15 @@ def extract_datetime_es(input_str, currentDate, default_time):
                 dayOffset -= 2
             elif wordNext == "ante" and wordNextNext == "ayer":
                 dayOffset -= 2
-            elif (wordNext == "ante" and wordNextNext == "ante" and
+            elif (wordNext == "ante" and wordNext == "ante" and
                   wordNextNextNext == "ayer"):
                 dayOffset -= 3
             elif wordNext in days:
                 d = days.index(wordNext)
                 tmpOffset = (d + 1) - int(today)
                 used = 2
-                if wordNextNext == "día":
-                    used += 1
+                # if wordNextNext == "feira":
+                #     used += 1
                 if tmpOffset < 0:
                     tmpOffset += 7
                 if wordNextNext:
@@ -692,8 +662,8 @@ def extract_datetime_es(input_str, currentDate, default_time):
                         tmpOffset -= 7
                         used += 1
                 dayOffset += tmpOffset
-                if wordNextNextNext == "día":
-                    used += 1
+                # if wordNextNextNext == "feira":
+                #     used += 1
         if wordNext in months:
             used -= 1
         if used > 0:
@@ -711,15 +681,11 @@ def extract_datetime_es(input_str, currentDate, default_time):
             daySpecified = True
 
     # parse time
-    timeStr = ""
     hrOffset = 0
     minOffset = 0
     secOffset = 0
     hrAbs = None
     minAbs = None
-    
-    # TODO: Is this necessary?
-    # military = False
 
     for idx, word in enumerate(words):
         if word == "":
@@ -731,58 +697,17 @@ def extract_datetime_es(input_str, currentDate, default_time):
         wordNextNext = words[idx + 2] if idx + 2 < len(words) else ""
         wordNextNextNext = words[idx + 3] if idx + 3 < len(words) else ""
         # parse noon, midnight, morning, afternoon, evening
-        # TODO: 
         used = 0
-        # if word == 'mediodía':
-        #     hrAbs = 12
-        #     used += 1
-        # elif word == 'medianoche':
-        #     hrAbs = 0
-        #     used += 1
-        # if word == 'medio' and wordNext == 'día':
-        #     hrAbs = 12
-        #     used += 2
-        # elif word == 'media' and wordNext == 'noche':
-        #     hrAbs = 0
-        #     used += 2
-        # elif word == 'mañana' and wordPrev == 'la':
-        #     if not hrAbs:
-        #         hrAbs = 8
-        #     used += 1
-        #     if wordNext and wordNext[0].isdigit():  # mattina alle 5
-        #         hrAbs = int(wordNext)
-        #         used += 1
-        # elif word == 'tarde':
-        #     if not hrAbs:
-        #         hrAbs = 15
-        #     used += 1
-        #     if wordNext and wordNext[0].isdigit():  # pomeriggio alle 5
-        #         hrAbs = int(wordNext)
-        #         used += 1
-        #         if (hrAbs or 0) < 12:
-        #             hrAbs = (hrAbs or 0) + 12
-        # elif word == 'noche':
-        #     if not hrAbs:
-        #         hrAbs = 19
-        #     used += 1
-        #     if wordNext and wordNext[0].isdigit() \
-        #        and ':' not in wordNext:
-        #         hrAbs = int(wordNext)
-        #         used += 1
-        #         if (hrAbs or 0) < 12:
-        #             hrAbs = (hrAbs or 0) + 12
-
-
-        if word == "medio" and wordNext == "día":
+        if word == "medio" and wordNext == u"día":
             hrAbs = 12
             used += 2
         elif word == "media" and wordNext == "noche":
             hrAbs = 0
             used += 2
-        elif word == "mañana" and wordPrev == "la":
+        elif word == u"mañana":
             if not hrAbs:
                 hrAbs = 8
-            used += 2
+            used += 1
         elif word == "tarde":
             if not hrAbs:
                 hrAbs = 15
@@ -791,25 +716,29 @@ def extract_datetime_es(input_str, currentDate, default_time):
             if not hrAbs:
                 hrAbs = 17
             used += 2
-        elif word == "media" and wordNext == "mañana":
+        elif word == "tarde" and wordNext == "noche":
+            if not hrAbs:
+                hrAbs = 20
+            used += 2
+        elif word == "media" and wordNext == u"mañana":
             if not hrAbs:
                 hrAbs = 10
             used += 2
-        elif word == "tarde" and wordNext == "noche":
-            if not hrAbs:
-                hrAbs = 19
-            used += 2
+        # elif word == "fim" and wordNext == "tarde":
+        #     if not hrAbs:
+        #         hrAbs = 19
+        #     used += 2
         # elif word == "fim" and wordNext == "manha":
         #     if not hrAbs:
         #         hrAbs = 11
         #     used += 2
         elif word == "madrugada":
             if not hrAbs:
-                hrAbs = 4
-            used += 1
+                hrAbs = 1
+            used += 2
         elif word == "noche":
             if not hrAbs:
-                hrAbs = 22
+                hrAbs = 21
             used += 1
         # parse half an hour, quarter hour
         elif word == "hora" and \
@@ -866,7 +795,7 @@ def extract_datetime_es(input_str, currentDate, default_time):
                     if nextWord == "am" or nextWord == "pm":
                         remainder = nextWord
                         used += 1
-                    elif wordNext == "mañana":
+                    elif wordNext == u"mañana" or wordNext == "madrugada":
                         remainder = "am"
                         used += 1
                     elif wordNext == "tarde":
@@ -878,7 +807,7 @@ def extract_datetime_es(input_str, currentDate, default_time):
                         else:
                             remainder = "pm"
                         used += 1
-                    elif wordNext in thises and wordNextNext == "mañana":
+                    elif wordNext in thises and wordNextNext == u"mañana":
                         remainder = "am"
                         used = 2
                     elif wordNext in thises and wordNextNext == "tarde":
@@ -889,9 +818,8 @@ def extract_datetime_es(input_str, currentDate, default_time):
                         used = 2
                     else:
                         if timeQualifier != "":
-                            # military = True
                             if strHH <= 12 and \
-                                    (timeQualifier == "mañana" or
+                                    (timeQualifier == u"mañana" or
                                      timeQualifier == "tarde"):
                                 strHH += 12
 
@@ -935,20 +863,19 @@ def extract_datetime_es(input_str, currentDate, default_time):
                         used = 1
                     elif (wordNext == "am" or
                           wordNext == "a.m." or
-                          wordNext == "mañana"):
+                          wordNext == u"mañana"):
                         strHH = strNum
                         remainder = "am"
                         used = 1
                     elif (int(word) > 100 and
                           (
-                                  wordPrev == "o" or
-                                  wordPrev == "oh" or
+                                  # wordPrev == "o" or
+                                  # wordPrev == "oh" or
                                   wordPrev == "cero"
                           )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = int(word) / 100
                         strMM = int(word) - strHH * 100
-                        # military = True
                         if wordNext == "hora":
                             used += 1
                     elif (
@@ -983,7 +910,6 @@ def extract_datetime_es(input_str, currentDate, default_time):
                     elif int(word) > 100:
                         strHH = int(word) / 100
                         strMM = int(word) - strHH * 100
-                        # military = True
                         if wordNext == "hora":
                             used += 1
 
@@ -996,11 +922,11 @@ def extract_datetime_es(input_str, currentDate, default_time):
                             if wordNextNextNext == "tarde":
                                 remainder = "pm"
                                 used += 1
-                            elif wordNextNextNext == "mañana":
+                            elif wordNextNextNext == u"mañana":
                                 remainder = "am"
                                 used += 1
                             elif wordNextNextNext == "noche":
-                                if 0 > int(strHH) > 6:
+                                if 0 > strHH > 6:
                                     remainder = "am"
                                 else:
                                     remainder = "pm"
@@ -1009,7 +935,6 @@ def extract_datetime_es(input_str, currentDate, default_time):
                     elif wordNext[0].isdigit():
                         strHH = word
                         strMM = wordNext
-                        # military = True
                         used += 1
                         if wordNextNext == "hora":
                             used += 1
@@ -1093,22 +1018,18 @@ def extract_datetime_es(input_str, currentDate, default_time):
                 month=int(temp.strftime("%m")),
                 day=int(temp.strftime("%d")))
 
-    if timeStr != "":
-        temp = datetime(timeStr)
-        extractedDate = extractedDate.replace(hour=temp.strftime("%H"),
-                                              minute=temp.strftime("%M"),
-                                              second=temp.strftime("%S"))
-
     if yearOffset != 0:
         extractedDate = extractedDate + relativedelta(years=yearOffset)
     if monthOffset != 0:
         extractedDate = extractedDate + relativedelta(months=monthOffset)
     if dayOffset != 0:
         extractedDate = extractedDate + relativedelta(days=dayOffset)
-    if (hrAbs or 0) != -1 and (minAbs or 0) != -1:
-        if hrAbs is None and minAbs is None and default_time:
-            hrAbs = default_time.hour
-            minAbs = default_time.minute
+
+    if hrAbs is None and minAbs is None and default_time:
+        hrAbs = default_time.hour
+        minAbs = default_time.minute
+
+    if hrAbs != -1 and minAbs != -1:
         extractedDate = extractedDate + relativedelta(hours=hrAbs or 0,
                                                       minutes=minAbs or 0)
         if (hrAbs or minAbs) and datestr == "":
@@ -1123,67 +1044,25 @@ def extract_datetime_es(input_str, currentDate, default_time):
 
     resultStr = " ".join(words)
     resultStr = ' '.join(resultStr.split())
-    resultStr = es_pruning(resultStr)
+    # resultStr = pt_pruning(resultStr)
     return [extractedDate, resultStr]
 
 
-def es_pruning(text, symbols=True, accents=True, agressive=True):
-    # agressive es word pruning
-    words = ["la", "lo", "los", "las", "de", "le", "les", "me", "nos",
-             "para", "este", "esta", "estos", "estas", "era", "eran", "quién"]
-    if symbols:
-        symbols = [".", ",", ";", ":", "!", "?", u"ï¿½", u"ï¿½"]
-        for symbol in symbols:
-            text = text.replace(symbol, "")
-        text = text.replace("-", " ").replace("_", " ")
-    if accents:
-        # TODO: Should I put here "n": "ñ"??
-        accents = {"a": "á",
-                   "e": "é",
-                   "i": "í",
-                   "o": "ó",
-                   "u": "ú",
-                   }
-        for char in accents:
-            for acc in accents[char]:
-                text = text.replace(acc, char)
-    if agressive:
-        text_words = text.split(" ")
-        for idx, word in enumerate(text_words):
-            if word in words:
-                text_words[idx] = ""
-        text = " ".join(text_words)
-        text = ' '.join(text.split())
-    return text
-
-
-def get_gender_es(word, text=""):
-    # parse gender taking context into account
-    word = word.lower()
-    words = text.lower().split(" ")
+def get_gender_es(word, raw_string=""):
+    # Next rules are imprecise and incompleted, but is a good starting point.
+    # For more detailed explanation, see
+    # http://www.wikilengua.org/index.php/Género_gramatical
+    word = word.rstrip("s")
+    gender = False
+    words = raw_string.split(" ")
     for idx, w in enumerate(words):
         if w == word and idx != 0:
-            # in spanish usually the previous word (a determinant)
-            # assigns gender to the next word
-            previous = words[idx - 1].lower()
-            if previous in _MALE_DETERMINANTS_ES:
-                return "m"
-            elif previous in _FEMALE_DETERMINANTS_ES:
-                return "f"
-
-    # get gender using only the individual word
-    # see if this word has the gender defined
-    if word in _GENDERS_ES:
-        return _GENDERS_ES[word]
-    singular = word.rstrip("s")
-    if singular in _GENDERS_ES:
-        return _GENDERS_ES[singular]
-    # in spanish the last vowel usually defines the gender of a word
-    # the gender of the determinant takes precedence over this rule
-    for end_str in _FEMALE_ENDINGS_ES:
-        if word.endswith(end_str):
-            return "f"
-    for end_str in _MALE_ENDINGS_ES:
-        if word.endswith(end_str):
-            return "m"
-    return None
+            previous = words[idx - 1]
+            gender = get_gender_es(previous)
+            break
+    if not gender:
+        if word[-1] == "a":
+            gender = "f"
+        if word[-1] == "o" or word[-1] == "e":
+            gender = "m"
+    return gender
