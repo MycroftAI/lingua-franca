@@ -325,10 +325,11 @@ def nice_time(dt, lang=None, speech=True, use_24hour=False,
         return nice_time_da(dt, speech, use_24hour, use_ampm)
     elif lang_code == "pt":
         return nice_time_pt(dt, speech, use_24hour, use_ampm)
-
+    elif lang_code == "sv":
+        return nice_time_sv(dt, speech, use_24hour, use_ampm)
     # TODO: Other languages
     _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'de', 'hu', 'nl', 'da'])
+                                          'sv', 'de', 'hu', 'nl', 'da'])
     return str(dt)
 
 
@@ -370,11 +371,13 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
         return pronounce_number_da(number, places=places)
     elif lang_code == "pt":
         return pronounce_number_pt(number, places=places)
+    elif lang_code == "sv":
+        return pronounce_number_sv(number, places=places)
 
     # Default to just returning the numeric value
     # TODO: Other languages
     _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'de', 'hu', 'nl', 'da'])
+                                          'sv', 'de', 'hu', 'nl', 'da'])
     return str(number)
 
 
