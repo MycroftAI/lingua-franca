@@ -105,6 +105,8 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
         return extract_numbers_it(text, short_scale, ordinals)
     elif lang_code == "da":
         return extract_numbers_da(text, short_scale, ordinals)
+    elif lang_code == "es":
+        return extract_numbers_es(text, short_scale, ordinals)
     # TODO: extractnumbers_xx for other languages
     _log_unsupported_language(lang_code,
                               ['en', 'it', 'fr', 'de', 'da'])
@@ -145,8 +147,9 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
         return extractnumber_de(text)
     elif lang_code == "da":
         return extractnumber_da(text)
+    elif lang_code == "es":
+        return extract_numbers_es(text, short_scale, ordinals)
     elif lang_code == "nl":
-        print("EXTRACTING NL")
         return extractnumber_nl(text, short_scale=short_scale,
                                 ordinals=ordinals)
     # TODO: extractnumber_xx for other languages
