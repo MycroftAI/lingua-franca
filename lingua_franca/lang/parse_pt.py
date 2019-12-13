@@ -24,8 +24,11 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-from lingua_franca.lang.common_data_pt import _FRACTION_STRING_PT, \
-    _ARTICLES_PT, _NUMBERS_PT
+from lingua_franca.lang.common_data_pt import _NUMBERS_PT, _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT, \
+    _MALE_DETERMINANTS_PT, _MALE_ENDINGS_PT, _GENDERS_PT
+from lingua_franca import resolve_resource_file
+from lingua_franca.lang.parse_common import Normalizer
+import json
 
 
 def isFractional_pt(input_str):
@@ -192,118 +195,21 @@ def extractnumber_pt(text):
     return result
 
 
-def pt_number_parse(words, i):
-    def pt_cte(i, s):
-        if i < len(words) and s == words[i]:
-            return s, i + 1
-        return None
+class PortugueseNormalizer(Normalizer):
+    with open(resolve_resource_file("text/pt-pt/normalize.json")) as f:
+        _default_config = json.load(f)
 
-    def pt_number_word(i, mi, ma):
-        if i < len(words):
-            v = _NUMBERS_PT.get(words[i])
-            if v and v >= mi and v <= ma:
-                return v, i + 1
-        return None
-
-    def pt_number_1_99(i):
-        r1 = pt_number_word(i, 1, 29)
-        if r1:
-            return r1
-
-        r1 = pt_number_word(i, 30, 90)
-        if r1:
-            v1, i1 = r1
-            r2 = pt_cte(i1, "e")
-            if r2:
-                i2 = r2[1]
-                r3 = pt_number_word(i2, 1, 9)
-                if r3:
-                    v3, i3 = r3
-                    return v1 + v3, i3
-            return r1
-        return None
-
-    def pt_number_1_999(i):
-        # [2-9]cientos [1-99]?
-        r1 = pt_number_word(i, 100, 900)
-        if r1:
-            v1, i1 = r1
-            r2 = pt_number_1_99(i1)
-            if r2:
-                v2, i2 = r2
-                return v1 + v2, i2
-            else:
-                return r1
-
-        # [1-99]
-        r1 = pt_number_1_99(i)
-        if r1:
-            return r1
-
-        return None
-
-    def pt_number(i):
-        # check for cero
-        r1 = pt_number_word(i, 0, 0)
-        if r1:
-            return r1
-
-        # check for [1-999] (mil [0-999])?
-        r1 = pt_number_1_999(i)
-        if r1:
-            v1, i1 = r1
-            r2 = pt_cte(i1, "mil")
-            if r2:
-                i2 = r2[1]
-                r3 = pt_number_1_999(i2)
-                if r3:
-                    v3, i3 = r3
-                    return v1 * 1000 + v3, i3
-                else:
-                    return v1 * 1000, i2
-            else:
-                return r1
-        return None
-
-    return pt_number(i)
+    @staticmethod
+    def tokenize(utterance):
+        tokens = []
+        for w in utterance.split():
+            tokens += w.split("-")
+        return tokens
 
 
 def normalize_pt(text, remove_articles):
     """ PT string normalization """
-
-    words = text.split()  # this also removed extra spaces
-    normalized = ""
-    # Contractions are not common in PT
-
-    # Convert numbers into digits, e.g. "dois" -> "2"
-    normalized = ""
-    i = 0
-    while i < len(words):
-        word = words[i]
-        # remove articles
-        if remove_articles and word in _ARTICLES_PT:
-            i += 1
-            continue
-
-        # Convert numbers into digits
-        r = pt_number_parse(words, i)
-        if r:
-            v, i = r
-            normalized += " " + str(v)
-            continue
-
-        # NOTE temporary , handle some numbers above >999
-        if word in _NUMBERS_PT:
-            word = str(_NUMBERS_PT[word])
-        # end temporary
-
-        normalized += " " + word
-        i += 1
-    # some articles in pt-pt can not be removed, but many words can
-    # this is experimental and some meaning may be lost
-    # maybe agressive should default to False
-    # only usage will tell, as a native speaker this seems reasonable
-    return pt_pruning(normalized[1:], agressive=remove_articles)
+    return PortugueseNormalizer().normalize(text, remove_articles)
 
 
 def extract_datetime_pt(input_str, currentDate, default_time):
@@ -667,7 +573,7 @@ def extract_datetime_pt(input_str, currentDate, default_time):
                 dayOffset -= 2
             elif wordNext == "ante" and wordNextNext == "ontem":
                 dayOffset -= 2
-            elif (wordNext == "ante" and wordNext == "ante" and
+            elif (wordNext == "ante" and wordNextNext == "ante" and
                   wordNextNextNext == "ontem"):
                 dayOffset -= 3
             elif wordNext in days:
@@ -1122,18 +1028,33 @@ def pt_pruning(text, symbols=True, accents=True, agressive=True):
     return text
 
 
-def get_gender_pt(word, raw_string=""):
-    word = word.rstrip("s")
-    gender = None
-    words = raw_string.split(" ")
+def get_gender_pt(word, text=""):
+    # parse gender taking context into account
+    word = word.lower()
+    words = text.lower().split(" ")
     for idx, w in enumerate(words):
         if w == word and idx != 0:
-            previous = words[idx - 1]
-            gender = get_gender_pt(previous)
-            break
-    if not gender:
-        if word[-1] == "a":
-            gender = "f"
-        if word[-1] == "o" or word[-1] == "e":
-            gender = "m"
-    return gender
+            # in portuguese usually the previous word (a determinant)
+            # assigns gender to the next word
+            previous = words[idx - 1].lower()
+            if previous in _MALE_DETERMINANTS_PT:
+                return "m"
+            elif previous in _FEMALE_DETERMINANTS_PT:
+                return "f"
+
+    # get gender using only the individual word
+    # see if this word has the gender defined
+    if word in _GENDERS_PT:
+        return _GENDERS_PT[word]
+    singular = word.rstrip("s")
+    if singular in _GENDERS_PT:
+        return _GENDERS_PT[singular]
+    # in portuguese the last vowel usually defines the gender of a word
+    # the gender of the determinant takes precedence over this rule
+    for end_str in _FEMALE_ENDINGS_PT:
+        if word.endswith(end_str):
+            return "f"
+    for end_str in _MALE_ENDINGS_PT:
+        if word.endswith(end_str):
+            return "m"
+    return None

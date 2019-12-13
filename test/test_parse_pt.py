@@ -27,20 +27,20 @@ class TestNormalize(unittest.TestCase):
     """
         Test cases for Portuguese parsing
     """
+
     def test_articles_pt(self):
-        self.assertEqual(normalize(u"isto é o teste",
+        self.assertEqual(normalize("isto é o teste",
                                    lang="pt", remove_articles=True),
-                         u"isto teste")
+                         "isto é teste")
         self.assertEqual(
-            normalize(u"isto é a frase", lang="pt", remove_articles=True),
-            u"isto frase")
+            normalize("isto é a frase", lang="pt", remove_articles=True),
+            "isto é frase")
         self.assertEqual(
             normalize("e outro teste", lang="pt", remove_articles=True),
             "outro teste")
-        self.assertEqual(normalize(u"isto é o teste extra",
+        self.assertEqual(normalize("isto é o teste extra",
                                    lang="pt",
-                                   remove_articles=False), u"isto e o teste"
-                                                           u" extra")
+                                   remove_articles=False), "isto é o teste extra")
 
     def test_extractnumber_pt(self):
         self.assertEqual(extract_number("isto e o primeiro teste", lang="pt"),
@@ -109,31 +109,31 @@ class TestNormalize(unittest.TestCase):
                          "isto sao testes")
         self.assertEqual(normalize("  isto   e  um    teste", lang="pt",
                                    remove_articles=False),
-                         "isto e 1 teste")
+                         "isto 1 teste")
 
     def test_numbers_pt(self):
         self.assertEqual(normalize(u"isto e o um dois três teste", lang="pt"),
                          u"isto 1 2 3 teste")
-        self.assertEqual(normalize(u"ê a sete oito nove  test", lang="pt"),
-                         u"7 8 9 test")
+        self.assertEqual(normalize(u"é a sete oito nove  test", lang="pt"),
+                         u"é 7 8 9 test")
         self.assertEqual(
             normalize("teste zero dez onze doze treze", lang="pt"),
             "teste 0 10 11 12 13")
         self.assertEqual(
             normalize("teste mil seiscentos e sessenta e seis", lang="pt",
                       remove_articles=False),
-            "teste 1000 600 e 66")
+            "teste 1000 600 60 6")
         self.assertEqual(
             normalize("teste sete e meio", lang="pt",
                       remove_articles=False),
-            "teste 7 e meio")
+            "teste 7 meio")
         self.assertEqual(
             normalize("teste dois ponto nove", lang="pt"),
             "teste 2 ponto 9")
         self.assertEqual(
             normalize("teste cento e nove", lang="pt",
                       remove_articles=False),
-            "teste 100 e 9")
+            "teste 100 9")
         self.assertEqual(
             normalize("teste vinte e 1", lang="pt"),
             "teste 20 1")
@@ -244,15 +244,26 @@ class TestNormalize(unittest.TestCase):
             anchor, lang='pt-pt', default_time=default)
         self.assertEqual(default, res[0].time())
 
+
+class TestExtractGender(unittest.TestCase):
     def test_gender_pt(self):
+        # words with well defined grammatical gender rules
         self.assertEqual(get_gender("vaca", lang="pt"), "f")
         self.assertEqual(get_gender("cavalo", lang="pt"), "m")
         self.assertEqual(get_gender("vacas", lang="pt"), "f")
-        self.assertEqual(get_gender("boi", "o boi come erva", lang="pt"), "m")
+
+        # words specifically defined in a lookup dictionary
+        self.assertEqual(get_gender("homem", lang="pt"), "m")
+        self.assertEqual(get_gender("mulher", lang="pt"), "f")
+        self.assertEqual(get_gender("homems", lang="pt"), "m")
+        self.assertEqual(get_gender("mulheres", lang="pt"), "f")
+
+        # words where gender rules do not work but context does
         self.assertEqual(get_gender("boi", lang="pt"), None)
-        self.assertEqual(get_gender("homem", "estes homem come merda",
+        self.assertEqual(get_gender("boi", "o boi come erva", lang="pt"), "m")
+        self.assertEqual(get_gender("homem", "este homem come bois",
                                     lang="pt"), "m")
-        self.assertEqual(get_gender("ponte", lang="pt"), "m")
+        self.assertEqual(get_gender("ponte", lang="pt"), None)
         self.assertEqual(get_gender("ponte", "essa ponte caiu",
                                     lang="pt"), "f")
 

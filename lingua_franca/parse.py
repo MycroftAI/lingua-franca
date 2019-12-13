@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from lingua_franca.lang.parse_en import annotate_datetime_en, \
-    annotate_duration_en
 from difflib import SequenceMatcher
 from lingua_franca.time import now_local
 from lingua_franca.lang import get_primary_lang_code
@@ -38,6 +36,7 @@ from lingua_franca.lang.parse_da import extractnumber_da
 from lingua_franca.lang.parse_da import extract_numbers_da
 from lingua_franca.lang.parse_da import extract_datetime_da
 from lingua_franca.lang.parse_da import normalize_da
+from .lang.parse_nl import normalize_nl, extractnumber_nl, extract_datetime_nl
 
 from lingua_franca import _log_unsupported_language
 
@@ -150,9 +149,13 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
         return extractnumber_da(text)
     elif lang_code == "es":
         return extract_numbers_es(text, short_scale, ordinals)
+    elif lang_code == "nl":
+        return extractnumber_nl(text, short_scale=short_scale,
+                                ordinals=ordinals)
     # TODO: extractnumber_xx for other languages
     _log_unsupported_language(lang_code,
-                              ['en', 'pt', 'it', 'fr', 'sv', 'de', 'da'])
+                              ['en', 'es', 'pt', 'it', 'fr',
+                               'sv', 'de', 'da', 'nl'])
     return text
 
 
@@ -265,6 +268,9 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
         return extract_datetime_de(text, anchorDate, default_time)
     elif lang_code == "da":
         return extract_datetime_da(text, anchorDate, default_time)
+    elif lang_code == "nl":
+        return extract_datetime_nl(text, anchorDate, default_time)
+
     # TODO: extract_datetime for other languages
     _log_unsupported_language(lang_code,
                               ['en', 'es', 'pt', 'it', 'fr', 'sv', 'de', 'da'])
@@ -305,9 +311,12 @@ def normalize(text, lang=None, remove_articles=True):
         return normalize_de(text, remove_articles)
     elif lang_code == "da":
         return normalize_da(text, remove_articles)
+    elif lang_code == "nl":
+        return normalize_nl(text, remove_articles)
     # TODO: Normalization for other languages
     _log_unsupported_language(lang_code,
-                              ['en', 'pt', 'it', 'fr', 'sv', 'de', 'da'])
+                              ['en', 'es', 'pt', 'it', 'fr',
+                               'sv', 'de', 'da', 'nl'])
     return text
 
 
@@ -338,108 +347,3 @@ def get_gender(word, context="", lang=None):
     _log_unsupported_language(lang_code,
                               ['pt', 'it', 'es'])
     return None
-
-
-# Extra
-# this is not part of mycroft-core
-
-
-def annotate_duration(text, lang=None):
-    """ Convert an phrase into a number of seconds
-
-    Convert things like:
-        "10 minute"
-        "2 and a half hours"
-        "3 days 8 hours 10 minutes and 49 seconds"
-    into an int, representing the total number of seconds.
-
-    The words used in the duration will be consumed, and
-    the remainder returned.
-
-    As an example, "set a timer for 5 minutes" would return
-    (300, "5 minutes").
-
-    Args:
-        text (str): string containing a duration
-        lang (str): the BCP-47 code for the language to use, None uses default
-
-    Returns:
-        (timedelta, str):
-                    A tuple containing the duration and the text
-                    consumed in the parsing. The first value will
-                    be None if no duration is found. The text returned
-                    will have whitespace stripped from the ends.
-    """
-    lang_code = get_primary_lang_code(lang)
-
-    if lang_code == "en":
-        return annotate_duration_en(text)
-
-    # TODO: annotate_duration for other languages
-    _log_unsupported_language(lang_code, ['en'])
-    return None
-
-
-def annotate_datetime(text, anchorDate=None, lang=None, default_time=None):
-    """
-    Extracts date and time information from a sentence.  Parses many of the
-    common ways that humans express dates and times, including relative dates
-    like "5 days from today", "tomorrow', and "Tuesday".
-
-    Vague terminology are given arbitrary values, like:
-        - morning = 8 AM
-        - afternoon = 3 PM
-        - evening = 7 PM
-
-    If a time isn't supplied or implied, the function defaults to 12 AM
-
-    Args:
-        text (str): the text to be interpreted
-        anchorDate (:obj:`datetime`, optional): the date to be used for
-            relative dating (for example, what does "tomorrow" mean?).
-            Defaults to the current local date/time.
-        lang (str): the BCP-47 code for the language to use, None uses default
-        default_time (datetime.time): time to use if none was found in
-            the input string.
-
-    Returns:
-        [:obj:`datetime`, :obj:`str`]: 'datetime' is the extracted date
-            as a datetime object in the user's local timezone.
-            'date_string' is all date and time tokens extracted the original
-            phrase
-            See examples for further clarification
-
-            Returns 'None' if no date or time related text is found.
-
-    Examples:
-
-        >>> extract_datetime(
-        ... "What is the weather like the day after tomorrow?",
-        ... datetime(2017, 06, 30, 00, 00)
-        ... )
-        [datetime.datetime(2017, 7, 2, 0, 0), 'day after tomorrow']
-
-        >>> extract_datetime(
-        ... "Set up an appointment 2 weeks from Sunday at 5 pm",
-        ... datetime(2016, 02, 19, 00, 00)
-        ... )
-        [datetime.datetime(2016, 3, 6, 17, 0), '2 weeks from Sunday at 5 pm']
-
-        >>> extract_datetime(
-        ... "Set up an appointment",
-        ... datetime(2016, 02, 19, 00, 00)
-        ... )
-        None
-    """
-
-    lang_code = get_primary_lang_code(lang)
-
-    if not anchorDate:
-        anchorDate = now_local()
-
-    if lang_code == "en":
-        return annotate_datetime_en(text, anchorDate, default_time)
-
-    # TODO: annotate_datetime for other languages
-    _log_unsupported_language(lang_code, ['en'])
-    return text

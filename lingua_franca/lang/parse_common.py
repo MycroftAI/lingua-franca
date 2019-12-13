@@ -16,6 +16,170 @@
 #
 from collections import namedtuple
 
+
+class Normalizer:
+    """
+    individual languages may subclass this if needed
+
+    normalize_XX should pass a valid config read from json
+    """
+    _default_config = {}
+
+    def __init__(self, config=None):
+        self.config = config or self._default_config
+
+    @staticmethod
+    def tokenize(utterance):
+        return utterance.split()
+
+    @property
+    def should_lowercase(self):
+        return self.config.get("lowercase", False)
+
+    @property
+    def should_numbers_to_digits(self):
+        return self.config.get("numbers_to_digits", True)
+
+    @property
+    def should_expand_contractions(self):
+        return self.config.get("expand_contractions", True)
+
+    @property
+    def should_remove_symbols(self):
+        return self.config.get("remove_symbols", False)
+
+    @property
+    def should_remove_accents(self):
+        return self.config.get("remove_accents", False)
+
+    @property
+    def should_remove_articles(self):
+        return self.config.get("remove_articles", False)
+
+    @property
+    def should_remove_stopwords(self):
+        return self.config.get("remove_stopwords", False)
+
+    @property
+    def contractions(self):
+        return self.config.get("contractions", {})
+
+    @property
+    def word_replacements(self):
+        return self.config.get("word_replacements", {})
+
+    @property
+    def number_replacements(self):
+        return self.config.get("number_replacements", {})
+
+    @property
+    def accents(self):
+        return self.config.get("accents",
+                               {"á": "a", "à": "a", "ã": "a", "â": "a",
+                                "é": "e", "è": "e", "ê": "e", "ẽ": "e",
+                                "í": "i", "ì": "i", "î": "i", "ĩ": "i",
+                                "ò": "o", "ó": "o", "ô": "o", "õ": "o",
+                                "ú": "u", "ù": "u", "û": "u", "ũ": "u",
+                                "Á": "A", "À": "A", "Ã": "A", "Â": "A",
+                                "É": "E", "È": "E", "Ê": "E", "Ẽ": "E",
+                                "Í": "I", "Ì": "I", "Î": "I", "Ĩ": "I",
+                                "Ò": "O", "Ó": "O", "Ô": "O", "Õ": "O",
+                                "Ú": "U", "Ù": "U", "Û": "U", "Ũ": "U"
+                                })
+
+    @property
+    def stopwords(self):
+        return self.config.get("stopwords", [])
+
+    @property
+    def articles(self):
+        return self.config.get("articles", [])
+
+    @property
+    def symbols(self):
+        return self.config.get("symbols",
+                               [";", "_", "!", "?", "<", ">",
+                                "|", "(", ")", "=", "[", "]", "{",
+                                "}", "»", "«", "*", "~", "^", "`"])
+
+    def expand_contractions(self, utterance):
+        """ Expand common contractions, e.g. "isn't" -> "is not" """
+        words = self.tokenize(utterance)
+        for idx, w in enumerate(words):
+            if w in self.contractions:
+                words[idx] = self.contractions[w]
+        utterance = " ".join(words)
+        return utterance
+
+    def numbers_to_digits(self, utterance):
+        words = self.tokenize(utterance)
+        for idx, w in enumerate(words):
+            if w in self.number_replacements:
+                words[idx] = self.number_replacements[w]
+        utterance = " ".join(words)
+        return utterance
+
+    def remove_articles(self, utterance):
+        words = self.tokenize(utterance)
+        for idx, w in enumerate(words):
+            if w in self.articles:
+                words[idx] = ""
+        utterance = " ".join(words)
+        return utterance
+
+    def remove_stopwords(self, utterance):
+        words = self.tokenize(utterance)
+        for idx, w in enumerate(words):
+            if w in self.stopwords:
+                words[idx] = ""
+        utterance = " ".join(words)
+        return utterance
+
+    def remove_symbols(self, utterance):
+        for s in self.symbols:
+            utterance = utterance.replace(s, " ")
+        return utterance
+
+    def remove_accents(self, utterance):
+        for s in self.accents:
+            utterance = utterance.replace(s, self.accents[s])
+        return utterance
+
+    def replace_words(self, utterance):
+        words = self.tokenize(utterance)
+        for idx, w in enumerate(words):
+            if w in self.word_replacements:
+                words[idx] = self.word_replacements[w]
+        utterance = " ".join(words)
+        return utterance
+
+    def normalize(self, utterance="", remove_articles=None):
+        # mutations
+        if self.should_lowercase:
+            utterance = utterance.lower()
+        if self.should_expand_contractions:
+            utterance = self.expand_contractions(utterance)
+        if self.should_numbers_to_digits:
+            utterance = self.numbers_to_digits(utterance)
+        utterance = self.replace_words(utterance)
+
+        # removals
+        if self.should_remove_symbols:
+            utterance = self.remove_symbols(utterance)
+        if self.should_remove_accents:
+            utterance = self.remove_accents(utterance)
+        # TODO deprecate remove_articles param, backwards compat
+        if remove_articles is not None and remove_articles:
+            utterance = self.remove_articles(utterance)
+        elif self.should_remove_articles:
+            utterance = self.remove_articles(utterance)
+        if self.should_remove_stopwords:
+            utterance = self.remove_stopwords(utterance)
+        # remove extra spaces
+        utterance = " ".join([w for w in utterance.split(" ") if w])
+        return utterance
+
+
 # Token is intended to be used in the number processing functions in
 # this module. The parsing requires slicing and dividing of the original
 # text. To ensure things parse correctly, we need to know where text came
