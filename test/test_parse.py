@@ -141,6 +141,24 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("a couple hundred beers"), 200)
         self.assertEqual(extract_number("a couple thousand beers"), 2000)
 
+        self.assertEqual(extract_number("this is the 7th test", ordinals=True), 7)
+        self.assertEqual(extract_number("this is the 7th test", ordinals=False), 7)
+        self.assertTrue(extract_number("this is the nth test") is False)
+        self.assertEqual(extract_number("this is the 1st test"), 1)
+        self.assertEqual(extract_number("this is the 2nd test"), 2)
+        self.assertEqual(extract_number("this is the 3rd test"), 3)
+        self.assertEqual(extract_number("this is the 31st test"), 31)
+        self.assertEqual(extract_number("this is the 32nd test"), 32)
+        self.assertEqual(extract_number("this is the 33rd test"), 33)
+        self.assertEqual(extract_number("this is the 34th test"), 34)
+
+        self.assertEqual(extract_number("you are the second one", ordinals=False), 1)
+        self.assertEqual(extract_number("you are the second one", ordinals=True), 2)
+        self.assertEqual(extract_number("you are the 1st one"), 1)
+        self.assertEqual(extract_number("you are the 2nd one"), 2)
+        self.assertEqual(extract_number("you are the 3rd one"), 3)
+        self.assertEqual(extract_number("you are the 8th one"), 8)
+
     def test_extract_duration_en(self):
         self.assertEqual(extract_duration("10 seconds"),
                          (timedelta(seconds=10.0), ""))
