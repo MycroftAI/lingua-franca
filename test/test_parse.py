@@ -158,6 +158,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("you are the 2nd one"), 2)
         self.assertEqual(extract_number("you are the 3rd one"), 3)
         self.assertEqual(extract_number("you are the 8th one"), 8)
+        self.assertEqual(extract_number("totally 100%"), 100)
 
     def test_extract_duration_en(self):
         self.assertEqual(extract_duration("10 seconds"),

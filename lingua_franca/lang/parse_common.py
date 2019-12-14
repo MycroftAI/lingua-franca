@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 from collections import namedtuple
+import re
 
 
 class Normalizer:
@@ -30,6 +31,10 @@ class Normalizer:
 
     @staticmethod
     def tokenize(utterance):
+        # Split things like 12%
+        utterance = re.sub(r"([0-9]+)([\%])", r"\1 \2", utterance)
+        # Split thins like #1
+        utterance = re.sub(r"(\#)([0-9]+\b)", r"\1 \2", utterance)
         return utterance.split()
 
     @property
@@ -242,7 +247,8 @@ def tokenize(text):
         [Token]
 
     """
-    return [Token(word, index) for index, word in enumerate(text.split())]
+    return [Token(word, index)
+            for index, word in enumerate(Normalizer.tokenize(text))]
 
 
 def partition_list(items, split_on):
