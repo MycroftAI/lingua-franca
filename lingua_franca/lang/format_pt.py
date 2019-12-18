@@ -20,7 +20,7 @@ from lingua_franca.lang.common_data_pt import _FRACTION_STRING_PT, \
     _NUM_STRING_PT
 
 
-def nice_number_pt(number, speech, denominators):
+def nice_number_pt(number, speech, denominators=range(1, 21)):
     """ Portuguese helper for nice_number
 
     This function formats a float to human understandable functions. Like
