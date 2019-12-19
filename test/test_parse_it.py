@@ -1,4 +1,3 @@
-# -*- coding: utf-8  -*-
 #
 # Copyright 2017 Mycroft AI Inc.
 #
@@ -789,7 +788,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(get_gender('uomini', 'questi uomini mangiano pasta',
                                     lang='it'), 'm')
         self.assertEqual(get_gender('ponte', 'il ponte', lang='it'), 'm')
-        self.assertEqual(get_gender('ponte', u'questo ponte è caduto',
+        self.assertEqual(get_gender('ponte', 'questo ponte è caduto',
                                     lang='it'), 'm')
         self.assertEqual(get_gender('scultrice', 'questa scultrice famosa',
                                     lang='it'), 'f')
