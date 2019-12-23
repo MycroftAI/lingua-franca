@@ -137,7 +137,12 @@ class Normalizer:
         for idx, w in enumerate(words):
             if w in self.stopwords:
                 words[idx] = ""
+        #if words[-1] == '-':
+        #    words = words[:-1]
         utterance = " ".join(words)
+        # Remove trailing whitespaces from utterance along with orphaned
+        # hyphens, more characters may be added later
+        utterance = re.sub(r'- *$', '', utterance)
         return utterance
 
     def remove_symbols(self, utterance):
