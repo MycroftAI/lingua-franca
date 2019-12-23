@@ -37,15 +37,14 @@ def isFractional_es(input_str):
     if input_str.endswith('s', -1):
         input_str = input_str[:len(input_str) - 1]  # e.g. "fifths"
 
-    aFrac = ["medio", "media", "tercio", "cuarto", "cuarta", "quinto",
-             "quinta", "sexto", "sexta", "séptimo", "séptima", "octavo",
-             "octava", "noveno", "novena", "décimo", "décima", "onceavo",
-             "onceava", "doceavo", "doceava"]
+    aFrac = {"medio": 2, "media": 2, "tercio": 3, "cuarto": 4,
+             "cuarta": 4, "quinto": 5, "quinta": 5, "sexto": 6, "sexta": 6,
+             "séptimo": 7, "séptima": 7, "octavo": 8, "octava": 8,
+             "noveno": 9, "novena": 9, "décimo": 10, "décima": 10,
+             "onceavo": 11, "onceava": 11, "doceavo": 12, "doceava": 12}
 
     if input_str.lower() in aFrac:
-        return 1.0 / (aFrac.index(input_str) + 2)
-    if (input_str == "cuarto" or input_str == "cuarta"):
-        return 1.0 / 4
+        return 1.0 / aFrac[input_str]
     if (input_str == "vigésimo" or input_str == "vigésima"):
         return 1.0 / 20
     if (input_str == "trigésimo" or input_str == "trigésima"):
@@ -193,6 +192,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
     return result
 
 
+# TODO Not parsing 'cero'
 def es_number_parse(words, i):
     def es_cte(i, s):
         if i < len(words) and s == words[i]:
@@ -314,6 +314,7 @@ def normalize_es(text, remove_articles):
     return normalized[1:]  # strip the initial space
 
 
+# TODO MycroftAI/mycroft-core#2348
 def extract_datetime_es(input_str, currentDate=None, default_time=None):
     def clean_string(s):
         # cleans the input string of unneeded punctuation and capitalization
@@ -338,12 +339,12 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
             " ").replace(
             "_",
             "")
-        # handle synonims and equivalents, "tomorrow early = tomorrow morning
-        synonims = {"mañana": ["amanecer", "temprano", "muy temprano"],
+        # handle synonyms and equivalents, "tomorrow early = tomorrow morning
+        synonyms = {"mañana": ["amanecer", "temprano", "muy temprano"],
                     "tarde": ["media tarde", "atardecer"],
                     "noche": ["anochecer", "tarde"]}
-        for syn in synonims:
-            for word in synonims[syn]:
+        for syn in synonyms:
+            for word in synonyms[syn]:
                 s = s.replace(" " + word + " ", " " + syn + " ")
         # relevant plurals, cant just extract all s in pt
         wordlist = ["mañanas", "tardes", "noches", "días", "semanas",
