@@ -120,7 +120,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
             break
 
         # number word and fraction
-        ands = ["e"]
+        ands = ["e", "y"]
         if next_word in ands:
             zeros = 0
             if result is None:

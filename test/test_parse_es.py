@@ -91,7 +91,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("2.0", lang='es'), 2.0)
         self.assertEqual(extract_number("1/4", lang='es'), 0.25)
 
-        self.assertEqual(extract_number("dos e media", lang='es'), 2.5)
+        self.assertEqual(extract_number("dos y media", lang='es'), 2.5)
         self.assertEqual(extract_number(
             "catorce e milésima", lang='es'), 14.001)
 
