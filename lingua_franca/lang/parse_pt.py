@@ -29,6 +29,7 @@ from lingua_franca.lang.common_data_pt import _NUMBERS_PT, _FEMALE_DETERMINANTS_
 from lingua_franca import resolve_resource_file
 from lingua_franca.lang.parse_common import Normalizer
 import json
+import re
 
 
 def isFractional_pt(input_str):
@@ -201,9 +202,17 @@ class PortugueseNormalizer(Normalizer):
 
     @staticmethod
     def tokenize(utterance):
-        tokens = []
-        for w in utterance.split():
-            tokens += w.split("-")
+        # Split things like 12%
+        utterance = re.sub(r"([0-9]+)([\%])", r"\1 \2", utterance)
+        # Split things like #1
+        utterance = re.sub(r"(\#)([0-9]+\b)", r"\1 \2", utterance)
+        # Split things like amo-te
+        utterance = re.sub(r"([a-zA-Z]+)(-)([a-zA-Z]+\b)", r"\1 \2 \3",
+                           utterance)
+        tokens = utterance.split()
+        if tokens[-1] == '-':
+            tokens = tokens[:-1]
+
         return tokens
 
 
