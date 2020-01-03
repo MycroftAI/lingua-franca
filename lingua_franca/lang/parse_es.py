@@ -19,6 +19,7 @@
 """
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from dateutil.tz import gettz
 from lingua_franca.lang.format_es import pronounce_number_es
 from lingua_franca.lang.parse_common import *
 from lingua_franca.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES
@@ -321,7 +322,7 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
         # among other things
         symbols = [".", ",", ";", "?", "!", "º", "ª"]
         noise_words = ["entre", "la", "del", "al", "el", "de",
-                       "por", "para", "una", "cualquier", "a",
+                       "para", "una", "cualquier", "a",
                        "e'", "esta", "este"]
 
         for word in symbols:
@@ -691,7 +692,6 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
         if wordNext in months:
             used -= 1
         if used > 0:
-
             if start - 1 > 0 and words[start - 1] in lists:
                 start -= 1
                 used += 1
@@ -765,9 +765,9 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
                 hrAbs = 21
             used += 1
         # parse half an hour, quarter hour
-        elif word == "hora" and \
+        elif (word == "hora" and
                 (wordPrev in time_indicators or wordPrevPrev in
-                 time_indicators):
+                 time_indicators)):
             if wordPrev == "media":
                 minOffset = 30
             elif wordPrev == "cuarto":
@@ -1022,8 +1022,11 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
+        temp = temp.replace(tzinfo=None)
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
+            print(gettz(temp.tzname()))
+            print(extractedDate.tzname(), temp.tzname())
             if extractedDate < temp:
                 extractedDate = extractedDate.replace(year=int(currentYear),
                                                       month=int(
