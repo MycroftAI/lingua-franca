@@ -121,7 +121,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
             break
 
         # number word and fraction
-        ands = ["e", "y"]
+        ands = ["y"]
         if next_word in ands:
             zeros = 0
             if result is None:
@@ -269,6 +269,7 @@ def es_number_parse(words, i):
 
     return es_number(i)
 
+
 def extract_numbers_es(text, short_scale=True, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
@@ -285,7 +286,6 @@ def extract_numbers_es(text, short_scale=True, ordinals=False):
     """
     return extract_numbers_generic(text, pronounce_number_es, extractnumber_es,
                                    short_scale=short_scale, ordinals=ordinals)
-
 
 
 def normalize_es(text, remove_articles):
