@@ -19,6 +19,7 @@
 """
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from dateutil.tz import gettz
 from lingua_franca.lang.format_es import pronounce_number_es
 from lingua_franca.lang.parse_common import *
 from lingua_franca.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES
@@ -37,15 +38,14 @@ def isFractional_es(input_str):
     if input_str.endswith('s', -1):
         input_str = input_str[:len(input_str) - 1]  # e.g. "fifths"
 
-    aFrac = ["medio", "media", "tercio", "cuarto", "cuarta", "quinto",
-             "quinta", "sexto", "sexta", "séptimo", "séptima", "octavo",
-             "octava", "noveno", "novena", "décimo", "décima", "onceavo",
-             "onceava", "doceavo", "doceava"]
+    aFrac = {"medio": 2, "media": 2, "tercio": 3, "cuarto": 4,
+             "cuarta": 4, "quinto": 5, "quinta": 5, "sexto": 6, "sexta": 6,
+             "séptimo": 7, "séptima": 7, "octavo": 8, "octava": 8,
+             "noveno": 9, "novena": 9, "décimo": 10, "décima": 10,
+             "onceavo": 11, "onceava": 11, "doceavo": 12, "doceava": 12}
 
     if input_str.lower() in aFrac:
-        return 1.0 / (aFrac.index(input_str) + 2)
-    if (input_str == "cuarto" or input_str == "cuarta"):
-        return 1.0 / 4
+        return 1.0 / aFrac[input_str]
     if (input_str == "vigésimo" or input_str == "vigésima"):
         return 1.0 / 20
     if (input_str == "trigésimo" or input_str == "trigésima"):
@@ -121,7 +121,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
             break
 
         # number word and fraction
-        ands = ["e"]
+        ands = ["y"]
         if next_word in ands:
             zeros = 0
             if result is None:
@@ -193,6 +193,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
     return result
 
 
+# TODO Not parsing 'cero'
 def es_number_parse(words, i):
     def es_cte(i, s):
         if i < len(words) and s == words[i]:
@@ -268,6 +269,7 @@ def es_number_parse(words, i):
 
     return es_number(i)
 
+
 def extract_numbers_es(text, short_scale=True, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
@@ -284,7 +286,6 @@ def extract_numbers_es(text, short_scale=True, ordinals=False):
     """
     return extract_numbers_generic(text, pronounce_number_es, extractnumber_es,
                                    short_scale=short_scale, ordinals=ordinals)
-
 
 
 def normalize_es(text, remove_articles):
@@ -314,13 +315,14 @@ def normalize_es(text, remove_articles):
     return normalized[1:]  # strip the initial space
 
 
+# TODO MycroftAI/mycroft-core#2348
 def extract_datetime_es(input_str, currentDate=None, default_time=None):
     def clean_string(s):
         # cleans the input string of unneeded punctuation and capitalization
         # among other things
         symbols = [".", ",", ";", "?", "!", "º", "ª"]
         noise_words = ["entre", "la", "del", "al", "el", "de",
-                       "por", "para", "una", "cualquier", "a",
+                       "para", "una", "cualquier", "a",
                        "e'", "esta", "este"]
 
         for word in symbols:
@@ -338,12 +340,12 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
             " ").replace(
             "_",
             "")
-        # handle synonims and equivalents, "tomorrow early = tomorrow morning
-        synonims = {"mañana": ["amanecer", "temprano", "muy temprano"],
+        # handle synonyms and equivalents, "tomorrow early = tomorrow morning
+        synonyms = {"mañana": ["amanecer", "temprano", "muy temprano"],
                     "tarde": ["media tarde", "atardecer"],
                     "noche": ["anochecer", "tarde"]}
-        for syn in synonims:
-            for word in synonims[syn]:
+        for syn in synonyms:
+            for word in synonyms[syn]:
                 s = s.replace(" " + word + " ", " " + syn + " ")
         # relevant plurals, cant just extract all s in pt
         wordlist = ["mañanas", "tardes", "noches", "días", "semanas",
@@ -690,7 +692,6 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
         if wordNext in months:
             used -= 1
         if used > 0:
-
             if start - 1 > 0 and words[start - 1] in lists:
                 start -= 1
                 used += 1
@@ -764,9 +765,9 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
                 hrAbs = 21
             used += 1
         # parse half an hour, quarter hour
-        elif word == "hora" and \
+        elif (word == "hora" and
                 (wordPrev in time_indicators or wordPrevPrev in
-                 time_indicators):
+                 time_indicators)):
             if wordPrev == "media":
                 minOffset = 30
             elif wordPrev == "cuarto":
@@ -1021,8 +1022,11 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
+        temp = temp.replace(tzinfo=None)
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
+            print(gettz(temp.tzname()))
+            print(extractedDate.tzname(), temp.tzname())
             if extractedDate < temp:
                 extractedDate = extractedDate.replace(year=int(currentYear),
                                                       month=int(
