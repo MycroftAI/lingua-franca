@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from collections import namedtuple
+import re
 
 
 class Normalizer:
@@ -29,6 +30,10 @@ class Normalizer:
 
     @staticmethod
     def tokenize(utterance):
+        # Split things like 12%
+        utterance = re.sub(r"([0-9]+)([\%])", r"\1 \2", utterance)
+        # Split thins like #1
+        utterance = re.sub(r"(\#)([0-9]+\b)", r"\1 \2", utterance)
         return utterance.split()
 
     @property
@@ -131,7 +136,12 @@ class Normalizer:
         for idx, w in enumerate(words):
             if w in self.stopwords:
                 words[idx] = ""
+        #if words[-1] == '-':
+        #    words = words[:-1]
         utterance = " ".join(words)
+        # Remove trailing whitespaces from utterance along with orphaned
+        # hyphens, more characters may be added later
+        utterance = re.sub(r'- *$', '', utterance)
         return utterance
 
     def remove_symbols(self, utterance):
@@ -241,7 +251,8 @@ def tokenize(text):
         [Token]
 
     """
-    return [Token(word, index) for index, word in enumerate(text.split())]
+    return [Token(word, index)
+            for index, word in enumerate(Normalizer.tokenize(text))]
 
 
 def partition_list(items, split_on):
