@@ -80,6 +80,18 @@ def match_one(query, choices):
         return best
 
 
+def normalize_decimals(text):
+    """
+        Replace decimal commas with decimal periods so Python can floatify them
+    """
+    sanitize_decimals = re.compile(r".*\d+,{1}\d+")
+    match = sanitize_decimals.match(text)
+    while match:
+        text = text.replace(match[0], match[0].replace(',', '.'))
+        match = sanitize_decimals.match(text)
+    return text
+
+
 def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
     """
         Takes in a string and extracts a list of numbers.
@@ -95,13 +107,7 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
     Returns:
         list: list of extracted numbers as floats, or empty list if none found
     """
-    # Replace decimal commas with decimal periods so Python can floatify them
-    sanitize_decimals = re.compile(r".*\d+,{1}\d+")
-    match = sanitize_decimals.match(text)
-    while match:
-        text = text.replace(match[0], match[0].replace(',', '.'))
-        match = sanitize_decimals.match(text)
-
+    text = normalize_decimals(text)
     lang_code = get_primary_lang_code(lang)
     if lang_code == "en":
         return extract_numbers_en(text, short_scale, ordinals)
@@ -136,6 +142,7 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
         (int, float or False): The number extracted or False if the input
                                text contains no numbers
     """
+    text = normalize_decimals(text)
     lang_code = get_primary_lang_code(lang)
     if lang_code == "en":
         return extractnumber_en(text, short_scale=short_scale,
