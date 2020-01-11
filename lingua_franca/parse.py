@@ -84,11 +84,9 @@ def normalize_decimals(text):
     """
         Replace decimal commas with decimal periods so Python can floatify them
     """
-    sanitize_decimals = re.compile(r".*\d+,{1}\d+")
-    match = sanitize_decimals.match(text)
-    while match:
+    sanitize_decimals = re.compile(r"\b\d+,{1}\d+\b")
+    for _, match in enumerate(re.finditer(sanitize_decimals, text)):
         text = text.replace(match[0], match[0].replace(',', '.'))
-        match = sanitize_decimals.match(text)
     return text
 
 
