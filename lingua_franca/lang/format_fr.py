@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright 2017 Mycroft AI Inc.
 #
@@ -71,7 +70,7 @@ FRACTION_STRING_FR = {
 }
 
 
-def nice_number_fr(number, speech, denominators):
+def nice_number_fr(number, speech, denominators=range(1, 21)):
     """ French helper for nice_number
 
     This function formats a float to human understandable functions. Like

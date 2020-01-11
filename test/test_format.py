@@ -1,4 +1,3 @@
-# -*- coding: iso-8859-15 -*-
 #
 # Copyright 2017 Mycroft AI Inc.
 #
@@ -320,6 +319,36 @@ class TestPronounceNumber(unittest.TestCase):
             pronounce_number(float("-inf")),
             "negative infinity")
 
+    def test_ordinals(self):
+        self.assertEqual(pronounce_number(1, ordinals=True), "first")
+        self.assertEqual(pronounce_number(10, ordinals=True), "tenth")
+        self.assertEqual(pronounce_number(15, ordinals=True), "fifteenth")
+        self.assertEqual(pronounce_number(20, ordinals=True), "twentieth")
+        self.assertEqual(pronounce_number(27, ordinals=True), "twenty seventh")
+        self.assertEqual(pronounce_number(30, ordinals=True), "thirtieth")
+        self.assertEqual(pronounce_number(33, ordinals=True), "thirty third")
+        self.assertEqual(pronounce_number(100, ordinals=True), "hundredth")
+        self.assertEqual(pronounce_number(1000, ordinals=True), "thousandth")
+        self.assertEqual(pronounce_number(10000, ordinals=True),
+                         "ten thousandth")
+        self.assertEqual(pronounce_number(18691, ordinals=True),
+                         "eighteen thousand, six hundred and ninety first")
+        self.assertEqual(pronounce_number(1567, ordinals=True),
+                         "one thousand, five hundred and sixty seventh")
+        self.assertEqual(pronounce_number(1.672e-27, places=3,
+                                          scientific=True, ordinals=True),
+                         "one point six seven two times ten to the negative "
+                         "twenty seventh power")
+        self.assertEqual(pronounce_number(18e6, ordinals=True),
+                         "eighteen millionth")
+        self.assertEqual(pronounce_number(18e12, ordinals=True,
+                                          short_scale=False),
+                         "eighteen billionth")
+        self.assertEqual(pronounce_number(18e12, ordinals=True),
+                         "eighteen trillionth")
+        self.assertEqual(pronounce_number(18e18, ordinals=True,
+                                          short_scale=False), "eighteen "
+                                                              "trillionth")
 
 # def nice_time(dt, lang="en-us", speech=True, use_24hour=False,
 #              use_ampm=False):
@@ -441,6 +470,23 @@ class TestNiceDateFormat(unittest.TestCase):
                          "zero one zero two")
         self.assertEqual(nice_time(dt, use_24hour=True, use_ampm=False),
                          "zero one zero two")
+
+        dt = datetime.datetime(2017, 1, 31,
+                               12, 15, 9)
+        self.assertEqual(nice_time(dt),
+                         "quarter past twelve")
+        self.assertEqual(nice_time(dt, use_ampm=True),
+                         "quarter past twelve p.m.")
+
+        dt = datetime.datetime(2017, 1, 31,
+                               5, 30, 00)
+        self.assertEqual(nice_time(dt, use_ampm=True),
+                         "half past five a.m.")
+
+        dt = datetime.datetime(2017, 1, 31,
+                               1, 45, 00)
+        self.assertEqual(nice_time(dt),
+                         "quarter to two")
 
     def test_nice_date(self):
         for lang in self.test_config:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright 2017 Mycroft AI Inc.
 #
@@ -208,7 +207,7 @@ _ORDINAL_BASE_EN = {
     70: "seventieth",
     80: "eightieth",
     90: "ninetieth",
-    10e3: "hundredth",
+    1e2: "hundredth",
     1e3: "thousandth"
 }
 

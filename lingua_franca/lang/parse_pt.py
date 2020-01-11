@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright 2017 Mycroft AI Inc.
 #
@@ -24,9 +23,12 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-from lingua_franca.lang.common_data_pt import _FRACTION_STRING_PT, \
-    _ARTICLES_PT, _NUMBERS_PT, _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT,\
+from lingua_franca.lang.common_data_pt import _NUMBERS_PT, _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT, \
     _MALE_DETERMINANTS_PT, _MALE_ENDINGS_PT, _GENDERS_PT
+from lingua_franca import resolve_resource_file
+from lingua_franca.lang.parse_common import Normalizer
+import json
+import re
 
 
 def isFractional_pt(input_str):
@@ -42,21 +44,21 @@ def isFractional_pt(input_str):
     if input_str.endswith('s', -1):
         input_str = input_str[:len(input_str) - 1]  # e.g. "fifths"
 
-    aFrac = ["meio", u"terço", "quarto", "quinto", "sexto",
-             "setimo", "oitavo", "nono", u"décimo"]
+    aFrac = ["meio", "terço", "quarto", "quinto", "sexto",
+             "setimo", "oitavo", "nono", "décimo"]
 
     if input_str.lower() in aFrac:
         return 1.0 / (aFrac.index(input_str) + 2)
-    if input_str == u"vigésimo":
+    if input_str == "vigésimo":
         return 1.0 / 20
-    if input_str == u"trigésimo":
+    if input_str == "trigésimo":
         return 1.0 / 30
-    if input_str == u"centésimo":
+    if input_str == "centésimo":
         return 1.0 / 100
-    if input_str == u"milésimo":
+    if input_str == "milésimo":
         return 1.0 / 1000
-    if (input_str == u"sétimo" or input_str == "septimo" or
-            input_str == u"séptimo"):
+    if (input_str == "sétimo" or input_str == "septimo" or
+            input_str == "séptimo"):
         return 1.0 / 7
 
     return False
@@ -193,125 +195,36 @@ def extractnumber_pt(text):
     return result
 
 
-def pt_number_parse(words, i):
-    def pt_cte(i, s):
-        if i < len(words) and s == words[i]:
-            return s, i + 1
-        return None
+class PortugueseNormalizer(Normalizer):
+    with open(resolve_resource_file("text/pt-pt/normalize.json")) as f:
+        _default_config = json.load(f)
 
-    def pt_number_word(i, mi, ma):
-        if i < len(words):
-            v = _NUMBERS_PT.get(words[i])
-            if v and v >= mi and v <= ma:
-                return v, i + 1
-        return None
+    @staticmethod
+    def tokenize(utterance):
+        # Split things like 12%
+        utterance = re.sub(r"([0-9]+)([\%])", r"\1 \2", utterance)
+        # Split things like #1
+        utterance = re.sub(r"(\#)([0-9]+\b)", r"\1 \2", utterance)
+        # Split things like amo-te
+        utterance = re.sub(r"([a-zA-Z]+)(-)([a-zA-Z]+\b)", r"\1 \2 \3",
+                           utterance)
+        tokens = utterance.split()
+        if tokens[-1] == '-':
+            tokens = tokens[:-1]
 
-    def pt_number_1_99(i):
-        r1 = pt_number_word(i, 1, 29)
-        if r1:
-            return r1
-
-        r1 = pt_number_word(i, 30, 90)
-        if r1:
-            v1, i1 = r1
-            r2 = pt_cte(i1, "e")
-            if r2:
-                i2 = r2[1]
-                r3 = pt_number_word(i2, 1, 9)
-                if r3:
-                    v3, i3 = r3
-                    return v1 + v3, i3
-            return r1
-        return None
-
-    def pt_number_1_999(i):
-        # [2-9]cientos [1-99]?
-        r1 = pt_number_word(i, 100, 900)
-        if r1:
-            v1, i1 = r1
-            r2 = pt_number_1_99(i1)
-            if r2:
-                v2, i2 = r2
-                return v1 + v2, i2
-            else:
-                return r1
-
-        # [1-99]
-        r1 = pt_number_1_99(i)
-        if r1:
-            return r1
-
-        return None
-
-    def pt_number(i):
-        # check for cero
-        r1 = pt_number_word(i, 0, 0)
-        if r1:
-            return r1
-
-        # check for [1-999] (mil [0-999])?
-        r1 = pt_number_1_999(i)
-        if r1:
-            v1, i1 = r1
-            r2 = pt_cte(i1, "mil")
-            if r2:
-                i2 = r2[1]
-                r3 = pt_number_1_999(i2)
-                if r3:
-                    v3, i3 = r3
-                    return v1 * 1000 + v3, i3
-                else:
-                    return v1 * 1000, i2
-            else:
-                return r1
-        return None
-
-    return pt_number(i)
+        return tokens
 
 
 def normalize_pt(text, remove_articles):
     """ PT string normalization """
-
-    words = text.split()  # this also removed extra spaces
-    normalized = ""
-    # Contractions are not common in PT
-
-    # Convert numbers into digits, e.g. "dois" -> "2"
-    normalized = ""
-    i = 0
-    while i < len(words):
-        word = words[i]
-        # remove articles
-        if remove_articles and word in _ARTICLES_PT:
-            i += 1
-            continue
-
-        # Convert numbers into digits
-        r = pt_number_parse(words, i)
-        if r:
-            v, i = r
-            normalized += " " + str(v)
-            continue
-
-        # NOTE temporary , handle some numbers above >999
-        if word in _NUMBERS_PT:
-            word = str(_NUMBERS_PT[word])
-        # end temporary
-
-        normalized += " " + word
-        i += 1
-    # some articles in pt-pt can not be removed, but many words can
-    # this is experimental and some meaning may be lost
-    # maybe agressive should default to False
-    # only usage will tell, as a native speaker this seems reasonable
-    return pt_pruning(normalized[1:], agressive=remove_articles)
+    return PortugueseNormalizer().normalize(text, remove_articles)
 
 
 def extract_datetime_pt(input_str, currentDate, default_time):
     def clean_string(s):
         # cleans the input string of unneeded punctuation and capitalization
         # among other things
-        symbols = [".", ",", ";", "?", "!", u"º", u"ª"]
+        symbols = [".", ",", ";", "?", "!", "º", "ª"]
         noise_words = ["o", "os", "a", "as", "do", "da", "dos", "das", "de",
                        "ao", "aos"]
 
@@ -320,23 +233,23 @@ def extract_datetime_pt(input_str, currentDate, default_time):
         for word in noise_words:
             s = s.replace(" " + word + " ", " ")
         s = s.lower().replace(
-            u"á",
+            "á",
             "a").replace(
-            u"ç",
+            "ç",
             "c").replace(
-            u"à",
+            "à",
             "a").replace(
-            u"ã",
+            "ã",
             "a").replace(
-            u"é",
+            "é",
             "e").replace(
-            u"è",
+            "è",
             "e").replace(
-            u"ê",
+            "ê",
             "e").replace(
-            u"ó",
+            "ó",
             "o").replace(
-            u"ò",
+            "ò",
             "o").replace(
             "-",
             " ").replace(
@@ -1099,17 +1012,17 @@ def pt_pruning(text, symbols=True, accents=True, agressive=True):
              "esta", "deste", "desta", "neste", "nesta", "nesse",
              "nessa", "foi", "que"]
     if symbols:
-        symbols = [".", ",", ";", ":", "!", "?", u"ï¿½", u"ï¿½"]
+        symbols = [".", ",", ";", ":", "!", "?", "ï¿½", "ï¿½"]
         for symbol in symbols:
             text = text.replace(symbol, "")
         text = text.replace("-", " ").replace("_", " ")
     if accents:
-        accents = {"a": [u"á", u"à", u"ã", u"â"],
-                   "e": [u"ê", u"è", u"é"],
-                   "i": [u"í", u"ì"],
-                   "o": [u"ò", u"ó"],
-                   "u": [u"ú", u"ù"],
-                   "c": [u"ç"]}
+        accents = {"a": ["á", "à", "ã", "â"],
+                   "e": ["ê", "è", "é"],
+                   "i": ["í", "ì"],
+                   "o": ["ò", "ó"],
+                   "u": ["ú", "ù"],
+                   "c": ["ç"]}
         for char in accents:
             for acc in accents[char]:
                 text = text.replace(acc, char)

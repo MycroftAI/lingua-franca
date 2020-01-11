@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright 2017 Mycroft AI Inc.
 #
@@ -178,7 +177,7 @@ SHORT_SCALE_IT = collections.OrderedDict([
 ])
 
 
-def nice_number_it(number, speech, denominators):
+def nice_number_it(number, speech, denominators=range(1, 21)):
     """ Italian helper for nice_number
 
     This function formats a float to human understandable functions. Like
