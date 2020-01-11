@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 from difflib import SequenceMatcher
+import re
+
 from lingua_franca.time import now_local
 from lingua_franca.lang import get_primary_lang_code
 
@@ -93,6 +95,13 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
     Returns:
         list: list of extracted numbers as floats, or empty list if none found
     """
+    # Replace decimal commas with decimal periods so Python can floatify them
+    sanitize_decimals = re.compile(r".*\d+,{1}\d+")
+    match = sanitize_decimals.match(text)
+    while match:
+        text = text.replace(match[0], match[0].replace(',', '.'))
+        match = sanitize_decimals.match(text)
+
     lang_code = get_primary_lang_code(lang)
     if lang_code == "en":
         return extract_numbers_en(text, short_scale, ordinals)
