@@ -677,7 +677,9 @@ def extract_datetime_en(string, dateNow, default_time):
         start = idx
         used = 0
         # save timequalifier for later
-
+        if word == "ago" and dayOffset:
+            dayOffset = - dayOffset
+            used += 1
         if word == "now" and not datestr:
             resultStr = " ".join(words[idx + 1:])
             resultStr = ' '.join(resultStr.split())
@@ -725,6 +727,15 @@ def extract_datetime_en(string, dateNow, default_time):
             used += 1
         elif word == "tomorrow" and not fromFlag:
             dayOffset = 1
+            used += 1
+        elif word == "day" and wordNext == "before" and wordNextNext == "yesterday" and not fromFlag:
+            dayOffset = -2
+            used += 3
+        elif word == "before" and wordNext == "yesterday" and not fromFlag:
+            dayOffset = -2
+            used += 2
+        elif word == "yesterday" and not fromFlag:
+            dayOffset = -1
             used += 1
         elif (word == "day" and
               wordNext == "after" and
@@ -846,6 +857,7 @@ def extract_datetime_en(string, dateNow, default_time):
         validFollowups = days + months + monthsShort
         validFollowups.append("today")
         validFollowups.append("tomorrow")
+        validFollowups.append("yesterday")
         validFollowups.append("next")
         validFollowups.append("last")
         validFollowups.append("now")
@@ -855,6 +867,8 @@ def extract_datetime_en(string, dateNow, default_time):
             fromFlag = True
             if wordNext == "tomorrow":
                 dayOffset += 1
+            elif wordNext == "yesterday":
+                dayOffset -= 1
             elif wordNext in days:
                 d = days.index(wordNext)
                 tmpOffset = (d + 1) - int(today)
@@ -1230,7 +1244,8 @@ def extract_datetime_en(string, dateNow, default_time):
                     remainder not in ['am', 'pm', 'hours', 'minutes',
                                       "second", "seconds",
                                       "hour", "minute"] and
-                    ((not daySpecified) or dayOffset < 1)):
+                    ((not daySpecified) or 0 <= dayOffset < 1)):
+
                 # ambiguous time, detect whether they mean this evening or
                 # the next morning based on whether it has already passed
                 if dateNow.hour < HH or (dateNow.hour == HH and
