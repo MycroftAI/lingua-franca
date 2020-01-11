@@ -86,7 +86,7 @@ def normalize_decimals(text):
     """
     sanitize_decimals = re.compile(r"\b\d+,{1}\d+\b")
     for _, match in enumerate(re.finditer(sanitize_decimals, text)):
-        text = text.replace(match[0], match[0].replace(',', '.'))
+        text = text.replace(match.group(0), match.group(0).replace(',', '.'))
     return text
 
 
