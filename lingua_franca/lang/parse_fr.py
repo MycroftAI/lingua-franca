@@ -370,8 +370,10 @@ def number_ordinal_fr(words, i):
 
     return None
 
-
-def extractnumber_fr(text):
+# TODO: short_scale and ordinals don't do anything here.
+# The parameters are present in the function signature for API compatibility
+# reasons.
+def extractnumber_fr(text, short_scale=True, ordinals=False):
     """Takes in a string and extracts a number.
     Args:
         text (str): the string to extract a number from
@@ -467,7 +469,7 @@ def extractnumber_fr(text):
 
     # if result == False:
     if not result:
-        return normalize_fr(text, True)
+        return False
 
     return result
 

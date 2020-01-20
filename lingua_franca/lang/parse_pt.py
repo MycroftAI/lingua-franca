@@ -63,8 +63,10 @@ def isFractional_pt(input_str):
 
     return False
 
-
-def extractnumber_pt(text):
+# TODO: short_scale and ordinals don't do anything here.
+# The parameters are present in the function signature for API compatibility
+# reasons.
+def extractnumber_pt(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.

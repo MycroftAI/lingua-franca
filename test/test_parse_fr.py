@@ -71,8 +71,7 @@ class TestNormalize_fr(unittest.TestCase):
                          2.02)
         self.assertEqual(extract_number("ça fait virgule 2 cm", lang="fr-fr"),
                          0.2)
-        self.assertEqual(extract_number("point du tout", lang="fr-fr"),
-                         "point tout")
+        self.assertEqual(extract_number("point du tout", lang="fr-fr"), False)
         self.assertEqual(extract_number("32.00 secondes", lang="fr-fr"), 32)
         self.assertEqual(extract_number("mange trente-et-une bougies",
                                         lang="fr-fr"), 31)
