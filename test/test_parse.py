@@ -26,6 +26,11 @@ from lingua_franca.parse import get_gender
 from lingua_franca.parse import match_one
 from lingua_franca.parse import normalize
 
+from lingua_franca.lang.parse_common import ReplaceableNumber, tokenize, Token
+
+from lingua_franca.lang.parse_en import _extract_whole_number_with_text_en, \
+    _extract_decimal_with_text_en
+
 
 def setUpModule():
     # TODO spin off English tests
@@ -241,6 +246,29 @@ class TestNormalize(unittest.TestCase):
                          (timedelta(seconds=10.0), ""))
         self.assertEqual(extract_duration("5-minutes"),
                          (timedelta(minutes=5), ""))
+        self.assertEqual(extract_duration(""), None)
+
+    def test_datetime_helpers(self):
+        # invoke helper functions directly to test certain conditions which are
+        # difficult to trigger on purpose.
+        replaceable = ReplaceableNumber(1, ["test_token"])
+        self.assertRaises(TypeError, setattr(replaceable, "key", None))
+        with self.assertRaises(Exception) as error:
+            setattr(replaceable, "key", type(None))
+            self.assertEqual(error.message, "Immutable!")
+        self.assertEqual(str(replaceable), "(1, ['test_token'])")
+        self.assertEqual(repr(replaceable),
+                         "ReplaceableNumber(1, ['test_token'])")
+
+        self.assertEqual(_extract_whole_number_with_text_en(tokenize(
+            "test string"), False, False), (False, []))
+        self.assertEqual(_extract_whole_number_with_text_en(tokenize(
+            "! half"), False, False), (0.5, [Token(word='half', index=1)]))
+
+        self.assertEqual(_extract_decimal_with_text_en(tokenize(
+            "dot boom"), False, False), (None, None))
+        self.assertEqual(_extract_decimal_with_text_en(tokenize(
+            "0 0 0"), False, False), (None, None))
 
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
@@ -258,6 +286,8 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 13:04:00", "is time")
         testExtract("in a second",
                     "2017-06-27 13:04:01", "")
+        testExtract("in a couple of seconds",
+                    "2017-06-27 13:04:02", "")
         testExtract("in a minute",
                     "2017-06-27 13:05:00", "")
         testExtract("in a couple minutes",
@@ -318,7 +348,15 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 13:34:00", "set ambush")
         testExtract("Set the ambush for 5 days from today",
                     "2017-07-02 00:00:00", "set ambush")
+        testExtract("Set the ambush for 5 days from Tuesday",
+                    "2017-07-02 00:00:00", "set ambush")
+        testExtract("Set the ambush for 2 days from next Friday at 0500",
+                    "2017-07-09 05:00:00", "set ambush")
+        testExtract("Describe the ambush 2 days after last Friday at 0500",
+                    "2017-06-25 05:00:00", "describe ambush")
         testExtract("day after tomorrow",
+                    "2017-06-29 00:00:00", "")
+        testExtract("the day after tomorrow",
                     "2017-06-29 00:00:00", "")
         testExtract("What is the day after tomorrow's weather?",
                     "2017-06-29 00:00:00", "what is weather")
@@ -364,6 +402,10 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 19:00:00", "remind me to call mom")
         testExtract("remind me to call mom at 7 o'clock in the morning",
                     "2017-06-28 07:00:00", "remind me to call mom")
+        testExtract("remind me to call mom at 7:00 in the morning",
+                    "2017-06-28 07:00:00", "remind me to call mom")
+        testExtract("7 in the morning",
+                    "2017-06-28 07:00:00", "")
         testExtract("remind me to call mom Thursday evening at 7 o'clock",
                     "2017-06-29 19:00:00", "remind me to call mom")
         testExtract("remind me to call mom Thursday morning at 7 o'clock",
@@ -452,6 +494,8 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-29 00:00:00", "begin invasion")
         testExtract("Begin the invasion on Thursday at 0500",
                     "2017-06-29 05:00:00", "begin invasion")
+        testExtract("Begin the invasion at 0500 one day after Monday",
+                    "2017-07-04 05:00:00", "begin invasion")
         testExtract("remind me to wake up in 4 years",
                     "2021-06-27 00:00:00", "remind me to wake up")
         testExtract("remind me to wake up in 4 years and 4 days",
@@ -482,6 +526,8 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-26 00:00:00", "what was weather")
         testExtract("set an alarm for wednesday evening at 8",
                     "2017-06-28 20:00:00", "set alarm")
+        testExtract("set an alarm for wednesday at 3:00 in the afternoon",
+                    "2017-06-28 15:00:00", "set alarm")
         testExtract("set an alarm for wednesday at 3 o'clock in the afternoon",
                     "2017-06-28 15:00:00", "set alarm")
         testExtract("set an alarm for wednesday at 3 o'clock in the morning",
@@ -492,13 +538,31 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 19:00:00", "set alarm")
         testExtract("set an alarm for this evening at 7 o'clock",
                     "2017-06-27 19:00:00", "set alarm")
+        testExtract("set an alarm for 7:00 in the evening",
+                    "2017-06-27 19:00:00", "set alarm")
+        testExtract("set an alarm for 7:00 this evening",
+                    "2017-06-27 19:00:00", "set alarm")
         # TODO: This test is imperfect due to the "at 7:00" still in the
         #       remainder.  But let it pass for now since time is correct
         testExtract("set an alarm for this evening at 7:00",
                     "2017-06-27 19:00:00", "set alarm at 7:00")
+        testExtract("set an alarm for 7:00 this afternoon",
+                    "2017-06-27 19:00:00", "set alarm")
+        testExtract("set an alarm for 7:00 this morning",
+                    "2017-06-27 07:00:00", "set alarm")
+        testExtract("set an alarm for 7:00 at night",
+                    "2017-06-27 19:00:00", "set alarm")
+        testExtract("set an alarm for 4:00 at night",
+                    "2017-06-27 16:00:00", "set alarm")
         testExtract("on the evening of june 5th 2017 remind me to" +
                     " call my mother",
                     "2017-06-05 19:00:00", "remind me to call my mother")
+        testExtract("on the evening of aug 5th 2017 remind me to" +
+                    " call my mother",
+                    "2017-08-05 19:00:00", "remind me to call my mother")
+        testExtract("on the evening of 5 august 2017 remind me to" +
+                    " call my mother",
+                    "2017-08-05 19:00:00", "remind me to call my mother")
         # TODO: This test is imperfect due to the missing "for" in the
         #       remainder.  But let it pass for now since time is correct
         testExtract("update my calendar for a morning meeting with julius" +
@@ -519,6 +583,8 @@ class TestNormalize(unittest.TestCase):
                     "2017-09-27 00:00:00", "remind me to call mom")
         testExtract("remind me to call mom in 2 years and 2 days",
                     "2019-06-29 00:00:00", "remind me to call mom")
+        testExtract("i should have called mom last week",
+                    "2017-06-20 00:00:00", "i should have called mom")
         testExtract("remind me to call mom next week",
                     "2017-07-04 00:00:00", "remind me to call mom")
         testExtract("remind me to call mom at 10am on saturday",
@@ -529,6 +595,14 @@ class TestNormalize(unittest.TestCase):
                     "2017-07-01 10:00:00", "remind me to call mom")
         testExtract("remind me to call mom at 10am next saturday",
                     "2017-07-01 10:00:00", "remind me to call mom")
+        testExtract("i should have called mom last month",
+                    "2017-05-27 00:00:00", "i should have called mom")
+        testExtract("remind me to call mom next month",
+                    "2017-07-27 00:00:00", "remind me to call mom")
+        testExtract("i should have called mom last year",
+                    "2016-06-27 00:00:00", "i should have called mom")
+        testExtract("remind me to call mom next year",
+                    "2018-06-27 00:00:00", "remind me to call mom")
         # test yesterday
         testExtract("what day was yesterday",
                     "2017-06-26 00:00:00", "what day was")
