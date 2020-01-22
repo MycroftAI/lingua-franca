@@ -467,11 +467,7 @@ def extractnumber_fr(text, short_scale=True, ordinals=False):
             else:
                 result = val
 
-    # if result == False:
-    if not result:
-        return False
-
-    return result
+    return result or False
 
 
 def extract_datetime_fr(string, currentDate, default_time):

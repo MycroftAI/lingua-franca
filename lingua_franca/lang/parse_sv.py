@@ -119,10 +119,7 @@ def extractnumber_sv(text, short_scale=True, ordinals=False):
 
         break
 
-    if not val:
-        return False
-
-    return val
+    return val or False
 
 
 def extract_datetime_sv(string, currentDate, default_time):

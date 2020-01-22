@@ -153,10 +153,7 @@ def extractnumber_da(text, short_scale=True, ordinals=False):
 
         break
 
-    if not val:
-        return False
-
-    return val
+    return val or False
 
 
 def extract_datetime_da(string, currentDate, default_time):
