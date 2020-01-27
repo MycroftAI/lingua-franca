@@ -137,6 +137,8 @@ class TestPronounceNumber_fr(unittest.TestCase):
     def test_convert_decimals_fr(self):
         self.assertEqual(pronounce_number(0.05, lang="fr-fr"),
                          "zéro virgule zéro cinq")
+        self.assertEqual(pronounce_number(-0.05, lang="fr-fr"),
+                         "moins zéro virgule zéro cinq")
         self.assertEqual(pronounce_number(1.234, lang="fr-fr"),
                          "un virgule deux trois")
         self.assertEqual(pronounce_number(21.234, lang="fr-fr"),

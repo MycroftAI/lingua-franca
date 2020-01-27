@@ -119,6 +119,7 @@ class TestPronounceNumber(unittest.TestCase):
 
     def test_convert_decimals(self):
         self.assertEqual(pronounce_number(0.05), "zero point zero five")
+        self.assertEqual(pronounce_number(-0.05), "minus zero point zero five")
         self.assertEqual(pronounce_number(1.234),
                          "one point two three")
         self.assertEqual(pronounce_number(21.234),

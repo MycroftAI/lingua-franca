@@ -192,6 +192,8 @@ def pronounce_number_fr(num, places=2):
 
     # Deal with decimal part
     if not num == int(num) and places > 0:
+        if abs(num) < 1.0 and (result is "moins " or not result):
+            result += "zéro"
         result += " virgule"
         _num_str = str(num)
         _num_str = _num_str.split(".")[1][0:places]

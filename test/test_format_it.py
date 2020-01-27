@@ -107,6 +107,8 @@ class TestPronounceNumber(unittest.TestCase):
     def test_convert_decimals(self):
         self.assertEqual(pronounce_number(
             0.05, lang="it"), "zero virgola zero cinque")
+        self.assertEqual(pronounce_number(
+            -0.05, lang="it"), "meno zero virgola zero cinque")
         self.assertEqual(pronounce_number(1.234, lang="it"),
                          "uno virgola due tre")
         self.assertEqual(pronounce_number(21.234, lang="it"),
