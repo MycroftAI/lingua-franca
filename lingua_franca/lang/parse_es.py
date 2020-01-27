@@ -177,9 +177,6 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
             break
         count += 1
 
-    if result is None:
-        return False
-
     # Return the $str with the number related words removed
     # (now empty strings, so strlen == 0)
     # aWords = [word for word in aWords if len(word) > 0]
@@ -190,7 +187,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
         if dec == "0":
             result = int(integer)
 
-    return result
+    return result or False
 
 
 # TODO Not parsing 'cero'
