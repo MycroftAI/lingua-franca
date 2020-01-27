@@ -132,6 +132,8 @@ class TestPronounceNumber(unittest.TestCase):
                          "menos noventa y nueve")
 
     def test_convert_decimals(self):
+        self.assertEqual(pronounce_number(
+            0.05, lang="es"), "cero coma cero cinco")
         self.assertEqual(pronounce_number(1.234, lang="es"),
                          "uno coma dos tres")
         self.assertEqual(pronounce_number(21.234, lang="es"),

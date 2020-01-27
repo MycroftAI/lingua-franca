@@ -193,11 +193,10 @@ def pronounce_number_fr(num, places=2):
     # Deal with decimal part
     if not num == int(num) and places > 0:
         result += " virgule"
-        place = 10
-        while int(num*place) % 10 > 0 and places > 0:
-            result += " " + NUM_STRING_FR[int(num*place) % 10]
-            place *= 10
-            places -= 1
+        _num_str = str(num)
+        _num_str = _num_str.split(".")[1][0:places]
+        for char in _num_str:
+            result += " " + NUM_STRING_FR[int(char)]
     return result
 
 

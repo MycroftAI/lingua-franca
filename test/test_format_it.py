@@ -105,6 +105,8 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(-83, lang="it"), "meno ottantatre")
 
     def test_convert_decimals(self):
+        self.assertEqual(pronounce_number(
+            0.05, lang="it"), "zero virgola zero cinque")
         self.assertEqual(pronounce_number(1.234, lang="it"),
                          "uno virgola due tre")
         self.assertEqual(pronounce_number(21.234, lang="it"),
@@ -351,6 +353,7 @@ class TestPronounceNumber(unittest.TestCase):
                                           lang="it"), "infinito")
         self.assertEqual(pronounce_number(float("-inf"),
                                           lang="it"), "meno infinito")
+
 
 if __name__ == "__main__":
     unittest.main()
