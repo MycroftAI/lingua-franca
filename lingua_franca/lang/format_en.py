@@ -97,18 +97,19 @@ def pronounce_number_en(num, places=2, short_scale=True, scientific=False,
                 # handling since each call disables the scientific flag
                 return '{}{} times ten to the {}{} power'.format(
                     'negative ' if float(n) < 0 else '',
-                    pronounce_number_en(abs(float(n)), places, short_scale, False, ordinals=False),
+                    pronounce_number_en(
+                        abs(float(n)), places, short_scale, False, ordinals=False),
                     'negative ' if power < 0 else '',
-                    pronounce_number_en(abs(power), places, short_scale, False,ordinals=True))
+                    pronounce_number_en(abs(power), places, short_scale, False, ordinals=True))
             else:
                 # This handles negatives of powers separately from the normal
                 # handling since each call disables the scientific flag
                 return '{}{} times ten to the power of {}{}'.format(
                     'negative ' if float(n) < 0 else '',
-                    pronounce_number_en(abs(float(n)), places, short_scale, False),
+                    pronounce_number_en(
+                        abs(float(n)), places, short_scale, False),
                     'negative ' if power < 0 else '',
                     pronounce_number_en(abs(power), places, short_scale, False))
-
 
     if short_scale:
         number_names = _NUM_STRING_EN.copy()
@@ -289,12 +290,13 @@ def pronounce_number_en(num, places=2, short_scale=True, scientific=False,
         return pronounce_number_en(num, places, short_scale, scientific=True)
     # Deal with fractional part
     elif not num == int(num) and places > 0:
+        if abs(num) < 1.0 and (result is "minus " or not result):
+            result += "zero"
         result += " point"
-        place = 10
-        while int(num * place) % 10 > 0 and places > 0:
-            result += " " + number_names[int(num * place) % 10]
-            place *= 10
-            places -= 1
+        _num_str = str(num)
+        _num_str = _num_str.split(".")[1][0:places]
+        for char in _num_str:
+            result += " " + number_names[int(char)]
     return result
 
 
