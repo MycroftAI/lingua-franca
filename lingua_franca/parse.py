@@ -80,17 +80,20 @@ def match_one(query, choices):
         return best
 
 
-def normalize_decimals(text):
+def normalize_decimals(text, decimal):
     """
-        Replace decimal commas with decimal periods so Python can floatify them
+        Replace 'decimal' with decimal periods so Python can floatify them
     """
-    sanitize_decimals = re.compile(r"\b\d+,{1}\d+\b")
+    regex = r"\b\d+" + decimal + r"{1}\d+\b"
+    sanitize_decimals = re.compile(regex)
     for _, match in enumerate(re.finditer(sanitize_decimals, text)):
-        text = text.replace(match.group(0), match.group(0).replace(',', '.'))
+        text = text.replace(match.group(
+            0), match.group(0).replace(decimal, '.'))
     return text
 
 
-def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
+def extract_numbers(text, short_scale=True, ordinals=False, lang=None,
+                    decimal='.'):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -102,10 +105,16 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
             See https://en.wikipedia.org/wiki/Names_of_large_numbers
         ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
         lang (str): the BCP-47 code for the language to use, None uses default
+        decimal (str): character to use as decimal point. defaults to '.'
     Returns:
         list: list of extracted numbers as floats, or empty list if none found
+    Note:
+        will always extract numbers formatted with a decimal dot/full stop,
+        such as '3.5', even if 'decimal' is specified.
     """
-    text = normalize_decimals(text)
+    if decimal != '.':
+        text = normalize_decimals(text, decimal)
+
     lang_code = get_primary_lang_code(lang)
     if lang_code == "en":
         return extract_numbers_en(text, short_scale, ordinals)
@@ -125,7 +134,8 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
     return []
 
 
-def extract_number(text, short_scale=True, ordinals=False, lang=None):
+def extract_number(text, short_scale=True, ordinals=False, lang=None,
+                   decimal='.'):
     """Takes in a string and extracts a number.
 
     Args:
@@ -136,11 +146,17 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
             See https://en.wikipedia.org/wiki/Names_of_large_numbers
         ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
         lang (str): the BCP-47 code for the language to use, None uses default
+        decimal (str): character to use as decimal point. defaults to '.'
     Returns:
         (int, float or False): The number extracted or False if the input
                                text contains no numbers
+    Note:
+        will always extract numbers formatted with a decimal dot/full stop,
+        such as '3.5', even if 'decimal' is specified.
     """
-    text = normalize_decimals(text)
+    if decimal != '.':
+        text = normalize_decimals(text, decimal)
+
     lang_code = get_primary_lang_code(lang)
     if lang_code == "en":
         return extractnumber_en(text, short_scale=short_scale,
