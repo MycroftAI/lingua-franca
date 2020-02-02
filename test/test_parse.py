@@ -123,6 +123,12 @@ class TestNormalize(unittest.TestCase):
                                         short_scale=False), 1e12)
         self.assertEqual(extract_number("this is the billionth test",
                                         short_scale=False), 1e-12)
+        
+        # Test decimal normalization
+        self.assertEqual(extract_number("4,4", decimal=','), 4.4)
+        self.assertEqual(extract_number("we have 3,5 kilometers to go",
+                                        decimal=','), 3.5)
+        
         # TODO handle this case
         # self.assertEqual(
         #    extract_number("6 dot six six six"),
@@ -703,6 +709,11 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_numbers("this is a seven eight nine and a"
                                          " half test"),
                          [7.0, 8.0, 9.5])
+        self.assertEqual(extract_numbers("this is a seven eight 9,5 test",
+                                         decimal=','),
+                         [7.0, 8.0, 9.5])
+        self.assertEqual(extract_numbers("this is a 7,0 8.0 9,6 test",
+                                         decimal=','), [7.0, 8.0, 9.6])
 
     def test_contractions(self):
         self.assertEqual(normalize("ain't"), "is not")
