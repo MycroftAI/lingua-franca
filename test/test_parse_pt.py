@@ -30,7 +30,7 @@ class TestNormalize(unittest.TestCase):
     def test_articles_pt(self):
         self.assertEqual(normalize("isto é o teste",
                                    lang="pt", remove_articles=True),
-                                   "isto é teste")
+                         "isto é teste")
         self.assertEqual(
             normalize("isto é a frase", lang="pt", remove_articles=True),
             "isto é frase")
@@ -40,7 +40,6 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(normalize("isto é o teste extra",
                                    lang="pt",
                                    remove_articles=False), "isto é o teste extra")
-
 
     def test_extractnumber_pt(self):
         self.assertEqual(extract_number("isto e o primeiro teste", lang="pt"),
@@ -66,6 +65,9 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("um cafe e um meio", lang="pt"), 1.5)
         self.assertEqual(
             extract_number("tres quartos de chocolate", lang="pt"),
+            3.0 / 4.0)
+        self.assertEqual(
+            extract_number("Tres quartos de chocolate", lang="pt"),
             3.0 / 4.0)
         self.assertEqual(extract_number("três quarto de chocolate",
                                         lang="pt"), 3.0 / 4.0)

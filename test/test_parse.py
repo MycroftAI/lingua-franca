@@ -91,7 +91,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number(
             "Twenty two with a leading capital letter"), 22)
         self.assertEqual(extract_number(
-            "twenty Two with two capital letters"), 22)
+            "twenty Two with Two capital letters"), 22)
         self.assertEqual(extract_number(
             "twenty Two with mixed capital letters"), 22)
         self.assertEqual(extract_number("Twenty two and Three Fifths"), 22.6)
