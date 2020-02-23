@@ -88,6 +88,13 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("three quarter cups"), 3.0 / 4.0)
         self.assertEqual(extract_number("three quarters cups"), 3.0 / 4.0)
         self.assertEqual(extract_number("twenty two"), 22)
+        self.assertEqual(extract_number(
+            "Twenty two with a leading capital letter"), 22)
+        self.assertEqual(extract_number(
+            "twenty Two with two capital letters"), 22)
+        self.assertEqual(extract_number(
+            "twenty Two with mixed capital letters"), 22)
+        self.assertEqual(extract_number("Twenty two and Three Fifths"), 22.6)
         self.assertEqual(extract_number("two hundred"), 200)
         self.assertEqual(extract_number("nine thousand"), 9000)
         self.assertEqual(extract_number("six hundred sixty six"), 666)
@@ -140,8 +147,10 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("a couple hundred beers"), 200)
         self.assertEqual(extract_number("a couple thousand beers"), 2000)
 
-        self.assertEqual(extract_number("this is the 7th test", ordinals=True), 7)
-        self.assertEqual(extract_number("this is the 7th test", ordinals=False), 7)
+        self.assertEqual(extract_number(
+            "this is the 7th test", ordinals=True), 7)
+        self.assertEqual(extract_number(
+            "this is the 7th test", ordinals=False), 7)
         self.assertTrue(extract_number("this is the nth test") is False)
         self.assertEqual(extract_number("this is the 1st test"), 1)
         self.assertEqual(extract_number("this is the 2nd test"), 2)
@@ -151,8 +160,10 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("this is the 33rd test"), 33)
         self.assertEqual(extract_number("this is the 34th test"), 34)
 
-        self.assertEqual(extract_number("you are the second one", ordinals=False), 1)
-        self.assertEqual(extract_number("you are the second one", ordinals=True), 2)
+        self.assertEqual(extract_number(
+            "you are the second one", ordinals=False), 1)
+        self.assertEqual(extract_number(
+            "you are the second one", ordinals=True), 2)
         self.assertEqual(extract_number("you are the 1st one"), 1)
         self.assertEqual(extract_number("you are the 2nd one"), 2)
         self.assertEqual(extract_number("you are the 3rd one"), 3)
@@ -534,7 +545,7 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-28 00:00:00", "my birthday is")
         testExtract("my birthday is 2 days after yesterday",
                     "2017-06-28 00:00:00", "my birthday is")
-        
+
         #  "# days ago>"
         testExtract("my birthday was 1 day ago",
                     "2017-06-26 00:00:00", "my birthday was")

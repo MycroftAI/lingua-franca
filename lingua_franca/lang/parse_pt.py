@@ -66,6 +66,8 @@ def isFractional_pt(input_str):
 # TODO: short_scale and ordinals don't do anything here.
 # The parameters are present in the function signature for API compatibility
 # reasons.
+
+
 def extractnumber_pt(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
@@ -76,6 +78,7 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
         (int) or (float): The value of extracted number
 
     """
+    text = text.lower()
     aWords = text.split()
     count = 0
     result = None
@@ -274,13 +277,13 @@ def extract_datetime_pt(input_str, currentDate, default_time):
 
     def date_found():
         return found or \
-               (
-                       datestr != "" or timeStr != "" or
-                       yearOffset != 0 or monthOffset != 0 or
-                       dayOffset is True or hrOffset != 0 or
-                       hrAbs or minOffset != 0 or
-                       minAbs or secOffset != 0
-               )
+            (
+                datestr != "" or timeStr != "" or
+                yearOffset != 0 or monthOffset != 0 or
+                dayOffset is True or hrOffset != 0 or
+                hrAbs or minOffset != 0 or
+                minAbs or secOffset != 0
+            )
 
     if input_str == "" or not currentDate:
         return None
@@ -817,10 +820,10 @@ def extract_datetime_pt(input_str, currentDate, default_time):
                         used = 1
                     elif (int(word) > 100 and
                           (
-                                  wordPrev == "o" or
-                                  wordPrev == "oh" or
-                                  wordPrev == "zero"
-                          )):
+                        wordPrev == "o" or
+                        wordPrev == "oh" or
+                        wordPrev == "zero"
+                    )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = int(word) / 100
                         strMM = int(word) - strHH * 100
@@ -831,8 +834,8 @@ def extract_datetime_pt(input_str, currentDate, default_time):
                             wordNext == "hora" and
                             word[0] != '0' and
                             (
-                                    int(word) < 100 and
-                                    int(word) > 2400
+                                int(word) < 100 and
+                                int(word) > 2400
                             )):
                         # ignores military time
                         # "in 3 hours"

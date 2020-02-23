@@ -54,10 +54,10 @@ _SUMS = {'twenty', '20', 'thirty', '30', 'forty', '40', 'fifty', '50',
          'sixty', '60', 'seventy', '70', 'eighty', '80', 'ninety', '90'}
 
 _MULTIPLIES_LONG_SCALE_EN = set(_LONG_SCALE_EN.values()) | \
-                            generate_plurals_en(_LONG_SCALE_EN.values())
+    generate_plurals_en(_LONG_SCALE_EN.values())
 
 _MULTIPLIES_SHORT_SCALE_EN = set(_SHORT_SCALE_EN.values()) | \
-                             generate_plurals_en(_SHORT_SCALE_EN.values())
+    generate_plurals_en(_SHORT_SCALE_EN.values())
 
 # split sentence parse separately and sum ( 2 and a half = 2 + 0.5 )
 _FRACTION_MARKER = {"and"}
@@ -249,7 +249,7 @@ def _extract_fraction_with_text_en(tokens, short_scale, ordinals):
             num2 = numbers2[0]
             if num1.value >= 1 and 0 < num2.value < 1:
                 return num1.value + num2.value, \
-                       num1.tokens + partitions[1] + num2.tokens
+                    num1.tokens + partitions[1] + num2.tokens
 
     return None, None
 
@@ -298,7 +298,7 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals):
             # TODO handle number dot number number number
             if "." not in str(decimal.text):
                 return number.value + float('0.' + str(decimal.value)), \
-                       number.tokens + partitions[1] + decimal.tokens
+                    number.tokens + partitions[1] + decimal.tokens
     return None, None
 
 
@@ -507,7 +507,7 @@ def extractnumber_en(text, short_scale=True, ordinals=False):
                                    was found
 
     """
-    return _extract_number_with_text_en(tokenize(text),
+    return _extract_number_with_text_en(tokenize(text.lower()),
                                         short_scale, ordinals).value
 
 
@@ -623,13 +623,13 @@ def extract_datetime_en(string, dateNow, default_time):
 
     def date_found():
         return found or \
-               (
-                       datestr != "" or
-                       yearOffset != 0 or monthOffset != 0 or
-                       dayOffset is True or hrOffset != 0 or
-                       hrAbs or minOffset != 0 or
-                       minAbs or secOffset != 0
-               )
+            (
+                datestr != "" or
+                yearOffset != 0 or monthOffset != 0 or
+                dayOffset is True or hrOffset != 0 or
+                hrAbs or minOffset != 0 or
+                minAbs or secOffset != 0
+            )
 
     if string == "" or not dateNow:
         return None
@@ -942,7 +942,7 @@ def extract_datetime_en(string, dateNow, default_time):
         elif word == "tonight" or word == "night":
             if hrAbs is None:
                 hrAbs = 22
-            #used += 1 ## NOTE this breaks other tests, TODO refactor me!
+            # used += 1 ## NOTE this breaks other tests, TODO refactor me!
 
         # couple of time_unit
         elif word == "2" and wordNext == "of" and \
@@ -1129,8 +1129,8 @@ def extract_datetime_en(string, dateNow, default_time):
                     if (
                             int(strNum) > 100 and
                             (
-                                    wordPrev == "o" or
-                                    wordPrev == "oh"
+                                wordPrev == "o" or
+                                wordPrev == "oh"
                             )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = str(int(strNum) // 100)
@@ -1143,8 +1143,8 @@ def extract_datetime_en(string, dateNow, default_time):
                              remainder == "hours" or remainder == "hour") and
                             word[0] != '0' and
                             (
-                                    int(strNum) < 100 or
-                                    int(strNum) > 2400
+                                int(strNum) < 100 or
+                                int(strNum) > 2400
                             )):
                         # ignores military time
                         # "in 3 hours"
@@ -1191,11 +1191,11 @@ def extract_datetime_en(string, dateNow, default_time):
                     elif (
                             wordNext == "" or wordNext == "o'clock" or
                             (
-                                    wordNext == "in" and
-                                    (
-                                            wordNextNext == "the" or
-                                            wordNextNext == timeQualifier
-                                    )
+                                wordNext == "in" and
+                                (
+                                        wordNextNext == "the" or
+                                        wordNextNext == timeQualifier
+                                )
                             ) or wordNext == 'tonight' or
                             wordNextNext == 'tonight'):
 

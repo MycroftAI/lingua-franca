@@ -558,7 +558,7 @@ def extractnumber_nl(text, short_scale=True, ordinals=False):
         (int) or (float) or False: The extracted number or False if no number
                                    was found
     """
-    return _extract_number_with_text_nl(_tokenize(text),
+    return _extract_number_with_text_nl(_tokenize(text.lower()),
                                         short_scale, ordinals).value
 
 

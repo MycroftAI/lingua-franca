@@ -398,6 +398,7 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
 
     """
 
+    text = text.lower()
     string_num_ordinal_it = {}
     # first, second...
     if ordinals:

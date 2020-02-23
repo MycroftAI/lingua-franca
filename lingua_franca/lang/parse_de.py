@@ -80,6 +80,8 @@ de_numbers = {
 # TODO: short_scale and ordinals don't do anything here.
 # The parameters are present in the function signature for API compatibility
 # reasons.
+
+
 def extractnumber_de(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
@@ -94,6 +96,7 @@ def extractnumber_de(text, short_scale=True, ordinals=False):
     'ein Pferd' means 'one horse' and 'a horse'
 
     """
+    text = text.lower()
     aWords = text.split()
     aWords = [word for word in aWords if
               word not in ["der", "die", "das", "des", "den", "dem"]]
@@ -187,13 +190,13 @@ def extract_datetime_de(string, currentDate, default_time):
 
     def date_found():
         return found or \
-               (
-                       datestr != "" or timeStr != "" or
-                       yearOffset != 0 or monthOffset != 0 or
-                       dayOffset is True or hrOffset != 0 or
-                       hrAbs or minOffset != 0 or
-                       minAbs or secOffset != 0
-               )
+            (
+                datestr != "" or timeStr != "" or
+                yearOffset != 0 or monthOffset != 0 or
+                dayOffset is True or hrOffset != 0 or
+                hrAbs or minOffset != 0 or
+                minAbs or secOffset != 0
+            )
 
     if string == "" or not currentDate:
         return None
