@@ -123,6 +123,18 @@ class TestNormalize(unittest.TestCase):
                                         short_scale=False), 1e12)
         self.assertEqual(extract_number("this is the billionth test",
                                         short_scale=False), 1e-12)
+
+        # Verify non-power multiples of ten no longer discard
+        # adjacent multipliers
+        self.assertEqual(extract_number("twenty thousand"), 20000)
+        self.assertEqual(extract_number("fifty million"), 50000000)
+
+        # This test fails due to 
+        # self.assertEqual(extract_number("twenty billion three hundred million \
+        #                                 nine hundred fifty thousand six hundred \
+        #                                 seventy five point eight six"),
+        #                                 20300950675.86)
+
         # TODO handle this case
         # self.assertEqual(
         #    extract_number("6 dot six six six"),

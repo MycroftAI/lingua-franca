@@ -444,7 +444,11 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 current_val = val
 
         else:
-            if prev_word in _SUMS and word not in _SUMS and current_val >= 10:
+            if all([
+                prev_word in _SUMS,
+                word not in _SUMS,
+                word not in multiplies,
+                current_val >= 10]):
                 # Backtrack - we've got numbers we can't sum.
                 number_words.pop()
                 val = prev_val
