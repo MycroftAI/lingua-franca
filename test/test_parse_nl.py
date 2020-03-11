@@ -44,6 +44,8 @@ class TestParsing(unittest.TestCase):
         self.assertEqual(
             extract_number("dit is Test drie", lang=LANG), 3)
         self.assertEqual(
+            extract_number("dit is Test Drie", lang=LANG), 3)
+        self.assertEqual(
             extract_number("dit is de Test Nummer 4", lang=LANG), 4)
         self.assertEqual(extract_number("één derde kopje",
                                         lang=LANG), 1.0 / 3.0)

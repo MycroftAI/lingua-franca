@@ -72,7 +72,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
         (int) or (float): The value of extracted number
 
     """
-    aWords = text.split()
+    aWords = text.lower().split()
     count = 0
     result = None
     while count < len(aWords):
@@ -355,13 +355,13 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
 
     def date_found():
         return found or \
-               (
-                       datestr != "" or
-                       yearOffset != 0 or monthOffset != 0 or
-                       dayOffset is True or hrOffset != 0 or
-                       hrAbs or minOffset != 0 or
-                       minAbs or secOffset != 0
-               )
+            (
+                datestr != "" or
+                yearOffset != 0 or monthOffset != 0 or
+                dayOffset is True or hrOffset != 0 or
+                hrAbs or minOffset != 0 or
+                minAbs or secOffset != 0
+            )
 
     if input_str == "":
         return None
@@ -890,10 +890,10 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
                         used = 1
                     elif (int(word) > 100 and
                           (
-                                  # wordPrev == "o" or
-                                  # wordPrev == "oh" or
-                                  wordPrev == "cero"
-                          )):
+                        # wordPrev == "o" or
+                        # wordPrev == "oh" or
+                        wordPrev == "cero"
+                    )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = int(word) / 100
                         strMM = int(word) - strHH * 100
@@ -903,8 +903,8 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
                             wordNext == "hora" and
                             word[0] != '0' and
                             (
-                                    int(word) < 100 and
-                                    int(word) > 2400
+                                int(word) < 100 and
+                                int(word) > 2400
                             )):
                         # ignores military time
                         # "in 3 hours"

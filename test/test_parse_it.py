@@ -26,6 +26,7 @@ class TestNormalize(unittest.TestCase):
     """
         Test cases for Italian parsing
     """
+
     def test_articles_it(self):
         """
         Test cases for Italian remove_articles
@@ -199,6 +200,8 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number('tre dozzine di uova',
                                         lang='it'), 36)
         self.assertEqual(extract_number('zero gatti',
+                                        lang='it'), 0)
+        self.assertEqual(extract_number('Zero gatti',
                                         lang='it'), 0)
 
     def test_extractdatetime_it_not_normalized(self):

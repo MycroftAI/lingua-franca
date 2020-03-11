@@ -20,6 +20,7 @@ from lingua_franca.parse import (normalize, extract_numbers, extract_number,
                                  extract_datetime, extract_datetime_es,
                                  isFractional_es)
 
+
 class TestNormalize(unittest.TestCase):
     """
         Test cases for Spanish parsing
@@ -85,6 +86,7 @@ class TestNormalize(unittest.TestCase):
             "1 7 cuatro albuquerque naranja John Doe catorce ocho 157",
             lang='es')), [1, 4, 7, 8, 14, 157])
         self.assertEqual(extract_number("seis punto dos", lang='es'), 6.2)
+        self.assertEqual(extract_number("seis punto Dos", lang='es'), 6.2)
         self.assertEqual(extract_number("seis coma dos", lang='es'), 6.2)
         self.assertEqual(extract_numbers("un medio", lang='es'), [0.5])
         self.assertEqual(extract_number("cuarto", lang='es'), 0.25)
@@ -105,7 +107,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(isFractional_es("centésima"), 1.0 / 100)
         self.assertEqual(isFractional_es("centésimo"), 1.0 / 100)
         self.assertEqual(isFractional_es("milésima"), 1.0 / 1000)
-    
+
     @unittest.skip("unwritten logic")
     def test_comma_fraction_logic_es(self):
         # Logic has not been written to parse "#,#" as "#.#"
@@ -119,7 +121,7 @@ class TestDatetime_es(unittest.TestCase):
         # test currentDate==None
         _now = datetime.now()
         relative_year = _now.year if (_now.month == 1 and _now.day < 11) else \
-                        (_now.year + 1)
+            (_now.year + 1)
         self.assertEqual(extract_datetime_es("11 ene")[0],
                          datetime(relative_year, 1, 11))
 
