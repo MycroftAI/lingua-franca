@@ -35,12 +35,12 @@ class TestNormalize(unittest.TestCase):
 
     def test_extract_number(self):
         self.assertEqual(extract_number("dette er den første test",
-                         lang="da-dk"), 1)
+                                        lang="da-dk"), 1)
 #        self.assertEqual(extract_number("dette er den 1. test",
 #                                        lang="da-dk"),
 #                         1)
         self.assertEqual(extract_number("dette er den anden test",
-                         lang="da-dk"), 2)
+                                        lang="da-dk"), 2)
 #        self.assertEqual(extract_number("dette er den 2. test",
 #                                        lang="da-dk"),
 #                         2)
@@ -48,6 +48,8 @@ class TestNormalize(unittest.TestCase):
             extract_number("dette er den tredie test", lang="da-dk"), 3)
         self.assertEqual(
             extract_number("dette er test nummer fire", lang="da-dk"), 4)
+        self.assertEqual(
+            extract_number("dette er test nummer Fire", lang="da-dk"), 4)
         self.assertEqual(
             extract_number("en trediedel af en kop", lang="da-dk"), 1.0 / 3.0)
         self.assertEqual(extract_number("tre kopper", lang="da-dk"), 3)

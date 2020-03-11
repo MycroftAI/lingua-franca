@@ -39,6 +39,8 @@ class TestNormalize(unittest.TestCase):
                                         lang='sv-se'), 1.0 / 3.0)
         self.assertEqual(extract_number("tre deciliter",
                                         lang='sv-se'), 3)
+        self.assertEqual(extract_number("Tre deciliter",
+                                        lang='sv-se'), 3)
         self.assertEqual(extract_number("1/3 deciliter",
                                         lang='sv-se'), 1.0 / 3.0)
         self.assertEqual(extract_number("en kvarts dl",

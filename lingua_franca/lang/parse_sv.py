@@ -20,6 +20,8 @@ from .parse_common import is_numeric, look_for_fractions
 # TODO: short_scale and ordinals don't do anything here.
 # The parameters are present in the function signature for API compatibility
 # reasons.
+
+
 def extractnumber_sv(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
@@ -29,6 +31,7 @@ def extractnumber_sv(text, short_scale=True, ordinals=False):
     Returns:
         (int) or (float): The value of extracted number
     """
+    text = text.lower()
     aWords = text.split()
     and_pass = False
     valPreAnd = False

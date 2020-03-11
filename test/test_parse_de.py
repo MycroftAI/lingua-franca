@@ -69,6 +69,8 @@ class TestNormalize(unittest.TestCase):
                          3.0 / 4.0)
         self.assertEqual(extract_number("drei Viertel Tassen", lang="de-de"),
                          3.0 / 4.0)
+        self.assertEqual(extract_number("Drei Viertel Tassen", lang="de-de"),
+                         3.0 / 4.0)
 
     def test_extractdatetime_de(self):
         def extractWithFormat(text):
