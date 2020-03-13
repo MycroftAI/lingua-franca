@@ -406,8 +406,9 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
 
         # is the prev word a number and should we sum it?
         # twenty two, fifty six
-        if (prev_word in _SUMS and val and val < 10) or (prev_word in
-                                                         multiplies and prev_val):
+        if (prev_word in _SUMS and val and val < 10) or all([prev_word in
+                                                             multiplies,
+                                                             val < prev_val if prev_val else False]):
             val = prev_val + val
 
         # is the prev word a number and should we multiply it?
@@ -460,7 +461,12 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
             # six hundred sixty six
             # two million five hundred thousand
             if word in multiplies and next_word not in multiplies:
-                if all([string_num_scale.get(other_token.word) < current_val if other_token.word in multiplies else True for other_token in tokens[idx::]]):
+                # iterate over the remaining words, and check for larger powers
+                # of ten. if we find one, skip this part, preserving the current
+                # value for the next iteration
+                if all([string_num_scale.get(other_token.word) < current_val
+                        if other_token.word in multiplies else True
+                        for other_token in tokens[idx+1:]]):
                     to_sum.append(val)
                     val = 0
                     prev_val = 0
