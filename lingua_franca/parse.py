@@ -77,8 +77,12 @@ def match_one(query, choices):
     else:
         return best
 
+# TODO update these docstrings when decimal_places has been implemented
+#     in all parsers
 
-def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
+
+def extract_numbers(text, short_scale=True, ordinals=False, lang=None,
+                    decimal_places=False):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -90,12 +94,14 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
             See https://en.wikipedia.org/wiki/Names_of_large_numbers
         ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
         lang (str): the BCP-47 code for the language to use, None uses default
+        decimal_places (int or False): rounds to # decimal places. Not yet implemented
+            in all languages. False performs no rounding. Uses builtin round()
     Returns:
         list: list of extracted numbers as floats, or empty list if none found
     """
     lang_code = get_primary_lang_code(lang)
     if lang_code == "en":
-        return extract_numbers_en(text, short_scale, ordinals)
+        return extract_numbers_en(text, short_scale, ordinals, decimal_places)
     elif lang_code == "de":
         return extract_numbers_de(text, short_scale, ordinals)
     elif lang_code == "fr":
@@ -112,7 +118,8 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
     return []
 
 
-def extract_number(text, short_scale=True, ordinals=False, lang=None):
+def extract_number(text, short_scale=True, ordinals=False, lang=None,
+                   decimal_places=False):
     """Takes in a string and extracts a number.
 
     Args:
@@ -123,6 +130,8 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
             See https://en.wikipedia.org/wiki/Names_of_large_numbers
         ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
         lang (str): the BCP-47 code for the language to use, None uses default
+        decimal_places (int or False): rounds to # decimal places. Not yet implemented
+            in all languages. False performs no rounding. Uses builtin round()
     Returns:
         (int, float or False): The number extracted or False if the input
                                text contains no numbers
@@ -130,7 +139,7 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
     lang_code = get_primary_lang_code(lang)
     if lang_code == "en":
         return extractnumber_en(text, short_scale=short_scale,
-                                ordinals=ordinals)
+                                ordinals=ordinals, decimal_places=decimal_places)
     elif lang_code == "es":
         return extractnumber_es(text)
     elif lang_code == "pt":

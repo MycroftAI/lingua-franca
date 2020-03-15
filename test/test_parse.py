@@ -151,10 +151,12 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("eight hundred trillion two hundred \
                                         fifty seven"), 800000000000257.0)
 
-        # TODO handle this case
-        # self.assertEqual(
-        #    extract_number("6 dot six six six"),
-        #    6.666)
+        self.assertEqual(extract_number("6 dot six six six"), 6.666)
+        self.assertEqual(extract_number(
+            "6 dot six six six", decimal_places=2), round(6.666, 2))
+        self.assertEqual(extract_number(
+            "6 point seventy", decimal_places=2), 6.7)
+
         self.assertTrue(extract_number("The tennis player is fast") is False)
         self.assertTrue(extract_number("fraggle") is False)
 
@@ -735,6 +737,13 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_numbers("this is a seven eight nine and a"
                                          " half test"),
                          [7.0, 8.0, 9.5])
+        self.assertEqual(extract_numbers("this is a six point five seven nine"
+                                         " bingo ten nancy forty six test"),
+                         [6.579, 10.0, 46.0])
+        self.assertEqual(extract_numbers("this is a six point five seven nine"
+                                         " bingo ten nancy forty six test"
+                                         " with decimal rounding", decimal_places=2),
+                         [round(6.579, 2), 10, 46])
 
     def test_contractions(self):
         self.assertEqual(normalize("ain't"), "is not")
