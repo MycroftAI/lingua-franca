@@ -470,16 +470,14 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 # (above, when `current_val` is 1 million, `val` is
                 # 2 million.)
                 #
-                #
-                # We have a dict `string_num_scale` containing [word, value]
-                # for "all" powers of ten.
+                # We have a dict `string_num_scale` containing [value, word]
+                # pairs for "all" powers of ten: string_num_scale[10] == "ten.
                 #
                 # We need go over the rest of the tokens, looking for other
                 # powers of ten. If we find one, we compare it with the current
                 # value, to see if it's smaller than the current power of ten.
                 #
-                # Numbers which are not powers of ten will be passed over,
-                # passing True to the if statement's all() condition.
+                # Numbers which are not powers of ten will be passed over.
                 #
                 # If all the remaining powers of ten are smaller than our
                 # current value, we can set the current value aside for later,
@@ -515,9 +513,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 #            hundred fifty seven"
                 # >>> extract_number(foo)
                 # 9907657
-                # if all([string_num_scale[other_token.word] < current_val
-                #         if other_token.word in multiplies else True
-                #         for other_token in tokens[idx+1:]]):
+
                 time_to_sum = True
                 for other_token in tokens[idx+1:]:
                     if other_token.word in multiplies:
