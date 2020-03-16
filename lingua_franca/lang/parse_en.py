@@ -457,16 +457,77 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 break
             prev_val = val
 
-            # handle long numbers
-            # six hundred sixty six
-            # two million five hundred thousand
             if word in multiplies and next_word not in multiplies:
-                # iterate over the remaining words, and check for larger powers
-                # of ten. if we find one, skip this part, preserving the current
-                # value for the next iteration
-                if all([string_num_scale.get(other_token.word) < current_val
-                        if other_token.word in multiplies else True
-                        for other_token in tokens[idx+1:]]):
+                # handle long numbers
+                # six hundred sixty six
+                # two million five hundred thousand
+                #
+                # This logic is somewhat complex, and warrants
+                # extensive documentation for the next coder's sake.
+                #
+                # The current word is a power of ten. `current_val` is
+                # its integer value. `val` is our working sum
+                # (above, when `current_val` is 1 million, `val` is
+                # 2 million.)
+                #
+                #
+                # We have a dict `string_num_scale` containing [word, value]
+                # for "all" powers of ten.
+                #
+                # We need go over the rest of the tokens, looking for other
+                # powers of ten. If we find one, we compare it with the current
+                # value, to see if it's smaller than the current power of ten.
+                #
+                # Numbers which are not powers of ten will be passed over,
+                # passing True to the if statement's all() condition.
+                #
+                # If all the remaining powers of ten are smaller than our
+                # current value, we can set the current value aside for later,
+                # and begin extracting another portion of our final result.
+                # For example, suppose we have the following string.
+                # The current word is "million".`val` is 9000000.
+                # `current_val` is 1000000.
+                #
+                #    "nine **million** nine *hundred* seven **thousand**
+                #     six *hundred* fifty seven"
+                #
+                # Iterating over the rest of the string, the current
+                # value is larger than all remaining powers of ten.
+                #
+                # The if statement passes, and nine million (9000000)
+                # is appended to `to_sum`.
+                #
+                # The main variables are reset, and the main loop begins
+                # assembling another number, which will also be appended
+                # under the same conditions.
+                #
+                # By the end of the main loop, to_sum will be a list of each
+                # "place" from 100 up: [9000000, 907000, 600]
+                #
+                # The final three digits will be added to the sum of that list
+                # at the end of the main loop, to produce the extracted number:
+                #
+                #    sum([9000000, 907000, 600]) + 57
+                # == 9,000,000 + 907,000 + 600 + 57
+                # == 9,907,657
+                #
+                # >>> foo = "nine million nine hundred seven thousand six
+                #            hundred fifty seven"
+                # >>> extract_number(foo)
+                # 9907657
+                # if all([string_num_scale[other_token.word] < current_val
+                #         if other_token.word in multiplies else True
+                #         for other_token in tokens[idx+1:]]):
+                time_to_sum = True
+                for other_token in tokens[idx+1:]:
+                    if other_token.word in multiplies:
+                        if string_num_scale[other_token.word] >= current_val:
+                            time_to_sum = False
+                        else:
+                            continue
+                    if not time_to_sum:
+                        break
+                if time_to_sum:
                     to_sum.append(val)
                     val = 0
                     prev_val = 0
