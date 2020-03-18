@@ -136,11 +136,20 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("twenty thousand"), 20000)
         self.assertEqual(extract_number("fifty million"), 50000000)
 
-        # This test fails due to 
-        # self.assertEqual(extract_number("twenty billion three hundred million \
-        #                                 nine hundred fifty thousand six hundred \
-        #                                 seventy five point eight six"),
-        #                                 20300950675.86)
+        # Verify smaller powers of ten no longer cause miscalculation of larger
+        # powers of ten (see MycroftAI#86)
+        self.assertEqual(extract_number("twenty billion three hundred million \
+                                        nine hundred fifty thousand six hundred \
+                                        seventy five point eight"),
+                         20300950675.8)
+        self.assertEqual(extract_number("nine hundred ninety nine million nine \
+                                        hundred ninety nine thousand nine \
+                                        hundred ninety nine point nine"),
+                         999999999.9)
+
+        # TODO why does "trillion" result in xxxx.0?
+        self.assertEqual(extract_number("eight hundred trillion two hundred \
+                                        fifty seven"), 800000000000257.0)
 
         # TODO handle this case
         # self.assertEqual(
