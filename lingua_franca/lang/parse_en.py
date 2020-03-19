@@ -236,10 +236,12 @@ def _extract_fraction_with_text_en(tokens, short_scale, ordinals):
         if len(partitions) == 3:
             numbers1 = \
                 _extract_numbers_with_text_en(partitions[0], short_scale,
-                                              ordinals, fractional_numbers=False)
+                                              ordinals,
+                                              fractional_numbers=False)
             numbers2 = \
                 _extract_numbers_with_text_en(partitions[2], short_scale,
-                                              ordinals, fractional_numbers=True)
+                                              ordinals,
+                                              fractional_numbers=True)
 
             if not numbers1 or not numbers2:
                 return None, None
@@ -284,10 +286,12 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals):
         if len(partitions) == 3:
             numbers1 = \
                 _extract_numbers_with_text_en(partitions[0], short_scale,
-                                              ordinals, fractional_numbers=False)
+                                              ordinals,
+                                              fractional_numbers=False)
             numbers2 = \
                 _extract_numbers_with_text_en(partitions[2], short_scale,
-                                              ordinals, fractional_numbers=False)
+                                              ordinals,
+                                              fractional_numbers=False)
 
             if not numbers1 or not numbers2:
                 return None, None
@@ -635,6 +639,38 @@ def extract_duration_en(text):
     return (duration, text)
 
 
+def month_to_int_en(month):
+    if isinstance(month, int) or isinstance(month, float):
+        return int(month)
+    if isinstance(month, str):
+        month = month.lower()
+        if month.startswith("jan"):
+            return 1
+        if month.startswith("feb"):
+            return 2
+        if month.startswith("mar"):
+            return 3
+        if month.startswith("apr"):
+            return 4
+        if month.startswith("may"):
+            return 5
+        if month.startswith("jun"):
+            return 6
+        if month.startswith("jul"):
+            return 7
+        if month.startswith("aug"):
+            return 8
+        if month.startswith("sep"):
+            return 9
+        if month.startswith("oct"):
+            return 10
+        if month.startswith("nov"):
+            return 11
+        if month.startswith("dec"):
+            return 12
+    return None
+
+
 def extract_datetime_en(string, dateNow, default_time):
     """ Convert a human date reference into an exact datetime
 
@@ -882,12 +918,14 @@ def extract_datetime_en(string, dateNow, default_time):
                 start -= 1
                 # parse 15 of July, June 20th, Feb 18, 19 of February
         elif word in months or word in monthsShort and not fromFlag:
-            try:
-                m = months.index(word)
-            except ValueError:
-                m = monthsShort.index(word)
+            m = month_to_int_en(word)
+
+            if wordPrev in ["next", "this", "last", "past", "previous"]:
+                datestr += wordPrev + " "
+                start -= 1
+                used += 1
+            datestr += months[m - 1]
             used += 1
-            datestr = months[m]
             if wordPrev and (wordPrev[0].isdigit() or
                              (wordPrev == "of" and wordPrevPrev[0].isdigit())):
                 if wordPrev == "of" and wordPrevPrev[0].isdigit():
@@ -1383,29 +1421,55 @@ def extract_datetime_en(string, dateNow, default_time):
             temp = datetime.strptime(datestr, "%B %d")
         except ValueError:
             # Try again, allowing the year
-            temp = datetime.strptime(datestr, "%B %d %Y")
-        extractedDate = extractedDate.replace(hour=0, minute=0, second=0)
-        if not hasYear:
-            temp = temp.replace(year=extractedDate.year,
-                                tzinfo=extractedDate.tzinfo)
-            if extractedDate < temp:
-                extractedDate = extractedDate.replace(
-                    year=int(currentYear),
-                    month=int(temp.strftime("%m")),
-                    day=int(temp.strftime("%d")),
-                    tzinfo=extractedDate.tzinfo)
+            try:
+                temp = datetime.strptime(datestr, "%B %d %Y")
+            except:
+                temp = None
+        if temp is None:
+            # check for month
+            for m in months + monthsShort:
+                if m in datestr:
+                    int_month = month_to_int_en(m)
+                    year = extractedDate.year
+                    if int_month < extractedDate.month:
+                        if "last" not in datestr and \
+                                "past" not in datestr \
+                                and not "prev" in datestr:
+                            year += 1
+                    elif "last" in datestr or "past" in datestr \
+                                or "prev" in datestr:
+                        year -= 1
+                    elif "next" in datestr:
+                        year += 1
+                    extractedDate = extractedDate.replace(year=year,
+                                                          month=int_month,
+                                                          day=1,
+                                                          hour=0,
+                                                          minute=0)
+                    break
+        else:
+            extractedDate = extractedDate.replace(hour=0, minute=0, second=0)
+            if not hasYear:
+                temp = temp.replace(year=extractedDate.year,
+                                    tzinfo=extractedDate.tzinfo)
+                if extractedDate < temp:
+                    extractedDate = extractedDate.replace(
+                        year=int(currentYear),
+                        month=int(temp.strftime("%m")),
+                        day=int(temp.strftime("%d")),
+                        tzinfo=extractedDate.tzinfo)
+                else:
+                    extractedDate = extractedDate.replace(
+                        year=int(currentYear) + 1,
+                        month=int(temp.strftime("%m")),
+                        day=int(temp.strftime("%d")),
+                        tzinfo=extractedDate.tzinfo)
             else:
                 extractedDate = extractedDate.replace(
-                    year=int(currentYear) + 1,
+                    year=int(temp.strftime("%Y")),
                     month=int(temp.strftime("%m")),
                     day=int(temp.strftime("%d")),
                     tzinfo=extractedDate.tzinfo)
-        else:
-            extractedDate = extractedDate.replace(
-                year=int(temp.strftime("%Y")),
-                month=int(temp.strftime("%m")),
-                day=int(temp.strftime("%d")),
-                tzinfo=extractedDate.tzinfo)
     else:
         # ignore the current HH:MM:SS if relative using days or greater
         if hrOffset == 0 and minOffset == 0 and secOffset == 0:

@@ -589,6 +589,21 @@ class TestNormalize(unittest.TestCase):
         testExtract("what's the weather like next tuesday night",
                     "2017-07-04 22:00:00", "what is weather like night")
 
+        testExtract("let me know when november starts",
+                    "2017-11-01 00:00:00", "let me know when starts")
+        testExtract("let me know when jan starts",
+                    "2018-01-01 00:00:00", "let me know when starts")
+        testExtract("my birthday is next january",
+                    "2018-01-01 00:00:00", "my birthday is")
+        testExtract("i know what you did last january",
+                    "2017-01-01 00:00:00", "i know what you did")
+        testExtract("my birthday is next january",
+                    "2018-01-01 00:00:00", "my birthday is")
+        testExtract("my birthday is next november",
+                    "2018-11-01 00:00:00", "my birthday is")
+        testExtract("i know what you did last november",
+                    "2016-11-01 00:00:00", "i know what you did")
+
     def test_extract_ambiguous_time_en(self):
         morning = datetime(2017, 6, 27, 8, 1, 2)
         evening = datetime(2017, 6, 27, 20, 1, 2)
