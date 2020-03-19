@@ -1439,8 +1439,6 @@ def extract_datetime_en(string, dateNow, default_time):
                     elif "last" in datestr or "past" in datestr \
                                 or "prev" in datestr:
                         year -= 1
-                    elif "next" in datestr:
-                        year += 1
                     extractedDate = extractedDate.replace(year=year,
                                                           month=int_month,
                                                           day=1,

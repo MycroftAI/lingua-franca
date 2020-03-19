@@ -600,7 +600,7 @@ class TestNormalize(unittest.TestCase):
         testExtract("my birthday is next january",
                     "2018-01-01 00:00:00", "my birthday is")
         testExtract("my birthday is next november",
-                    "2018-11-01 00:00:00", "my birthday is")
+                    "2017-11-01 00:00:00", "my birthday is")
         testExtract("i know what you did last november",
                     "2016-11-01 00:00:00", "i know what you did")
 
