@@ -593,8 +593,6 @@ class TestNormalize(unittest.TestCase):
                     "2017-11-01 00:00:00", "let me know when starts")
         testExtract("let me know when jan starts",
                     "2018-01-01 00:00:00", "let me know when starts")
-        testExtract("my birthday is next january",
-                    "2018-01-01 00:00:00", "my birthday is")
         testExtract("i know what you did last january",
                     "2017-01-01 00:00:00", "i know what you did")
         testExtract("my birthday is next january",
