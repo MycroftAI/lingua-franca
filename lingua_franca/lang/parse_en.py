@@ -620,7 +620,12 @@ def extract_duration_en(text):
     }
 
     pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}s?"
+    # text normalization
     text = _convert_words_to_numbers_en(text)
+    text = text.replace("centuries", "century")
+    text = text.replace("a day", "1 day").replace("a year", "1 year")\
+        .replace("a decade", "1 decade").replace("a century", "1 century")\
+        .replace("a millennium", "1 millennium")
 
     for unit in time_units:
         unit_pattern = pattern.format(unit=unit[:-1])  # remove 's' from unit
@@ -629,10 +634,35 @@ def extract_duration_en(text):
         time_units[unit] = value
         text = re.sub(unit_pattern, '', text)
 
-    text = text.strip()
-    duration = timedelta(**time_units) if any(time_units.values()) else None
+    extended_units = {
+        'months': 0,
+        'years': 0,
+        'decades': 0,
+        'centurys': 0,
+        'millenniums': 0
+    }
 
-    return (duration, text)
+    for unit in extended_units:
+        unit_pattern = pattern.format(unit=unit[:-1])  # remove 's' from unit
+        matches = re.findall(unit_pattern, text)
+
+        value = sum(map(float, matches))
+        extended_units[unit] = value
+        text = re.sub(unit_pattern, '', text)
+
+        if unit == "months":
+            time_units["days"] += 30 * value
+        elif unit == "years":
+            time_units["days"] += 365 * value
+        elif unit == "decades":
+            time_units["days"] += 10 * 365 * value
+        elif unit == "centurys":
+            time_units["days"] += 100 * 365 * value
+        elif unit == "millenniums":
+            time_units["days"] += 1000 * 365 * value
+
+    duration = timedelta(**time_units) if any(time_units.values()) else None
+    return (duration, text.strip())
 
 
 def extract_datetime_en(string, dateNow, default_time):

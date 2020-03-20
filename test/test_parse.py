@@ -230,6 +230,29 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_duration("5-minutes"),
                          (timedelta(minutes=5), ""))
 
+        self.assertEqual(extract_duration("a year"),
+                         (timedelta(days=365 * 1), ""))
+        self.assertEqual(extract_duration("1 year"),
+                         (timedelta(days=365 * 1), ""))
+        self.assertEqual(extract_duration("5 years"),
+                         (timedelta(days=365 * 5), ""))
+        self.assertEqual(extract_duration("a decade"),
+                         (timedelta(days=365 * 10), ""))
+        self.assertEqual(extract_duration("1 decade"),
+                         (timedelta(days=365 * 10), ""))
+        self.assertEqual(extract_duration("5 decades"),
+                         (timedelta(days=365 * 50), ""))
+        self.assertEqual(extract_duration("1 century"),
+                         (timedelta(days=365 * 100), ""))
+        self.assertEqual(extract_duration("a century"),
+                         (timedelta(days=365 * 100), ""))
+        self.assertEqual(extract_duration("5 centuries"),
+                         (timedelta(days=365 * 500), ""))
+        self.assertEqual(extract_duration("1 millennium"),
+                         (timedelta(days=365 * 1000), ""))
+        self.assertEqual(extract_duration("5 millenniums"),
+                         (timedelta(days=365 * 5000), ""))
+
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
             date = datetime(2017, 6, 27, 13, 4)  # Tue June 27, 2017 @ 1:04pm
