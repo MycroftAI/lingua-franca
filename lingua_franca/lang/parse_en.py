@@ -622,7 +622,8 @@ def extract_duration_en(text):
     pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}s?"
     # text normalization
     text = _convert_words_to_numbers_en(text)
-    text = text.replace("centuries", "century")
+    text = text.replace("centuries", "century").replace("millennia",
+                                                        "millennium")
     text = text.replace("a day", "1 day").replace("a year", "1 year")\
         .replace("a decade", "1 decade").replace("a century", "1 century")\
         .replace("a millennium", "1 millennium")
@@ -651,15 +652,15 @@ def extract_duration_en(text):
         text = re.sub(unit_pattern, '', text)
 
         if unit == "months":
-            time_units["days"] += 30 * value
+            time_units["weeks"] += 4 * value
         elif unit == "years":
-            time_units["days"] += 365 * value
+            time_units["weeks"] += 4 * 12 * value
         elif unit == "decades":
-            time_units["days"] += 10 * 365 * value
+            time_units["weeks"] += 4 * 12 * 10 * value
         elif unit == "centurys":
-            time_units["days"] += 100 * 365 * value
+            time_units["weeks"] += 4 * 12 * 100 * value
         elif unit == "millenniums":
-            time_units["days"] += 1000 * 365 * value
+            time_units["weeks"] += 4 * 12 * 1000 * value
 
     duration = timedelta(**time_units) if any(time_units.values()) else None
     return (duration, text.strip())

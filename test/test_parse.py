@@ -231,27 +231,27 @@ class TestNormalize(unittest.TestCase):
                          (timedelta(minutes=5), ""))
 
         self.assertEqual(extract_duration("a year"),
-                         (timedelta(days=365 * 1), ""))
+                         (timedelta(weeks=4*12), ""))
         self.assertEqual(extract_duration("1 year"),
-                         (timedelta(days=365 * 1), ""))
+                         (timedelta(weeks=4*12 * 1), ""))
         self.assertEqual(extract_duration("5 years"),
-                         (timedelta(days=365 * 5), ""))
+                         (timedelta(weeks=4*12*5), ""))
         self.assertEqual(extract_duration("a decade"),
-                         (timedelta(days=365 * 10), ""))
+                         (timedelta(weeks=4*12*10 ), ""))
         self.assertEqual(extract_duration("1 decade"),
-                         (timedelta(days=365 * 10), ""))
+                         (timedelta(weeks=4*12*10 ), ""))
         self.assertEqual(extract_duration("5 decades"),
-                         (timedelta(days=365 * 50), ""))
+                         (timedelta(weeks=4*12*10*5), ""))
         self.assertEqual(extract_duration("1 century"),
-                         (timedelta(days=365 * 100), ""))
+                         (timedelta(weeks=4*12*100), ""))
         self.assertEqual(extract_duration("a century"),
-                         (timedelta(days=365 * 100), ""))
+                         (timedelta(weeks=4*12*100), ""))
         self.assertEqual(extract_duration("5 centuries"),
-                         (timedelta(days=365 * 500), ""))
+                         (timedelta(weeks=4*12*100*5), ""))
         self.assertEqual(extract_duration("1 millennium"),
-                         (timedelta(days=365 * 1000), ""))
+                         (timedelta(weeks=4*12*1000), ""))
         self.assertEqual(extract_duration("5 millenniums"),
-                         (timedelta(days=365 * 5000), ""))
+                         (timedelta(weeks=4*12*1000*5), ""))
 
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
