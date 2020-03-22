@@ -2032,6 +2032,11 @@ class TestExtractDate(unittest.TestCase):
                         date(day=1, month=1, year=9000))
 
     def test_seasons(self):
+        _ref_season = date_to_season(self.ref_date)
+        self.assertEqual(_ref_season, Season.WINTER)
+
+        # TODO start/end of season/winter/summer/fall/spring...
+
         def _test_season_north(test_date, expected_date, season):
             self._test_date(test_date, expected_date, hemi=Hemisphere.NORTH)
             self.assertEqual(date_to_season(expected_date,
@@ -2044,6 +2049,58 @@ class TestExtractDate(unittest.TestCase):
                                             hemisphere=Hemisphere.SOUTH),
                              season)
 
+
+        # test "season" literal
+        _test_season_north("this season",
+                           date(day=1, month=12, year=self.ref_date.year - 1),
+                           _ref_season)
+        _test_season_north("next season",
+                           date(day=1, month=3, year=self.ref_date.year),
+                           Season.SPRING)
+
+        _test_season_north("last season",
+                           date(day=1, month=9, year=self.ref_date.year - 1),
+                           Season.FALL)
+
+        # test named season in {hemisphere}
+        _test_season_north("this spring in north hemisphere",
+                           self.ref_date.replace(day=1, month=3),
+                           Season.SPRING)
+        _test_season_north("this spring in northern hemisphere",
+                           self.ref_date.replace(day=1, month=3),
+                           Season.SPRING)
+
+        _test_season_south("this spring in south hemisphere",
+                           self.ref_date.replace(day=1, month=9),
+                           Season.SPRING)
+        _test_season_south("this spring in southern hemisphere",
+                           self.ref_date.replace(day=1, month=9),
+                           Season.SPRING)
+
+        try:
+            import simple_NER
+
+            # test named season in {country}
+            _test_season_north("this spring in Portugal",
+                               self.ref_date.replace(day=1, month=3),
+                               Season.SPRING)
+
+            _test_season_south("this spring in Brazil",
+                               self.ref_date.replace(day=1, month=9),
+                               Season.SPRING)
+
+            # test named season in {capital city}
+            _test_season_north("this spring in Lisbon",
+                               self.ref_date.replace(day=1, month=3),
+                               Season.SPRING)
+            _test_season_south("this spring in Canberra",
+                               self.ref_date.replace(day=1, month=9),
+                               Season.SPRING)
+
+        except ImportError:
+            print("Could not test location tagging")
+
+        # test named season
         _test_season_north("this spring",
                            self.ref_date.replace(day=1, month=3),
                            Season.SPRING)
@@ -2093,19 +2150,6 @@ class TestExtractDate(unittest.TestCase):
                            self.ref_date.replace(day=1, month=12,
                                                  year=self.ref_date.year - 1),
                            Season.WINTER)
-
-        _ref_season = date_to_season(self.ref_date)
-        assert _ref_season == Season.WINTER
-        _test_season_north("this season",
-                           date(day=1, month=12, year=self.ref_date.year - 1),
-                           _ref_season)
-        _test_season_north("next season",
-                           date(day=1, month=3, year=self.ref_date.year),
-                           Season.SPRING)
-
-        _test_season_north("last season",
-                           date(day=1, month=9, year=self.ref_date.year - 1),
-                           Season.FALL)
 
     def test_weekends(self):
         # TODO plus / minus / after N weekends

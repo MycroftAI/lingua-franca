@@ -34,6 +34,15 @@ from lingua_franca.time import date_to_season, season_to_date, \
     int_to_weekday, int_to_month, weekday_to_int, month_to_int, now_local
 
 
+try:
+    from simple_NER.annotators.locations import LocationNER
+    _ner = LocationNER()
+except ImportError:
+    _ner = None
+    print("Location extraction disabled")
+    print("Run pip install simple_NER>=0.4.1")
+
+
 def generate_plurals_en(originals):
     """
     Return a new set or dict containing the plural form of the original values,
@@ -1850,8 +1859,8 @@ def extract_date_en(date_str, ref_date,
         # this is used to parse seasons, which depend on geographical location
         # "i know what you did last summer",  "winter is coming"
         # usually this will be set automatically based on user location
-        # this adds a naive check for "summer in north hemisphere"
-        # TODO extracting location string (NER)?
+
+        # do a naive check for "summer in north hemisphere"
         wordNext = date_words[idx + 1] if idx + 1 < len(date_words) else ""
         word = word.rstrip('s')
         if word in _HEMISPHERES_EN[Hemisphere.NORTH] and \
@@ -1860,6 +1869,22 @@ def extract_date_en(date_str, ref_date,
         elif word in _HEMISPHERES_EN[Hemisphere.SOUTH] and \
                 wordNext in hemisphere_literal:
             hemisphere = Hemisphere.SOUTH
+        elif _ner is not None:
+            # parse string for Country names
+            for r in _ner.extract_entities(date_str):
+                if r.entity_type == "Country":
+                    if r.data["latitude"] < 0:
+                        hemisphere = Hemisphere.SOUTH
+                    else:
+                        hemisphere = Hemisphere.NORTH
+            else:
+                #  or Capital city names
+                for r in _ner.extract_entities(date_str):
+                    if r.entity_type == "Capital City":
+                        if r.data["hemisphere"].startswith("s"):
+                            hemisphere = Hemisphere.SOUTH
+                        else:
+                            hemisphere = Hemisphere.NORTH
 
     # parse Nth {X} of Nth {Y}
     if is_of:
