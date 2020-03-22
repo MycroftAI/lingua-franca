@@ -2256,9 +2256,12 @@ def extract_date_en(date_str, ref_date,
         except OverflowError:
             # TODO how to handle BC dates
             # https://stackoverflow.com/questions/15857797/bc-dates-in-python
-            year_bc = delta.days // 365 - ref_date.year
-            bc_str = str(year_bc) + " BC"
-            print("ERROR: extracted date is " + bc_str)
+            if is_past or is_subtract:
+                year_bc = delta.days // 365 - ref_date.year
+                bc_str = str(year_bc) + " BC"
+                print("ERROR: extracted date is " + bc_str)
+            else:
+                print("ERROR: extracted date is too far in the future")
             raise
 
     # iterate the word list to extract a date
