@@ -1752,11 +1752,15 @@ def _date_tokenize_en(date_string):
     return cleaned.split()
 
 
-def extract_time_en(time_str, default_time, sensitivity=TimeResolution.SECOND):
+def extract_time_en(time_str, default_time=None,
+                    sensitivity=TimeResolution.SECOND):
+    default_time = default_time or now_local().time()
     time_qualifiers_am = ['morning']
     time_qualifiers_pm = ['afternoon', 'evening', 'night', 'tonight']
     markers = ['at', 'in', 'on', 'by', 'this', 'around', 'for', 'of', "within"]
 
+    extracted_time = default_time
+    time_found = False
     words = _date_tokenize_en(time_str)
     for idx, word in enumerate(words):
         if word == "":
@@ -1769,7 +1773,8 @@ def extract_time_en(time_str, default_time, sensitivity=TimeResolution.SECOND):
         word = word.rstrip('s')
 
     # TODO
-
+    if time_found:
+        return extracted_time
     return None
 
 

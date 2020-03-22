@@ -377,7 +377,7 @@ def get_gender(word, context="", lang=None):
     return None
 
 
-def extract_date(text, anchorDate=None, lang=None):
+def extract_date(text, anchor_date=None, lang=None):
     """
     Extracts date information from a sentence.  Parses many of the
     common ways that humans express dates, including relative dates
@@ -391,7 +391,7 @@ def extract_date(text, anchorDate=None, lang=None):
 
     Args:
         text (str): the text to be interpreted
-        anchorDate (:obj:`datetime`, optional): the date to be used for
+        anchor_date (:obj:`datetime`, optional): the date to be used for
             relative dating (for example, what does "tomorrow" mean?).
             Defaults to the current local date/time.
         lang (str): the BCP-47 code for the language to use, None uses default
@@ -428,18 +428,18 @@ def extract_date(text, anchorDate=None, lang=None):
 
     lang_code = get_primary_lang_code(lang)
 
-    if not anchorDate:
-        anchorDate = now_local()
+    if not anchor_date:
+        anchor_date = now_local()
 
     if lang_code == "en":
-        return extract_date_en(text, anchorDate)
+        return extract_date_en(text, anchor_date)
 
     # TODO: extract_datetime for other languages
     _log_unsupported_language(lang_code, ['en'])
     return text
 
 
-def extract_time(text, anchorDate=None, lang=None):
+def extract_time(text, anchor_time=None, lang=None):
     """
     Extracts time information from a sentence.  Parses many of the
     common ways that humans express times, including relative dates
@@ -473,11 +473,11 @@ def extract_time(text, anchorDate=None, lang=None):
 
     lang_code = get_primary_lang_code(lang)
 
-    if not anchorDate:
-        anchorDate = now_local()
+    if not anchor_time:
+        anchor_time = now_local().time()
 
     if lang_code == "en":
-        return extract_time_en(text, anchorDate)
+        return extract_time_en(text, anchor_time)
 
     # TODO: extract_datetime for other languages
     _log_unsupported_language(lang_code, ['en'])
