@@ -2111,6 +2111,9 @@ class TestExtractDate(unittest.TestCase):
             print("Could not test location tagging")
 
         # test named season
+        _test_season_north("spring",
+                           self.ref_date.replace(day=1, month=3),
+                           Season.SPRING)
         _test_season_north("this spring",
                            self.ref_date.replace(day=1, month=3),
                            Season.SPRING)

@@ -2408,94 +2408,82 @@ def extract_date_en(date_str, ref_date,
                     extracted_date = _end + timedelta(days=1)
             # parse "spring"
             if word in _SEASONS_EN[Season.SPRING]:
+                date_found = True
                 # parse "in {Number} springs"
                 if is_numeric(wordPrev):
-                    date_found = True
                     raise NotImplementedError
-                # parse "this spring"
-                elif wordPrev in this:
-                    date_found = True
-                    extracted_date = season_to_date(Season.SPRING,
-                                                    ref_date,
-                                                    hemisphere)
                 # parse "last spring"
                 elif wordPrev in past_markers:
-                    date_found = True
                     extracted_date = last_season_date(Season.SPRING,
                                                       ref_date,
                                                       hemisphere)
                 # parse "next spring"
                 elif wordPrev in future_markers:
-                    date_found = True
                     extracted_date = next_season_date(Season.SPRING,
                                                       ref_date,
                                                       hemisphere)
-            # parse "fall"
-            if word in _SEASONS_EN[Season.FALL]:
-                # parse "in {Number} falls"
-                if is_numeric(wordPrev):
-                    date_found = True
-                    raise NotImplementedError
-                # parse "this fall"
-                elif wordPrev in this:
-                    date_found = True
-                    extracted_date = season_to_date(Season.FALL,
+                else:
+                    # parse "[this] spring"
+                    extracted_date = season_to_date(Season.SPRING,
                                                     ref_date,
                                                     hemisphere)
+            # parse "fall"
+            if word in _SEASONS_EN[Season.FALL]:
+                date_found = True
+                # parse "in {Number} falls"
+                if is_numeric(wordPrev):
+                    raise NotImplementedError
                 # parse "last fall"
                 elif wordPrev in past_markers:
-                    date_found = True
                     extracted_date = last_season_date(Season.FALL, ref_date,
                                                       hemisphere)
                 # parse "next fall"
                 elif wordPrev in future_markers:
-                    date_found = True
                     extracted_date = next_season_date(Season.FALL, ref_date,
                                                       hemisphere)
-            # parse "summer"
-            if word in _SEASONS_EN[Season.SUMMER]:
-                # parse "in {Number} summers"
-                if is_numeric(wordPrev):
-                    date_found = True
-                    raise NotImplementedError
-                # parse "this summer"
-                elif wordPrev in this:
-                    date_found = True
-                    extracted_date = season_to_date(Season.SUMMER,
+                # parse "[this] fall"
+                else:
+                    extracted_date = season_to_date(Season.FALL,
                                                     ref_date,
                                                     hemisphere)
+            # parse "summer"
+            if word in _SEASONS_EN[Season.SUMMER]:
+                date_found = True
+                # parse "in {Number} summers"
+                if is_numeric(wordPrev):
+                    raise NotImplementedError
                 # parse "last summer"
                 elif wordPrev in past_markers:
-                    date_found = True
                     extracted_date = last_season_date(Season.SUMMER, ref_date,
                                                       hemisphere)
                 # parse "next summer"
                 elif wordPrev in future_markers:
-                    date_found = True
                     extracted_date = next_season_date(Season.SUMMER, ref_date,
                                                       hemisphere)
-            # parse "winter"
-            if word in _SEASONS_EN[Season.WINTER]:
-                # parse "in {Number} winters"
-                if is_numeric(wordPrev):
-                    date_found = True
-                    raise NotImplementedError
-                # parse "this winter"
-                elif wordPrev in this:
-                    date_found = True
-                    extracted_date = season_to_date(Season.WINTER,
+                # parse "[this] summer"
+                else:
+                    extracted_date = season_to_date(Season.SUMMER,
                                                     ref_date,
                                                     hemisphere)
+            # parse "winter"
+            if word in _SEASONS_EN[Season.WINTER]:
+                date_found = True
+                # parse "in {Number} winters"
+                if is_numeric(wordPrev):
+                    raise NotImplementedError
                 # parse "last winter"
                 elif wordPrev in past_markers:
-                    date_found = True
                     extracted_date = last_season_date(Season.WINTER, ref_date,
                                                       hemisphere)
                 # parse "next winter"
                 elif wordPrev in future_markers:
-                    date_found = True
                     extracted_date = next_season_date(Season.WINTER, ref_date,
                                                       hemisphere)
+                # parse "[this] winter"
+                else:
+                    extracted_date = season_to_date(Season.WINTER,
+                                                    ref_date,
+                                                    hemisphere)
             # parse "day"
             if word in day_literal:
                 # parse {ORDINAL} day
