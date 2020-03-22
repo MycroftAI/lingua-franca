@@ -1864,6 +1864,7 @@ def extract_date_en(date_str, ref_date,
     if is_of:
         # parse {ORDINAL} day/week/month/year... of {date}
         _ordinal_words = date_words[:index]  # 3rd day / 4th week of the year
+        _date_words = date_words[index + 1:]
         _number = None
 
         _unit = "day"  # TODO is this a sane default ?
@@ -1887,7 +1888,6 @@ def extract_date_en(date_str, ref_date,
 
         # parse resolution
         if _number:
-            _date_words = date_words[index + 1:]
             _best_idx = len(_date_words) - 1
 
             # parse "Nth {day/week/month/year...} of {YEAR}"
@@ -2057,10 +2057,12 @@ def extract_date_en(date_str, ref_date,
                             _best_idx = _idx
                             _res = DateResolution.CENTURY_OF_MILLENIUM
 
-            # parse "{NUMBER} millenniu
+            # parse "{NUMBER} millennium
             if _unit in millennium_literal:
                 _res = DateResolution.MILLENNIUM
 
+        # Calculate Nth of {resolution}
+        if _number:
             _date_str = " ".join(_date_words)
             _extracted_date = extract_date_en(_date_str, ref_date,
                                               resolution, hemisphere)
@@ -2069,7 +2071,9 @@ def extract_date_en(date_str, ref_date,
                 if is_numeric(_year) and len(_year) == 4:
                     _extracted_date = get_ordinal(_year,
                                                   resolution=DateResolution.YEAR)
-            return get_ordinal(_number, _extracted_date, _res)
+
+            if _extracted_date:
+                return get_ordinal(_number, _extracted_date, _res)
 
     # parse {duration} ago
     if is_past:
