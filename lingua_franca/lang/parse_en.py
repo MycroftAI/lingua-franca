@@ -2310,16 +2310,6 @@ def extract_date_en(date_str, ref_date,
             wordNextNextNext = date_words[idx + 3] if idx + 3 < len(
                 date_words) else ""
 
-            # TODO NER for locations in date_str and parse hemisphere
-            # maybe a .voc file collection of country names + major cities (capitals)
-            # to avoid geolocation we also need to store lat/lon (or hemisphere)
-            if word in _HEMISPHERES_EN[Hemisphere.NORTH] and \
-                    wordNext in hemisphere_literal:
-                hemisphere = Hemisphere.NORTH
-            elif word in _HEMISPHERES_EN[Hemisphere.SOUTH] and \
-                    wordNext in hemisphere_literal:
-                hemisphere = Hemisphere.SOUTH
-
             # parse "now"
             if word in now:
                 date_found = True
