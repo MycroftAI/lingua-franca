@@ -2084,10 +2084,20 @@ class TestExtractDate(unittest.TestCase):
             _test_season_north("this spring in Portugal",
                                self.ref_date.replace(day=1, month=3),
                                Season.SPRING)
+            _test_season_north("last spring in Portugal",
+                               date(day=1, month=3, year=self.ref_date.year - 1),
+                               Season.SPRING)
+            _test_season_north("next winter in Portugal",
+                               date(day=1, month=12,
+                                    year=self.ref_date.year),
+                               Season.WINTER)
 
             _test_season_south("this spring in Brazil",
                                self.ref_date.replace(day=1, month=9),
                                Season.SPRING)
+            _test_season_south("next winter in Brazil",
+                               self.ref_date.replace(day=1, month=6),
+                               Season.WINTER)
 
             # test named season in {capital city}
             _test_season_north("this spring in Lisbon",
