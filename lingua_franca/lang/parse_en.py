@@ -1794,8 +1794,7 @@ def extract_date_en(date_str, ref_date,
     past_qualifiers = ["ago"]
     relative_qualifiers = ["from", "after"]
     relative_past_qualifiers = ["before"]
-    of_qualifiers = [
-        "of"]  # {ORDINAL} day/week/month.... of month/year/century..
+    of_qualifiers = ["of"]  # {Nth} day/week/month.... of month/year/century..
     set_qualifiers = ["is", "was"]  # "the year is 2021"
 
     more_markers = ["plus", "add", "+"]
@@ -2741,7 +2740,6 @@ def extract_date_en(date_str, ref_date,
 
             # parse 19{YY} / 20{YY}
             # NOTE: assumes past or current century
-            # single digits are discarded unless they are in the format 0N
             elif greedy and is_numeric(word):
                 date_found = True
                 _year = int(word)
@@ -2776,7 +2774,6 @@ def extract_date_en(date_str, ref_date,
                 else:
                     _year = int(_year)
                 extracted_date = extracted_date.replace(year=_year)
-
 
     if date_found:
         if isinstance(extracted_date, datetime):
