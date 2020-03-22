@@ -1793,6 +1793,7 @@ def extract_date_en(date_str, ref_date,
     past_markers = ["past", "last"]
     future_markers = ["next"]
     most_recent_qualifiers = ["last"]
+    location_markers = ["in", "on", "at", "for"]
 
     now = ["now"]
     today = ["today"]
@@ -1858,38 +1859,6 @@ def extract_date_en(date_str, ref_date,
         if marker in date_words:
             is_of = True
             index = date_words.index(marker)
-
-    # is there some geographical information?
-    for idx, word in enumerate(date_words):
-        # this is used to parse seasons, which depend on geographical location
-        # "i know what you did last summer",  "winter is coming"
-        # usually this will be set automatically based on user location
-
-        # do a naive check for "summer in north hemisphere"
-        wordNext = date_words[idx + 1] if idx + 1 < len(date_words) else ""
-        word = word.rstrip('s')
-        if word in _HEMISPHERES_EN[Hemisphere.NORTH] and \
-                wordNext in hemisphere_literal:
-            hemisphere = Hemisphere.NORTH
-        elif word in _HEMISPHERES_EN[Hemisphere.SOUTH] and \
-                wordNext in hemisphere_literal:
-            hemisphere = Hemisphere.SOUTH
-        elif _ner is not None:
-            # parse string for Country names
-            for r in _ner.extract_entities(date_str):
-                if r.entity_type == "Country":
-                    if r.data["latitude"] < 0:
-                        hemisphere = Hemisphere.SOUTH
-                    else:
-                        hemisphere = Hemisphere.NORTH
-            else:
-                #  or Capital city names
-                for r in _ner.extract_entities(date_str):
-                    if r.entity_type == "Capital City":
-                        if r.data["hemisphere"].startswith("s"):
-                            hemisphere = Hemisphere.SOUTH
-                        else:
-                            hemisphere = Hemisphere.NORTH
 
     # parse Nth {X} of Nth {Y}
     if is_of:
@@ -2710,6 +2679,39 @@ def extract_date_en(date_str, ref_date,
                     extracted_date = get_ordinal(_ordinal, extracted_date,
                                                  DateResolution.MILLENNIUM)
                 # TODO week of month vs week of year
+            # parse {date} at {location}
+            if word in location_markers:
+                # this is used to parse seasons, which depend on
+                # geographical location
+                # "i know what you did last summer",  "winter is coming"
+                # usually the default will be set automatically based on user
+                # location
+
+                # parse {date} at north hemisphere
+                if wordNext in _HEMISPHERES_EN[Hemisphere.NORTH] and \
+                        wordNextNext in hemisphere_literal:
+                    hemisphere = Hemisphere.NORTH
+                # parse {date} at south hemisphere
+                elif wordNext in _HEMISPHERES_EN[Hemisphere.SOUTH] and \
+                        wordNextNext in hemisphere_literal:
+                    hemisphere = Hemisphere.SOUTH
+                # parse {date} at {country/city}
+                elif _ner is not None:
+                    # parse string for Country names
+                    for r in _ner.extract_entities(wordNext):
+                        if r.entity_type == "Country":
+                            if r.data["latitude"] < 0:
+                                hemisphere = Hemisphere.SOUTH
+                            else:
+                                hemisphere = Hemisphere.NORTH
+                    else:
+                        #  or Capital city names
+                        for r in _ner.extract_entities(wordNext):
+                            if r.entity_type == "Capital City":
+                                if r.data["hemisphere"].startswith("s"):
+                                    hemisphere = Hemisphere.SOUTH
+                                else:
+                                    hemisphere = Hemisphere.NORTH
 
     if date_found:
         if isinstance(extracted_date, datetime):
