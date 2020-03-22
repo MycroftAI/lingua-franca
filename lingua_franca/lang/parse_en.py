@@ -2268,7 +2268,6 @@ def extract_date_en(date_str, ref_date,
     else:
         date_found = False
         extracted_date = ref_date
-        extracted_date = extracted_date
         current_date = now_local()
         final_date = False
         for idx, word in enumerate(date_words):
