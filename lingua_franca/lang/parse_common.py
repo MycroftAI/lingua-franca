@@ -406,3 +406,59 @@ class DurationResolution(Enum):
     TOTAL_DECADES = 13
     TOTAL_CENTURIES = 14
     TOTAL_MILLENNIUMS = 15
+
+
+class TimeResolution(Enum):
+    SECOND = 0
+    MINUTE = 1
+    HOUR = 2
+
+
+class DateResolution(Enum):
+    DAY_OF_MONTH = 0
+    WEEK_OF_MONTH = 1
+    MONTH_OF_YEAR = 2
+    YEAR = 3
+    DECADE = 4
+    CENTURY = 5
+    MILLENNIUM = 6
+    WEEK_OF_YEAR = 7
+    DAY_OF_YEAR = 8
+    MONTH_OF_CENTURY = 9
+    MONTH_OF_DECADE = 10
+    MONTH_OF_MILLENIUM = 11
+    DAY_OF_DECADE = 12
+    DAY_OF_CENTURY = 13
+    DAY_OF_MILLENIUM = 14
+    DECADE_OF_CENTURY = 15
+    DECADE_OF_MILLENIUM = 16
+    CENTURY_OF_MILLENIUM = 17
+    YEAR_OF_DECADE = 18
+    YEAR_OF_CENTURY = 19
+    YEAR_OF_MILLENIUM = 20
+    WEEK_OF_CENTURY = 21
+    WEEK_OF_DECADE = 22
+    WEEK_OF_MILLENIUM = 23
+    DAY = 24
+    MONTH = 25
+    WEEK = 26
+    WEEKEND = 27
+    WEEKEND_OF_MONTH = 28
+    WEEKEND_OF_YEAR = 29
+    WEEKEND_OF_DECADE = 30
+    WEEKEND_OF_CENTURY = 31
+    WEEKEND_OF_MILLENNIUM = 32
+
+
+class Hemisphere(Enum):
+    NORTH = 0
+    SOUTH = 1
+
+
+class Season(Enum):
+    SPRING = 0
+    SUMMER = 1
+    FALL = 2
+    WINTER = 3
+
+

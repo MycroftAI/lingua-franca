@@ -375,3 +375,110 @@ def get_gender(word, context="", lang=None):
     _log_unsupported_language(lang_code,
                               ['pt', 'it', 'es'])
     return None
+
+
+def extract_date(text, anchorDate=None, lang=None):
+    """
+    Extracts date information from a sentence.  Parses many of the
+    common ways that humans express dates, including relative dates
+    like "5 days from today", "tomorrow', and "Tuesday".
+
+    Vague terminology are given arbitrary values, accounting for
+    geographic location, like:
+        - summer = XXX
+        - spring = XXX
+        - winter = XXX
+
+    Args:
+        text (str): the text to be interpreted
+        anchorDate (:obj:`datetime`, optional): the date to be used for
+            relative dating (for example, what does "tomorrow" mean?).
+            Defaults to the current local date/time.
+        lang (str): the BCP-47 code for the language to use, None uses default
+
+    Returns:
+        [:obj:`date`, :obj:`str`]: 'date' is the extracted date
+            as a date object in the user's local timezone.
+            'leftover_string' is the original phrase with all date
+            related keywords stripped out. See examples for further
+            clarification
+
+            Returns 'None' if no date related text is found.
+
+    Examples:
+
+        >>> extract_date(
+        ... "What is the weather like the day after tomorrow?",
+        ... date(2017, 06, 30)
+        ... )
+        [datetime.date(2017, 7, 2), 'what is weather like']
+
+        >>> extract_date(
+        ... "Set up an appointment 2 weeks from Sunday",
+        ... date(2016, 02, 19)
+        ... )
+        [datetime.datetime(2016, 3, 6), 'set up appointment']
+
+        >>> extract_date(
+        ... "Set up an appointment",
+        ... date(2016, 02, 19)
+        ... )
+        None
+    """
+
+    lang_code = get_primary_lang_code(lang)
+
+    if not anchorDate:
+        anchorDate = now_local()
+
+    if lang_code == "en":
+        return extract_date_en(text, anchorDate)
+
+    # TODO: extract_datetime for other languages
+    _log_unsupported_language(lang_code, ['en'])
+    return text
+
+
+def extract_time(text, anchorDate=None, lang=None):
+    """
+    Extracts time information from a sentence.  Parses many of the
+    common ways that humans express times, including relative dates
+    like "in 5 minutes", "tuesday at 5 pm', and "tomorrow evening".
+
+    Vague terminology are given arbitrary values, like:
+        - morning = 8 AM
+        - afternoon = 3 PM
+        - evening = 7 PM
+
+    Args:
+        text (str): the text to be interpreted
+        anchorDate (:obj:`datetime`, optional): the time to be used for
+            relative dating (for example, what does "in 1 hour" mean?).
+            Defaults to the current local date/time.
+        lang (str): the BCP-47 code for the language to use, None uses default
+
+    Returns:
+        [:obj:`time`, :obj:`str`]: 'time' is the extracted time
+            as a time object in the user's local timezone.
+            'leftover_string' is the original phrase with all time
+            related keywords stripped out. See examples for further
+            clarification
+
+            Returns 'None' if no time related text is found.
+
+    Examples:
+
+        TODO
+    """
+
+    lang_code = get_primary_lang_code(lang)
+
+    if not anchorDate:
+        anchorDate = now_local()
+
+    if lang_code == "en":
+        return extract_time_en(text, anchorDate)
+
+    # TODO: extract_datetime for other languages
+    _log_unsupported_language(lang_code, ['en'])
+    return text

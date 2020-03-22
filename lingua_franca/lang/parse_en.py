@@ -13,20 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from datetime import timedelta, datetime, date, time
 
-from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
-    invert_dict, ReplaceableNumber, partition_list, tokenize, Token, \
-    Normalizer, DurationResolution
+from lingua_franca.lang.parse_common import DurationResolution, invert_dict, ReplaceableNumber, \
+    partition_list, tokenize, Token, Normalizer, Season, Hemisphere, DateResolution, TimeResolution
 from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
-    _LONG_ORDINAL_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN
+    _LONG_ORDINAL_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN, \
+    _SEASONS_EN, _HEMISPHERES_EN, _ORDINAL_BASE_EN
 
 import re
 import json
 import math
 from lingua_franca import resolve_resource_file
 from lingua_franca.time import now_local, DAYS_IN_1_MONTH, DAYS_IN_1_YEAR
+from lingua_franca.time import date_to_season, season_to_date, \
+    get_season_range, next_season_date, last_season_date, get_ordinal, \
+    get_weekend_range, get_week_range, get_century_range, \
+    get_millennium_range, get_year_range, get_month_range, get_decade_range, \
+    int_to_weekday, int_to_month, weekday_to_int, month_to_int, now_local
 
 
 def generate_plurals_en(originals):
@@ -1708,3 +1713,998 @@ class EnglishNormalizer(Normalizer):
 def normalize_en(text, remove_articles):
     """ English string normalization """
     return EnglishNormalizer().normalize(text, remove_articles)
+
+
+def _date_tokenize_en(date_string):
+    date_string = _convert_words_to_numbers_en(date_string, ordinals=True)
+    date_string = date_string \
+        .replace("a day", "1 day").replace("a month", "1 month") \
+        .replace("a week", "1 week").replace("a year", "1 year") \
+        .replace("a century", "1 century").replace("a decade", "1 decade")
+    words = date_string.split()
+    cleaned = ""
+    for idx, word in enumerate(words):
+        if word == "-":
+            word = "minus"
+            words[idx] = word
+        elif word == "+":
+            word = "plus"
+            words[idx] = word
+        elif word[0] == "-" and word[1].isdigit():
+            cleaned += " minus " + word[1:].rstrip(",.!?;:-)/]=}")
+        elif word[0] == "+" and word[1].isdigit():
+            cleaned += " plus " + word[1:].rstrip(",.!?;:-)/]=}")
+        else:
+            cleaned += " " + word.rstrip(",.!?;:-)/]=}") \
+                .lstrip(",.!?;:-(/[={")
+    for n, ordinal in _ORDINAL_BASE_EN.items():
+        cleaned = cleaned.replace(ordinal, str(n))
+    cleaned = normalize_en(cleaned, remove_articles=True)
+    return cleaned.split()
+
+
+def extract_time_en(time_str, default_time, sensitivity=TimeResolution.SECOND):
+    time_qualifiers_am = ['morning']
+    time_qualifiers_pm = ['afternoon', 'evening', 'night', 'tonight']
+    markers = ['at', 'in', 'on', 'by', 'this', 'around', 'for', 'of', "within"]
+
+    words = _date_tokenize_en(time_str)
+    for idx, word in enumerate(words):
+        if word == "":
+            continue
+
+        wordPrevPrev = words[idx - 2] if idx > 1 else ""
+        wordPrev = words[idx - 1] if idx > 0 else ""
+        wordNext = words[idx + 1] if idx + 1 < len(words) else ""
+        wordNextNext = words[idx + 2] if idx + 2 < len(words) else ""
+        word = word.rstrip('s')
+
+    # TODO
+
+    return None
+
+
+def extract_date_en(date_str, ref_date,
+                    resolution=DateResolution.DAY,
+                    hemisphere=Hemisphere.NORTH):
+    past_qualifiers = ["ago"]
+    relative_qualifiers = ["from", "after"]
+    relative_past_qualifiers = ["before"]
+    of_qualifiers = [
+        "of"]  # {ORDINAL} day/week/month.... of month/year/century..
+    set_qualifiers = ["is", "was"]  # "the year is 2021"
+
+    more_markers = ["plus", "add", "+"]
+    less_markers = ["minus", "subtract", "-"]
+    past_markers = ["past", "last"]
+    future_markers = ["next"]
+    most_recent_qualifiers = ["last"]
+
+    now = ["now"]
+    today = ["today"]
+    this = ["this", "current", "present"]
+    tomorrow = ["tomorrow"]
+    yesterday = ["yesterday"]
+    day_literal = ["day", "days"]
+    week_literal = ["week", "weeks"]
+    weekend_literal = ["weekend", "weekends"]
+    month_literal = ["month", "months"]
+    year_literal = ["year", "years"]
+    century_literal = ["century", "centuries"]
+    decade_literal = ["decade", "decades"]
+    millennium_literal = ["millennium", "millenia", "millenniums"]
+    hemisphere_literal = ["hemisphere"]
+    season_literal = ["season"]
+
+    date_words = _date_tokenize_en(date_str)
+
+    # check for word boundaries and parse reference dates
+    index = 0
+    is_relative = False
+    is_relative_past = False
+    is_past = False
+    is_sum = False
+    is_subtract = False
+    is_of = False
+    delta = None
+
+    # is this a negative timespan?
+    for marker in past_qualifiers:
+        if marker in date_words:
+            is_past = True
+            index = date_words.index(marker)
+
+    # is this relative to (after) a date?
+    for marker in relative_qualifiers:
+        if marker in date_words:
+            is_relative = True
+            index = date_words.index(marker)
+
+    # is this relative to (before) a date?
+    for marker in relative_past_qualifiers:
+        if marker in date_words:
+            is_relative_past = True
+            index = date_words.index(marker)
+
+    # is this a timespan in the future?
+    for marker in more_markers:
+        if marker in date_words:
+            is_sum = True
+            index = date_words.index(marker)
+
+    # is this a timespan in the past?
+    for marker in less_markers:
+        if marker in date_words:
+            is_subtract = True
+            index = date_words.index(marker)
+
+    # cardinal of thing
+    # 3rd day of the 4th month of 1994
+    for marker in of_qualifiers:
+        if marker in date_words:
+            is_of = True
+            index = date_words.index(marker)
+
+    # is there some geographical information?
+    for idx, word in enumerate(date_words):
+        # this is used to parse seasons, which depend on geographical location
+        # "i know what you did last summer",  "winter is coming"
+        # usually this will be set automatically based on user location
+        # this adds a naive check for "summer in north hemisphere"
+        # TODO extracting location string (NER)?
+        wordNext = date_words[idx + 1] if idx + 1 < len(date_words) else ""
+        word = word.rstrip('s')
+        if word in _HEMISPHERES_EN[Hemisphere.NORTH] and \
+                wordNext in hemisphere_literal:
+            hemisphere = Hemisphere.NORTH
+        elif word in _HEMISPHERES_EN[Hemisphere.SOUTH] and \
+                wordNext in hemisphere_literal:
+            hemisphere = Hemisphere.SOUTH
+
+    # parse Nth {X} of Nth {Y}
+    if is_of:
+        # parse {ORDINAL} day/week/month/year... of {date}
+        _ordinal_words = date_words[:index]  # 3rd day / 4th week of the year
+        _number = None
+
+        _unit = "day"  # TODO is this a sane default ?
+        _res = DateResolution.DAY_OF_MONTH
+
+        # parse "{NUMBER} {day/week/month/year...} "
+        if len(_ordinal_words) > 1:
+            _ordinal = _ordinal_words[-2]
+            _unit = _ordinal_words[-1]
+            if is_numeric(_ordinal):
+                _number = int(_ordinal)
+            # parse "last {day/week/month/year...} "
+            elif _ordinal_words[0] in most_recent_qualifiers:
+                _number = -1
+
+        # parse "{NUMBER}"
+        elif len(_ordinal_words) == 1:
+            _ordinal = _ordinal_words[0]
+            if is_numeric(_ordinal):
+                _number = int(_ordinal)
+
+        # parse resolution
+        if _number:
+            _date_words = date_words[index + 1:]
+            _best_idx = len(_date_words) - 1
+
+            # parse "Nth {day/week/month/year...} of {YEAR}"
+            if len(_date_words) and is_numeric(_date_words[0]) \
+                    and len(_date_words[0]) == 4:
+                ref_date = date(day=1, month=1, year=int(_date_words[0]))
+                _res = DateResolution.DAY_OF_YEAR
+
+            # parse "{NUMBER} day
+            if _unit in day_literal:
+                # parse "{NUMBER} day of month
+                for marker in month_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.DAY_OF_MONTH
+                # parse "{NUMBER} day of year
+                for marker in year_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.DAY_OF_YEAR
+                # parse "{NUMBER} day of decade
+                for marker in decade_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.DAY_OF_DECADE
+                # parse "{NUMBER} day of century
+                for marker in century_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.DAY_OF_CENTURY
+                # parse "{NUMBER} day of millennium
+                for marker in millennium_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.DAY_OF_MILLENIUM
+
+            # parse "{NUMBER} week
+            if _unit in week_literal:
+                _res = DateResolution.WEEK_OF_MONTH
+                # parse "{NUMBER} week of Nth month
+                for marker in month_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.WEEK_OF_MONTH
+                # parse "{NUMBER} week of Nth year
+                for marker in year_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.WEEK_OF_YEAR
+                # parse "{NUMBER} week of Nth decade
+                for marker in decade_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.WEEK_OF_DECADE
+                # parse "{NUMBER} week of Nth century
+                for marker in century_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.WEEK_OF_CENTURY
+                # parse "{NUMBER} week of Nth millennium
+                for marker in millennium_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.WEEK_OF_MILLENIUM
+
+            # parse "{NUMBER} month
+            if _unit in month_literal:
+                # parse "{NUMBER} month of Nth year
+                _res = DateResolution.MONTH_OF_YEAR
+                for marker in year_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.MONTH_OF_YEAR
+                # parse "{NUMBER} month of Nth decade
+                for marker in decade_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.MONTH_OF_DECADE
+                # parse "{NUMBER} month of Nth century
+                for marker in century_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        _res = DateResolution.MONTH_OF_CENTURY
+                # parse "{NUMBER} month of Nth millenium
+                for marker in millennium_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.MONTH_OF_MILLENIUM
+
+            # parse "{NUMBER} year
+            if _unit in year_literal:
+                _res = DateResolution.YEAR
+                for marker in year_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.YEAR
+                for marker in decade_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.YEAR_OF_DECADE
+                for marker in century_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.YEAR_OF_CENTURY
+                for marker in millennium_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.YEAR_OF_MILLENIUM
+
+            # parse "{NUMBER} decade
+            if _unit in decade_literal:
+                _res = DateResolution.DECADE
+                for marker in century_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.DECADE_OF_CENTURY
+                for marker in millennium_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.DECADE_OF_MILLENIUM
+
+            # parse "{NUMBER} century
+            if _unit in century_literal:
+                _res = DateResolution.CENTURY
+                for marker in millennium_literal:
+                    if marker in _date_words:
+                        _idx = _date_words.index(marker)
+                        if _idx <= _best_idx:
+                            _best_idx = _idx
+                            _res = DateResolution.CENTURY_OF_MILLENIUM
+
+            # parse "{NUMBER} millenniu
+            if _unit in millennium_literal:
+                _res = DateResolution.MILLENNIUM
+
+            _date_str = " ".join(_date_words)
+            _extracted_date = extract_date_en(_date_str, ref_date,
+                                              resolution, hemisphere)
+            if not _extracted_date:
+                _year = _date_words[0]
+                if is_numeric(_year) and len(_year) == 4:
+                    _extracted_date = get_ordinal(_year,
+                                                  resolution=DateResolution.YEAR)
+            return get_ordinal(_number, _extracted_date, _res)
+
+    # parse {duration} ago
+    if is_past:
+        # parse {duration} ago
+        duration_str = " ".join(date_words[:index])
+        delta, remainder = extract_duration_en(duration_str)
+        if not delta:
+            raise RuntimeError(
+                "Could not extract duration from: " + duration_str)
+
+    # parse {duration} after {date}
+    if is_relative:
+        # parse {duration} from {reference_date}
+        # 1 hour 3 minutes from now
+        # 5 days from now
+        # 3 weeks after tomorrow
+        # 5 days before today/tomorrow/tuesday
+
+        duration_str = " ".join(date_words[:index])
+        if duration_str:
+            delta, remainder = extract_duration_en(duration_str)
+
+            _date_str = " ".join(date_words[index + 1:])
+            _extracted_date = extract_date_en(_date_str, ref_date)
+            if not _extracted_date and len(date_words) > index + 1:
+                _year = date_words[index + 1]
+                if len(_year) == 4 and is_numeric(_year):
+                    _extracted_date = date(day=1, month=1, year=int(_year))
+            return (_extracted_date or ref_date) + delta
+        else:
+            _date_str = " ".join(date_words[index + 1:])
+            _extracted_date = extract_date_en(_date_str, ref_date)
+            if not _extracted_date:
+                _year = date_words[index + 1]
+                if len(_year) == 4 and is_numeric(_year):
+                    _extracted_date = date(day=1, month=1, year=int(_year))
+
+            ref_date = _extracted_date or ref_date
+
+            # next day
+            if resolution == DateResolution.DAY:
+                return ref_date + timedelta(days=1)
+            # next week
+            elif resolution == DateResolution.WEEK:
+                delta = timedelta(weeks=1)
+                _extracted_date = ref_date + delta
+                _start, _end = get_week_range(_extracted_date)
+                return _start
+            # next month
+            elif resolution == DateResolution.MONTH:
+                delta = timedelta(days=31)
+                _extracted_date = ref_date + delta
+                _start, _end = get_month_range(_extracted_date)
+                return _start
+            # next year
+            elif resolution == DateResolution.YEAR:
+                delta = timedelta(days=31 * 12)
+                _extracted_date = ref_date + delta
+                _start, _end = get_year_range(_extracted_date)
+                return _start
+            # next decade
+            elif resolution == DateResolution.DECADE:
+                delta = timedelta(days=366 * 10)
+                _extracted_date = ref_date + delta
+                _start, _end = get_decade_range(_extracted_date)
+                return _start
+            # next century
+            elif resolution == DateResolution.CENTURY:
+                delta = timedelta(days=366 * 100)
+                _extracted_date = ref_date + delta
+                _start, _end = get_century_range(_extracted_date)
+                return _start
+            # next millennium
+            elif resolution == DateResolution.MILLENNIUM:
+                delta = timedelta(days=366 * 1000)
+                _extracted_date = ref_date + delta
+                _start, _end = get_millennium_range(_extracted_date)
+                return _start
+            else:
+                raise ValueError("Invalid Resolution")
+
+    # parse {duration} before {date}
+    if is_relative_past:
+        # parse {duration} from {reference_date}
+        # 1 hour 3 minutes from now
+        # 5 days from now
+        # 3 weeks after tomorrow
+        # 5 days before today/tomorrow/tuesday
+
+        duration_str = " ".join(date_words[:index])
+        if duration_str:
+            delta, remainder = extract_duration_en(duration_str)
+            _date_str = " ".join(date_words[index + 1:])
+            _extracted_date = extract_date_en(_date_str, ref_date)
+            if not _extracted_date and len(date_words) > index + 1:
+                _year = date_words[index + 1]
+                if len(_year) == 4 and is_numeric(_year):
+                    _extracted_date = date(day=1, month=1, year=int(_year))
+            return (_extracted_date or ref_date) - delta
+        else:
+            _date_str = " ".join(date_words[index + 1:])
+            _extracted_date = extract_date_en(_date_str, ref_date)
+            if not _extracted_date:
+                _year = date_words[index + 1]
+                if len(_year) == 4 and is_numeric(_year):
+                    _extracted_date = date(day=1, month=1, year=int(_year))
+
+            ref_date = _extracted_date or ref_date
+            # previous day
+            if resolution == DateResolution.DAY:
+                return ref_date - timedelta(days=1)
+            # previous week
+            elif resolution == DateResolution.WEEK:
+                _extracted_date = ref_date - timedelta(weeks=1)
+                _start, _end = get_week_range(_extracted_date)
+                return _start
+            # previous month
+            elif resolution == DateResolution.MONTH:
+                delta = timedelta(days=30)
+                _extracted_date = ref_date - delta
+                _start, _end = get_month_range(_extracted_date)
+                return _start
+            # previous year
+            elif resolution == DateResolution.YEAR:
+                delta = timedelta(days=365)
+                _extracted_date = ref_date - delta
+                _start, _end = get_year_range(_extracted_date)
+                return _start
+            # previous decade
+            elif resolution == DateResolution.DECADE:
+                delta = timedelta(days=365 * 10)
+                _extracted_date = ref_date - delta
+                _start, _end = get_decade_range(ref_date)
+                return _start
+            # previous century
+            elif resolution == DateResolution.CENTURY:
+                delta = timedelta(days=365 * 100)
+                _extracted_date = ref_date - delta
+                _start, _end = get_century_range(ref_date)
+                return _start
+            # previous millennium
+            elif resolution == DateResolution.MILLENNIUM:
+                delta = timedelta(days=365 * 1000)
+                _extracted_date = ref_date - delta
+                _start, _end = get_century_range(ref_date)
+                return _start
+            else:
+                raise ValueError("Invalid Sensitivity")
+
+    # parse {date} plus/minus {duration}
+    if is_sum or is_subtract:
+        # parse {reference_date} plus {duration}
+        # january 5 plus 2 weeks
+        # parse {reference_date} minus {duration}
+        # now minus 10 days
+        duration_str = " ".join(date_words[index + 1:])
+        delta, remainder = extract_duration_en(duration_str)
+
+        if not delta:
+            raise RuntimeError(
+                "Could not extract duration from: " + duration_str)
+        _date_str = " ".join(date_words[:index])
+        _extracted_date = extract_date_en(_date_str, ref_date)
+        if not _extracted_date and len(date_words) > index + 1:
+            _year = date_words[index + 1]
+            if len(_year) == 4 and is_numeric(_year):
+                _extracted_date = date(day=1, month=1, year=int(_year))
+        ref_date = _extracted_date or ref_date
+
+    # relative timedelta found
+    if delta:
+        try:
+            if is_past or is_subtract:
+                extracted_date = ref_date - delta
+            else:
+                extracted_date = ref_date + delta
+            if isinstance(extracted_date, datetime):
+                extracted_date = extracted_date.date()
+            return extracted_date
+        except OverflowError:
+            # TODO how to handle BC dates
+            # https://stackoverflow.com/questions/15857797/bc-dates-in-python
+            year_bc = delta.days // 365 - ref_date.year
+            bc_str = str(year_bc) + " BC"
+            print("ERROR: extracted date is " + bc_str)
+            raise
+
+    # iterate the word list to extract a date
+    else:
+        date_found = False
+        extracted_date = ref_date
+        extracted_date = extracted_date
+        current_date = now_local()
+        final_date = False
+        for idx, word in enumerate(date_words):
+            if final_date:
+                break  # no more date updates allowed
+
+            if word == "":
+                continue
+
+            wordPrevPrev = date_words[idx - 2] if idx > 1 else ""
+            wordPrev = date_words[idx - 1] if idx > 0 else ""
+            wordNext = date_words[idx + 1] if idx + 1 < len(date_words) else ""
+            wordNextNext = date_words[idx + 2] if idx + 2 < len(
+                date_words) else ""
+            wordNextNextNext = date_words[idx + 3] if idx + 3 < len(
+                date_words) else ""
+
+            # TODO NER for locations in date_str and parse hemisphere
+            # maybe a .voc file collection of country names + major cities (capitals)
+            # to avoid geolocation we also need to store lat/lon (or hemisphere)
+            if word in _HEMISPHERES_EN[Hemisphere.NORTH] and \
+                    wordNext in hemisphere_literal:
+                hemisphere = Hemisphere.NORTH
+            elif word in _HEMISPHERES_EN[Hemisphere.SOUTH] and \
+                    wordNext in hemisphere_literal:
+                hemisphere = Hemisphere.SOUTH
+
+            # parse "now"
+            if word in now:
+                date_found = True
+                extracted_date = current_date
+            # parse "today"
+            if word in today:
+                date_found = True
+                extracted_date = ref_date
+            # parse "yesterday"
+            if word in yesterday:
+                date_found = True
+                extracted_date = ref_date - timedelta(days=1)
+            # parse "tomorrow"
+            if word in tomorrow:
+                date_found = True
+                extracted_date = ref_date + timedelta(days=1)
+            # parse {weekday}
+            if weekday_to_int(word, "en"):
+                date_found = True
+                int_week = weekday_to_int(word, "en")
+                _w = extracted_date.weekday()
+                _delta = 0
+                if wordPrev in past_markers:
+                    # parse last {weekday}
+                    if int_week == _w:
+                        _delta = 7
+                    elif int_week < _w:
+                        _delta = _w - int_week
+                    else:
+                        _delta = 7 - int_week + _w
+                    extracted_date -= timedelta(days=_delta)
+                else:
+                    # parse this {weekday}
+                    # parse next {weekday}
+                    if int_week < _w:
+                        _delta = 7 - _w + int_week
+                    else:
+                        _delta = int_week - _w
+                    extracted_date += timedelta(days=_delta)
+                assert extracted_date.weekday() == int_week
+            # parse {month}
+            if month_to_int(word, "en"):
+                date_found = True
+                int_month = month_to_int(word, "en")
+
+                extracted_date = ref_date.replace(month=int_month, day=1)
+
+                if wordPrev in past_markers:
+                    if int_month > ref_date.month:
+                        extracted_date = extracted_date.replace(
+                            year=ref_date.year - 1)
+                elif wordPrev in future_markers:
+                    if int_month < ref_date.month:
+                        extracted_date = extracted_date.replace(
+                            year=ref_date.year + 1)
+
+                if is_numeric(wordNext) and 0 < int(wordNext) <= 31:
+                    # parse {month} {DAY_OF_MONTH}
+                    extracted_date = extracted_date.replace(day=int(wordNext))
+                    # parse {month} {DAY_OF_MONTH} {YYYY}
+                    if len(wordNextNext) == 4 and is_numeric(wordNextNext):
+                        extracted_date = extracted_date \
+                            .replace(year=int(wordNextNext))
+
+                elif is_numeric(wordPrev):
+                    # parse {DAY_OF_MONTH} {month}
+                    extracted_date = extracted_date.replace(day=int(wordPrev))
+
+                if is_numeric(wordNext) and len(wordNext) == 4:
+                    # parse {month} {YEAR}
+                    extracted_date = extracted_date.replace(year=int(wordNext))
+                elif is_numeric(wordPrev) and len(wordPrev) == 4:
+                    # parse {YEAR} {month}
+                    extracted_date = extracted_date.replace(year=int(wordPrev))
+            # parse "season"
+            if word in season_literal:
+                _start, _end = get_season_range(ref_date,
+                                                hemisphere=hemisphere)
+                # parse "in {Number} seasons"
+                if is_numeric(wordPrev):
+                    date_found = True
+                    raise NotImplementedError
+                # parse "this season"
+                elif wordPrev in this:
+                    date_found = True
+                    extracted_date = _start
+                # parse "last season"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    _end = _start - timedelta(days=2)
+                    s = date_to_season(_end, hemisphere)
+                    extracted_date = last_season_date(s, ref_date, hemisphere)
+                # parse "next season"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    extracted_date = _end + timedelta(days=1)
+            # parse "spring"
+            if word in _SEASONS_EN[Season.SPRING]:
+                # parse "in {Number} springs"
+                if is_numeric(wordPrev):
+                    date_found = True
+                    raise NotImplementedError
+                # parse "this spring"
+                elif wordPrev in this:
+                    date_found = True
+                    extracted_date = season_to_date(Season.SPRING,
+                                                    ref_date,
+                                                    hemisphere)
+                # parse "last spring"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    extracted_date = last_season_date(Season.SPRING,
+                                                      ref_date,
+                                                      hemisphere)
+                # parse "next spring"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    extracted_date = next_season_date(Season.SPRING,
+                                                      ref_date,
+                                                      hemisphere)
+            # parse "fall"
+            if word in _SEASONS_EN[Season.FALL]:
+                # parse "in {Number} falls"
+                if is_numeric(wordPrev):
+                    date_found = True
+                    raise NotImplementedError
+                # parse "this fall"
+                elif wordPrev in this:
+                    date_found = True
+                    extracted_date = season_to_date(Season.FALL,
+                                                    ref_date,
+                                                    hemisphere)
+                # parse "last fall"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    extracted_date = last_season_date(Season.FALL, ref_date,
+                                                      hemisphere)
+                # parse "next fall"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    extracted_date = next_season_date(Season.FALL, ref_date,
+                                                      hemisphere)
+            # parse "summer"
+            if word in _SEASONS_EN[Season.SUMMER]:
+                # parse "in {Number} summers"
+                if is_numeric(wordPrev):
+                    date_found = True
+                    raise NotImplementedError
+                # parse "this summer"
+                elif wordPrev in this:
+                    date_found = True
+                    extracted_date = season_to_date(Season.SUMMER,
+                                                    ref_date,
+                                                    hemisphere)
+                # parse "last summer"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    extracted_date = last_season_date(Season.SUMMER, ref_date,
+                                                      hemisphere)
+                # parse "next summer"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    extracted_date = next_season_date(Season.SUMMER, ref_date,
+                                                      hemisphere)
+            # parse "winter"
+            if word in _SEASONS_EN[Season.WINTER]:
+                # parse "in {Number} winters"
+                if is_numeric(wordPrev):
+                    date_found = True
+                    raise NotImplementedError
+                # parse "this winter"
+                elif wordPrev in this:
+                    date_found = True
+                    extracted_date = season_to_date(Season.WINTER,
+                                                    ref_date,
+                                                    hemisphere)
+                # parse "last winter"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    extracted_date = last_season_date(Season.WINTER, ref_date,
+                                                      hemisphere)
+                # parse "next winter"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    extracted_date = next_season_date(Season.WINTER, ref_date,
+                                                      hemisphere)
+            # parse "day"
+            if word in day_literal:
+                # parse {ORDINAL} day
+                if is_numeric(wordPrev):
+                    date_found = True
+                    extracted_date = extracted_date.replace(day=int(wordPrev))
+                # parse day {NUMBER}
+                elif is_numeric(wordNext):
+                    date_found = True
+                    extracted_date = extracted_date.replace(day=int(wordNext))
+                # parse "present day"
+                elif wordPrev in this:
+                    date_found = True
+                    extracted_date = ref_date
+            # parse "weekend"
+            if word in weekend_literal:
+                _is_weekend = ref_date.weekday() >= 5
+                # parse {ORDINAL} weekend
+                if is_numeric(wordPrev):
+                    date_found = True
+                    raise NotImplementedError
+                # parse weekend {NUMBER}
+                elif is_numeric(wordNext):
+                    date_found = True
+                    raise NotImplementedError
+                # parse "this weekend"
+                elif wordPrev in this:
+                    date_found = True
+                    _start, _end = get_weekend_range(ref_date)
+                    extracted_date = _start
+                # parse "next weekend"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    if not _is_weekend:
+                        _start, _end = get_weekend_range(ref_date)
+                    else:
+                        _start, _end = get_weekend_range(ref_date +
+                                                         timedelta(weeks=1))
+                    extracted_date = _start
+                # parse "last weekend"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    _start, _end = get_weekend_range(ref_date -
+                                                     timedelta(weeks=1))
+                    extracted_date = _start
+            # parse "week"
+            if word in week_literal:
+                # parse {ORDINAL} week
+                if is_numeric(wordPrev) and 0 < int(wordPrev) <= 4 * 12:
+                    date_found = True
+                    extracted_date = get_ordinal(int(wordPrev), ref_date,
+                                                 resolution=DateResolution.WEEK_OF_YEAR)
+                # parse "this week"
+                if wordPrev in this:
+                    date_found = True
+                    _start, _end = get_week_range(ref_date)
+                    extracted_date = _start
+                # parse "last week"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    _last_week = ref_date - timedelta(weeks=1)
+                    _start, _end = get_week_range(_last_week)
+                    extracted_date = _start
+                # parse "next week"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    _last_week = ref_date + timedelta(weeks=1)
+                    _start, _end = get_week_range(_last_week)
+                    extracted_date = _start
+                # parse week {NUMBER}
+                elif is_numeric(wordNext) and 0 < int(wordNext) <= 12:
+                    date_found = True
+                    extracted_date = get_ordinal(int(wordNext), ref_date,
+                                                 resolution=DateResolution.WEEK_OF_YEAR)
+            # parse "month"
+            if word in month_literal:
+
+                # parse {ORDINAL} month
+                if is_numeric(wordPrev) and 0 < int(wordPrev) <= 12:
+                    date_found = True
+                    extracted_date = get_ordinal(int(wordPrev), ref_date,
+                                                 DateResolution.MONTH_OF_YEAR)
+                # parse month {NUMBER}
+                elif is_numeric(wordNext) and 0 < int(wordNext) <= 12:
+                    date_found = True
+                    extracted_date = get_ordinal(int(wordNext), ref_date,
+                                                 DateResolution.MONTH_OF_YEAR)
+                # parse "this month"
+                elif wordPrev in this:
+                    date_found = True
+                    extracted_date = ref_date.replace(day=1)
+                # parse "next month"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    _next_month = ref_date + timedelta(days=30)
+                    extracted_date = _next_month.replace(day=1)
+                # parse "last month"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    _last_month = ref_date - timedelta(days=30)
+                    extracted_date = _last_month.replace(day=1)
+            # parse "year"
+            if word in year_literal:
+                # parse "current year"
+                if wordPrev in this:
+                    date_found = True
+                    extracted_date = get_ordinal(ref_date.year,
+                                                 resolution=DateResolution.YEAR)
+                # parse "last year"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    extracted_date = get_ordinal(ref_date.year - 1,
+                                                 resolution=DateResolution.YEAR)
+                # parse "next year"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    extracted_date = get_ordinal(ref_date.year + 1,
+                                                 resolution=DateResolution.YEAR)
+                # parse Nth year
+                elif is_numeric(wordPrev):
+                    date_found = True
+                    extracted_date = get_ordinal(int(wordPrev) - 1,
+                                                 resolution=DateResolution.YEAR)
+            # parse "decade"
+            if word in decade_literal:
+                _decade = (ref_date.year // 10) + 1
+                # parse "current decade"
+                if wordPrev in this:
+                    date_found = True
+                    extracted_date = get_ordinal(_decade,
+                                                 resolution=DateResolution.DECADE)
+                # parse "last decade"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    extracted_date = get_ordinal(_decade - 1,
+                                                 resolution=DateResolution.DECADE)
+                # parse "next decade"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    extracted_date = get_ordinal(_decade + 1,
+                                                 resolution=DateResolution.DECADE)
+                # parse Nth decade
+                elif is_numeric(wordPrev):
+                    date_found = True
+                    extracted_date = get_ordinal(int(wordPrev),
+                                                 resolution=DateResolution.DECADE)
+            # parse "millennium"
+            if word in millennium_literal:
+                _mil = ref_date.year // 1000
+                # parse "current millennium"
+                if wordPrev in this:
+                    date_found = True
+                    extracted_date = get_ordinal(_mil, ref_date,
+                                                 DateResolution.MILLENNIUM)
+                # parse "last millennium"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    extracted_date = get_ordinal(_mil - 1, ref_date,
+                                                 DateResolution.MILLENNIUM)
+                # parse "next millennium"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    extracted_date = get_ordinal(_mil + 1, ref_date,
+                                                 DateResolution.MILLENNIUM)
+                # parse Nth millennium
+                elif is_numeric(wordPrev):
+                    date_found = True
+
+                    extracted_date = get_ordinal(int(wordPrev) - 1,
+                                                 extracted_date,
+                                                 DateResolution.MILLENNIUM)
+            # parse "century"
+            if word in century_literal:
+                _century = ref_date.year // 100
+                # parse "current century"
+                if wordPrev in this:
+                    date_found = True
+                    extracted_date = get_ordinal(_century, ref_date,
+                                                 DateResolution.CENTURY)
+                # parse "last century"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    extracted_date = get_ordinal(_century - 1,
+                                                 ref_date,
+                                                 DateResolution.CENTURY)
+                # parse "next century"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    extracted_date = get_ordinal(_century + 1,
+                                                 ref_date,
+                                                 DateResolution.CENTURY)
+                # parse Nth century
+                elif is_numeric(wordPrev):
+                    date_found = True
+
+                    extracted_date = get_ordinal(int(wordPrev) - 1,
+                                                 extracted_date,
+                                                 DateResolution.CENTURY)
+            # parse day/mont/year is NUMBER
+            if word in set_qualifiers and is_numeric(wordNext):
+                _ordinal = int(wordNext)
+                if wordPrev in day_literal:
+                    date_found = True
+                    extracted_date = get_ordinal(_ordinal, extracted_date,
+                                                 DateResolution.DAY_OF_MONTH)
+                elif wordPrev in month_literal:
+                    date_found = True
+                    extracted_date = get_ordinal(_ordinal, extracted_date,
+                                                 DateResolution.MONTH_OF_YEAR)
+                elif wordPrev in year_literal:
+                    date_found = True
+                    extracted_date = get_ordinal(_ordinal, extracted_date,
+                                                 DateResolution.YEAR)
+                elif wordPrev in decade_literal:
+                    date_found = True
+                    extracted_date = get_ordinal(_ordinal, extracted_date,
+                                                 DateResolution.DECADE)
+                elif wordPrev in century_literal:
+                    date_found = True
+                    extracted_date = get_ordinal(_ordinal, extracted_date,
+                                                 DateResolution.CENTURY)
+                elif wordPrev in millennium_literal:
+                    date_found = True
+                    extracted_date = get_ordinal(_ordinal, extracted_date,
+                                                 DateResolution.MILLENNIUM)
+                # TODO week of month vs week of year
+
+    if date_found:
+        if isinstance(extracted_date, datetime):
+            extracted_date = extracted_date.date()
+        return extracted_date
+    return None

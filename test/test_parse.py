@@ -27,6 +27,12 @@ from lingua_franca.parse import normalize
 from lingua_franca.time import DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
 from lingua_franca.parse import DurationResolution
 
+from lingua_franca.time import now_local, date_to_season, \
+    get_week_range, get_weekend_range
+from lingua_franca.lang.parse_common import DateResolution, Hemisphere, Season
+from lingua_franca.lang.parse_en import extract_date_en
+from datetime import date, datetime, timedelta
+
 
 class TestFuzzyMatch(unittest.TestCase):
     def test_matches(self):
@@ -1679,5 +1685,582 @@ class TestNormalize(unittest.TestCase):
                          None)
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestExtractDate(unittest.TestCase):
+    ref_date = date(2117, 2, 3)
+    now = now_local()
+    default_time = now.time()
+    # TODO extract_date does not yet return remainder (str)
+
+    def _test_date(self, date_str, expected_date,
+                   resolution=DateResolution.DAY,
+                   anchor=None, hemi=Hemisphere.NORTH):
+        anchor = anchor or self.ref_date
+        if isinstance(expected_date, datetime):
+            expected_date = expected_date.date()
+        extracted_date = extract_date_en(date_str, anchor, resolution,
+                                         hemisphere=hemi)
+
+        # print("expected   | extracted  | input")
+        # print(expected_date, "|", extracted_date, "|", date_str, )
+        self.assertEqual(extracted_date, expected_date)
+
+    def test_now(self):
+        self._test_date("now", self.now)
+        self._test_date("today", self.ref_date)
+        self._test_date("tomorrow", self.ref_date + timedelta(days=1))
+        self._test_date("yesterday", self.ref_date - timedelta(days=1))
+        self._test_date("twenty two thousand days before now",
+                        self.now - timedelta(days=22000))
+        self._test_date("10 days from now",
+                        self.now + timedelta(days=10))
+
+    def test_duration_ago(self):
+        self._test_date("twenty two weeks ago",
+                        self.ref_date - timedelta(weeks=22))
+        self._test_date("twenty two months ago",
+                        self.ref_date - timedelta(days=30 * 22))
+        self._test_date("twenty two decades ago",
+                        self.ref_date - timedelta(days=365 * 10 * 22))
+        self._test_date("1 century ago",
+                        self.ref_date - timedelta(days=365 * 100))
+        self._test_date("ten centuries ago",
+                        self.ref_date - timedelta(days=365 * 100 * 10))
+        self._test_date("two millenniums ago",
+                        self.ref_date - timedelta(days=365 * 1000 * 2))
+        self._test_date("twenty two thousand days ago",
+                        self.ref_date - timedelta(days=22000))
+        try:
+            self._test_date("twenty two thousand years ago",
+                            self.ref_date - timedelta(days=365 * 22000))
+        except OverflowError as e:
+            # ERROR: extracted date is 19980 BC
+            assert str(e) == "date value out of range"
+
+    def test_spoken_date(self):
+        self._test_date("13 may 1992", date(month=5, year=1992, day=13))
+        self._test_date("march 1st 2020", date(month=3, year=2020, day=1))
+        self._test_date("29 november", date(month=11,
+                                            year=self.ref_date.year,
+                                            day=29))
+        self._test_date("january 2020", date(month=1,
+                                             year=2020,
+                                             day=1))
+        self._test_date("day 1", date(month=self.ref_date.month,
+                                      year=self.ref_date.year,
+                                      day=1))
+        self._test_date("1 of september",
+                        self.ref_date.replace(day=1, month=9,
+                                              year=self.ref_date.year))
+        self._test_date("march 13th",
+                        self.ref_date.replace(day=13, month=3,
+                                              year=self.ref_date.year))
+        self._test_date("12 may",
+                        self.ref_date.replace(day=12, month=5,
+                                              year=self.ref_date.year))
+
+    def test_from(self):
+        self._test_date("10 days from today",
+                        self.ref_date + timedelta(days=10))
+        self._test_date("10 days from tomorrow",
+                        self.ref_date + timedelta(days=11))
+        self._test_date("10 days from yesterday",
+                        self.ref_date + timedelta(days=9))
+        # self._test_date("10 days from after tomorrow",  # TODO fix me
+        #          self.ref_date + timedelta(days=12))
+
+    def test_ordinals(self):
+        self._test_date("the 5th day", self.ref_date.replace(day=5))
+        self._test_date("the fifth day",
+                        date(month=self.ref_date.month,
+                             year=self.ref_date.year, day=5))
+        self._test_date("the 20th day of 4th month",
+                        self.ref_date.replace(month=4, day=20))
+        self._test_date("the 20th day of month 4",
+                        self.ref_date.replace(month=4, day=20))
+        self._test_date("6th month of 1992", date(month=6, year=1992, day=1))
+        self._test_date("first day of the 10th month of 1969",
+                        self.ref_date.replace(day=1, month=10, year=1969))
+        self._test_date("2nd day of 2020",
+                        self.ref_date.replace(day=2, month=1, year=2020))
+        self._test_date("300 day of 2020",
+                        self.ref_date.replace(day=1, month=1, year=2020) +
+                        timedelta(days=299))
+
+    def test_plus(self):
+        self._test_date("now plus 10 days",
+                        self.now + timedelta(days=10))
+        self._test_date("today plus 10 days",
+                        self.ref_date + timedelta(days=10))
+        self._test_date("yesterday plus 10 days",
+                        self.ref_date + timedelta(days=9))
+        self._test_date("tomorrow plus 10 days",
+                        self.ref_date + timedelta(days=11))
+        # self._test_date("tomorrow + 10 days",
+        #           self.ref_date + timedelta(days=11))
+        self._test_date("today plus 10 months",
+                        self.ref_date + timedelta(days=30 * 10))
+        self._test_date("today plus 10 years",
+                        self.ref_date + timedelta(days=10 * 365))
+        self._test_date("today plus 10 years, 10 months and 1 day",
+                        self.ref_date + timedelta(days=10 * 365 + 10 * 30 + 1))
+
+    def test_minus(self):
+        self._test_date("now minus 10 days",
+                        self.now - timedelta(days=10))
+        self._test_date("today minus 10 days",
+                        self.ref_date - timedelta(days=10))
+        # self._test_date("today - 10 days",
+        #           self.ref_date - timedelta(days=10))
+        # self._test_date("yesterday - 10 days",  # TODO fix me
+        #           self.ref_date - timedelta(days=11))
+        self._test_date("tomorrow minus 10 days",
+                        self.ref_date - timedelta(days=9))
+        self._test_date("today minus 10 months",
+                        self.ref_date - timedelta(days=30 * 10))
+        # self._test_date("today - 10 years",  # TODO fix me
+        #            self.ref_date.replace(year=self.ref_date.year - 10))
+        self._test_date("today minus 10 years, 10 months and 1 day",
+                        self.ref_date - timedelta(days=10 * 365 + 10 * 30 + 1))
+
+    def test_before(self):
+        # before -> nearest DateResolution.XXX
+        self._test_date("before today",
+                        self.ref_date - timedelta(days=1))
+        self._test_date("before tomorrow", self.ref_date)
+        self._test_date("before yesterday",
+                        self.ref_date - timedelta(days=2))
+        self._test_date("before march 12",
+                        self.ref_date.replace(month=3, day=11))
+
+        self._test_date("before 1992", date(year=1991, month=12, day=31))
+        self._test_date("before 1992", date(year=1991, day=1, month=1),
+                        DateResolution.YEAR)
+        self._test_date("before 1992", date(year=1990, day=1, month=1),
+                        DateResolution.DECADE)
+        self._test_date("before 1992", date(year=1900, day=1, month=1),
+                        DateResolution.CENTURY)
+
+        self._test_date("before april",
+                        date(month=3, day=31, year=self.ref_date.year))
+        self._test_date("before april",
+                        date(month=1, day=1, year=self.ref_date.year - 1),
+                        DateResolution.YEAR)
+        self._test_date("before april",
+                        date(month=1, day=1, year=2110),
+                        DateResolution.DECADE)
+
+        self._test_date("before april 1992",
+                        date(month=3, day=31, year=1992))
+        self._test_date("before april 1992",
+                        date(month=1, day=1, year=1991),
+                        DateResolution.YEAR)
+        self._test_date("before april 1992",
+                        date(month=1, day=1, year=1990),
+                        DateResolution.DECADE)
+
+    def test_after(self):
+        # after -> next DateResolution.XXX
+        self._test_date("after today",
+                        self.ref_date + timedelta(days=1))
+        self._test_date("after yesterday", self.ref_date)
+        self._test_date("after tomorrow",
+                        self.ref_date + timedelta(days=2))
+
+        self._test_date("after today",
+                        self.ref_date.replace(day=8),
+                        DateResolution.WEEK)
+        self._test_date("after today",
+                        date(day=1, month=self.ref_date.month + 1,
+                             year=self.ref_date.year),
+                        DateResolution.MONTH)
+        self._test_date("after tomorrow",
+                        date(day=1, month=1, year=2120),
+                        DateResolution.DECADE)
+
+        self._test_date("after march 12",
+                        self.ref_date.replace(month=3, day=12) + timedelta(
+                            days=1))
+
+        self._test_date("after 1992", date(year=1992, day=2, month=1))
+        self._test_date("after 1992", date(year=1992, day=6, month=1),
+                        DateResolution.WEEK)
+        self._test_date("after 1992", date(year=1992, day=1, month=2),
+                        DateResolution.MONTH)
+        self._test_date("after 1992", date(year=1993, day=1, month=1),
+                        DateResolution.YEAR)
+        self._test_date("after 1992", date(year=2000, day=1, month=1),
+                        DateResolution.DECADE)
+        self._test_date("after 1992", date(year=2000, day=1, month=1),
+                        DateResolution.CENTURY)
+        self._test_date("after 1992", date(year=2000, day=1, month=1),
+                        DateResolution.MILLENNIUM)
+
+        self._test_date("after april",
+                        date(day=2, month=4, year=self.ref_date.year))
+        self._test_date("after april",
+                        date(day=1, month=4, year=self.ref_date.year) +
+                        timedelta(days=1))
+        self._test_date("after april",
+                        date(year=self.ref_date.year, day=5, month=4),
+                        DateResolution.WEEK)
+        self._test_date("after april",
+                        date(year=self.ref_date.year, day=1, month=5),
+                        DateResolution.MONTH)
+        self._test_date("after april", date(year=2120, day=1, month=1),
+                        DateResolution.DECADE)
+
+        self._test_date("after april 1992", date(year=1992, day=1, month=5),
+                        DateResolution.MONTH)
+        self._test_date("after april 1992", date(year=1993, day=1, month=1),
+                        DateResolution.YEAR)
+        self._test_date("after april 1992", date(year=2000, day=1, month=1),
+                        DateResolution.CENTURY)
+
+        self._test_date("after 2600", date(year=2600, day=2, month=1))
+        self._test_date("after 2600", date(year=2600, day=1, month=2),
+                        DateResolution.MONTH)
+        self._test_date("after 2600", date(year=2601, day=1, month=1),
+                        DateResolution.YEAR)
+
+        self._test_date("after 2600", date(year=2610, day=1, month=1),
+                        DateResolution.DECADE)
+        self._test_date("after 2600", date(year=2700, day=1, month=1),
+                        DateResolution.CENTURY)
+
+    def test_this(self):
+        _current_century = ((self.ref_date.year // 100) - 1) * 100
+        _current_decade = (self.ref_date.year // 10) * 10
+
+        self._test_date("this month", self.ref_date.replace(day=1))
+        self._test_date("this week", self.ref_date - timedelta(
+            days=self.ref_date.weekday()))
+        self._test_date("this year", self.ref_date.replace(day=1, month=1))
+        self._test_date("current year", self.ref_date.replace(day=1, month=1))
+        self._test_date("present day", self.ref_date)
+        self._test_date("current decade", date(day=1, month=1, year=2110))
+        self._test_date("current century", date(day=1, month=1, year=2100))
+
+    def test_next(self):
+        self._test_date("next month",
+                        (self.ref_date + timedelta(days=30)).replace(day=1))
+        self._test_date("next week",
+                        get_week_range(self.ref_date + timedelta(weeks=1))[0])
+        self._test_date("next century",
+                        date(year=2200, day=1, month=1))
+        self._test_date("next year",
+                        date(year=self.ref_date.year + 1, day=1, month=1))
+
+    def test_last(self):
+        self._test_date("last month",
+                        (self.ref_date - timedelta(days=30)).replace(day=1))
+        self._test_date("last week",
+                        get_week_range(self.ref_date - timedelta(weeks=1))[0])
+        self._test_date("last year", date(year=self.ref_date.year - 1,
+                                          day=1,
+                                          month=1))
+        self._test_date("last century", date(year=2000, day=1, month=1))
+
+        self._test_date("last day of the 10th century",
+                        date(day=31, month=12, year=999))
+
+        self._test_date("last day of this month",
+                        self.ref_date.replace(day=28))
+        # self._test_date("last day of the month",
+        #           self.ref_date.replace(day=28))
+
+        self._test_date("last day of this year",
+                        date(day=31, month=12, year=self.ref_date.year))
+        # self._test_date("last day of the year",
+        #            date(day=31, month=12, year=self.ref_date.year))
+
+        self._test_date("last day of this century",
+                        date(day=31, month=12, year=2199))
+        # self._test_date("last day of the century",
+        #           date(day=31, month=12, year=2199))
+
+        self._test_date("last day of this decade",
+                        date(day=31, month=12, year=2119))
+        self._test_date("last day of the decade",
+                        date(day=31, month=12, year=2119))
+        self._test_date("last day of this millennium",
+                        date(day=31, month=12, year=2999))
+        self._test_date("last day of the millennium",
+                        date(day=31, month=12, year=2999))
+        self._test_date("last day of the 20th month of the 5th millennium",
+                        date(day=31, month=7, year=4001))
+        self._test_date("last day of the 9th decade of the 5th millennium",
+                        date(day=31, month=12, year=4089))
+
+        self._test_date("last day of the 10th millennium",
+                        date(day=31, month=12, year=9999))
+
+    def test_first(self):
+        self._test_date("first day", self.ref_date.replace(day=1))
+        self._test_date("first day of this month",
+                        self.ref_date.replace(day=1))
+        self._test_date("first day of this year",
+                        self.ref_date.replace(day=1, month=1))
+        self._test_date("first day of this decade", date(day=1, month=1,
+                                                         year=2110))
+        self._test_date("first day of this century", date(day=1, month=1,
+                                                          year=2100))
+        self._test_date("first day of this millennium", date(day=1, month=1,
+                                                             year=2000))
+
+        self._test_date("first month", self.ref_date.replace(day=1, month=1))
+
+        # self._test_date("first week", get_week_range(self.ref_date.replace(day=1))[0])
+        self._test_date("first decade", date(year=1, day=1, month=1))
+        self._test_date("first year", date(year=1, day=1, month=1))
+        self._test_date("first century", date(year=1, day=1, month=1))
+
+        self._test_date("first day of the 10th century",
+                        date(day=1, month=1, year=900))
+
+        # self._test_date("first day of the month", self.ref_date.replace(day=1))
+        # self._test_date("first day of the year",
+        #            date(day=1, month=1, year=self.ref_date.year))
+
+        # self._test_date("first day of the century",
+        #           date(day=1, month=1, year=2100))
+        self._test_date("first day of the decade",
+                        date(day=1, month=1, year=2110))
+        self._test_date("first day of the millennium",
+                        date(day=1, month=1, year=2000))
+
+        self._test_date("first day of the 10th millennium",
+                        date(day=1, month=1, year=9000))
+
+    def test_seasons(self):
+        def _test_season_north(test_date, expected_date, season):
+            self._test_date(test_date, expected_date, hemi=Hemisphere.NORTH)
+            self.assertEqual(date_to_season(expected_date,
+                                            hemisphere=Hemisphere.NORTH),
+                             season)
+
+        def _test_season_south(test_date, expected_date, season):
+            self._test_date(test_date, expected_date, hemi=Hemisphere.SOUTH)
+            self.assertEqual(date_to_season(expected_date,
+                                            hemisphere=Hemisphere.SOUTH),
+                             season)
+
+        _test_season_north("this spring",
+                           self.ref_date.replace(day=1, month=3),
+                           Season.SPRING)
+        _test_season_south("this spring",
+                           self.ref_date.replace(day=1, month=9),
+                           Season.SPRING)
+
+        _test_season_north("next spring",
+                           self.ref_date.replace(day=1, month=3),
+                           Season.SPRING)
+        _test_season_south("next spring",
+                           self.ref_date.replace(day=1, month=9),
+                           Season.SPRING)
+
+        _test_season_north("last spring",
+                           date(day=1, month=3, year=self.ref_date.year - 1),
+                           Season.SPRING)
+        _test_season_south("last spring",
+                           date(day=1, month=9, year=self.ref_date.year - 1),
+                           Season.SPRING)
+
+        _test_season_north("this summer",
+                           self.ref_date.replace(day=1, month=6),
+                           Season.SUMMER)
+        _test_season_north("next summer",
+                           self.ref_date.replace(day=1, month=6),
+                           Season.SUMMER)
+        _test_season_north("last summer", date(day=1, month=6,
+                                               year=self.ref_date.year - 1),
+                           Season.SUMMER)
+
+        _test_season_north("this fall", self.ref_date.replace(day=1, month=9),
+                           Season.FALL)
+        _test_season_north("next fall", self.ref_date.replace(day=1, month=9),
+                           Season.FALL)
+        _test_season_north("last autumn",
+                           date(day=1, month=9, year=self.ref_date.year - 1),
+                           Season.FALL)
+
+        _test_season_north("this winter",
+                           self.ref_date.replace(day=1, month=12),
+                           Season.WINTER)
+        _test_season_north("next winter",
+                           self.ref_date.replace(day=1, month=12),
+                           Season.WINTER)
+        _test_season_north("last winter",
+                           self.ref_date.replace(day=1, month=12,
+                                                 year=self.ref_date.year - 1),
+                           Season.WINTER)
+
+        _ref_season = date_to_season(self.ref_date)
+        assert _ref_season == Season.WINTER
+        _test_season_north("this season",
+                           date(day=1, month=12, year=self.ref_date.year - 1),
+                           _ref_season)
+        _test_season_north("next season",
+                           date(day=1, month=3, year=self.ref_date.year),
+                           Season.SPRING)
+
+        _test_season_north("last season",
+                           date(day=1, month=9, year=self.ref_date.year - 1),
+                           Season.FALL)
+
+    def test_weekends(self):
+        # TODO plus / minus / after N weekends
+        # TODO N weekends ago
+        saturday, sunday = get_weekend_range(self.ref_date)
+        assert saturday.weekday() == 5
+        assert sunday.weekday() == 6
+
+        self._test_date("this weekend", saturday)
+        self._test_date("next weekend", saturday)
+        self._test_date("last weekend", saturday - timedelta(days=7))
+
+        self._test_date("this weekend", saturday,
+                        anchor=saturday)
+        self._test_date("this weekend", saturday,
+                        anchor=sunday)
+        self._test_date("next weekend", saturday + timedelta(days=7),
+                        anchor=saturday)
+        self._test_date("next weekend", saturday + timedelta(days=7),
+                        anchor=sunday)
+        self._test_date("last weekend", saturday - timedelta(days=7),
+                        anchor=saturday)
+        self._test_date("last weekend", saturday - timedelta(days=7),
+                        anchor=sunday)
+
+    def test_is(self):
+        self._test_date("the year is 2100", date(year=2100, month=1, day=1))
+        self._test_date("the year was 1969", date(year=1969, month=1, day=1))
+        self._test_date("the day is 2", self.ref_date.replace(day=2))
+        self._test_date("the month is 8",
+                        self.ref_date.replace(month=8, day=1))
+
+        self._test_date("this is the second day of the third "
+                        "month of the first year of the 9th millennium,",
+                        date(day=2, month=3, year=8001))
+        self._test_date("this is the second day of the third "
+                        "month of the 9th millennium,",
+                        date(day=2, month=3, year=8000))
+        # self._test_date("this is the 9th millennium, the second day of the third "
+        #           "month of the first year",
+        #           date(day=2, month=3, year=8000))
+
+    def test_of(self):
+        self._test_date("first day of the first millennium",
+                        date(day=1, month=1, year=1))
+        self._test_date("first day of the first century",
+                        date(day=1, month=1, year=1))
+        self._test_date("first day of the first decade",
+                        date(day=1, month=1, year=1))
+        self._test_date("first day of the first year",
+                        date(day=1, month=1, year=1))
+        self._test_date("first day of the first week",
+                        date(day=1, month=1, year=self.ref_date.year))
+        self._test_date("3rd day",
+                        self.ref_date.replace(day=3))
+        self._test_date("3rd day of may",
+                        self.ref_date.replace(day=3, month=5))
+        self._test_date("3rd day of the 5th century",
+                        date(day=3, month=1, year=400))
+        self._test_date("3rd day of the 5th month of the 10 century",
+                        date(day=3, month=5, year=900))
+        self._test_date("25th month of the 10 century",
+                        date(day=1, month=12, year=901))
+        self._test_date("3rd day of the 25th month of the 10 century",
+                        date(day=3, month=12, year=901))
+        self._test_date("3rd day of 1973",
+                        date(day=3, month=1, year=1973))
+        self._test_date("3rd day of the 17th decade",
+                        date(day=3, month=1, year=160))
+        self._test_date("3rd day of the 10th millennium",
+                        date(day=3, month=1, year=9000))
+        self._test_date("301st day of the 10th century",
+                        date(day=28, month=10, year=900))
+        self._test_date("first century of the 6th millennium",
+                        date(day=1, month=1, year=5000))
+        self._test_date("first decade of the 6th millennium",
+                        date(day=1, month=1, year=5000))
+        self._test_date("39th decade of the 6th millennium",
+                        date(day=1, month=1, year=5380))
+        self._test_date("the 20th year of the 6th millennium",
+                        date(day=1, month=1, year=5020))
+        self._test_date("the 20th day of the 6th millennium",
+                        date(day=20, month=1, year=5000))
+        self._test_date("last day of the 39th decade of the 6th millennium",
+                        date(day=31, month=12, year=5389))
+
+    def test_months(self):
+        self._test_date("january", self.ref_date.replace(day=1, month=1))
+        self._test_date("last january", self.ref_date.replace(day=1, month=1))
+        self._test_date("next january", date(day=1, month=1,
+                                             year=self.ref_date.year + 1))
+
+        self._test_date("in 29 november", date(day=29, month=11,
+                                               year=self.ref_date.year))
+        self._test_date("last november 27", date(day=27, month=11,
+                                                 year=self.ref_date.year - 1))
+        self._test_date("next 3 november", date(day=3, month=11,
+                                                year=self.ref_date.year))
+        self._test_date("last 3 november 1872",
+                        date(day=3, month=11, year=1872))
+
+    def test_week(self):
+        self._test_date("this week", self.ref_date.replace(day=1))
+        self._test_date("next week", self.ref_date.replace(day=8))
+        self._test_date("last week", self.ref_date.replace(day=25, month=1))
+
+        self._test_date("first week of this month",
+                        self.ref_date.replace(day=1))
+        self._test_date("first week of this year",
+                        self.ref_date.replace(day=1, month=1))
+        self._test_date("first week of this decade",
+                        date(day=1, month=1, year=2110))
+        self._test_date("first week of this century",
+                        date(day=1, month=1, year=2100))
+        self._test_date("first week of this millennium",
+                        date(day=1, month=1, year=2000))
+
+        self._test_date("second week of this month",
+                        self.ref_date.replace(day=8, month=2))
+        self._test_date("2nd week of this year",
+                        self.ref_date.replace(day=8, month=1))
+        self._test_date("2nd week of this decade",
+                        date(day=8, month=1, year=2110))
+        self._test_date("2 week of this century",
+                        date(day=8, month=1, year=2100))
+        self._test_date("2 week of this millennium",
+                        date(day=8, month=1, year=2000))
+
+        self._test_date("3rd week of this month",
+                        self.ref_date.replace(day=15, month=2))
+        self._test_date("3rd week of this year",
+                        self.ref_date.replace(day=15, month=1))
+        self._test_date("third week of this decade",
+                        date(day=15, month=1, year=2110))
+        self._test_date("3 week of this century",
+                        date(day=15, month=1, year=2100))
+        self._test_date("3 week of this millennium",
+                        date(day=15, month=1, year=2000))
+
+        self._test_date("10th week of this year",
+                        self.ref_date.replace(day=5, month=3))
+        self._test_date("100 week of this decade",
+                        date(day=25, month=11, year=2111))
+        self._test_date("1000 week of this century",
+                        date(day=24, month=2, year=2119))
+        self._test_date("10000 week of this millennium",
+                        date(day=20, month=8, year=2191))
+
+        self._test_date("last week of this month",
+                        self.ref_date.replace(day=22))
+        self._test_date("last week of this year",
+                        self.ref_date.replace(day=27, month=12))
+        self._test_date("last week of this decade",
+                        date(day=25, month=12, year=2119))
+        self._test_date("last week of this century",
+                        date(day=30, month=12, year=2199))
+        self._test_date("last week of this millennium",
+                        date(day=30, month=12, year=2999))

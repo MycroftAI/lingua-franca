@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 from collections import OrderedDict
+from lingua_franca.lang.parse_common import Hemisphere, Season
 
 
 _ARTICLES_EN = {'a', 'an', 'the'}
-
 
 _NUM_STRING_EN = {
     0: 'zero',
@@ -50,7 +50,6 @@ _NUM_STRING_EN = {
     90: 'ninety'
 }
 
-
 _FRACTION_STRING_EN = {
     2: 'half',
     3: 'third',
@@ -72,7 +71,6 @@ _FRACTION_STRING_EN = {
     19: 'nineteenth',
     20: 'twentyith'
 }
-
 
 _LONG_SCALE_EN = OrderedDict([
     (100, 'hundred'),
@@ -102,7 +100,6 @@ _LONG_SCALE_EN = OrderedDict([
     (1e336, "sesquinquagintillion"),
     (1e366, "unsexagintillion")
 ])
-
 
 _SHORT_SCALE_EN = OrderedDict([
     (100, 'hundred'),
@@ -178,7 +175,6 @@ _SHORT_SCALE_EN = OrderedDict([
     (1e3003, "millinillion")
 ])
 
-
 _ORDINAL_BASE_EN = {
     1: 'first',
     2: 'second',
@@ -211,7 +207,6 @@ _ORDINAL_BASE_EN = {
     1e3: "thousandth"
 }
 
-
 _SHORT_ORDINAL_EN = {
     1e6: "millionth",
     1e9: "billionth",
@@ -227,7 +222,6 @@ _SHORT_ORDINAL_EN = {
 }
 _SHORT_ORDINAL_EN.update(_ORDINAL_BASE_EN)
 
-
 _LONG_ORDINAL_EN = {
     1e6: "millionth",
     1e12: "billionth",
@@ -242,3 +236,66 @@ _LONG_ORDINAL_EN = {
     # TODO > 1e60
 }
 _LONG_ORDINAL_EN.update(_ORDINAL_BASE_EN)
+
+_WEEKDAY_EN = {
+    0: "monday",
+    1: "tuesday",
+    2: "wednesday",
+    3: "thursday",
+    4: "friday",
+    5: "saturday",
+    6: "sunday"
+}
+
+_MONTH_EN = {
+    1: "january",
+    2: "february",
+    3: "march",
+    4: "april",
+    5: "may",
+    6: "june",
+    7: "july",
+    8: "august",
+    9: "september",
+    10: "october",
+    11: "november",
+    12: "december"
+}
+
+_WEEKDAY_SHORT_EN = {
+    0: "mon",
+    1: "tue",
+    2: "wed",
+    3: "thu",
+    4: "fri",
+    5: "sat",
+    6: "sun"
+}
+
+_MONTH_SHORT_EN = {
+    1: "jan",
+    2: "feb",
+    3: "mar",
+    4: "apr",
+    5: "may",
+    6: "jun",
+    7: "jul",
+    8: "aug",
+    9: "sep",
+    10: "oct",
+    11: "nov",
+    12: "dec"
+}
+
+_HEMISPHERES_EN = {
+    Hemisphere.NORTH: ["north", "northern"],
+    Hemisphere.SOUTH: ["south", "southern"]
+}
+
+_SEASONS_EN = {
+    Season.SPRING: ["spring"],
+    Season.WINTER: ["winter"],
+    Season.SUMMER: ["summer"],
+    Season.FALL: ["fall", "autumn"]
+}
+
