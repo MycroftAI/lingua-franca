@@ -1780,7 +1780,17 @@ def extract_time_en(time_str, default_time=None,
 
 def extract_date_en(date_str, ref_date,
                     resolution=DateResolution.DAY,
-                    hemisphere=Hemisphere.NORTH):
+                    hemisphere=Hemisphere.NORTH,
+                    greedy=False):
+    """
+
+    :param date_str:
+    :param ref_date:
+    :param resolution:
+    :param hemisphere:
+    :param greedy: (bool) parse single number as years
+    :return:
+    """
     past_qualifiers = ["ago"]
     relative_qualifiers = ["from", "after"]
     relative_past_qualifiers = ["before"]
@@ -1860,11 +1870,13 @@ def extract_date_en(date_str, ref_date,
             is_of = True
             index = date_words.index(marker)
 
-    # parse Nth {X} of Nth {Y}
+    # parse {X} of {reference_date}
     if is_of:
-        # parse {ORDINAL} day/week/month/year... of {date}
-        _ordinal_words = date_words[:index]  # 3rd day / 4th week of the year
+
         _date_words = date_words[index + 1:]
+
+        # parse {ORDINAL} day/week/month/year... of {reference_date}
+        _ordinal_words = date_words[:index]  # 3rd day / 4th week of the year
         _number = None
 
         _unit = "day"  # TODO is this a sane default ?
@@ -1886,14 +1898,12 @@ def extract_date_en(date_str, ref_date,
             if is_numeric(_ordinal):
                 _number = int(_ordinal)
 
-        # parse resolution
+        # parse resolution {X} {day/week/month/year...} of {Y}
         if _number:
             _best_idx = len(_date_words) - 1
 
             # parse "Nth {day/week/month/year...} of {YEAR}"
-            if len(_date_words) and is_numeric(_date_words[0]) \
-                    and len(_date_words[0]) == 4:
-                ref_date = date(day=1, month=1, year=int(_date_words[0]))
+            if len(_date_words) and is_numeric(_date_words[0]):
                 _res = DateResolution.DAY_OF_YEAR
 
             # parse "{NUMBER} day
@@ -2061,19 +2071,29 @@ def extract_date_en(date_str, ref_date,
             if _unit in millennium_literal:
                 _res = DateResolution.MILLENNIUM
 
-        # Calculate Nth of {resolution}
-        if _number:
-            _date_str = " ".join(_date_words)
-            _extracted_date = extract_date_en(_date_str, ref_date,
-                                              resolution, hemisphere)
-            if not _extracted_date:
-                _year = _date_words[0]
-                if is_numeric(_year) and len(_year) == 4:
-                    _extracted_date = get_ordinal(_year,
-                                                  resolution=DateResolution.YEAR)
+        # parse {reference_date}
+        _date_str = " ".join(_date_words)
+        _anchor_date = extract_date_en(_date_str, ref_date, resolution,
+                                       hemisphere, greedy=True)
 
-            if _extracted_date:
-                return get_ordinal(_number, _extracted_date, _res)
+        # Parse {Nth} day/week/month/year... of {reference_date}
+        if _number and _anchor_date:
+            return get_ordinal(_number, _anchor_date, _res)
+
+        # Parse {partial_date} of {partial_reference_date}
+        # "summer of 1969"
+        elif _anchor_date:
+            # TODO should we allow invalid combinations?
+            # "summer of january"
+            # "12 may of october"
+            # "1980 of 2002"
+
+            _partial_date_str = " ".join(_ordinal_words)
+            _partial_date = extract_date_en(_partial_date_str, _anchor_date,
+                                            resolution, hemisphere)
+
+            if _partial_date:
+                return _partial_date
 
     # parse {duration} ago
     if is_past:
@@ -2097,21 +2117,21 @@ def extract_date_en(date_str, ref_date,
             delta, remainder = extract_duration_en(duration_str)
 
             _date_str = " ".join(date_words[index + 1:])
-            _extracted_date = extract_date_en(_date_str, ref_date)
-            if not _extracted_date and len(date_words) > index + 1:
+            _anchor_date = extract_date_en(_date_str, ref_date)
+            if not _anchor_date and len(date_words) > index + 1:
                 _year = date_words[index + 1]
                 if len(_year) == 4 and is_numeric(_year):
-                    _extracted_date = date(day=1, month=1, year=int(_year))
-            return (_extracted_date or ref_date) + delta
+                    _anchor_date = date(day=1, month=1, year=int(_year))
+            return (_anchor_date or ref_date) + delta
         else:
             _date_str = " ".join(date_words[index + 1:])
-            _extracted_date = extract_date_en(_date_str, ref_date)
-            if not _extracted_date:
+            _anchor_date = extract_date_en(_date_str, ref_date)
+            if not _anchor_date:
                 _year = date_words[index + 1]
                 if len(_year) == 4 and is_numeric(_year):
-                    _extracted_date = date(day=1, month=1, year=int(_year))
+                    _anchor_date = date(day=1, month=1, year=int(_year))
 
-            ref_date = _extracted_date or ref_date
+            ref_date = _anchor_date or ref_date
 
             # next day
             if resolution == DateResolution.DAY:
@@ -2119,38 +2139,38 @@ def extract_date_en(date_str, ref_date,
             # next week
             elif resolution == DateResolution.WEEK:
                 delta = timedelta(weeks=1)
-                _extracted_date = ref_date + delta
-                _start, _end = get_week_range(_extracted_date)
+                _anchor_date = ref_date + delta
+                _start, _end = get_week_range(_anchor_date)
                 return _start
             # next month
             elif resolution == DateResolution.MONTH:
                 delta = timedelta(days=31)
-                _extracted_date = ref_date + delta
-                _start, _end = get_month_range(_extracted_date)
+                _anchor_date = ref_date + delta
+                _start, _end = get_month_range(_anchor_date)
                 return _start
             # next year
             elif resolution == DateResolution.YEAR:
                 delta = timedelta(days=31 * 12)
-                _extracted_date = ref_date + delta
-                _start, _end = get_year_range(_extracted_date)
+                _anchor_date = ref_date + delta
+                _start, _end = get_year_range(_anchor_date)
                 return _start
             # next decade
             elif resolution == DateResolution.DECADE:
                 delta = timedelta(days=366 * 10)
-                _extracted_date = ref_date + delta
-                _start, _end = get_decade_range(_extracted_date)
+                _anchor_date = ref_date + delta
+                _start, _end = get_decade_range(_anchor_date)
                 return _start
             # next century
             elif resolution == DateResolution.CENTURY:
                 delta = timedelta(days=366 * 100)
-                _extracted_date = ref_date + delta
-                _start, _end = get_century_range(_extracted_date)
+                _anchor_date = ref_date + delta
+                _start, _end = get_century_range(_anchor_date)
                 return _start
             # next millennium
             elif resolution == DateResolution.MILLENNIUM:
                 delta = timedelta(days=366 * 1000)
-                _extracted_date = ref_date + delta
-                _start, _end = get_millennium_range(_extracted_date)
+                _anchor_date = ref_date + delta
+                _start, _end = get_millennium_range(_anchor_date)
                 return _start
             else:
                 raise ValueError("Invalid Resolution")
@@ -2167,57 +2187,57 @@ def extract_date_en(date_str, ref_date,
         if duration_str:
             delta, remainder = extract_duration_en(duration_str)
             _date_str = " ".join(date_words[index + 1:])
-            _extracted_date = extract_date_en(_date_str, ref_date)
-            if not _extracted_date and len(date_words) > index + 1:
+            _anchor_date = extract_date_en(_date_str, ref_date)
+            if not _anchor_date and len(date_words) > index + 1:
                 _year = date_words[index + 1]
                 if len(_year) == 4 and is_numeric(_year):
-                    _extracted_date = date(day=1, month=1, year=int(_year))
-            return (_extracted_date or ref_date) - delta
+                    _anchor_date = date(day=1, month=1, year=int(_year))
+            return (_anchor_date or ref_date) - delta
         else:
             _date_str = " ".join(date_words[index + 1:])
-            _extracted_date = extract_date_en(_date_str, ref_date)
-            if not _extracted_date:
+            _anchor_date = extract_date_en(_date_str, ref_date)
+            if not _anchor_date:
                 _year = date_words[index + 1]
                 if len(_year) == 4 and is_numeric(_year):
-                    _extracted_date = date(day=1, month=1, year=int(_year))
+                    _anchor_date = date(day=1, month=1, year=int(_year))
 
-            ref_date = _extracted_date or ref_date
+            ref_date = _anchor_date or ref_date
             # previous day
             if resolution == DateResolution.DAY:
                 return ref_date - timedelta(days=1)
             # previous week
             elif resolution == DateResolution.WEEK:
-                _extracted_date = ref_date - timedelta(weeks=1)
-                _start, _end = get_week_range(_extracted_date)
+                _anchor_date = ref_date - timedelta(weeks=1)
+                _start, _end = get_week_range(_anchor_date)
                 return _start
             # previous month
             elif resolution == DateResolution.MONTH:
                 delta = timedelta(days=30)
-                _extracted_date = ref_date - delta
-                _start, _end = get_month_range(_extracted_date)
+                _anchor_date = ref_date - delta
+                _start, _end = get_month_range(_anchor_date)
                 return _start
             # previous year
             elif resolution == DateResolution.YEAR:
                 delta = timedelta(days=365)
-                _extracted_date = ref_date - delta
-                _start, _end = get_year_range(_extracted_date)
+                _anchor_date = ref_date - delta
+                _start, _end = get_year_range(_anchor_date)
                 return _start
             # previous decade
             elif resolution == DateResolution.DECADE:
                 delta = timedelta(days=365 * 10)
-                _extracted_date = ref_date - delta
+                _anchor_date = ref_date - delta
                 _start, _end = get_decade_range(ref_date)
                 return _start
             # previous century
             elif resolution == DateResolution.CENTURY:
                 delta = timedelta(days=365 * 100)
-                _extracted_date = ref_date - delta
+                _anchor_date = ref_date - delta
                 _start, _end = get_century_range(ref_date)
                 return _start
             # previous millennium
             elif resolution == DateResolution.MILLENNIUM:
                 delta = timedelta(days=365 * 1000)
-                _extracted_date = ref_date - delta
+                _anchor_date = ref_date - delta
                 _start, _end = get_century_range(ref_date)
                 return _start
             else:
@@ -2236,12 +2256,12 @@ def extract_date_en(date_str, ref_date,
             raise RuntimeError(
                 "Could not extract duration from: " + duration_str)
         _date_str = " ".join(date_words[:index])
-        _extracted_date = extract_date_en(_date_str, ref_date)
-        if not _extracted_date and len(date_words) > index + 1:
+        _anchor_date = extract_date_en(_date_str, ref_date)
+        if not _anchor_date and len(date_words) > index + 1:
             _year = date_words[index + 1]
             if len(_year) == 4 and is_numeric(_year):
-                _extracted_date = date(day=1, month=1, year=int(_year))
-        ref_date = _extracted_date or ref_date
+                _anchor_date = date(day=1, month=1, year=int(_year))
+        ref_date = _anchor_date or ref_date
 
     # relative timedelta found
     if delta:
@@ -2349,16 +2369,10 @@ def extract_date_en(date_str, ref_date,
                         extracted_date = extracted_date \
                             .replace(year=int(wordNextNext))
 
-                elif is_numeric(wordPrev):
+                elif is_numeric(wordPrev) and 0 < int(wordPrev) <= 31:
                     # parse {DAY_OF_MONTH} {month}
                     extracted_date = extracted_date.replace(day=int(wordPrev))
 
-                if is_numeric(wordNext) and len(wordNext) == 4:
-                    # parse {month} {YEAR}
-                    extracted_date = extracted_date.replace(year=int(wordNext))
-                elif is_numeric(wordPrev) and len(wordPrev) == 4:
-                    # parse {YEAR} {month}
-                    extracted_date = extracted_date.replace(year=int(wordPrev))
             # parse "season"
             if word in season_literal:
                 _start, _end = get_season_range(ref_date,
@@ -2718,6 +2732,51 @@ def extract_date_en(date_str, ref_date,
                                     hemisphere = Hemisphere.SOUTH
                                 else:
                                     hemisphere = Hemisphere.NORTH
+
+            # parse {YYYY}
+            # NOTE: assumes a full date has at least 3 digits
+            if greedy and is_numeric(word) and len(word) >= 3:
+                date_found = True
+                extracted_date = extracted_date.replace(year=int(word))
+
+            # parse 19{YY} / 20{YY}
+            # NOTE: assumes past or current century
+            # single digits are discarded unless they are in the format 0N
+            elif greedy and is_numeric(word):
+                date_found = True
+                _year = int(word)
+                _base = (ref_date.year // 100) * 100
+                _delta = int(str(ref_date.year)[-2:])
+                if _delta > _year:
+                    # year belongs to current century
+                    # 13 -> 2013
+                    _year = _base + _year
+                else:
+                    # year belongs to last century
+                    # 69 -> 1969
+                    _year = _base - 100 + _year
+
+                extracted_date = extracted_date.replace(year=_year)
+
+            # parse "the {YYYY}s"
+            elif not is_numeric(word) and is_numeric(word.rstrip("s")):
+                date_found = True
+                _year = word.rstrip("s")
+                if len(_year) == 2:
+                    _base = (ref_date.year // 100) * 100
+                    _delta = int(str(ref_date.year)[-2:])
+                    if _delta > int(_year):
+                        # year belongs to current century
+                        # 13 -> 2013
+                        _year = _base + int(_year)
+                    else:
+                        # year belongs to last century
+                        # 69 -> 1969
+                        _year = _base - 100 + int(_year)
+                else:
+                    _year = int(_year)
+                extracted_date = extracted_date.replace(year=_year)
+
 
     if date_found:
         if isinstance(extracted_date, datetime):

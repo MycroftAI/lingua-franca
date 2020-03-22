@@ -1693,12 +1693,12 @@ class TestExtractDate(unittest.TestCase):
 
     def _test_date(self, date_str, expected_date,
                    resolution=DateResolution.DAY,
-                   anchor=None, hemi=Hemisphere.NORTH):
+                   anchor=None, hemi=Hemisphere.NORTH, greedy=False):
         anchor = anchor or self.ref_date
         if isinstance(expected_date, datetime):
             expected_date = expected_date.date()
         extracted_date = extract_date_en(date_str, anchor, resolution,
-                                         hemisphere=hemi)
+                                         hemisphere=hemi, greedy=greedy)
 
         # print("expected   | extracted  | input")
         # print(expected_date, "|", extracted_date, "|", date_str, )
@@ -2114,6 +2114,13 @@ class TestExtractDate(unittest.TestCase):
         _test_season_north("spring",
                            self.ref_date.replace(day=1, month=3),
                            Season.SPRING)
+        _test_season_north("spring of 1991",
+                           date(day=1, month=3, year=1991),
+                           Season.SPRING)
+        _test_season_south("summer of 1969",
+                           date(day=1, month=12, year=1969),
+                           Season.SUMMER)
+
         _test_season_north("this spring",
                            self.ref_date.replace(day=1, month=3),
                            Season.SPRING)
@@ -2321,3 +2328,80 @@ class TestExtractDate(unittest.TestCase):
                         date(day=30, month=12, year=2199))
         self._test_date("last week of this millennium",
                         date(day=30, month=12, year=2999))
+
+    def test_years(self):
+        _anchor = date(day=10, month=5, year=2020)
+
+        # test explicit year (of YYYY)
+        self._test_date("january of 90",
+                        date(day=1, month=1, year=1990),
+                        anchor=_anchor)
+        self._test_date("january of 69",
+                        date(day=1, month=1, year=1969),
+                        anchor=_anchor)
+        self._test_date("january of 19",
+                        date(day=1, month=1, year=2019),
+                        anchor=_anchor)
+
+        self._test_date("january of 09",
+                        date(day=1, month=1, year=2009),
+                        anchor=_anchor)
+
+        # test implicit years, "the 90s", "the 900s"
+        self._test_date("the 70s",
+                        _anchor.replace(year=1970),
+                        anchor=_anchor)
+        self._test_date("the 600s",
+                        _anchor.replace(year=600),
+                        anchor=_anchor)
+
+        # test greedy flag - standalone numbers are years
+        self._test_date("january 69",
+                        _anchor.replace(day=1, month=1),
+                        anchor=_anchor)
+        self._test_date("january 69",
+                        date(day=1, month=1, year=1969),
+                        anchor=_anchor,
+                        greedy=True)
+
+        self._test_date("1992",
+                        _anchor.replace(year=1992),
+                        anchor=_anchor,
+                        greedy=True)
+        self._test_date("1992", None, anchor=_anchor)
+
+        self._test_date("992",
+                        _anchor.replace(year=992),
+                        anchor=_anchor,
+                        greedy=True)
+        self._test_date("992", None, anchor=_anchor)
+
+        self._test_date("132",
+                        _anchor.replace(year=132),
+                        anchor=_anchor,
+                        greedy=True)
+        self._test_date("132", None, anchor=_anchor)
+
+        self._test_date("79",
+                        _anchor.replace(year=1979),
+                        anchor=_anchor,
+                        greedy=True)
+        self._test_date("79", None, anchor=_anchor)
+
+        self._test_date("13",
+                        _anchor.replace(year=2013),
+                        anchor=_anchor,
+                        greedy=True)
+        self._test_date("13", None, anchor=_anchor)
+
+        self._test_date("01",
+                        _anchor.replace(year=2001),
+                        anchor=_anchor,
+                        greedy=True)
+        self._test_date("0",
+                        _anchor.replace(year=2000),
+                        anchor=_anchor,
+                        greedy=True)
+        self._test_date("9", None, anchor=_anchor)
+
+
