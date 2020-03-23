@@ -1689,7 +1689,6 @@ class TestExtractDate(unittest.TestCase):
     ref_date = date(2117, 2, 3)
     now = now_local()
     default_time = now.time()
-    # TODO extract_date does not yet return remainder (str)
 
     def _test_date(self, date_str, expected_date,
                    resolution=DateResolution.DAY,
@@ -1798,30 +1797,33 @@ class TestExtractDate(unittest.TestCase):
                         self.ref_date + timedelta(days=9))
         self._test_date("tomorrow plus 10 days",
                         self.ref_date + timedelta(days=11))
-        # self._test_date("tomorrow + 10 days",
-        #           self.ref_date + timedelta(days=11))
         self._test_date("today plus 10 months",
                         self.ref_date + timedelta(days=30 * 10))
         self._test_date("today plus 10 years",
                         self.ref_date + timedelta(days=10 * 365))
         self._test_date("today plus 10 years, 10 months and 1 day",
                         self.ref_date + timedelta(days=10 * 365 + 10 * 30 + 1))
+        # TODO Fix me
+        # self._test_date("tomorrow + 10 days",
+        #           self.ref_date + timedelta(days=11))
 
     def test_minus(self):
         self._test_date("now minus 10 days",
                         self.now - timedelta(days=10))
         self._test_date("today minus 10 days",
                         self.ref_date - timedelta(days=10))
+        # TODO fix me
         # self._test_date("today - 10 days",
         #           self.ref_date - timedelta(days=10))
-        # self._test_date("yesterday - 10 days",  # TODO fix me
+        # self._test_date("yesterday - 10 days",
         #           self.ref_date - timedelta(days=11))
+        # self._test_date("today - 10 years",
+        #            self.ref_date.replace(year=self.ref_date.year - 10))
+
         self._test_date("tomorrow minus 10 days",
                         self.ref_date - timedelta(days=9))
         self._test_date("today minus 10 months",
                         self.ref_date - timedelta(days=30 * 10))
-        # self._test_date("today - 10 years",  # TODO fix me
-        #            self.ref_date.replace(year=self.ref_date.year - 10))
         self._test_date("today minus 10 years, 10 months and 1 day",
                         self.ref_date - timedelta(days=10 * 365 + 10 * 30 + 1))
 
@@ -1968,18 +1970,18 @@ class TestExtractDate(unittest.TestCase):
 
         self._test_date("last day of this month",
                         self.ref_date.replace(day=28))
-        # self._test_date("last day of the month",
-        #           self.ref_date.replace(day=28))
+        self._test_date("last day of the month",
+                        self.ref_date.replace(day=28))
 
         self._test_date("last day of this year",
                         date(day=31, month=12, year=self.ref_date.year))
-        # self._test_date("last day of the year",
-        #            date(day=31, month=12, year=self.ref_date.year))
+        self._test_date("last day of the year",
+                        date(day=31, month=12, year=self.ref_date.year))
 
         self._test_date("last day of this century",
                         date(day=31, month=12, year=2199))
-        # self._test_date("last day of the century",
-        #           date(day=31, month=12, year=2199))
+        self._test_date("last day of the century",
+                   date(day=31, month=12, year=2199))
 
         self._test_date("last day of this decade",
                         date(day=31, month=12, year=2119))
@@ -1987,8 +1989,8 @@ class TestExtractDate(unittest.TestCase):
                         date(day=31, month=12, year=2119))
         self._test_date("last day of this millennium",
                         date(day=31, month=12, year=2999))
-#        self._test_date("last day of the millennium",
-#                        date(day=31, month=12, year=2999))
+        self._test_date("last day of the millennium",
+                        date(day=31, month=12, year=2999))
         self._test_date("last day of the 20th month of the 5th millennium",
                         date(day=31, month=7, year=4001))
         self._test_date("last day of the 9th decade of the 5th millennium",
@@ -2012,7 +2014,9 @@ class TestExtractDate(unittest.TestCase):
 
         self._test_date("first month", self.ref_date.replace(day=1, month=1))
 
-        # self._test_date("first week", get_week_range(self.ref_date.replace(day=1))[0])
+        self._test_date("first week",
+                        get_week_range(date(day=1, month=1,
+                                            year=self.ref_date.year))[0])
         self._test_date("first decade", date(year=1, day=1, month=1))
         self._test_date("first year", date(year=1, day=1, month=1))
         self._test_date("first century", date(year=1, day=1, month=1))
@@ -2020,16 +2024,17 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("first day of the 10th century",
                         date(day=1, month=1, year=900))
 
-        # self._test_date("first day of the month", self.ref_date.replace(day=1))
-        # self._test_date("first day of the year",
-        #            date(day=1, month=1, year=self.ref_date.year))
+        self._test_date("first day of the month",
+                        self.ref_date.replace(day=1))
+        self._test_date("first day of the year",
+                    date(day=1, month=1, year=self.ref_date.year))
 
-        # self._test_date("first day of the century",
-        #           date(day=1, month=1, year=2100))
+        self._test_date("first day of the century",
+                   date(day=1, month=1, year=2100))
         self._test_date("first day of the decade",
                         date(day=1, month=1, year=2110))
-        #self._test_date("first day of the millennium",
-        #                date(day=1, month=1, year=2000))
+        self._test_date("first day of the millennium",
+                        date(day=1, month=1, year=2000))
 
         self._test_date("first day of the 10th millennium",
                         date(day=1, month=1, year=9000))
@@ -2215,9 +2220,6 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("this is the second day of the third "
                         "month of the 9th millennium,",
                         date(day=2, month=3, year=8000))
-        # self._test_date("this is the 9th millennium, the second day of the third "
-        #           "month of the first year",
-        #           date(day=2, month=3, year=8000))
 
     def test_of(self):
         self._test_date("first day of the first millennium",
@@ -2413,6 +2415,15 @@ class TestExtractDate(unittest.TestCase):
 
     def test_ambiguous(self):
         _anchor = date(day=10, month=5, year=2020)
+
+        # multiple dates
+
+        self._test_date("this is the 9th millennium,"
+                        " the second day of the third month of the first year",
+                   date(day=2, month=3, year=1))
+        # desired: date(day=2, month=3, year=8000))
+
+
 
         # {month1} of {month2} .... of {monthN}
         # parsed as:

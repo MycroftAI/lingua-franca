@@ -1748,7 +1748,7 @@ def _date_tokenize_en(date_string):
                 .lstrip(",.!?;:-(/[={")
     for n, ordinal in _ORDINAL_BASE_EN.items():
         cleaned = cleaned.replace(ordinal, str(n))
-    cleaned = normalize_en(cleaned, remove_articles=True)
+    cleaned = normalize_en(cleaned, remove_articles=False)
     return cleaned.split()
 
 
@@ -1806,7 +1806,7 @@ def extract_date_en(date_str, ref_date,
 
     now = ["now"]
     today = ["today"]
-    this = ["this", "current", "present"]
+    this = ["this", "current", "present", "the"]
     tomorrow = ["tomorrow"]
     yesterday = ["yesterday"]
     day_literal = ["day", "days"]
@@ -2674,8 +2674,9 @@ def extract_date_en(date_str, ref_date,
                 # parse {ORDINAL} week
                 if is_numeric(wordPrev) and 0 < int(wordPrev) <= 4 * 12:
                     date_found = True
-                    extracted_date = get_ordinal(int(wordPrev), ref_date,
+                    _week = get_ordinal(int(wordPrev), ref_date,
                                                  resolution=DateResolution.WEEK_OF_YEAR)
+                    extracted_date, _end = get_week_range(_week)
                     remainder_words[idx - 1] = ""
                 # parse "this week"
                 if wordPrev in this:
