@@ -31,7 +31,8 @@ from lingua_franca.time import date_to_season, season_to_date, \
     get_season_range, next_season_date, last_season_date, get_ordinal, \
     get_weekend_range, get_week_range, get_century_range, \
     get_millennium_range, get_year_range, get_month_range, get_decade_range, \
-    int_to_weekday, int_to_month, weekday_to_int, month_to_int, now_local
+    int_to_weekday, int_to_month, weekday_to_int, month_to_int, now_local, \
+    DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
 
 
 try:
@@ -2209,19 +2210,19 @@ def extract_date_en(date_str, ref_date,
                 date_found = True
             # next decade
             elif resolution == DateResolution.DECADE:
-                delta = timedelta(days=366 * 10)
+                delta = timedelta(days=DAYS_IN_1_YEAR * 10)
                 _anchor_date = ref_date + delta
                 extracted_date, _end = get_decade_range(_anchor_date)
                 date_found = True
             # next century
             elif resolution == DateResolution.CENTURY:
-                delta = timedelta(days=366 * 100)
+                delta = timedelta(days=DAYS_IN_1_YEAR * 100)
                 _anchor_date = ref_date + delta
                 extracted_date, _end = get_century_range(_anchor_date)
                 date_found = True
             # next millennium
             elif resolution == DateResolution.MILLENNIUM:
-                delta = timedelta(days=366 * 1000)
+                delta = timedelta(days=DAYS_IN_1_YEAR * 1000)
                 _anchor_date = ref_date + delta
                 extracted_date, _end = get_millennium_range(_anchor_date)
                 date_found = True
@@ -2286,31 +2287,31 @@ def extract_date_en(date_str, ref_date,
                 date_found = True
             # previous month
             elif resolution == DateResolution.MONTH:
-                delta = timedelta(days=30)
+                delta = timedelta(days=DAYS_IN_1_MONTH)
                 _anchor_date = ref_date - delta
                 extracted_date, _end = get_month_range(_anchor_date)
                 date_found = True
             # previous year
             elif resolution == DateResolution.YEAR:
-                delta = timedelta(days=365)
+                delta = timedelta(days=DAYS_IN_1_YEAR )
                 _anchor_date = ref_date - delta
                 extracted_date, _end = get_year_range(_anchor_date)
                 date_found = True
             # previous decade
             elif resolution == DateResolution.DECADE:
-                delta = timedelta(days=365 * 10)
+                delta = timedelta(days=DAYS_IN_1_YEAR  * 10)
                 _anchor_date = ref_date - delta
                 extracted_date, _end = get_decade_range(ref_date)
                 date_found = True
             # previous century
             elif resolution == DateResolution.CENTURY:
-                delta = timedelta(days=365 * 100)
+                delta = timedelta(days=DAYS_IN_1_YEAR  * 100)
                 _anchor_date = ref_date - delta
                 extracted_date, _end = get_century_range(ref_date)
                 date_found = True
             # previous millennium
             elif resolution == DateResolution.MILLENNIUM:
-                delta = timedelta(days=365 * 1000)
+                delta = timedelta(days=DAYS_IN_1_YEAR  * 1000)
                 _anchor_date = ref_date - delta
                 extracted_date, _end = get_century_range(ref_date)
                 date_found = True
@@ -2363,7 +2364,7 @@ def extract_date_en(date_str, ref_date,
             # TODO how to handle BC dates
             # https://stackoverflow.com/questions/15857797/bc-dates-in-python
             if is_past or is_subtract:
-                year_bc = delta.days // 365 - ref_date.year
+                year_bc = delta.days // DAYS_IN_1_YEAR  - ref_date.year
                 bc_str = str(year_bc) + " BC"
                 print("ERROR: extracted date is " + bc_str)
             else:
@@ -2725,13 +2726,13 @@ def extract_date_en(date_str, ref_date,
                 # parse "next month"
                 elif wordPrev in future_markers:
                     date_found = True
-                    _next_month = ref_date + timedelta(days=30)
+                    _next_month = ref_date + timedelta(days=DAYS_IN_1_MONTH)
                     extracted_date = _next_month.replace(day=1)
                     remainder_words[idx - 1] = ""
                 # parse "last month"
                 elif wordPrev in past_markers:
                     date_found = True
-                    _last_month = ref_date - timedelta(days=30)
+                    _last_month = ref_date - timedelta(days=DAYS_IN_1_MONTH)
                     extracted_date = _last_month.replace(day=1)
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""

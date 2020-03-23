@@ -25,6 +25,11 @@ DAYS_IN_1_YEAR = 365.2425
 DAYS_IN_1_MONTH = 30.42
 
 
+# used to calculate durations
+DAYS_IN_1_YEAR = 365.2425
+DAYS_IN_1_MONTH = 30.42
+
+
 def default_timezone():
     """ Get the default timezone
 
@@ -560,3 +565,7 @@ def get_season_range(ref_date=None, hemisphere=Hemisphere.NORTH):
             return early_summer
         return summer
 
+
+def get_week_number(ref_date=None):
+    ref_date = ref_date or now_local()
+    return ref_date.isocalendar()[1]

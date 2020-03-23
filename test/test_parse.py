@@ -28,7 +28,7 @@ from lingua_franca.time import DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
 from lingua_franca.parse import DurationResolution
 
 from lingua_franca.time import now_local, date_to_season, \
-    get_week_range, get_weekend_range
+    get_week_range, get_weekend_range, DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
 from lingua_franca.lang.parse_common import DateResolution, Hemisphere, Season
 from lingua_franca.lang.parse_en import extract_date_en
 from datetime import date, datetime, timedelta
@@ -1720,20 +1720,24 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("twenty two weeks ago",
                         self.ref_date - timedelta(weeks=22))
         self._test_date("twenty two months ago",
-                        self.ref_date - timedelta(days=30 * 22))
+                        self.ref_date - timedelta(days=DAYS_IN_1_MONTH * 22))
         self._test_date("twenty two decades ago",
-                        self.ref_date - timedelta(days=365 * 10 * 22))
+                        self.ref_date - timedelta(
+                            days=DAYS_IN_1_YEAR * 10 * 22))
         self._test_date("1 century ago",
-                        self.ref_date - timedelta(days=365 * 100))
+                        self.ref_date - timedelta(days=DAYS_IN_1_YEAR * 100))
         self._test_date("ten centuries ago",
-                        self.ref_date - timedelta(days=365 * 100 * 10))
+                        self.ref_date - timedelta(
+                            days=DAYS_IN_1_YEAR * 100 * 10))
         self._test_date("two millenniums ago",
-                        self.ref_date - timedelta(days=365 * 1000 * 2))
+                        self.ref_date - timedelta(
+                            days=DAYS_IN_1_YEAR * 1000 * 2))
         self._test_date("twenty two thousand days ago",
                         self.ref_date - timedelta(days=22000))
         try:
             self._test_date("twenty two thousand years ago",
-                            self.ref_date - timedelta(days=365 * 22000))
+                            self.ref_date - timedelta(
+                                days=DAYS_IN_1_YEAR * 22000))
         except OverflowError as e:
             # ERROR: extracted date is 19980 BC
             assert str(e) == "date value out of range"
@@ -1798,11 +1802,12 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("tomorrow plus 10 days",
                         self.ref_date + timedelta(days=11))
         self._test_date("today plus 10 months",
-                        self.ref_date + timedelta(days=30 * 10))
+                        self.ref_date + timedelta(days=DAYS_IN_1_MONTH * 10))
         self._test_date("today plus 10 years",
-                        self.ref_date + timedelta(days=10 * 365))
+                        self.ref_date + timedelta(days=10 * DAYS_IN_1_YEAR))
         self._test_date("today plus 10 years, 10 months and 1 day",
-                        self.ref_date + timedelta(days=10 * 365 + 10 * 30 + 1))
+                        self.ref_date + timedelta(
+                            days=10 * DAYS_IN_1_YEAR + 10 * DAYS_IN_1_MONTH + 1))
         # TODO Fix me
         # self._test_date("tomorrow + 10 days",
         #           self.ref_date + timedelta(days=11))
@@ -1823,9 +1828,10 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("tomorrow minus 10 days",
                         self.ref_date - timedelta(days=9))
         self._test_date("today minus 10 months",
-                        self.ref_date - timedelta(days=30 * 10))
+                        self.ref_date - timedelta(days=DAYS_IN_1_MONTH * 10))
         self._test_date("today minus 10 years, 10 months and 1 day",
-                        self.ref_date - timedelta(days=10 * 365 + 10 * 30 + 1))
+                        self.ref_date - timedelta(
+                            days=10 * DAYS_IN_1_YEAR + 10 * DAYS_IN_1_MONTH + 1))
 
     def test_before(self):
         # before -> nearest DateResolution.XXX
@@ -1947,7 +1953,7 @@ class TestExtractDate(unittest.TestCase):
 
     def test_next(self):
         self._test_date("next month",
-                        (self.ref_date + timedelta(days=30)).replace(day=1))
+                        (self.ref_date + timedelta(days=DAYS_IN_1_MONTH)).replace(day=1))
         self._test_date("next week",
                         get_week_range(self.ref_date + timedelta(weeks=1))[0])
         self._test_date("next century",
@@ -1957,7 +1963,7 @@ class TestExtractDate(unittest.TestCase):
 
     def test_last(self):
         self._test_date("last month",
-                        (self.ref_date - timedelta(days=30)).replace(day=1))
+                        (self.ref_date - timedelta(days=DAYS_IN_1_MONTH)).replace(day=1))
         self._test_date("last week",
                         get_week_range(self.ref_date - timedelta(weeks=1))[0])
         self._test_date("last year", date(year=self.ref_date.year - 1,
@@ -1981,7 +1987,7 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("last day of this century",
                         date(day=31, month=12, year=2199))
         self._test_date("last day of the century",
-                   date(day=31, month=12, year=2199))
+                        date(day=31, month=12, year=2199))
 
         self._test_date("last day of this decade",
                         date(day=31, month=12, year=2119))
@@ -2027,10 +2033,10 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("first day of the month",
                         self.ref_date.replace(day=1))
         self._test_date("first day of the year",
-                    date(day=1, month=1, year=self.ref_date.year))
+                        date(day=1, month=1, year=self.ref_date.year))
 
         self._test_date("first day of the century",
-                   date(day=1, month=1, year=2100))
+                        date(day=1, month=1, year=2100))
         self._test_date("first day of the decade",
                         date(day=1, month=1, year=2110))
         self._test_date("first day of the millennium",
@@ -2056,7 +2062,6 @@ class TestExtractDate(unittest.TestCase):
             self.assertEqual(date_to_season(expected_date,
                                             hemisphere=Hemisphere.SOUTH),
                              season)
-
 
         # test "season" literal
         _test_season_north("this season",
@@ -2093,7 +2098,8 @@ class TestExtractDate(unittest.TestCase):
                                self.ref_date.replace(day=1, month=3),
                                Season.SPRING)
             _test_season_north("last spring in Portugal",
-                               date(day=1, month=3, year=self.ref_date.year - 1),
+                               date(day=1, month=3,
+                                    year=self.ref_date.year - 1),
                                Season.SPRING)
             _test_season_north("next winter in Portugal",
                                date(day=1, month=12,
@@ -2230,8 +2236,10 @@ class TestExtractDate(unittest.TestCase):
                         date(day=1, month=1, year=1))
         self._test_date("first day of the first year",
                         date(day=1, month=1, year=1))
-        self._test_date("first day of the first week",
-                        date(day=1, month=1, year=self.ref_date.year))
+
+        #self._test_date("first day of the first week",
+        #                date(day=1, month=1, year=self.ref_date.year))
+
         self._test_date("3rd day",
                         self.ref_date.replace(day=3))
         self._test_date("3rd day of may",
@@ -2420,10 +2428,8 @@ class TestExtractDate(unittest.TestCase):
 
         self._test_date("this is the 9th millennium,"
                         " the second day of the third month of the first year",
-                   date(day=2, month=3, year=1))
+                        date(day=2, month=3, year=1))
         # desired: date(day=2, month=3, year=8000))
-
-
 
         # {month1} of {month2} .... of {monthN}
         # parsed as:
@@ -2454,7 +2460,7 @@ class TestExtractDate(unittest.TestCase):
         # parsed as:
         #   Nth day of {year}
         #   TODO not matching?
-        #self._test_date("1992 of 2020",
+        # self._test_date("1992 of 2020",
         #                _anchor + timedelta(days=1992),
         #                anchor=_anchor)
 
