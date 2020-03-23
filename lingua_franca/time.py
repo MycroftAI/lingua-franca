@@ -189,7 +189,6 @@ def get_ordinal(ordinal, ref_date=None,
     _century = (ref_date.year // 100) * 100 or 1
     _mil = (ref_date.year // 1000) * 1000 or 1
 
-    print(resolution)
     if resolution == DateResolution.DAY:
         if ordinal < 0:
             raise OverflowError("The last day of existence can not be "
