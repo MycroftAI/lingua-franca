@@ -25,7 +25,7 @@ from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
 import re
 import json
 from lingua_franca import resolve_resource_file
-from lingua_franca.time import now_local
+from lingua_franca.time import now_local, DAYS_IN_1_MONTH, DAYS_IN_1_YEAR
 
 
 def generate_plurals_en(originals):
@@ -54,10 +54,10 @@ _SUMS = {'twenty', '20', 'thirty', '30', 'forty', '40', 'fifty', '50',
          'sixty', '60', 'seventy', '70', 'eighty', '80', 'ninety', '90'}
 
 _MULTIPLIES_LONG_SCALE_EN = set(_LONG_SCALE_EN.values()) | \
-    generate_plurals_en(_LONG_SCALE_EN.values())
+                            generate_plurals_en(_LONG_SCALE_EN.values())
 
 _MULTIPLIES_SHORT_SCALE_EN = set(_SHORT_SCALE_EN.values()) | \
-    generate_plurals_en(_SHORT_SCALE_EN.values())
+                             generate_plurals_en(_SHORT_SCALE_EN.values())
 
 # split sentence parse separately and sum ( 2 and a half = 2 + 0.5 )
 _FRACTION_MARKER = {"and"}
@@ -236,10 +236,12 @@ def _extract_fraction_with_text_en(tokens, short_scale, ordinals):
         if len(partitions) == 3:
             numbers1 = \
                 _extract_numbers_with_text_en(partitions[0], short_scale,
-                                              ordinals, fractional_numbers=False)
+                                              ordinals,
+                                              fractional_numbers=False)
             numbers2 = \
                 _extract_numbers_with_text_en(partitions[2], short_scale,
-                                              ordinals, fractional_numbers=True)
+                                              ordinals,
+                                              fractional_numbers=True)
 
             if not numbers1 or not numbers2:
                 return None, None
@@ -249,7 +251,7 @@ def _extract_fraction_with_text_en(tokens, short_scale, ordinals):
             num2 = numbers2[0]
             if num1.value >= 1 and 0 < num2.value < 1:
                 return num1.value + num2.value, \
-                    num1.tokens + partitions[1] + num2.tokens
+                       num1.tokens + partitions[1] + num2.tokens
 
     return None, None
 
@@ -284,10 +286,12 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals):
         if len(partitions) == 3:
             numbers1 = \
                 _extract_numbers_with_text_en(partitions[0], short_scale,
-                                              ordinals, fractional_numbers=False)
+                                              ordinals,
+                                              fractional_numbers=False)
             numbers2 = \
                 _extract_numbers_with_text_en(partitions[2], short_scale,
-                                              ordinals, fractional_numbers=False)
+                                              ordinals,
+                                              fractional_numbers=False)
 
             if not numbers1 or not numbers2:
                 return None, None
@@ -298,7 +302,7 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals):
             # TODO handle number dot number number number
             if "." not in str(decimal.text):
                 return number.value + float('0.' + str(decimal.value)), \
-                    number.tokens + partitions[1] + decimal.tokens
+                       number.tokens + partitions[1] + decimal.tokens
     return None, None
 
 
@@ -342,7 +346,8 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
         next_word = tokens[idx + 1].word if idx + 1 < len(tokens) else ""
 
         if is_numeric(word[:-2]) and \
-                (word.endswith("st") or word.endswith("nd") or word.endswith("rd") or word.endswith("th")):
+                (word.endswith("st") or word.endswith("nd") or
+                 word.endswith("rd") or word.endswith("th")):
 
             # explicit ordinals, 1st, 2nd, 3rd, 4th.... Nth
             word = word[:-2]
@@ -447,10 +452,10 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
 
         else:
             if all([
-                    prev_word in _SUMS,
-                    word not in _SUMS,
-                    word not in multiplies,
-                    current_val >= 10]):
+                prev_word in _SUMS,
+                word not in _SUMS,
+                word not in multiplies,
+                current_val >= 10]):
                 # Backtrack - we've got numbers we can't sum.
                 number_words.pop()
                 val = prev_val
@@ -515,7 +520,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 # 9907657
 
                 time_to_sum = True
-                for other_token in tokens[idx+1:]:
+                for other_token in tokens[idx + 1:]:
                     if other_token.word in multiplies:
                         if string_num_scale[other_token.word] >= current_val:
                             time_to_sum = False
@@ -624,8 +629,8 @@ def extract_duration_en(text):
     text = _convert_words_to_numbers_en(text)
     text = text.replace("centuries", "century").replace("millenia",
                                                         "millennium")
-    text = text.replace("a day", "1 day").replace("a year", "1 year")\
-        .replace("a decade", "1 decade").replace("a century", "1 century")\
+    text = text.replace("a day", "1 day").replace("a year", "1 year") \
+        .replace("a decade", "1 decade").replace("a century", "1 century") \
         .replace("a millennium", "1 millennium")
 
     for unit in time_units:
@@ -652,15 +657,15 @@ def extract_duration_en(text):
         text = re.sub(unit_pattern, '', text)
 
         if unit == "months":
-            time_units["days"] += 30 * value
+            time_units["days"] += DAYS_IN_1_MONTH * value
         elif unit == "years":
-            time_units["days"] += 365 * value
+            time_units["days"] += DAYS_IN_1_YEAR * value
         elif unit == "decades":
-            time_units["days"] += 10 * 365 * value
+            time_units["days"] += 10 * DAYS_IN_1_YEAR * value
         elif unit == "centurys":
-            time_units["days"] += 100 * 365 * value
+            time_units["days"] += 100 * DAYS_IN_1_YEAR * value
         elif unit == "millenniums":
-            time_units["days"] += 1000 * 365 * value
+            time_units["days"] += 1000 * DAYS_IN_1_YEAR * value
 
     duration = timedelta(**time_units) if any(time_units.values()) else None
     return (duration, text.strip())
@@ -723,13 +728,13 @@ def extract_datetime_en(string, dateNow, default_time):
 
     def date_found():
         return found or \
-            (
-                datestr != "" or
-                yearOffset != 0 or monthOffset != 0 or
-                dayOffset is True or hrOffset != 0 or
-                hrAbs or minOffset != 0 or
-                minAbs or secOffset != 0
-            )
+               (
+                       datestr != "" or
+                       yearOffset != 0 or monthOffset != 0 or
+                       dayOffset is True or hrOffset != 0 or
+                       hrAbs or minOffset != 0 or
+                       minAbs or secOffset != 0
+               )
 
     if string == "" or not dateNow:
         return None
@@ -1229,8 +1234,8 @@ def extract_datetime_en(string, dateNow, default_time):
                     if (
                             int(strNum) > 100 and
                             (
-                                wordPrev == "o" or
-                                wordPrev == "oh"
+                                    wordPrev == "o" or
+                                    wordPrev == "oh"
                             )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = str(int(strNum) // 100)
@@ -1243,8 +1248,8 @@ def extract_datetime_en(string, dateNow, default_time):
                              remainder == "hours" or remainder == "hour") and
                             word[0] != '0' and
                             (
-                                int(strNum) < 100 or
-                                int(strNum) > 2400
+                                    int(strNum) < 100 or
+                                    int(strNum) > 2400
                             )):
                         # ignores military time
                         # "in 3 hours"
@@ -1291,11 +1296,11 @@ def extract_datetime_en(string, dateNow, default_time):
                     elif (
                             wordNext == "" or wordNext == "o'clock" or
                             (
-                                wordNext == "in" and
-                                (
-                                        wordNextNext == "the" or
-                                        wordNextNext == timeQualifier
-                                )
+                                    wordNext == "in" and
+                                    (
+                                            wordNextNext == "the" or
+                                            wordNextNext == timeQualifier
+                                    )
                             ) or wordNext == 'tonight' or
                             wordNextNext == 'tonight'):
 

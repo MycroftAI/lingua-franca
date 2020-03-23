@@ -23,6 +23,7 @@ from lingua_franca.parse import fuzzy_match
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import match_one
 from lingua_franca.parse import normalize
+from lingua_franca.time import DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
 
 
 class TestFuzzyMatch(unittest.TestCase):
@@ -224,34 +225,38 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_duration("The movie is one hour, fifty seven"
                                           " and a half minutes long"),
                          (timedelta(hours=1, minutes=57.5),
-                             "the movie is ,  long"))
+                          "the movie is ,  long"))
         self.assertEqual(extract_duration("10-seconds"),
                          (timedelta(seconds=10.0), ""))
         self.assertEqual(extract_duration("5-minutes"),
                          (timedelta(minutes=5), ""))
 
+        self.assertEqual(extract_duration("1 month"),
+                         (timedelta(days=DAYS_IN_1_MONTH), ""))
+        self.assertEqual(extract_duration("3 months"),
+                         (timedelta(days=DAYS_IN_1_MONTH * 3), ""))
         self.assertEqual(extract_duration("a year"),
-                         (timedelta(days=365), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR), ""))
         self.assertEqual(extract_duration("1 year"),
-                         (timedelta(days=365 * 1), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 1), ""))
         self.assertEqual(extract_duration("5 years"),
-                         (timedelta(days=365*5), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 5), ""))
         self.assertEqual(extract_duration("a decade"),
-                         (timedelta(days=365*10 ), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 10), ""))
         self.assertEqual(extract_duration("1 decade"),
-                         (timedelta(days=365*10 ), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 10), ""))
         self.assertEqual(extract_duration("5 decades"),
-                         (timedelta(days=365*10*5), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 10 * 5), ""))
         self.assertEqual(extract_duration("1 century"),
-                         (timedelta(days=365*100), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 100), ""))
         self.assertEqual(extract_duration("a century"),
-                         (timedelta(days=365*100), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 100), ""))
         self.assertEqual(extract_duration("5 centuries"),
-                         (timedelta(days=365*100*5), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 100 * 5), ""))
         self.assertEqual(extract_duration("1 millennium"),
-                         (timedelta(days=365*1000), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 1000), ""))
         self.assertEqual(extract_duration("5 millenniums"),
-                         (timedelta(days=365*1000*5), ""))
+                         (timedelta(days=DAYS_IN_1_YEAR * 1000 * 5), ""))
 
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
