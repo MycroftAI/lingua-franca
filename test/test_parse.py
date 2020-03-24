@@ -386,6 +386,118 @@ class TestNormalize(unittest.TestCase):
                              resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=1000 * 5), ""))
 
+    def test_extract_duration_microseconds_en(self):
+        def test_milliseconds(duration_str, expected_duration,
+                              expected_remainder):
+            duration, remainder = extract_duration(
+                duration_str, resolution=DurationResolution.TOTAL_MICROSECONDS)
+
+            self.assertEqual(remainder, expected_remainder)
+
+            # allow small floating point errors
+            self.assertAlmostEqual(expected_duration, duration, places=2)
+
+        test_milliseconds("0.01 microseconds", 0.01, "")
+        test_milliseconds("1 microsecond", 1, "")
+        test_milliseconds("5 microseconds", 5, "")
+        test_milliseconds("1 millisecond", 1 * 1000, "")
+        test_milliseconds("5 milliseconds", 5 * 1000, "")
+        test_milliseconds("100 milliseconds", 100 * 1000, "")
+        test_milliseconds("1 second", 1000 * 1000, "")
+        test_milliseconds("10 seconds", 10 * 1000 * 1000, "")
+        test_milliseconds("5 minutes", 5 * 60 * 1000 * 1000, "")
+        test_milliseconds("2 hours", 2 * 60 * 60 * 1000 * 1000, "")
+        test_milliseconds("3 days", 3 * 24 * 60 * 60 * 1000 * 1000, "")
+        test_milliseconds("25 weeks", 25 * 7 * 24 * 60 * 60 * 1000 * 1000, "")
+        test_milliseconds("seven hours", 7 * 60 * 60 * 1000 * 1000, "")
+        test_milliseconds("7.5 seconds", 7.5 * 1000 * 1000, "")
+        test_milliseconds("eight and a half days thirty nine seconds",
+                          (8.5 * 24 * 60 * 60 + 39) * 1000 * 1000, "")
+        test_milliseconds("Set a timer for 30 minutes", 30 * 60 * 1000 * 1000,
+                          "set a timer for")
+        test_milliseconds("Four and a half minutes until sunset",
+                          4.5 * 60 * 1000 * 1000,
+                          "until sunset")
+        test_milliseconds("Nineteen minutes past the hour",
+                          19 * 60 * 1000 * 1000,
+                          "past the hour")
+        test_milliseconds("10-seconds", 10 * 1000* 1000, "")
+        test_milliseconds("5-minutes", 5 * 60 * 1000* 1000, "")
+        test_milliseconds("1 month",
+                          DAYS_IN_1_MONTH * 24 * 60 * 60 * 1000 * 1000, "")
+        test_milliseconds("3 months",
+                          3 * DAYS_IN_1_MONTH * 24 * 60 * 60 * 1000 * 1000, "")
+        test_milliseconds("a year",
+                          DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000 * 1000, "")
+
+    def test_extract_duration_milliseconds_en(self):
+        def test_milliseconds(duration_str, expected_duration,
+                              expected_remainder):
+            duration, remainder = extract_duration(
+                duration_str, resolution=DurationResolution.TOTAL_MILLISECONDS)
+
+            self.assertEqual(remainder, expected_remainder)
+
+            # allow small floating point errors
+            self.assertAlmostEqual(expected_duration, duration, places=2)
+
+        test_milliseconds("1 microsecond", 0, "")
+        test_milliseconds("4.9 microseconds", 0, "")
+        test_milliseconds("5 microseconds", 0.005, "")
+        test_milliseconds("1 millisecond", 1, "")
+        test_milliseconds("5 milliseconds", 5, "")
+        test_milliseconds("100 milliseconds", 100, "")
+        test_milliseconds("1 second", 1000, "")
+        test_milliseconds("10 seconds", 10 * 1000, "")
+        test_milliseconds("5 minutes", 5 * 60 * 1000, "")
+        test_milliseconds("2 hours", 2 * 60 * 60 * 1000, "")
+        test_milliseconds("3 days", 3 * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("25 weeks", 25 * 7 * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("seven hours", 7 * 60 * 60 * 1000, "")
+        test_milliseconds("7.5 seconds", 7.5 * 1000, "")
+        test_milliseconds("eight and a half days thirty nine seconds",
+                          (8.5 * 24 * 60 * 60 + 39) * 1000, "")
+        test_milliseconds("Set a timer for 30 minutes", 30 * 60 * 1000,
+                          "set a timer for")
+        test_milliseconds("Four and a half minutes until sunset",
+                          4.5 * 60 * 1000,
+                          "until sunset")
+        test_milliseconds("Nineteen minutes past the hour", 19 * 60 * 1000,
+                          "past the hour")
+        test_milliseconds(
+            "wake me up in three weeks, four hundred ninety seven "
+            "days, and three hundred 91.6 seconds",
+            (3 * 7 * 24 * 60 * 60 + 497 * 24 * 60 * 60 + 391.6) * 1000,
+            "wake me up in , , and")
+        test_milliseconds("The movie is one hour, fifty seven and a half "
+                          "minutes long", (60 * 60 + 57.5 * 60) * 1000,
+                          "the movie is ,  long")
+        test_milliseconds("10-seconds", 10 * 1000, "")
+        test_milliseconds("5-minutes", 5 * 60 * 1000, "")
+        test_milliseconds("1 month", DAYS_IN_1_MONTH * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("3 months",
+                          3 * DAYS_IN_1_MONTH * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("a year", DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("1 year", DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("5 years", 5 * DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000,
+                          "")
+        test_milliseconds("a decade",
+                          10 * DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("1 decade",
+                          10 * DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("5 decades",
+                          5 * 10 * DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("1 century",
+                          100 * DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("a century",
+                          100 * DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("5 centuries",
+                          500 * DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("1 millennium",
+                          1000 * DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+        test_milliseconds("5 millenniums",
+                          5000 * DAYS_IN_1_YEAR * 24 * 60 * 60 * 1000, "")
+
     def test_extract_duration_seconds_en(self):
         def test_seconds(duration_str, expected_duration,
                          expected_remainder):
@@ -397,6 +509,10 @@ class TestNormalize(unittest.TestCase):
             # allow small floating point errors
             self.assertAlmostEqual(expected_duration, duration, places=2)
 
+        test_seconds("1 millisecond", 0, "")
+        test_seconds("4 milliseconds", 0, "")
+        test_seconds("5 milliseconds", 0.005, "")
+        test_seconds("100 milliseconds", 0.1, "")
         test_seconds("10 seconds", 10, "")
         test_seconds("5 minutes", 5 * 60, "")
         test_seconds("2 hours", 2 * 60 * 60, "")
@@ -812,7 +928,7 @@ class TestNormalize(unittest.TestCase):
 
     def test_extract_duration_millennia_en(self):
         def test_millennium(duration_str, expected_duration,
-                           expected_remainder):
+                            expected_remainder):
             duration, remainder = extract_duration(
                 duration_str, resolution=DurationResolution.TOTAL_MILLENNIUMS)
 
@@ -831,12 +947,12 @@ class TestNormalize(unittest.TestCase):
         test_millennium("eight and a half days thirty nine seconds", 0, "")
         test_millennium("Set a timer for 30 minutes", 0, "set a timer for")
         test_millennium("Four and a half minutes until sunset", 0,
-                       "until sunset")
+                        "until sunset")
         test_millennium("Nineteen minutes past the hour", 0,
-                       "past the hour")
+                        "past the hour")
         test_millennium("wake me up in three weeks, four hundred ninety seven "
-                       "days, and three hundred 91.6 seconds", 0,
-                       "wake me up in , , and")
+                        "days, and three hundred 91.6 seconds", 0,
+                        "wake me up in , , and")
         test_millennium(
             "The movie is one hour, fifty seven and a half minutes long", 0,
             "the movie is ,  long")
