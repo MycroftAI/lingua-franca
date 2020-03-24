@@ -1703,7 +1703,7 @@ class TestExtractDate(unittest.TestCase):
 
         # print("expected   | extracted  | input")
         # print(expected_date, "|", extracted_date, "|", date_str, )
-        print(date_str, "///", remainder)
+        # print(date_str, "///", remainder)
         self.assertEqual(extracted_date, expected_date)
 
     def test_now(self):
