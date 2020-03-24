@@ -25,11 +25,6 @@ DAYS_IN_1_YEAR = 365.2425
 DAYS_IN_1_MONTH = 30.42
 
 
-# used to calculate durations
-DAYS_IN_1_YEAR = 365.2425
-DAYS_IN_1_MONTH = 30.42
-
-
 def default_timezone():
     """ Get the default timezone
 
