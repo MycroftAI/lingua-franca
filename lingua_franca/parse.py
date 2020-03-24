@@ -159,7 +159,8 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
     return text
 
 
-def extract_duration(text, lang=None, resolution=DurationResolution.TIMEDELTA,
+def extract_duration(text, lang=None,
+                     resolution=DurationResolution.RELATIVEDELTA,
                      replace_token=""):
     """ Convert an english phrase into a number of seconds
 

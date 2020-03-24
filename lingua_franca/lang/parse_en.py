@@ -586,7 +586,7 @@ def extractnumber_en(text, short_scale=True, ordinals=False):
                                         short_scale, ordinals).value
 
 
-def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
+def extract_duration_en(text, resolution=DurationResolution.RELATIVEDELTA,
                         replace_token=""):
     """
     Convert an english phrase into a number of seconds
