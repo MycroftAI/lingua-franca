@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from collections import OrderedDict
+from .parse_common import invert_dict
 
 
 _ARTICLES_EN = {'a', 'an', 'the'}
@@ -242,3 +243,54 @@ _LONG_ORDINAL_EN = {
     # TODO > 1e60
 }
 _LONG_ORDINAL_EN.update(_ORDINAL_BASE_EN)
+
+
+# negate next number (-2 = 0 - 2)
+_NEGATIVES_EN = {"negative", "minus"}
+
+# sum the next number (twenty two = 20 + 2)
+_SUMS_EN = {'twenty', '20', 'thirty', '30', 'forty', '40', 'fifty', '50',
+         'sixty', '60', 'seventy', '70', 'eighty', '80', 'ninety', '90'}
+
+
+def _generate_plurals_en(originals):
+    """
+    Return a new set or dict containing the plural form of the original values,
+
+    In English this means all with 's' appended to them.
+
+    Args:
+        originals set(str) or dict(str, any): values to pluralize
+
+    Returns:
+        set(str) or dict(str, any)
+
+    """
+    # TODO migrate to https://github.com/MycroftAI/lingua-franca/pull/36
+    if isinstance(originals, dict):
+        return {key + 's': value for key, value in originals.items()}
+    return {value + "s" for value in originals}
+
+
+_MULTIPLIES_LONG_SCALE_EN = set(_LONG_SCALE_EN.values()) | \
+    _generate_plurals_en(_LONG_SCALE_EN.values())
+
+_MULTIPLIES_SHORT_SCALE_EN = set(_SHORT_SCALE_EN.values()) | \
+    _generate_plurals_en(_SHORT_SCALE_EN.values())
+
+# split sentence parse separately and sum ( 2 and a half = 2 + 0.5 )
+_FRACTION_MARKER_EN = {"and"}
+
+# decimal marker ( 1 point 5 = 1 + 0.5)
+_DECIMAL_MARKER_EN = {"point", "dot"}
+
+_STRING_NUM_EN = invert_dict(_NUM_STRING_EN)
+_STRING_NUM_EN.update(_generate_plurals_en(_STRING_NUM_EN))
+_STRING_NUM_EN.update({
+    "half": 0.5,
+    "halves": 0.5,
+    "couple": 2
+})
+
+_STRING_SHORT_ORDINAL_EN = invert_dict(_SHORT_ORDINAL_EN)
+_STRING_LONG_ORDINAL_EN = invert_dict(_LONG_ORDINAL_EN)
