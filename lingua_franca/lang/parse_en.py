@@ -721,10 +721,8 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
                 relative_units[unit] = value
         duration = relativedelta(**relative_units) if \
             any(relative_units.values()) else None
-    elif resolution == DurationResolution.TOTAL_SECONDS or resolution == \
-            DurationResolution.TOTAL_MICROSECONDS or resolution == \
-            DurationResolution.TOTAL_MILLISECONDS:
-        seconds = 0
+    else:
+        microseconds = 0
         units = ['months', 'years', 'decades', 'centurys', 'millenniums',
                  "microseconds", "milliseconds", "seconds", "minutes",
                  "hours", "days", "weeks"]
@@ -735,40 +733,69 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
             matches = re.findall(unit_pattern, text)
             value = sum(map(float, matches))
             text = re.sub(unit_pattern, '', text)
-            if unit == "milliseconds":
-                seconds += value * 1e-3
-            elif unit == "microseconds":
-                seconds += value * 1e-6
+            if unit == "microseconds":
+                microseconds += value
+            elif unit == "milliseconds":
+                microseconds += value * 1000
             elif unit == "seconds":
-                seconds += value
+                microseconds += value * 1000 * 1000
             elif unit == "minutes":
-                seconds += 60 * value
+                microseconds += value * 1000 * 1000 * 60
             elif unit == "hours":
-                seconds += 60 * 60 * value
+                microseconds += value * 1000 * 1000 * 60 * 60
             elif unit == "days":
-                seconds += 24 * 60 * 60 * value
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24
             elif unit == "weeks":
-                seconds += 24 * 60 * 60 * 7 * value
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * 7
             elif unit == "months":
-                seconds += 24 * 60 * 60 * DAYS_IN_1_MONTH * value
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_MONTH
             elif unit == "years":
-                seconds += 24 * 60 * 60 * DAYS_IN_1_YEAR * value
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_YEAR
             elif unit == "decades":
-                seconds += 24 * 60 * 60 * 10 * DAYS_IN_1_YEAR * value
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_YEAR * 10
             elif unit == "centurys":
-                seconds += 24 * 60 * 60 * 100 * DAYS_IN_1_YEAR * value
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_YEAR * 100
             elif unit == "millenniums":
-                seconds += 24 * 60 * 60 * 1000 * DAYS_IN_1_YEAR * value
-        if resolution == DurationResolution.TOTAL_MILLISECONDS:
-            duration = seconds * 1e3
-        elif resolution == DurationResolution.TOTAL_MICROSECONDS:
-            duration = seconds * 1e6
-        else:
-            duration = seconds
-    else:
-        raise ValueError
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_YEAR * 1000
 
-    return (duration, text.strip())
+        if resolution == DurationResolution.TOTAL_MICROSECONDS:
+            duration = microseconds
+        elif resolution == DurationResolution.TOTAL_MILLISECONDS:
+            duration = microseconds / 1000
+        elif resolution == DurationResolution.TOTAL_SECONDS:
+            duration = microseconds / (1000 * 1000)
+        elif resolution == DurationResolution.TOTAL_MINUTES:
+            duration = microseconds / (1000 * 1000 * 60)
+        elif resolution == DurationResolution.TOTAL_HOURS:
+            duration = microseconds /(1000 * 1000 * 60 * 60)
+        elif resolution == DurationResolution.TOTAL_DAYS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24)
+        elif resolution == DurationResolution.TOTAL_WEEKS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 * 7)
+        elif resolution == DurationResolution.TOTAL_MONTHS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_MONTH)
+        elif resolution == DurationResolution.TOTAL_YEARS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_YEAR)
+        elif resolution == DurationResolution.TOTAL_DECADES:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_YEAR * 10)
+        elif resolution == DurationResolution.TOTAL_CENTURIES:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_YEAR * 100)
+        elif resolution == DurationResolution.TOTAL_MILLENNIUMS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_YEAR * 1000)
+        else:
+            raise ValueError
+
+    return duration, text.strip()
 
 
 def extract_datetime_en(string, dateNow, default_time):
