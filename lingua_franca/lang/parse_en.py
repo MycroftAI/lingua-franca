@@ -772,7 +772,7 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
         elif resolution == DurationResolution.TOTAL_MINUTES:
             duration = microseconds / (1000 * 1000 * 60)
         elif resolution == DurationResolution.TOTAL_HOURS:
-            duration = microseconds /(1000 * 1000 * 60 * 60)
+            duration = microseconds / (1000 * 1000 * 60 * 60)
         elif resolution == DurationResolution.TOTAL_DAYS:
             duration = microseconds / (1000 * 1000 * 60 * 60 * 24)
         elif resolution == DurationResolution.TOTAL_WEEKS:

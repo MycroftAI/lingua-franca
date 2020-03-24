@@ -387,9 +387,8 @@ class TestNormalize(unittest.TestCase):
             (relativedelta(years=1000 * 5), ""))
 
     def test_extract_duration_seconds_en(self):
-
         def test_seconds(duration_str, expected_duration,
-                             expected_remainder):
+                         expected_remainder):
             duration, remainder = extract_duration(
                 duration_str, resolution=DurationResolution.TOTAL_SECONDS)
 
@@ -400,7 +399,7 @@ class TestNormalize(unittest.TestCase):
 
         test_seconds("10 seconds", 10, "")
         test_seconds("5 minutes", 5 * 60, "")
-        test_seconds("2 hours",2 * 60 * 60, "")
+        test_seconds("2 hours", 2 * 60 * 60, "")
         test_seconds("3 days", 3 * 24 * 60 * 60, "")
         test_seconds("25 weeks", 25 * 7 * 24 * 60 * 60, "")
         test_seconds("seven hours", 7 * 60 * 60, "")
@@ -422,8 +421,6 @@ class TestNormalize(unittest.TestCase):
         test_seconds("10-seconds", 10, "")
         test_seconds("5-minutes", 5 * 60, "")
         test_seconds("1 month", DAYS_IN_1_MONTH * 24 * 60 * 60, "")
-
-        # floating point error 7884864.000000002 != 7884864.0
         test_seconds("3 months", 3 * DAYS_IN_1_MONTH * 24 * 60 * 60, "")
         test_seconds("a year", DAYS_IN_1_YEAR * 24 * 60 * 60, "")
         test_seconds("1 year", DAYS_IN_1_YEAR * 24 * 60 * 60, "")
@@ -436,6 +433,151 @@ class TestNormalize(unittest.TestCase):
         test_seconds("5 centuries", 500 * DAYS_IN_1_YEAR * 24 * 60 * 60, "")
         test_seconds("1 millennium", 1000 * DAYS_IN_1_YEAR * 24 * 60 * 60, "")
         test_seconds("5 millenniums", 5000 * DAYS_IN_1_YEAR * 24 * 60 * 60, "")
+
+    def test_extract_duration_minutes_en(self):
+        def test_minutes(duration_str, expected_duration,
+                         expected_remainder):
+            duration, remainder = extract_duration(
+                duration_str, resolution=DurationResolution.TOTAL_MINUTES)
+
+            self.assertEqual(remainder, expected_remainder)
+
+            # allow small floating point errors
+            self.assertAlmostEqual(expected_duration, duration, places=2)
+
+        test_minutes("10 seconds", 10 / 60, "")
+        test_minutes("5 minutes", 5, "")
+        test_minutes("2 hours", 2 * 60, "")
+        test_minutes("3 days", 3 * 24 * 60, "")
+        test_minutes("25 weeks", 25 * 7 * 24 * 60, "")
+        test_minutes("seven hours", 7 * 60, "")
+        test_minutes("7.5 seconds", 7.5 / 60, "")
+        test_minutes("eight and a half days thirty nine seconds",
+                     8.5 * 24 * 60 + 39 / 60, "")
+        test_minutes("Set a timer for 30 minutes", 30, "set a timer for")
+        test_minutes("Four and a half minutes until sunset", 4.5,
+                     "until sunset")
+        test_minutes("Nineteen minutes past the hour", 19,
+                     "past the hour")
+        test_minutes("wake me up in three weeks, four hundred ninety seven "
+                     "days, and three hundred 91.6 seconds",
+                     3 * 7 * 24 * 60 + 497 * 24 * 60 + 391.6 / 60,
+                     "wake me up in , , and")
+        test_minutes("The movie is one hour, fifty seven and a half "
+                     "minutes long", 60 + 57.5,
+                     "the movie is ,  long")
+        test_minutes("10-seconds", 10 / 60, "")
+        test_minutes("5-minutes", 5, "")
+        test_minutes("1 month", DAYS_IN_1_MONTH * 24 * 60, "")
+        test_minutes("3 months", 3 * DAYS_IN_1_MONTH * 24 * 60, "")
+        test_minutes("a year", DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("1 year", DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("5 years", 5 * DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("a decade", 10 * DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("1 decade", 10 * DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("5 decades", 5 * 10 * DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("1 century", 100 * DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("a century", 100 * DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("5 centuries", 500 * DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("1 millennium", 1000 * DAYS_IN_1_YEAR * 24 * 60, "")
+        test_minutes("5 millenniums", 5000 * DAYS_IN_1_YEAR * 24 * 60, "")
+
+    def test_extract_duration_hours_en(self):
+        def test_hours(duration_str, expected_duration,
+                       expected_remainder):
+            duration, remainder = extract_duration(
+                duration_str, resolution=DurationResolution.TOTAL_HOURS)
+
+            self.assertEqual(remainder, expected_remainder)
+
+            # allow small floating point errors
+            self.assertAlmostEqual(expected_duration, duration, places=2)
+
+        test_hours("10 seconds", 10 / 60 / 60, "")
+        test_hours("5 minutes", 5 / 60, "")
+        test_hours("2 hours", 2, "")
+        test_hours("3 days", 3 * 24, "")
+        test_hours("25 weeks", 25 * 7 * 24, "")
+        test_hours("seven hours", 7, "")
+        test_hours("7.5 seconds", 7.5 / 60 / 60, "")
+        test_hours("eight and a half days thirty nine seconds",
+                   8.5 * 24 + 39 / 60 / 60, "")
+        test_hours("Set a timer for 30 minutes", 30 / 60, "set a timer for")
+        test_hours("Four and a half minutes until sunset", 4.5 / 60,
+                   "until sunset")
+        test_hours("Nineteen minutes past the hour", 19 / 60,
+                   "past the hour")
+        test_hours("wake me up in three weeks, four hundred ninety seven "
+                   "days, and three hundred 91.6 seconds",
+                   3 * 7 * 24 + 497 * 24 + 391.6 / 60 / 60,
+                   "wake me up in , , and")
+        test_hours("The movie is one hour, fifty seven and a half "
+                   "minutes long", 1 + 57.5 / 60,
+                   "the movie is ,  long")
+        test_hours("10-seconds", 10 / 60 / 60, "")
+        test_hours("5-minutes", 5 / 60, "")
+        test_hours("1 month", DAYS_IN_1_MONTH * 24, "")
+        test_hours("3 months", 3 * DAYS_IN_1_MONTH * 24, "")
+        test_hours("a year", DAYS_IN_1_YEAR * 24, "")
+        test_hours("1 year", DAYS_IN_1_YEAR * 24, "")
+        test_hours("5 years", 5 * DAYS_IN_1_YEAR * 24, "")
+        test_hours("a decade", 10 * DAYS_IN_1_YEAR * 24, "")
+        test_hours("1 decade", 10 * DAYS_IN_1_YEAR * 24, "")
+        test_hours("5 decades", 5 * 10 * DAYS_IN_1_YEAR * 24, "")
+        test_hours("1 century", 100 * DAYS_IN_1_YEAR * 24, "")
+        test_hours("a century", 100 * DAYS_IN_1_YEAR * 24, "")
+        test_hours("5 centuries", 500 * DAYS_IN_1_YEAR * 24, "")
+        test_hours("1 millennium", 1000 * DAYS_IN_1_YEAR * 24, "")
+        test_hours("5 millenniums", 5000 * DAYS_IN_1_YEAR * 24, "")
+
+    def test_extract_duration_days_en(self):
+        def test_days(duration_str, expected_duration,
+                      expected_remainder):
+            duration, remainder = extract_duration(
+                duration_str, resolution=DurationResolution.TOTAL_DAYS)
+
+            self.assertEqual(remainder, expected_remainder)
+
+            # allow small floating point errors
+            self.assertAlmostEqual(expected_duration, duration, places=2)
+
+        test_days("10 seconds", 10 / 60 / 60 / 24, "")
+        test_days("5 minutes", 5 / 60 / 24, "")
+        test_days("2 hours", 2 / 24, "")
+        test_days("3 days", 3, "")
+        test_days("25 weeks", 25 * 7, "")
+        test_days("seven hours", 7 / 24, "")
+        test_days("7.5 seconds", 7.5 / 60 / 60 / 24, "")
+        test_days("eight and a half days thirty nine seconds",
+                  8.5 + 39 / 60 / 60 / 24, "")
+        test_days("Set a timer for 30 minutes", 30 / 60 / 24,
+                  "set a timer for")
+        test_days("Four and a half minutes until sunset", 4.5 / 60 / 24,
+                  "until sunset")
+        test_days("Nineteen minutes past the hour", 19 / 60 / 24,
+                  "past the hour")
+        test_days("wake me up in three weeks, four hundred ninety seven "
+                  "days, and three hundred 91.6 seconds",
+                  3 * 7 + 497 + 391.6 / 60 / 60 / 24,
+                  "wake me up in , , and")
+        test_days("The movie is one hour, fifty seven and a half "
+                  "minutes long", 1 / 24 + 57.5 / 60 / 24,
+                  "the movie is ,  long")
+        test_days("10-seconds", 10 / 60 / 60 / 24, "")
+        test_days("5-minutes", 5 / 60 / 24, "")
+        test_days("1 month", DAYS_IN_1_MONTH, "")
+        test_days("3 months", 3 * DAYS_IN_1_MONTH, "")
+        test_days("a year", DAYS_IN_1_YEAR, "")
+        test_days("1 year", DAYS_IN_1_YEAR, "")
+        test_days("5 years", 5 * DAYS_IN_1_YEAR, "")
+        test_days("a decade", 10 * DAYS_IN_1_YEAR, "")
+        test_days("1 decade", 10 * DAYS_IN_1_YEAR, "")
+        test_days("5 decades", 5 * 10 * DAYS_IN_1_YEAR, "")
+        test_days("1 century", 100 * DAYS_IN_1_YEAR, "")
+        test_days("a century", 100 * DAYS_IN_1_YEAR, "")
+        test_days("5 centuries", 500 * DAYS_IN_1_YEAR, "")
+        test_days("1 millennium", 1000 * DAYS_IN_1_YEAR, "")
+        test_days("5 millenniums", 5000 * DAYS_IN_1_YEAR, "")
 
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
