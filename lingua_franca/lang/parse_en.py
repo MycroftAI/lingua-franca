@@ -18,7 +18,8 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
-    invert_dict, ReplaceableNumber, partition_list, tokenize, Token, Normalizer
+    invert_dict, ReplaceableNumber, partition_list, tokenize, Token, \
+    Normalizer, DurationResolution
 from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
     _LONG_ORDINAL_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN
 
@@ -585,7 +586,7 @@ def extractnumber_en(text, short_scale=True, ordinals=False):
                                         short_scale, ordinals).value
 
 
-def extract_duration_en(text):
+def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
     """
     Convert an english phrase into a number of seconds
 
@@ -614,16 +615,6 @@ def extract_duration_en(text):
     if not text:
         return None
 
-    time_units = {
-        'microseconds': None,
-        'milliseconds': None,
-        'seconds': None,
-        'minutes': None,
-        'hours': None,
-        'days': None,
-        'weeks': None
-    }
-
     pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}s?"
     # text normalization
     text = _convert_words_to_numbers_en(text)
@@ -633,41 +624,150 @@ def extract_duration_en(text):
         .replace("a decade", "1 decade").replace("a century", "1 century") \
         .replace("a millennium", "1 millennium")
 
-    for unit in time_units:
-        unit_pattern = pattern.format(unit=unit[:-1])  # remove 's' from unit
-        matches = re.findall(unit_pattern, text)
-        value = sum(map(float, matches))
-        time_units[unit] = value
-        text = re.sub(unit_pattern, '', text)
+    if resolution == DurationResolution.TIMEDELTA:
+        si_units = {
+            'microseconds': None,
+            'milliseconds': None,
+            'seconds': None,
+            'minutes': None,
+            'hours': None,
+            'days': None,
+            'weeks': None
+        }
 
-    extended_units = {
-        'months': 0,
-        'years': 0,
-        'decades': 0,
-        'centurys': 0,
-        'millenniums': 0
-    }
+        units = ['months', 'years', 'decades', 'centurys', 'millenniums'] + \
+                list(si_units.keys())
 
-    for unit in extended_units:
-        unit_pattern = pattern.format(unit=unit[:-1])  # remove 's' from unit
-        matches = re.findall(unit_pattern, text)
+        for unit in units:
+            unit_pattern = pattern.format(
+                unit=unit[:-1])  # remove 's' from unit
+            matches = re.findall(unit_pattern, text)
+            value = sum(map(float, matches))
+            text = re.sub(unit_pattern, '', text)
+            if unit == "days":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += value
+            elif unit == "months":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += DAYS_IN_1_MONTH * value
+            elif unit == "years":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += DAYS_IN_1_YEAR * value
+            elif unit == "decades":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += 10 * DAYS_IN_1_YEAR * value
+            elif unit == "centurys":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += 100 * DAYS_IN_1_YEAR * value
+            elif unit == "millenniums":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += 1000 * DAYS_IN_1_YEAR * value
+            else:
+                si_units[unit] = value
+        duration = timedelta(**si_units) if any(si_units.values()) else None
+    elif resolution == DurationResolution.RELATIVEDELTA:
+        relative_units = {
+            'microseconds': None,
+            'seconds': None,
+            'minutes': None,
+            'hours': None,
+            'days': None,
+            'weeks': None,
+            'months': None,
+            'years': None
+        }
 
-        value = sum(map(float, matches))
-        extended_units[unit] = value
-        text = re.sub(unit_pattern, '', text)
+        units = ['decades', 'centurys', 'millenniums', 'milliseconds'] + \
+                list(relative_units.keys())
+        for unit in units:
+            unit_pattern = pattern.format(
+                unit=unit[:-1])  # remove 's' from unit
+            matches = re.findall(unit_pattern, text)
+            value = sum(map(float, matches))
+            text = re.sub(unit_pattern, '', text)
+            # relativedelta does not support milliseconds
+            if unit == "milliseconds":
+                if relative_units["microseconds"] is None:
+                    relative_units["microseconds"] = 0
+                relative_units["microseconds"] += value * 1000
+            elif unit == "microseconds":
+                if relative_units["microseconds"] is None:
+                    relative_units["microseconds"] = 0
+                relative_units["microseconds"] += value
+            # relativedelta does not support decades, centuries or millennia
+            elif unit == "years":
+                if relative_units["years"] is None:
+                    relative_units["years"] = 0
+                relative_units["years"] += value
+            elif unit == "decades":
+                if relative_units["years"] is None:
+                    relative_units["years"] = 0
+                relative_units["years"] += value * 10
+            elif unit == "centurys":
+                if relative_units["years"] is None:
+                    relative_units["years"] = 0
+                relative_units["years"] += value * 100
+            elif unit == "millenniums":
+                if relative_units["years"] is None:
+                    relative_units["years"] = 0
+                relative_units["years"] += value * 1000
+            else:
+                relative_units[unit] = value
+        duration = relativedelta(**relative_units) if \
+            any(relative_units.values()) else None
+    elif resolution == DurationResolution.TOTAL_SECONDS or resolution == \
+            DurationResolution.TOTAL_MICROSECONDS or resolution == \
+            DurationResolution.TOTAL_MILLISECONDS:
+        seconds = 0
+        units = ['months', 'years', 'decades', 'centurys', 'millenniums',
+                 "microseconds", "milliseconds", "seconds", "minutes",
+                 "hours", "days", "weeks"]
 
-        if unit == "months":
-            time_units["days"] += DAYS_IN_1_MONTH * value
-        elif unit == "years":
-            time_units["days"] += DAYS_IN_1_YEAR * value
-        elif unit == "decades":
-            time_units["days"] += 10 * DAYS_IN_1_YEAR * value
-        elif unit == "centurys":
-            time_units["days"] += 100 * DAYS_IN_1_YEAR * value
-        elif unit == "millenniums":
-            time_units["days"] += 1000 * DAYS_IN_1_YEAR * value
+        for unit in units:
+            unit_pattern = pattern.format(
+                unit=unit[:-1])  # remove 's' from unit
+            matches = re.findall(unit_pattern, text)
+            value = sum(map(float, matches))
+            text = re.sub(unit_pattern, '', text)
+            if unit == "milliseconds":
+                seconds += value * 1e-3
+            elif unit == "microseconds":
+                seconds += value * 1e-6
+            elif unit == "seconds":
+                seconds += value
+            elif unit == "minutes":
+                seconds += 60 * value
+            elif unit == "hours":
+                seconds += 60 * 60 * value
+            elif unit == "days":
+                seconds += 24 * 60 * 60 * value
+            elif unit == "weeks":
+                seconds += 24 * 60 * 60 * 7 * value
+            elif unit == "months":
+                seconds += 24 * 60 * 60 * DAYS_IN_1_MONTH * value
+            elif unit == "years":
+                seconds += 24 * 60 * 60 * DAYS_IN_1_YEAR * value
+            elif unit == "decades":
+                seconds += 24 * 60 * 60 * 10 * DAYS_IN_1_YEAR * value
+            elif unit == "centurys":
+                seconds += 24 * 60 * 60 * 100 * DAYS_IN_1_YEAR * value
+            elif unit == "millenniums":
+                seconds += 24 * 60 * 60 * 1000 * DAYS_IN_1_YEAR * value
+        if resolution == DurationResolution.TOTAL_MILLISECONDS:
+            duration = seconds * 1e3
+        elif resolution == DurationResolution.TOTAL_MICROSECONDS:
+            duration = seconds * 1e6
+        else:
+            duration = seconds
+    else:
+        raise ValueError
 
-    duration = timedelta(**time_units) if any(time_units.values()) else None
     return (duration, text.strip())
 
 

@@ -38,6 +38,7 @@ from lingua_franca.lang.parse_da import normalize_da
 from .lang.parse_nl import normalize_nl, extractnumber_nl, extract_datetime_nl
 
 from lingua_franca import _log_unsupported_language
+from lingua_franca.lang.parse_common import DurationResolution
 
 
 def fuzzy_match(x, against):
@@ -158,7 +159,7 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
     return text
 
 
-def extract_duration(text, lang=None):
+def extract_duration(text, lang=None, resolution=DurationResolution.TIMEDELTA):
     """ Convert an english phrase into a number of seconds
 
     Convert things like:
@@ -187,7 +188,7 @@ def extract_duration(text, lang=None):
     lang_code = get_primary_lang_code(lang)
 
     if lang_code == "en":
-        return extract_duration_en(text)
+        return extract_duration_en(text, resolution)
 
     # TODO: extract_duration for other languages
     _log_unsupported_language(lang_code, ['en'])
