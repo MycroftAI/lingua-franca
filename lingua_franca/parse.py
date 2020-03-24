@@ -159,7 +159,8 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
     return text
 
 
-def extract_duration(text, lang=None, resolution=DurationResolution.TIMEDELTA):
+def extract_duration(text, lang=None, resolution=DurationResolution.TIMEDELTA,
+                     replace_token=""):
     """ Convert an english phrase into a number of seconds
 
     Convert things like:
@@ -177,6 +178,8 @@ def extract_duration(text, lang=None, resolution=DurationResolution.TIMEDELTA):
     Args:
         text (str): string containing a duration
         lang (str): the BCP-47 code for the language to use, None uses default
+        resolution (DurationResolution): format to return extracted duration on
+        replace_token (str): string to replace consumed words with
 
     Returns:
         (timedelta, str):
@@ -188,7 +191,7 @@ def extract_duration(text, lang=None, resolution=DurationResolution.TIMEDELTA):
     lang_code = get_primary_lang_code(lang)
 
     if lang_code == "en":
-        return extract_duration_en(text, resolution)
+        return extract_duration_en(text, resolution, replace_token)
 
     # TODO: extract_duration for other languages
     _log_unsupported_language(lang_code, ['en'])

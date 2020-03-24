@@ -586,7 +586,8 @@ def extractnumber_en(text, short_scale=True, ordinals=False):
                                         short_scale, ordinals).value
 
 
-def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
+def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
+                        replace_token=""):
     """
     Convert an english phrase into a number of seconds
 
@@ -604,6 +605,8 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
 
     Args:
         text (str): string containing a duration
+        resolution (DurationResolution): format to return extracted duration on
+        replace_token (str): string to replace consumed words with
 
     Returns:
         (timedelta, str):
@@ -624,6 +627,10 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
         .replace("a decade", "1 decade").replace("a century", "1 century") \
         .replace("a millennium", "1 millennium")
 
+    # we are always replacing 2 words, {N} {unit}
+    if replace_token:
+        replace_token += " " + replace_token
+
     if resolution == DurationResolution.TIMEDELTA:
         si_units = {
             'microseconds': None,
@@ -643,7 +650,7 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
                 unit=unit[:-1])  # remove 's' from unit
             matches = re.findall(unit_pattern, text)
             value = sum(map(float, matches))
-            text = re.sub(unit_pattern, '', text)
+            text = re.sub(unit_pattern, replace_token, text)
             if unit == "days":
                 if si_units["days"] is None:
                     si_units["days"] = 0
@@ -690,7 +697,7 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
                 unit=unit[:-1])  # remove 's' from unit
             matches = re.findall(unit_pattern, text)
             value = sum(map(float, matches))
-            text = re.sub(unit_pattern, '', text)
+            text = re.sub(unit_pattern, replace_token, text)
             # relativedelta does not support milliseconds
             if unit == "milliseconds":
                 if relative_units["microseconds"] is None:
@@ -732,7 +739,7 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
                 unit=unit[:-1])  # remove 's' from unit
             matches = re.findall(unit_pattern, text)
             value = sum(map(float, matches))
-            text = re.sub(unit_pattern, '', text)
+            text = re.sub(unit_pattern, replace_token, text)
             if unit == "microseconds":
                 microseconds += value
             elif unit == "milliseconds":
@@ -794,8 +801,9 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA):
                                        DAYS_IN_1_YEAR * 1000)
         else:
             raise ValueError
-
-    return duration, text.strip()
+    if not replace_token:
+        text = text.strip()
+    return duration, text
 
 
 def extract_datetime_en(string, dateNow, default_time):

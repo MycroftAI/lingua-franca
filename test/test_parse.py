@@ -194,6 +194,17 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("you are the 8th one"), 8)
         self.assertEqual(extract_number("totally 100%"), 100)
 
+    def test_extract_duration_replace_token(self):
+        self.assertEqual(extract_duration("10 seconds", replace_token="_"),
+                         (timedelta(seconds=10.0), "_ _"))
+        # TODO remainder is imperfect because "fifty seven and a half
+        #  minutes" was normalized to a single word "57.5"
+        self.assertEqual(extract_duration("The movie is one hour, fifty seven"
+                                          " and a half minutes long",
+                                          replace_token="_"),
+                         (timedelta(hours=1, minutes=57.5),
+                          "the movie is _ _, _ _ long"))
+
     def test_extract_duration_en(self):
         self.assertEqual(extract_duration("10 seconds"),
                          (timedelta(seconds=10.0), ""))
