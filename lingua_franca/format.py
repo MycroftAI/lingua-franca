@@ -22,26 +22,12 @@ from lingua_franca.lang.format_pt import *
 from lingua_franca.lang.format_it import *
 from lingua_franca.lang.format_sv import *
 from lingua_franca.lang.format_hu import *
+from lingua_franca.lang.format_es import *
+from lingua_franca.lang.format_de import *
+from lingua_franca.lang.format_fr import *
+from lingua_franca.lang.format_nl import *
+from lingua_franca.lang.format_da import *
 from lingua_franca.lang.format_cs import *
-
-from lingua_franca.lang.format_es import nice_number_es
-from lingua_franca.lang.format_es import nice_time_es
-from lingua_franca.lang.format_es import pronounce_number_es
-from lingua_franca.lang.format_de import nice_number_de
-from lingua_franca.lang.format_de import nice_time_de
-from lingua_franca.lang.format_de import pronounce_number_de
-from lingua_franca.lang.format_fr import nice_number_fr
-from lingua_franca.lang.format_fr import nice_time_fr
-from lingua_franca.lang.format_fr import pronounce_number_fr
-from lingua_franca.lang.format_nl import nice_time_nl
-from lingua_franca.lang.format_nl import pronounce_number_nl
-from lingua_franca.lang.format_nl import nice_number_nl
-from lingua_franca.lang.format_da import nice_number_da
-from lingua_franca.lang.format_da import nice_time_da
-from lingua_franca.lang.format_da import pronounce_number_da
-from lingua_franca.lang.format_cs import nice_number_cs
-from lingua_franca.lang.format_cs import nice_time_cs
-from lingua_franca.lang.format_cs import pronounce_number_cs
 
 from lingua_franca.bracket_expansion import SentenceTreeParser
 from lingua_franca import _log_unsupported_language
@@ -126,12 +112,12 @@ class DateTimeFormat:
             str(int(number % 100 / 10))) or str(int(number % 100 / 10))
         x0 = (self.lang_config[lang]['number'].get(
             str(int(number % 100 / 10) * 10)) or
-              str(int(number % 100 / 10) * 10))
+            str(int(number % 100 / 10) * 10))
         xxx = (self.lang_config[lang]['number'].get(str(number % 1000)) or
                str(number % 1000))
         x00 = (self.lang_config[lang]['number'].get(str(int(
             number % 1000 / 100) * 100)) or
-               str(int(number % 1000 / 100) * 100))
+            str(int(number % 1000 / 100) * 100))
         x_in_x00 = self.lang_config[lang]['number'].get(str(int(
             number % 1000 / 100))) or str(int(number % 1000 / 100))
         xx00 = self.lang_config[lang]['number'].get(str(int(
@@ -141,7 +127,7 @@ class DateTimeFormat:
             number % 10000 / 100))) or str(int(number % 10000 / 100))
         x000 = (self.lang_config[lang]['number'].get(str(int(
             number % 10000 / 1000) * 1000)) or
-                str(int(number % 10000 / 1000) * 1000))
+            str(int(number % 10000 / 1000) * 1000))
         x_in_x000 = self.lang_config[lang]['number'].get(str(int(
             number % 10000 / 1000))) or str(int(number % 10000 / 1000))
         x0_in_x000 = self.lang_config[lang]['number'].get(str(int(
@@ -246,7 +232,7 @@ class DateTimeFormat:
 
 
 date_time_format = DateTimeFormat(os.path.join(os.path.dirname(__file__),
-                                  'res/text'))
+                                               'res/text'))
 
 
 def nice_number(number, lang=None, speech=True, denominators=None):
@@ -337,7 +323,7 @@ def nice_time(dt, lang=None, speech=True, use_24hour=False,
         return nice_time_cs(dt, speech, use_24hour, use_ampm)
     # TODO: Other languages
     _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'sv', 'de', 'hu', 'nl', 'da','cs'])
+                                          'sv', 'de', 'hu', 'nl', 'da', 'cs'])
     return str(dt)
 
 
@@ -392,7 +378,7 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
     # Default to just returning the numeric value
     # TODO: Other languages
     _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'sv', 'de', 'hu', 'nl', 'da','cs'])
+                                          'sv', 'de', 'hu', 'nl', 'da', 'cs'])
     return str(number)
 
 
@@ -606,3 +592,46 @@ def expand_options(parentheses_line: str) -> list:
     # 'a(this|that)b' -> [['a', 'this', 'b'], ['a', 'that', 'b']]
     options = expand_parentheses(re.split(r'([(|)])', parentheses_line))
     return [re.sub(r'\s+', ' ', ' '.join(i)).strip() for i in options]
+
+
+def nice_response(text, lang=None):
+    lang_code = get_primary_lang_code(lang)
+    if lang_code == "nl":
+        return nice_response_nl(text)
+    elif lang_code == "de":
+        return nice_response_de(text)
+    elif lang_code == "da":
+        return nice_response_da(text)
+    elif lang_code == "sv":
+        return nice_response_sv(text)
+
+    # TODO: other languages
+    _log_unsupported_language(lang_code, ['nl', "de", "da", "sv"])
+    return text
+
+
+def nice_ordinal(text, speech=True, lang=None):
+    lang_code = get_primary_lang_code(lang)
+    if lang_code == "nl":
+        return nice_ordinal_nl(text, speech)
+    elif lang_code == "de":
+        return nice_ordinal_de(text, speech)
+    elif lang_code == "da":
+        return nice_ordinal_da(text, speech)
+    elif lang_code == "sv":
+        return nice_ordinal_sv(text, speech)
+
+    # TODO: other languages
+    _log_unsupported_language(lang_code, ["nl", 'de', "da", "sv"])
+    return text
+
+
+def nice_part_of_day(dt, speech=True, lang=None):
+    lang_code = get_primary_lang_code(lang)
+    if lang_code == "nl":
+        return nice_part_of_day_nl(dt, speech)
+
+    # There is no good lang independent default
+    # TODO: other languages
+    _log_unsupported_language(lang_code, ['nl'])
+    raise NotImplementedError

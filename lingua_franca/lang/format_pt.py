@@ -73,42 +73,42 @@ def nice_number_pt(number, speech, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_pt(num, places=2):
+def pronounce_number_pt(number, places=2):
     """
     Convert a number to it's spoken equivalent
      For example, '5.2' would return 'cinco virgula dois'
      Args:
-        num(float or int): the number to pronounce (under 100)
+        number(float or int): the number to pronounce (under 100)
         places(int): maximum decimal places to speak
     Returns:
         (str): The pronounced number
     """
-    if abs(num) >= 100:
+    if abs(number) >= 100:
         # TODO: Support n > 100
-        return str(num)
+        return str(number)
 
     result = ""
-    if num < 0:
+    if number < 0:
         result = "menos "
-    num = abs(num)
+    number = abs(number)
 
-    if num >= 20:
-        tens = int(num - int(num) % 10)
-        ones = int(num - tens)
+    if number >= 20:
+        tens = int(number - int(number) % 10)
+        ones = int(number - tens)
         result += _NUM_STRING_PT[tens]
         if ones > 0:
             result += " e " + _NUM_STRING_PT[ones]
     else:
-        result += _NUM_STRING_PT[int(num)]
+        result += _NUM_STRING_PT[int(number)]
 
     # Deal with decimal part, in portuguese is commonly used the comma
     # instead the dot. Decimal part can be written both with comma
     # and dot, but when pronounced, its pronounced "virgula"
-    if not num == int(num) and places > 0:
-        if abs(num) < 1.0 and (result == "menos " or not result):
+    if not number == int(number) and places > 0:
+        if abs(number) < 1.0 and (result is "menos " or not result):
             result += "zero"
         result += " vírgula"
-        _num_str = str(num)
+        _num_str = str(number)
         _num_str = _num_str.split(".")[1][0:places]
         for char in _num_str:
             result += " " + _NUM_STRING_PT[int(char)]
@@ -221,3 +221,30 @@ def nice_time_pt(dt, speech=True, use_24hour=False, use_ampm=False):
             elif hour != 0 and hour != 12:
                 speak += " da noite"
     return speak
+
+
+def pronounce_ordinal_pt(number):
+    """
+    This function pronounces a number as an ordinal
+
+    1 -> first
+    2 -> second
+
+    Args:
+        number (int): the number to format
+    Returns:
+        (str): The pronounced number string.
+    """
+    raise NotImplementedError
+
+
+def nice_response_pt(text):
+    raise NotImplementedError
+
+
+def nice_part_of_day_pt(dt, speech=True):
+    raise NotImplementedError
+
+
+def nice_ordinal_pt(text, speech=True):
+    raise NotImplementedError

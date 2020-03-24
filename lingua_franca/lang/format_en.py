@@ -382,3 +382,30 @@ def nice_time_en(dt, speech=True, use_24hour=False, use_ampm=False):
                 speak += " a.m."
 
         return speak
+
+
+def pronounce_ordinal_en(number):
+    """
+    This function pronounces a number as an ordinal
+
+    1 -> first
+    2 -> second
+
+    Args:
+        number (int): the number to format
+    Returns:
+        (str): The pronounced number string.
+    """
+    raise NotImplementedError
+
+
+def nice_response_en(text):
+    raise NotImplementedError
+
+
+def nice_part_of_day_en(dt, speech=True):
+    raise NotImplementedError
+
+
+def nice_ordinal_en(text, speech=True):
+    raise NotImplementedError
