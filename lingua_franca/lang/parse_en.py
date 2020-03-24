@@ -289,7 +289,7 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals, places=None):
     for c in _DECIMAL_MARKER:
         partitions = partition_list(tokens, lambda t: t.word == c)
 
-        if len(partitions) == 3:
+        if len(partitions) >= 3:
             numbers1 = \
                 _extract_numbers_with_text_en(partitions[0], short_scale,
                                               ordinals, fractional_numbers=False,
@@ -301,7 +301,6 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals, places=None):
             if not numbers1 or not numbers2:
                 return None, None
 
-            token_idx = numbers2[0].tokens[0].index
             idx = 1
             stop = False
             while idx < len(numbers2) and not stop:
@@ -604,7 +603,7 @@ def extractnumber_en(text, short_scale=True, ordinals=False, decimal_places=None
         text (str): the string to normalize
         short_scale (bool): use short scale if True, long scale if False
         ordinals (bool): consider ordinal numbers, third=3 instead of 1/3
-        decimal_places (int or False): rounds to # decimal places. uses builtin round()
+        decimal_places (int or None): rounds to # decimal places. uses builtin round()
     Returns:
         (int) or (float) or False: The extracted number or False if no number
                                    was found
