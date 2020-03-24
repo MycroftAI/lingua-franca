@@ -22,172 +22,60 @@ import collections
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
-    extract_numbers_generic
+    extract_numbers_generic, Normalizer
 from lingua_franca.lang.format_it import LONG_SCALE_IT, SHORT_SCALE_IT, \
     pronounce_number_it
-
-SHORT_ORDINAL_STRING_IT = {
-    1: 'primo',
-    2: 'secondo',
-    3: 'terzo',
-    4: 'quarto',
-    5: 'quinto',
-    6: 'sesto',
-    7: 'settimo',
-    8: 'ottavo',
-    9: 'nono',
-    10: 'decimo',
-    11: 'undicesimo',
-    12: 'dodicesimo',
-    13: 'tredicesimo',
-    14: 'quattordicesimo',
-    15: 'quindicesimo',
-    16: 'sedicesimo',
-    17: 'diciassettesimo',
-    18: 'diciottesimo',
-    19: 'diciannovesimo',
-    20: 'ventesimo',
-    30: 'trentesimo',
-    40: 'quarantesimo',
-    50: 'cinquantesimo',
-    60: 'sessantesimo',
-    70: 'settantesimo',
-    80: 'ottantesimo',
-    90: 'novantesimo',
-    1e2: 'centesimo',
-    1e3: 'millesimo',
-    1e6: 'milionesimo',
-    1e9: 'miliardesimo',
-    1e12: 'trilionesimo',
-    1e15: 'quadrilionesimo',
-    1e18: 'quintilionesim',
-    1e21: 'sestilionesimo',
-    1e24: 'settilionesimo',
-    1e27: 'ottilionesimo',
-    1e30: 'nonilionesimo',
-    1e33: 'decilionesimo'
-    # TODO > 1e-33
-}
-
-#  per i > 10e12 modificata solo la desinenza: da sistemare a fine debug
-LONG_ORDINAL_STRING_IT = {
-    1: 'primo',
-    2: 'secondo',
-    3: 'terzo',
-    4: 'quarto',
-    5: 'quinto',
-    6: 'sesto',
-    7: 'settimo',
-    8: 'ottavo',
-    9: 'nono',
-    10: 'decimo',
-    11: 'undicesimo',
-    12: 'dodicesimo',
-    13: 'tredicesimo',
-    14: 'quattordicesimo',
-    15: 'quindicesimo',
-    16: 'sedicesimo',
-    17: 'diciassettesimo',
-    18: 'diciottesimo',
-    19: 'diciannovesimo',
-    20: 'ventesimo',
-    30: 'trentesimo',
-    40: 'quarantesimo',
-    50: 'cinquantesimo',
-    60: 'sessantesimo',
-    70: 'settantesimo',
-    80: 'ottantesimo',
-    90: 'novantesimo',
-    1e2: 'centesimo',
-    1e3: 'millesimo',
-    1e6: 'milionesimo',
-    1e12: 'bilionesimo',
-    1e18: 'trilionesimo',
-    1e24: 'quadrilionesimo',
-    1e30: 'quintilionesimo',
-    1e36: 'sestilionesimo',
-    1e42: 'settilionesimo',
-    1e48: 'ottilionesimo',
-    1e54: 'nonilionesimo',
-    1e60: 'decilionesimo'
-    # TODO > 1e60
-}
-
-# Undefined articles ['un', 'una', 'un\''] can not be supressed,
-# in Italian, 'un cavallo' means 'a horse' or 'one horse'.
-ARTICLES_IT = ['il', 'lo', 'la', 'i', 'gli', 'le']
-
-STRING_NUM_ITA = {
-    'zero': 0,
-    'un': 1,
-    'uno': 1,
-    'una': 1,
-    'un\'': 1,
-    'due': 2,
-    'tre': 3,
-    'quattro': 4,
-    'cinque': 5,
-    'sei': 6,
-    'sette': 7,
-    'otto': 8,
-    'nove': 9,
-    'dieci': 10,
-    'undici': 11,
-    'dodici': 12,
-    'tredici': 13,
-    'quattordici': 14,
-    'quindici': 15,
-    'sedici': 16,
-    'diciassette': 17,
-    'diciotto': 18,
-    'diciannove': 19,
-    'venti': 20,
-    'vent': 20,
-    'trenta': 30,
-    'trent': 30,
-    'quaranta': 40,
-    'quarant': 40,
-    'cinquanta': 50,
-    'cinquant': 50,
-    'sessanta': 60,
-    'sessant': 60,
-    'settanta': 70,
-    'settant': 70,
-    'ottanta': 80,
-    'ottant': 80,
-    'novanta': 90,
-    'novant': 90,
-    'cento': 100,
-    'duecento': 200,
-    'trecento': 300,
-    'quattrocento': 400,
-    'cinquecento': 500,
-    'seicento': 600,
-    'settecento': 700,
-    'ottocento': 800,
-    'novecento': 900,
-    'mille': 1000,
-    'mila': 1000,
-    'centomila': 100000,
-    'milione': 1000000,
-    'miliardo': 1000000000,
-    'primo': 1,
-    'secondo': 2,
-    'mezzo': 0.5,
-    'mezza': 0.5,
-    'paio': 2,
-    'decina': 10,
-    'decine': 10,
-    'dozzina': 12,
-    'dozzine': 12,
-    'centinaio': 100,
-    'centinaia': 100,
-    'migliaio': 1000,
-    'migliaia': 1000
-}
+from lingua_franca.lang.common_data_it import _SHORT_ORDINAL_STRING_IT, \
+    _ARTICLES_IT, _LONG_ORDINAL_STRING_IT, _STRING_NUM_IT
 
 
-def isFractional_it(input_str, short_scale=False):
+def extract_duration_it(text):
+    """ Convert an english phrase into a number of seconds
+
+    Convert things like:
+        "10 minute"
+        "2 and a half hours"
+        "3 days 8 hours 10 minutes and 49 seconds"
+    into an int, representing the total number of seconds.
+
+    The words used in the duration will be consumed, and
+    the remainder returned.
+
+    As an example, "set a timer for 5 minutes" would return
+    (300, "set a timer for").
+
+    Args:
+        text (str): string containing a duration
+
+    Returns:
+        (timedelta, str):
+                    A tuple containing the duration and the remaining text
+                    not consumed in the parsing. The first value will
+                    be None if no duration is found. The text returned
+                    will have whitespace stripped from the ends.
+    """
+    raise NotImplementedError
+
+
+def is_ordinal_it(input_str):
+    """
+    This function takes the given text and checks if it is an ordinal number.
+
+    Args:
+        input_str (str): the string to check if ordinal
+    Returns:
+        (bool) or (float): False if not an ordinal, otherwise the number
+        corresponding to the ordinal
+
+    ordinals for 1, 3, 7 and 8 are irregular
+
+    only works for ordinals corresponding to the numbers in da_numbers
+
+    """
+    raise NotImplementedError
+
+
+def is_fractional_it(input_str, short_scale=False):
     """
     This function takes the given text and checks if it is a fraction.
     Updated to italian from en version 18.8.9
@@ -206,20 +94,20 @@ def isFractional_it(input_str, short_scale=False):
     fracts_it = {"intero": 1, "mezza": 2, "mezzo": 2}
 
     if short_scale:
-        for num in SHORT_ORDINAL_STRING_IT:
+        for num in _SHORT_ORDINAL_STRING_IT:
             if num > 2:
-                fracts_it[SHORT_ORDINAL_STRING_IT[num]] = num
+                fracts_it[_SHORT_ORDINAL_STRING_IT[num]] = num
     else:
-        for num in LONG_ORDINAL_STRING_IT:
+        for num in _LONG_ORDINAL_STRING_IT:
             if num > 2:
-                fracts_it[LONG_ORDINAL_STRING_IT[num]] = num
+                fracts_it[_LONG_ORDINAL_STRING_IT[num]] = num
 
     if input_str in fracts_it:
         return 1.0 / fracts_it[input_str]
     return False
 
 
-def extractnumber_long_it(word):
+def _extract_number_long_it(word):
     """
      This function converts a long textual number like
      milleventisette -> 1027 diecimila -> 10041 in
@@ -265,12 +153,12 @@ def extractnumber_long_it(word):
         # (1e30, 'quintilioni'),
         # (1e27, 'quadriliardi'),
         # (1e24, 'quadrilioni'),    # yotta
-        (1e21, 'triliardi'),      # zetta
-        (1e18, 'trilioni'),       # exa
-        (1e15, 'biliardi'),       # peta
-        (1e12, 'bilioni'),        # tera
-        (1e9, 'miliardi'),        # giga
-        (1e6, 'milioni')          # mega
+        (1e21, 'triliardi'),  # zetta
+        (1e18, 'trilioni'),  # exa
+        (1e15, 'biliardi'),  # peta
+        (1e12, 'bilioni'),  # tera
+        (1e9, 'miliardi'),  # giga
+        (1e6, 'milioni')  # mega
     ])
 
     multiplier = {}
@@ -308,24 +196,24 @@ def extractnumber_long_it(word):
             if not components[0]:  # inizia con un1^x
                 if not components[1]:  # unmilione
                     word = str(int(un_multiplier[item]))
-                else:                  # unmilione + x
+                else:  # unmilione + x
                     word = str(int(un_multiplier[item]) +
-                               extractnumber_long_it(components[1]))
+                               _extract_number_long_it(components[1]))
 
     for item in multiplier:
         components = word.split(item, 1)
         if len(components) == 2:
             if not components[0]:  # inizia con un1^x
                 word = str(int(multiplier[item]) +
-                           extractnumber_long_it(components[1]))
+                           _extract_number_long_it(components[1]))
             else:
                 if not components[1]:
-                    word = str(extractnumber_long_it(components[0])) + '*' \
-                        + str(int(multiplier[item]))
+                    word = str(_extract_number_long_it(components[0])) + '*' \
+                           + str(int(multiplier[item]))
                 else:
-                    word = str(extractnumber_long_it(components[0])) + '*' \
-                        + str(int(multiplier[item])) + '+' \
-                        + str(extractnumber_long_it(components[1]))
+                    word = str(_extract_number_long_it(components[0])) + '*' \
+                           + str(int(multiplier[item])) + '+' \
+                           + str(_extract_number_long_it(components[1]))
 
     for item in tens:
         word = word.replace(item, '+' + str(tens[item]))
@@ -338,8 +226,8 @@ def extractnumber_long_it(word):
 
     word = word.replace('cento', '+1xx')
     word = word.replace('cent', '+1xx')
-    word = word.replace('mille', '+1000')   # unmilionemille
-    word = word.replace('mila', '*1000')   # unmilioneduemila
+    word = word.replace('mille', '+1000')  # unmilionemille
+    word = word.replace('mila', '*1000')  # unmilioneduemila
 
     for item in units:
         word = word.replace(item, '+' + str(units[item]))
@@ -357,8 +245,8 @@ def extractnumber_long_it(word):
     if len(components) == 2:
         if components[0].startswith('*'):  # centomila
             components[0] = components[0][1:]
-        word = str(extractnumber_long_it(components[0])) + \
-            '*1000' + str(components[1])
+        word = str(_extract_number_long_it(components[0])) + \
+               '*1000' + str(components[1])
 
     # gestione eccezioni
     if word.startswith('*') or word.startswith('+'):
@@ -381,7 +269,7 @@ def extractnumber_long_it(word):
     return value
 
 
-def extractnumber_it(text, short_scale=False, ordinals=False):
+def extract_number_it(text, short_scale=False, ordinals=False):
     """
     This function extracts a number from a text string,
     handles pronunciations in long scale and short scale
@@ -403,15 +291,15 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
     # first, second...
     if ordinals:
         if short_scale:
-            for num in SHORT_ORDINAL_STRING_IT:
-                num_string = SHORT_ORDINAL_STRING_IT[num]
+            for num in _SHORT_ORDINAL_STRING_IT:
+                num_string = _SHORT_ORDINAL_STRING_IT[num]
                 string_num_ordinal_it[num_string] = num
-                STRING_NUM_ITA[num_string] = num
+                _STRING_NUM_IT[num_string] = num
         else:
-            for num in LONG_ORDINAL_STRING_IT:
-                num_string = LONG_ORDINAL_STRING_IT[num]
+            for num in _LONG_ORDINAL_STRING_IT:
+                num_string = _LONG_ORDINAL_STRING_IT[num]
                 string_num_ordinal_it[num_string] = num
-                STRING_NUM_ITA[num_string] = num
+                _STRING_NUM_IT[num_string] = num
 
     # negate next number (-2 = 0 - 2)
     negatives = ['meno']  # 'negativo' non è usuale in italiano
@@ -429,12 +317,12 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
     if short_scale:
         for num in SHORT_SCALE_IT:
             num_string = SHORT_SCALE_IT[num]
-            STRING_NUM_ITA[num_string] = num
+            _STRING_NUM_IT[num_string] = num
             multiplies.append(num_string)
     else:
         for num in LONG_SCALE_IT:
             num_string = LONG_SCALE_IT[num]
-            STRING_NUM_ITA[num_string] = num
+            _STRING_NUM_IT[num_string] = num
             multiplies.append(num_string)
 
     # 2 e 3/4 ed altri casi
@@ -451,8 +339,8 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
                 else:
                     break
             # ensure first is not a fraction and second is a fraction
-            num1 = extractnumber_it(components[0])
-            num2 = extractnumber_it(components[1])
+            num1 = extract_number_it(components[0])
+            num2 = extract_number_it(components[1])
             if num1 is not None and num2 is not None \
                     and num1 >= 1 and 0 < num2 < 1:
                 return num1 + num2
@@ -475,8 +363,8 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
                 else:
                     break
 
-            number = int(extractnumber_it(components[0]))
-            decimal = int(extractnumber_it(components[1]))
+            number = int(extract_number_it(components[0]))
+            decimal = int(extract_number_it(components[1]))
             if number is not None and decimal is not None:
                 if '.' not in str(decimal):
                     return number + decimal / pow(10,
@@ -498,11 +386,11 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
             val = float(word)
 
         # is this word the name of a number ?
-        if word in STRING_NUM_ITA:
-            val = STRING_NUM_ITA[word]
+        if word in _STRING_NUM_IT:
+            val = _STRING_NUM_IT[word]
 
         #  tre quarti  un quarto  trenta secondi
-        if isFractional_it(word) and prev_val:
+        if is_fractional_it(word) and prev_val:
             if word[:-1] == 'second' and not ordinals:
                 val = prev_val * 2
             else:
@@ -518,11 +406,11 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
         # is this a spoken fraction?
         # mezza tazza
         if val is False:
-            val = isFractional_it(word, short_scale=short_scale)
+            val = is_fractional_it(word, short_scale=short_scale)
 
         # 2 quinti
         if not ordinals:
-            next_value = isFractional_it(next_word, short_scale=short_scale)
+            next_value = is_fractional_it(next_word, short_scale=short_scale)
             if next_value:
                 if not val:
                     val = 1
@@ -533,7 +421,7 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
             val = 0 - val
 
         if not val:
-            val = extractnumber_long_it(word)
+            val = _extract_number_long_it(word)
 
         # let's make sure it isn't a fraction
         if not val:
@@ -550,8 +438,8 @@ def extractnumber_it(text, short_scale=False, ordinals=False):
                 to_sum.append(val)
                 val = 0
                 prev_val = 0
-            elif extractnumber_long_it(word) > 100 and \
-                extractnumber_long_it(next_word) and \
+            elif _extract_number_long_it(word) > 100 and \
+                    _extract_number_long_it(next_word) and \
                     next_word not in multiplies:
                 to_sum.append(val)
                 val = 0
@@ -578,14 +466,14 @@ def normalize_it(text, remove_articles):
         word = words[i]
         # remove articles
         # Italian requires the article to define the grammatical gender
-        if remove_articles and word in ARTICLES_IT:
+        if remove_articles and word in _ARTICLES_IT:
             i += 1
             continue
 
-        if word in STRING_NUM_ITA:
-            word = str(STRING_NUM_ITA[word])
+        if word in _STRING_NUM_IT:
+            word = str(_STRING_NUM_IT[word])
 
-        val = int(extractnumber_it(word))    # era extractnumber_long_it
+        val = int(extract_number_it(word))  # era extractnumber_long_it
 
         if val:
             word = str(val)
@@ -609,20 +497,20 @@ def extract_datetime_it(string, dateNow, default_time):
         for word in symbols:
             s = s.replace(word, '')
 
-        s = s.lower().replace('á', 'a').replace('à', 'a').replace('è', "e'")\
-            .replace('é', "e'").replace('ì', 'i').replace('ù', 'u')\
+        s = s.lower().replace('á', 'a').replace('à', 'a').replace('è', "e'") \
+            .replace('é', "e'").replace('ì', 'i').replace('ù', 'u') \
             .replace('ò', 'o').replace('-', ' ').replace('_', '')
 
         # normalizza plurali per semplificare analisi
-        s = s.replace('secondi', 'secondo').replace('minuti', 'minuto')\
-            .replace('ore', 'ora').replace('giorni', 'giorno')\
-            .replace('settimane', 'settimana').replace('mesi', 'mese')\
-            .replace('anni', 'anno').replace('mattino', 'mattina')\
-            .replace('prossima', 'prossimo').replace('questa', 'questo')\
-            .replace('quarti', 'quarto').replace('in punto', 'in_punto')\
-            .replace('decennio', 'decenni').replace('secoli', 'secolo')\
-            .replace('millennio', 'millenni').replace(' un ', ' uno ')\
-            .replace('scorsa', 'scorso').replace('passata', 'passato')\
+        s = s.replace('secondi', 'secondo').replace('minuti', 'minuto') \
+            .replace('ore', 'ora').replace('giorni', 'giorno') \
+            .replace('settimane', 'settimana').replace('mesi', 'mese') \
+            .replace('anni', 'anno').replace('mattino', 'mattina') \
+            .replace('prossima', 'prossimo').replace('questa', 'questo') \
+            .replace('quarti', 'quarto').replace('in punto', 'in_punto') \
+            .replace('decennio', 'decenni').replace('secoli', 'secolo') \
+            .replace('millennio', 'millenni').replace(' un ', ' uno ') \
+            .replace('scorsa', 'scorso').replace('passata', 'passato') \
             .replace('uno paio', 'due')
 
         noise_words = ['dello', 'la', 'del', 'al', 'il', 'di', 'tra', 'lo',
@@ -634,12 +522,12 @@ def extract_datetime_it(string, dateNow, default_time):
         word_list = [x for x in word_list if x not in noise_words]
         # normalizza alcuni formati orari
         for idx in range(0, len(word_list) - 1):
-            if word_list[idx][0].isdigit() and word_list[idx+1][0].isdigit():
+            if word_list[idx][0].isdigit() and word_list[idx + 1][0].isdigit():
                 num0 = int(word_list[idx])
-                num1 = int(word_list[idx+1])
+                num1 = int(word_list[idx + 1])
                 if 0 <= num0 <= 23 and 10 <= num1 <= 59:
                     word_list[idx] = str(num0) + ':' + str(num1)
-                    word_list[idx+1] = ''
+                    word_list[idx + 1] = ''
 
         word_list = [x for x in word_list if x]
 
@@ -647,9 +535,9 @@ def extract_datetime_it(string, dateNow, default_time):
 
     def date_found():
         return found or \
-            (datestr != '' or time_str != '' or year_offset != 0 or
-             month_offset != 0 or day_offset is True or hr_offset != 0 or
-             hr_abs or min_offset != 0 or min_abs or sec_offset != 0)
+               (datestr != '' or time_str != '' or year_offset != 0 or
+                month_offset != 0 or day_offset is True or hr_offset != 0 or
+                hr_abs or min_offset != 0 or min_abs or sec_offset != 0)
 
     if string == '' or not dateNow:
         return None
@@ -703,9 +591,9 @@ def extract_datetime_it(string, dateNow, default_time):
             return [extracted_date, result_str]
 
         # un paio di  o  tra tre settimane --> secoli
-        elif extractnumber_it(word) and (word_next in year_multiples or
-                                         word_next in day_multiples):
-            multiplier = int(extractnumber_it(word))
+        elif extract_number_it(word) and (word_next in year_multiples or
+                                          word_next in day_multiples):
+            multiplier = int(extract_number_it(word))
             used += 2
             if word_next == 'decenni':
                 year_offset = multiplier * 10
@@ -837,12 +725,12 @@ def extract_datetime_it(string, dateNow, default_time):
                 mmm = months_short.index(word)
             used += 1
             datestr = months[mmm]
-            if word_prev and extractnumber_it(word_prev):
-                datestr += ' ' + str(int(extractnumber_it(word_prev)))
+            if word_prev and extract_number_it(word_prev):
+                datestr += ' ' + str(int(extract_number_it(word_prev)))
                 start -= 1
                 used += 1
-                if word_next and extractnumber_it(word_next):
-                    datestr += ' ' + str(int(extractnumber_it(word_next)))
+                if word_next and extract_number_it(word_next):
+                    datestr += ' ' + str(int(extract_number_it(word_next)))
                     used += 1
                     has_year = True
                 else:
@@ -960,7 +848,7 @@ def extract_datetime_it(string, dateNow, default_time):
                 hr_abs = 19
             used += 1
             if word_next and word_next[0].isdigit() \
-               and ':' not in word_next:
+                    and ':' not in word_next:
                 hr_abs = int(word_next)
                 used += 1
                 if (hr_abs or 0) < 12:
@@ -973,8 +861,8 @@ def extract_datetime_it(string, dateNow, default_time):
             hr_abs += 1
             used += 1
         # un paio di minuti  tra cinque minuti tra 5 ore
-        elif extractnumber_it(word) and (word_next in time_multiples):
-            d_time = int(extractnumber_it(word))
+        elif extract_number_it(word) and (word_next in time_multiples):
+            d_time = int(extract_number_it(word))
             used += 2
             if word_next == 'ora':
                 hr_offset = d_time
@@ -1000,11 +888,11 @@ def extract_datetime_it(string, dateNow, default_time):
             # if word_prev == 'uno' or word_prev == 'una':
             #    start -= 1
             #    used += 1
-        elif extractnumber_it(word) and word_next and \
+        elif extract_number_it(word) and word_next and \
                 word_next == 'quarto' and word_next_next == 'ora':
-            if int(extractnumber_it(word)) == 1 \
-               or int(extractnumber_it(word)) == 3:
-                min_offset = 15 * int(extractnumber_it(word))
+            if int(extract_number_it(word)) == 1 \
+                    or int(extract_number_it(word)) == 3:
+                min_offset = 15 * int(extract_number_it(word))
             else:  # elimina eventuali errori
                 min_offset = 15
             used = 3
@@ -1022,13 +910,13 @@ def extract_datetime_it(string, dateNow, default_time):
                 # '3:00 in the morning'
                 components = word.split(':')
                 if len(components) == 2:
-                    num0 = int(extractnumber_it(components[0]))
-                    num1 = int(extractnumber_it(components[1]))
+                    num0 = int(extract_number_it(components[0]))
+                    num1 = int(extract_number_it(components[1]))
                     if num0 is not False and num1 is not False \
                             and 0 <= num0 <= 23 and 0 <= num1 <= 59:
                         str_hh = str(num0)
                         str_mm = str(num1)
-            elif 0 < int(extractnumber_it(word)) < 24 \
+            elif 0 < int(extract_number_it(word)) < 24 \
                     and word_next != 'quarto':
                 str_hh = str(int(word))
                 str_mm = '00'
@@ -1037,20 +925,20 @@ def extract_datetime_it(string, dateNow, default_time):
                 str_mm = int(word) - str_hh * 100
                 military = True
                 isTime = False
-            if extractnumber_it(word) and word_next \
-               and word_next == 'quarto' and word_next_next != 'ora':
-                if int(extractnumber_it(word)) == 1 \
-                   or int(extractnumber_it(word)) == 3:
-                    str_mm = str(15 * int(extractnumber_it(word)))
+            if extract_number_it(word) and word_next \
+                    and word_next == 'quarto' and word_next_next != 'ora':
+                if int(extract_number_it(word)) == 1 \
+                        or int(extract_number_it(word)) == 3:
+                    str_mm = str(15 * int(extract_number_it(word)))
                 else:  # elimina eventuali errori
                     str_mm = '0'
                 str_hh = str(hr_abs)
                 used = 2
                 words[idx + 1] = ''
                 isTime = False
-            if extractnumber_it(word) and word_next \
-               and word_next == 'in_punto':
-                str_hh = str(int(extractnumber_it(word)))
+            if extract_number_it(word) and word_next \
+                    and word_next == 'in_punto':
+                str_hh = str(int(extract_number_it(word)))
                 used = 2
             if word_next == 'pm':
                 remainder = 'pm'
@@ -1131,7 +1019,7 @@ def extract_datetime_it(string, dateNow, default_time):
             if time_qualifier != '':
                 # military = True
                 if str_hh and int(str_hh) <= 12 and \
-                   (time_qualifier in time_qualifiers_pm):
+                        (time_qualifier in time_qualifiers_pm):
                     str_hh = str(int(str_hh) + 12)
             else:
                 isTime = False
@@ -1140,9 +1028,9 @@ def extract_datetime_it(string, dateNow, default_time):
             str_mm = int(str_mm) if str_mm else 0
 
             str_hh = str_hh + 12 if remainder == 'pm' \
-                and str_hh < 12 else str_hh
+                                    and str_hh < 12 else str_hh
             str_hh = str_hh - 12 if remainder == 'am' \
-                and str_hh >= 12 else str_hh
+                                    and str_hh >= 12 else str_hh
 
             if (not military and
                     remainder not in ['am', 'pm'] and
@@ -1280,17 +1168,15 @@ def extract_datetime_it(string, dateNow, default_time):
     return [extracted_date, result_str]
 
 
-def get_gender_it(word, raw_string=""):
+def get_gender_it(word, context=""):
     """
     In Italian to define the grammatical gender of a word is necessary
     analyze the article that precedes the word and not only the last
     letter of the word.
-
-    TODO: check if useful
     """
 
     gender = None
-    words = raw_string.split(' ')
+    words = context.split(' ')
     for idx, w in enumerate(words):
         if w == word and idx != 0:
             previous = words[idx - 1]
@@ -1321,5 +1207,10 @@ def extract_numbers_it(text, short_scale=False, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
-    return extract_numbers_generic(text, pronounce_number_it, extractnumber_it,
+    return extract_numbers_generic(text, pronounce_number_it,
+                                   extract_number_it,
                                    short_scale=short_scale, ordinals=ordinals)
+
+
+class ItalianNormalizer(Normalizer):
+    """ TODO implement language specific normalizer"""

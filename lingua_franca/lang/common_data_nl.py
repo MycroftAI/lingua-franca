@@ -15,10 +15,9 @@
 # limitations under the License.
 #
 from collections import OrderedDict
+from .parse_common import invert_dict
 
-
-_ARTICLES = {'de', 'het'}
-
+_ARTICLES_NL = {'de', 'het'}
 
 _NUM_STRING_NL = {
     0: 'nul',
@@ -51,7 +50,6 @@ _NUM_STRING_NL = {
     90: 'negentig'
 }
 
-
 _FRACTION_STRING_NL = {
     2: 'half',
     3: 'derde',
@@ -73,7 +71,6 @@ _FRACTION_STRING_NL = {
     19: 'negentiende',
     20: 'twintigste'
 }
-
 
 _LONG_SCALE_NL = OrderedDict([
     (100, 'honderd'),
@@ -103,7 +100,6 @@ _LONG_SCALE_NL = OrderedDict([
     (1e336, "sesquinquagintillion"),
     (1e366, "unsexagintillion")
 ])
-
 
 _SHORT_SCALE_NL = OrderedDict([
     (100, 'honderd'),
@@ -179,7 +175,6 @@ _SHORT_SCALE_NL = OrderedDict([
     (1e3003, "milliniljoen")
 ])
 
-
 _ORDINAL_STRING_BASE_NL = {
     1: 'eerste',
     2: 'tweede',
@@ -212,7 +207,6 @@ _ORDINAL_STRING_BASE_NL = {
     1e3: "duizendste"
 }
 
-
 _SHORT_ORDINAL_STRING_NL = {
     1e6: "miloenste",
     1e9: "miljardste",
@@ -228,7 +222,6 @@ _SHORT_ORDINAL_STRING_NL = {
 }
 _SHORT_ORDINAL_STRING_NL.update(_ORDINAL_STRING_BASE_NL)
 
-
 _LONG_ORDINAL_STRING_NL = {
     1e6: "miloenste",
     1e9: "miljardste",
@@ -243,3 +236,32 @@ _LONG_ORDINAL_STRING_NL = {
     # TODO > 1e60
 }
 _LONG_ORDINAL_STRING_NL.update(_ORDINAL_STRING_BASE_NL)
+
+# negate next number (-2 = 0 - 2)
+_NEGATIVES_NL = {"min", "minus"}
+
+# sum the next number (twenty two = 20 + 2)
+_SUMS_NL = {'twintig', '20', 'dertig', '30', 'veertig', '40', 'vijftig', '50',
+            'zestig', '60', 'zeventig', '70', 'techtig', '80', 'negentig',
+            '90'}
+
+_MULTIPLIES_LONG_SCALE_NL = set(_LONG_SCALE_NL.values())
+
+_MULTIPLIES_SHORT_SCALE_NL = set(_SHORT_SCALE_NL.values())
+
+# split sentence parse separately and sum ( 2 and a half = 2 + 0.5 )
+_FRACTION_MARKER_NL = {"en"}
+
+# decimal marker ( 1 point 5 = 1 + 0.5)
+_DECIMAL_MARKER_NL = {"komma", "punt"}
+
+_STRING_NUM_NL = invert_dict(_NUM_STRING_NL)
+_STRING_NUM_NL.update({
+    "half": 0.5,
+    "driekwart": 0.75,
+    "anderhalf": 1.5,
+    "paar": 2
+})
+
+_STRING_SHORT_ORDINAL_NL = invert_dict(_SHORT_ORDINAL_STRING_NL)
+_STRING_LONG_ORDINAL_NL = invert_dict(_LONG_ORDINAL_STRING_NL)

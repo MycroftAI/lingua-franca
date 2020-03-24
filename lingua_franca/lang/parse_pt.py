@@ -23,7 +23,8 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-from lingua_franca.lang.common_data_pt import _NUMBERS_PT, _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT, \
+from lingua_franca.lang.common_data_pt import _NUMBERS_PT, \
+    _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT, \
     _MALE_DETERMINANTS_PT, _MALE_ENDINGS_PT, _GENDERS_PT
 from lingua_franca import resolve_resource_file
 from lingua_franca.lang.parse_common import Normalizer
@@ -31,7 +32,52 @@ import json
 import re
 
 
-def isFractional_pt(input_str):
+def extract_numbers_pt(text, short_scale=True, ordinals=False):
+    """
+        Takes in a string and extracts a list of numbers.
+
+    Args:
+        text (str): the string to extract a number from
+        short_scale (bool): Use "short scale" or "long scale" for large
+            numbers -- over a million.  The default is short scale, which
+            is now common in most English speaking countries.
+            See https://en.wikipedia.org/wiki/Names_of_large_numbers
+        ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
+    Returns:
+        list: list of extracted numbers as floats, or empty list if none found
+    """
+    raise NotImplementedError
+
+
+def extract_duration_pt(text):
+    """ Convert an english phrase into a number of seconds
+
+    Convert things like:
+        "10 minute"
+        "2 and a half hours"
+        "3 days 8 hours 10 minutes and 49 seconds"
+    into an int, representing the total number of seconds.
+
+    The words used in the duration will be consumed, and
+    the remainder returned.
+
+    As an example, "set a timer for 5 minutes" would return
+    (300, "set a timer for").
+
+    Args:
+        text (str): string containing a duration
+
+    Returns:
+        (timedelta, str):
+                    A tuple containing the duration and the remaining text
+                    not consumed in the parsing. The first value will
+                    be None if no duration is found. The text returned
+                    will have whitespace stripped from the ends.
+    """
+    raise NotImplementedError
+
+
+def is_fractional_pt(input_str):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -63,12 +109,26 @@ def isFractional_pt(input_str):
 
     return False
 
-# TODO: short_scale and ordinals don't do anything here.
-# The parameters are present in the function signature for API compatibility
-# reasons.
+
+def is_ordinal_pt(input_str):
+    """
+    This function takes the given text and checks if it is an ordinal number.
+
+    Args:
+        input_str (str): the string to check if ordinal
+    Returns:
+        (bool) or (float): False if not an ordinal, otherwise the number
+        corresponding to the ordinal
+
+    ordinals for 1, 3, 7 and 8 are irregular
+
+    only works for ordinals corresponding to the numbers in da_numbers
+
+    """
+    raise NotImplementedError
 
 
-def extractnumber_pt(text, short_scale=True, ordinals=False):
+def extract_number_pt(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -78,6 +138,9 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
         (int) or (float): The value of extracted number
 
     """
+    # TODO: short_scale and ordinals don't do anything here.
+    # The parameters are present in the function signature for API compatibility
+    # reasons.
     text = text.lower()
     aWords = text.split()
     count = 0
@@ -100,10 +163,10 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
             val = int(word)
         elif is_numeric(word):
             val = float(word)
-        elif isFractional_pt(word):
+        elif is_fractional_pt(word):
             if not result:
                 result = 1
-            result = result * isFractional_pt(word)
+            result = result * is_fractional_pt(word)
             count += 1
             continue
 
@@ -139,7 +202,7 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
             for word in newWords:
                 newText += word + " "
 
-            afterAndVal = extractnumber_pt(newText[:-1])
+            afterAndVal = extract_number_pt(newText[:-1])
             if afterAndVal:
                 if result < afterAndVal or result < 20:
                     while afterAndVal > 1:
@@ -159,7 +222,7 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
                 newText = ""
                 for word in newWords:
                     newText += word + " "
-                afterAndVal = extractnumber_pt(newText[:-1])
+                afterAndVal = extract_number_pt(newText[:-1])
                 if afterAndVal:
                     if result is None:
                         result = 0
@@ -178,7 +241,7 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
                     zeros += 1
                 else:
                     break
-            afterDotVal = str(extractnumber_pt(newText[:-1]))
+            afterDotVal = str(extract_number_pt(newText[:-1]))
             afterDotVal = zeros * "0" + afterDotVal
             result = float(str(result) + "." + afterDotVal)
             break
@@ -1002,11 +1065,11 @@ def extract_datetime_pt(input_str, currentDate, default_time):
 
     resultStr = " ".join(words)
     resultStr = ' '.join(resultStr.split())
-    resultStr = pt_pruning(resultStr)
+    resultStr = _pt_pruning(resultStr)
     return [extractedDate, resultStr]
 
 
-def pt_pruning(text, symbols=True, accents=True, agressive=True):
+def _pt_pruning(text, symbols=True, accents=True, agressive=True):
     # agressive pt word pruning
     words = ["a", "o", "os", "as", "de", "dos", "das",
              "lhe", "lhes", "me", "e", "no", "nas", "na", "nos", "em", "para",
@@ -1038,10 +1101,23 @@ def pt_pruning(text, symbols=True, accents=True, agressive=True):
     return text
 
 
-def get_gender_pt(word, text=""):
+def get_gender_pt(word, context=""):
+    """ Guess the gender of a word
+
+    Some languages assign genders to specific words.  This method will attempt
+    to determine the gender, optionally using the provided context sentence.
+
+    Args:
+        word (str): The word to look up
+        context (str, optional): String containing word, for context
+
+    Returns:
+        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
+             or None if unknown/or unused in the given language.
+    """
     # parse gender taking context into account
     word = word.lower()
-    words = text.lower().split(" ")
+    words = context.lower().split(" ")
     for idx, w in enumerate(words):
         if w == word and idx != 0:
             # in portuguese usually the previous word (a determinant)

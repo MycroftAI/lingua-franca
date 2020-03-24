@@ -16,73 +16,40 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
-    extract_numbers_generic
+    extract_numbers_generic, Normalizer
+from lingua_franca.lang.common_data_de import _DE_NUMBERS
 from lingua_franca.lang.format_de import pronounce_number_de
 
-de_numbers = {
-    'null': 0,
-    'ein': 1,
-    'eins': 1,
-    'eine': 1,
-    'einer': 1,
-    'einem': 1,
-    'einen': 1,
-    'eines': 1,
-    'zwei': 2,
-    'drei': 3,
-    'vier': 4,
-    'fünf': 5,
-    'sechs': 6,
-    'sieben': 7,
-    'acht': 8,
-    'neun': 9,
-    'zehn': 10,
-    'elf': 11,
-    'zwölf': 12,
-    'dreizehn': 13,
-    'vierzehn': 14,
-    'fünfzehn': 15,
-    'sechzehn': 16,
-    'siebzehn': 17,
-    'achtzehn': 18,
-    'neunzehn': 19,
-    'zwanzig': 20,
-    'einundzwanzig': 21,
-    'zweiundzwanzig': 22,
-    'dreiundzwanzig': 23,
-    'vierundzwanzig': 24,
-    'fünfundzwanzig': 25,
-    'sechsundzwanzig': 26,
-    'siebenundzwanzig': 27,
-    'achtundzwanzig': 28,
-    'neunundzwanzig': 29,
-    'dreißig': 30,
-    'einunddreißig': 31,
-    'vierzig': 40,
-    'fünfzig': 50,
-    'sechzig': 60,
-    'siebzig': 70,
-    'achtzig': 80,
-    'neunzig': 90,
-    'hundert': 100,
-    'zweihundert': 200,
-    'dreihundert': 300,
-    'vierhundert': 400,
-    'fünfhundert': 500,
-    'sechshundert': 600,
-    'siebenhundert': 700,
-    'achthundert': 800,
-    'neunhundert': 900,
-    'tausend': 1000,
-    'million': 1000000
-}
 
-# TODO: short_scale and ordinals don't do anything here.
-# The parameters are present in the function signature for API compatibility
-# reasons.
+def extract_duration_de(text):
+    """ Convert an english phrase into a number of seconds
+
+    Convert things like:
+        "10 minute"
+        "2 and a half hours"
+        "3 days 8 hours 10 minutes and 49 seconds"
+    into an int, representing the total number of seconds.
+
+    The words used in the duration will be consumed, and
+    the remainder returned.
+
+    As an example, "set a timer for 5 minutes" would return
+    (300, "set a timer for").
+
+    Args:
+        text (str): string containing a duration
+
+    Returns:
+        (timedelta, str):
+                    A tuple containing the duration and the remaining text
+                    not consumed in the parsing. The first value will
+                    be None if no duration is found. The text returned
+                    will have whitespace stripped from the ends.
+    """
+    raise NotImplementedError
 
 
-def extractnumber_de(text, short_scale=True, ordinals=False):
+def extract_number_de(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -96,6 +63,9 @@ def extractnumber_de(text, short_scale=True, ordinals=False):
     'ein Pferd' means 'one horse' and 'a horse'
 
     """
+    # TODO: short_scale and ordinals don't do anything here.
+    # The parameters are present in the function signature for API compatibility
+    # reasons.
     text = text.lower()
     aWords = text.split()
     aWords = [word for word in aWords if
@@ -109,18 +79,18 @@ def extractnumber_de(text, short_scale=True, ordinals=False):
         if is_numeric(word):
             # if word.isdigit():            # doesn't work with decimals
             val = float(word)
-        elif isFractional_de(word):
-            val = isFractional_de(word)
-        elif isOrdinal_de(word):
-            val = isOrdinal_de(word)
+        elif is_fractional_de(word):
+            val = is_fractional_de(word)
+        elif is_ordinal_de(word):
+            val = is_ordinal_de(word)
         else:
-            if word in de_numbers:
-                val = de_numbers[word]
+            if word in _DE_NUMBERS:
+                val = _DE_NUMBERS[word]
                 if count < (len(aWords) - 1):
                     wordNext = aWords[count + 1]
                 else:
                     wordNext = ""
-                valNext = isFractional_de(wordNext)
+                valNext = is_fractional_de(wordNext)
 
                 if valNext:
                     val = val * valNext
@@ -182,8 +152,8 @@ def extract_datetime_de(string, currentDate, default_time):
         wordList = s.split()
 
         for idx, word in enumerate(wordList):
-            if isOrdinal_de(word) is not False:
-                word = str(isOrdinal_de(word))
+            if is_ordinal_de(word) is not False:
+                word = str(is_ordinal_de(word))
                 wordList[idx] = word
 
         return wordList
@@ -832,7 +802,7 @@ def extract_datetime_de(string, currentDate, default_time):
     return [extractedDate, resultStr]
 
 
-def isFractional_de(input_str):
+def is_fractional_de(input_str):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -852,13 +822,13 @@ def isFractional_de(input_str):
             input_str = input_str[:len(input_str) - 4]  # e.g. "hundertstel"
         else:
             input_str = input_str[:len(input_str) - 3]  # e.g. "fünftel"
-        if input_str.lower() in de_numbers:
-            return 1.0 / (de_numbers[input_str.lower()])
+        if input_str.lower() in _DE_NUMBERS:
+            return 1.0 / (_DE_NUMBERS[input_str.lower()])
 
     return False
 
 
-def isOrdinal_de(input_str):
+def is_ordinal_de(input_str):
     """
     This function takes the given text and checks if it is an ordinal number.
 
@@ -870,7 +840,7 @@ def isOrdinal_de(input_str):
 
     ordinals for 1, 3, 7 and 8 are irregular
 
-    only works for ordinals corresponding to the numbers in de_numbers
+    only works for ordinals corresponding to the numbers in _DE_NUMBERS
 
     """
 
@@ -887,23 +857,23 @@ def isOrdinal_de(input_str):
 
     if lowerstr[-3:] == "ste":  # from 20 suffix is -ste*
         lowerstr = lowerstr[:-3]
-        if lowerstr in de_numbers:
-            return de_numbers[lowerstr]
+        if lowerstr in _DE_NUMBERS:
+            return _DE_NUMBERS[lowerstr]
 
     if lowerstr[-4:] in ["ster", "stes", "sten", "stem"]:
         lowerstr = lowerstr[:-4]
-        if lowerstr in de_numbers:
-            return de_numbers[lowerstr]
+        if lowerstr in _DE_NUMBERS:
+            return _DE_NUMBERS[lowerstr]
 
     if lowerstr[-2:] == "te":  # below 20 suffix is -te*
         lowerstr = lowerstr[:-2]
-        if lowerstr in de_numbers:
-            return de_numbers[lowerstr]
+        if lowerstr in _DE_NUMBERS:
+            return _DE_NUMBERS[lowerstr]
 
     if lowerstr[-3:] in ["ter", "tes", "ten", "tem"]:
         lowerstr = lowerstr[:-3]
-        if lowerstr in de_numbers:
-            return de_numbers[lowerstr]
+        if lowerstr in _DE_NUMBERS:
+            return _DE_NUMBERS[lowerstr]
 
     return False
 
@@ -926,8 +896,8 @@ def normalize_de(text, remove_articles):
 
         # Convert numbers into digits, e.g. "two" -> "2"
 
-        if word in de_numbers:
-            word = str(de_numbers[word])
+        if word in _DE_NUMBERS:
+            word = str(_DE_NUMBERS[word])
 
         normalized += " " + word
 
@@ -948,5 +918,26 @@ def extract_numbers_de(text, short_scale=True, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
-    return extract_numbers_generic(text, pronounce_number_de, extractnumber_de,
+    return extract_numbers_generic(text, pronounce_number_de, extract_number_de,
                                    short_scale=short_scale, ordinals=ordinals)
+
+
+def get_gender_de(word, context=""):
+    """ Guess the gender of a word
+
+    Some languages assign genders to specific words.  This method will attempt
+    to determine the gender, optionally using the provided context sentence.
+
+    Args:
+        word (str): The word to look up
+        context (str, optional): String containing word, for context
+
+    Returns:
+        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
+             or None if unknown/or unused in the given language.
+    """
+    raise NotImplementedError
+
+
+class GermanNormalizer(Normalizer):
+    """ TODO implement language specific normalizer"""

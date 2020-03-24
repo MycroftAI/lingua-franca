@@ -16,68 +16,40 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
-    extract_numbers_generic
+    extract_numbers_generic, Normalizer
+from lingua_franca.lang.common_data_da import _DA_NUMBERS
 from lingua_franca.lang.format_da import pronounce_number_da
 
-da_numbers = {
-    'nul': 0,
-    'en': 1,
-    'et': 1,
-    'to': 2,
-    'tre': 3,
-    'fire': 4,
-    'fem': 5,
-    'seks': 6,
-    'syv': 7,
-    'otte': 8,
-    'ni': 9,
-    'ti': 10,
-    'elve': 11,
-    'tolv': 12,
-    'tretten': 13,
-    'fjorten': 14,
-    'femten': 15,
-    'seksten': 16,
-    'sytten': 17,
-    'atten': 18,
-    'nitten': 19,
-    'tyve': 20,
-    'enogtyve': 21,
-    'toogtyve': 22,
-    'treogtyve': 23,
-    'fireogtyve': 24,
-    'femogtyve': 25,
-    'seksogtyve': 26,
-    'syvogtyve': 27,
-    'otteogtyve': 28,
-    'niogtyve': 29,
-    'tredive': 30,
-    'enogtredive': 31,
-    'fyrrre': 40,
-    'halvtres': 50,
-    'tres': 60,
-    'halvfjers': 70,
-    'firs': 80,
-    'halvfems': 90,
-    'hunderede': 100,
-    'tohundrede': 200,
-    'trehundrede': 300,
-    'firehundrede': 400,
-    'femhundrede': 500,
-    'sekshundrede': 600,
-    'syvhundrede': 700,
-    'ottehundrede': 800,
-    'nihundrede': 900,
-    'tusinde': 1000,
-    'million': 1000000
-}
 
-# TODO: short_scale and ordinals don't do anything here.
-# The parameters are present in the function signature for API compatibility
-# reasons.
+def extract_duration_da(text):
+    """ Convert an english phrase into a number of seconds
+
+    Convert things like:
+        "10 minute"
+        "2 and a half hours"
+        "3 days 8 hours 10 minutes and 49 seconds"
+    into an int, representing the total number of seconds.
+
+    The words used in the duration will be consumed, and
+    the remainder returned.
+
+    As an example, "set a timer for 5 minutes" would return
+    (300, "set a timer for").
+
+    Args:
+        text (str): string containing a duration
+
+    Returns:
+        (timedelta, str):
+                    A tuple containing the duration and the remaining text
+                    not consumed in the parsing. The first value will
+                    be None if no duration is found. The text returned
+                    will have whitespace stripped from the ends.
+    """
+    raise NotImplementedError
 
 
-def extractnumber_da(text, short_scale=True, ordinals=False):
+def extract_number_da(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -91,6 +63,10 @@ def extractnumber_da(text, short_scale=True, ordinals=False):
     'ein Pferd' means 'one horse' and 'a horse'
 
     """
+    # TODO: short_scale and ordinals don't do anything here.
+    # The parameters are present in the function signature for API compatibility
+    # reasons.
+
     text = text.lower()
     aWords = text.split()
     aWords = [word for word in aWords if
@@ -104,18 +80,18 @@ def extractnumber_da(text, short_scale=True, ordinals=False):
         if is_numeric(word):
             if word.isdigit():            # doesn't work with decimals
                 val = float(word)
-        elif isFractional_da(word):
-            val = isFractional_da(word)
-        elif isOrdinal_da(word):
-            val = isOrdinal_da(word)
+        elif is_fractional_da(word):
+            val = is_fractional_da(word)
+        elif is_ordinal_da(word):
+            val = is_ordinal_da(word)
         else:
-            if word in da_numbers:
-                val = da_numbers[word]
+            if word in _DA_NUMBERS:
+                val = _DA_NUMBERS[word]
                 if count < (len(aWords) - 1):
                     wordNext = aWords[count + 1]
                 else:
                     wordNext = ""
-                valNext = isFractional_da(wordNext)
+                valNext = is_fractional_da(wordNext)
 
                 if valNext:
                     val = val * valNext
@@ -177,8 +153,8 @@ def extract_datetime_da(string, currentDate, default_time):
         wordList = s.split()
 
         for idx, word in enumerate(wordList):
-            if isOrdinal_da(word) is not False:
-                word = str(isOrdinal_da(word))
+            if is_ordinal_da(word) is not False:
+                word = str(is_ordinal_da(word))
                 wordList[idx] = word
 
         return wordList
@@ -820,7 +796,7 @@ def extract_datetime_da(string, currentDate, default_time):
     return [extractedDate, resultStr]
 
 
-def isFractional_da(input_str):
+def is_fractional_da(input_str):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -837,13 +813,13 @@ def isFractional_da(input_str):
         return 1.0 / 3
     elif input_str.endswith('del'):
         input_str = input_str[:len(input_str) - 3]  # e.g. "fünftel"
-        if input_str.lower() in da_numbers:
-            return 1.0 / (da_numbers[input_str.lower()])
+        if input_str.lower() in _DA_NUMBERS:
+            return 1.0 / (_DA_NUMBERS[input_str.lower()])
 
     return False
 
 
-def isOrdinal_da(input_str):
+def is_ordinal_da(input_str):
     """
     This function takes the given text and checks if it is an ordinal number.
 
@@ -855,7 +831,7 @@ def isOrdinal_da(input_str):
 
     ordinals for 1, 3, 7 and 8 are irregular
 
-    only works for ordinals corresponding to the numbers in da_numbers
+    only works for ordinals corresponding to the numbers in _DA_NUMBERS
 
     """
 
@@ -881,18 +857,18 @@ def isOrdinal_da(input_str):
     if lowerstr[-3:] == "nde":
         # from 20 suffix is -ste*
         lowerstr = lowerstr[:-3]
-        if lowerstr in da_numbers:
-            return da_numbers[lowerstr]
+        if lowerstr in _DA_NUMBERS:
+            return _DA_NUMBERS[lowerstr]
 
     if lowerstr[-4:] in ["ende"]:
         lowerstr = lowerstr[:-4]
-        if lowerstr in da_numbers:
-            return da_numbers[lowerstr]
+        if lowerstr in _DA_NUMBERS:
+            return _DA_NUMBERS[lowerstr]
 
     if lowerstr[-2:] == "te":  # below 20 suffix is -te*
         lowerstr = lowerstr[:-2]
-        if lowerstr in da_numbers:
-            return da_numbers[lowerstr]
+        if lowerstr in _DA_NUMBERS:
+            return _DA_NUMBERS[lowerstr]
 
     return False
 
@@ -908,8 +884,8 @@ def normalize_da(text, remove_articles):
 
         # Convert numbers into digits, e.g. "two" -> "2"
 
-        if word in da_numbers:
-            word = str(da_numbers[word])
+        if word in _DA_NUMBERS:
+            word = str(_DA_NUMBERS[word])
 
         normalized += " " + word
 
@@ -930,5 +906,26 @@ def extract_numbers_da(text, short_scale=True, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
-    return extract_numbers_generic(text, pronounce_number_da, extractnumber_da,
+    return extract_numbers_generic(text, pronounce_number_da, extract_number_da,
                                    short_scale=short_scale, ordinals=ordinals)
+
+
+def get_gender_da(word, context=""):
+    """ Guess the gender of a word
+
+    Some languages assign genders to specific words.  This method will attempt
+    to determine the gender, optionally using the provided context sentence.
+
+    Args:
+        word (str): The word to look up
+        context (str, optional): String containing word, for context
+
+    Returns:
+        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
+             or None if unknown/or unused in the given language.
+    """
+    raise NotImplementedError
+
+
+class DanishNormalizer(Normalizer):
+    """ TODO implement language specific normalizer"""

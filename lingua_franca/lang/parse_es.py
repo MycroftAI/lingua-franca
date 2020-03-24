@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""
-    Parse functions for spanish (es)
-    TODO: numbers greater than 999999
-"""
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from dateutil.tz import gettz
@@ -25,7 +21,35 @@ from lingua_franca.lang.parse_common import *
 from lingua_franca.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES
 
 
-def isFractional_es(input_str):
+def extract_duration_es(text):
+    """ Convert an english phrase into a number of seconds
+
+    Convert things like:
+        "10 minute"
+        "2 and a half hours"
+        "3 days 8 hours 10 minutes and 49 seconds"
+    into an int, representing the total number of seconds.
+
+    The words used in the duration will be consumed, and
+    the remainder returned.
+
+    As an example, "set a timer for 5 minutes" would return
+    (300, "set a timer for").
+
+    Args:
+        text (str): string containing a duration
+
+    Returns:
+        (timedelta, str):
+                    A tuple containing the duration and the remaining text
+                    not consumed in the parsing. The first value will
+                    be None if no duration is found. The text returned
+                    will have whitespace stripped from the ends.
+    """
+    raise NotImplementedError
+
+
+def is_fractional_es(input_str):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -57,12 +81,25 @@ def isFractional_es(input_str):
     return False
 
 
-# TODO: short_scale and ordinals don't do anything here.
-# The parameters are present in the function signature for API compatibility
-# reasons.
-#
-# Returns incorrect output on certain fractional phrases like, "cuarto de dos"
-def extractnumber_es(text, short_scale=True, ordinals=False):
+def is_ordinal_es(input_str):
+    """
+    This function takes the given text and checks if it is an ordinal number.
+
+    Args:
+        input_str (str): the string to check if ordinal
+    Returns:
+        (bool) or (float): False if not an ordinal, otherwise the number
+        corresponding to the ordinal
+
+    ordinals for 1, 3, 7 and 8 are irregular
+
+    only works for ordinals corresponding to the numbers in da_numbers
+
+    """
+    raise NotImplementedError
+
+
+def extract_number_es(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -72,6 +109,12 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
         (int) or (float): The value of extracted number
 
     """
+    # TODO: short_scale and ordinals don't do anything here.
+    # The parameters are present in the function signature for API compatibility
+    # reasons.
+    #
+    # Returns incorrect output on certain fractional phrases like, "cuarto de dos"
+    #  TODO: numbers greater than 999999
     aWords = text.lower().split()
     count = 0
     result = None
@@ -93,10 +136,10 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
             val = int(word)
         elif is_numeric(word):
             val = float(word)
-        elif isFractional_es(word):
+        elif is_fractional_es(word):
             if not result:
                 result = 1
-            result = result * isFractional_es(word)
+            result = result * is_fractional_es(word)
             count += 1
             continue
 
@@ -132,7 +175,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
             for word in newWords:
                 newText += word + " "
 
-            afterAndVal = extractnumber_es(newText[:-1])
+            afterAndVal = extract_number_es(newText[:-1])
             if afterAndVal:
                 if result < afterAndVal or result < 20:
                     while afterAndVal > 1:
@@ -152,7 +195,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
                 newText = ""
                 for word in newWords:
                     newText += word + " "
-                afterAndVal = extractnumber_es(newText[:-1])
+                afterAndVal = extract_number_es(newText[:-1])
                 if afterAndVal:
                     if result is None:
                         result = 0
@@ -171,7 +214,7 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
                     zeros += 1
                 else:
                     break
-            afterDotVal = str(extractnumber_es(newText[:-1]))
+            afterDotVal = str(extract_number_es(newText[:-1]))
             afterDotVal = zeros * "0" + afterDotVal
             result = float(str(result) + "." + afterDotVal)
             break
@@ -190,8 +233,9 @@ def extractnumber_es(text, short_scale=True, ordinals=False):
     return result or False
 
 
-# TODO Not parsing 'cero'
-def es_number_parse(words, i):
+def _es_number_parse(words, i):
+    # TODO Not parsing 'cero'
+
     def es_cte(i, s):
         if i < len(words) and s == words[i]:
             return s, i + 1
@@ -281,8 +325,9 @@ def extract_numbers_es(text, short_scale=True, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
-    return extract_numbers_generic(text, pronounce_number_es, extractnumber_es,
-                                   short_scale=short_scale, ordinals=ordinals)
+    return extract_numbers_generic(text, pronounce_number_es,
+                                   extract_number_es, short_scale=short_scale,
+                                   ordinals=ordinals)
 
 
 def normalize_es(text, remove_articles):
@@ -300,7 +345,7 @@ def normalize_es(text, remove_articles):
             continue
 
         # Convert numbers into digits
-        r = es_number_parse(words, i)
+        r = _es_number_parse(words, i)
         if r:
             v, i = r
             normalized += " " + str(v)
@@ -1072,13 +1117,26 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
     return [extractedDate, resultStr]
 
 
-def get_gender_es(word, raw_string=""):
+def get_gender_es(word, context=""):
+    """ Guess the gender of a word
+
+    Some languages assign genders to specific words.  This method will attempt
+    to determine the gender, optionally using the provided context sentence.
+
+    Args:
+        word (str): The word to look up
+        context (str, optional): String containing word, for context
+
+    Returns:
+        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
+             or None if unknown/or unused in the given language.
+    """
     # Next rules are imprecise and incompleted, but is a good starting point.
     # For more detailed explanation, see
     # http://www.wikilengua.org/index.php/Género_gramatical
     word = word.rstrip("s")
     gender = False
-    words = raw_string.split(" ")
+    words = context.split(" ")
     for idx, w in enumerate(words):
         if w == word and idx != 0:
             previous = words[idx - 1]
