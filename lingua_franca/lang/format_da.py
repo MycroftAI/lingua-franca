@@ -15,86 +15,9 @@
 #
 
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
+from lingua_franca.lang.common_data_da import _EXTRA_SPACE_DA, \
+    _FRACTION_STRING_DA, _MONTHS_DA, _NUM_POWERS_OF_TEN, _NUM_STRING_DA
 from math import floor
-
-months = ['januar', 'februar', 'märz', 'april', 'mai', 'juni',
-          'juli', 'august', 'september', 'oktober', 'november',
-          'dezember']
-
-NUM_STRING_DA = {
-    0: 'nul',
-    1: 'en',
-    2: 'to',
-    3: 'tre',
-    4: 'fire',
-    5: 'fem',
-    6: 'seks',
-    7: 'syv',
-    8: 'otte',
-    9: 'ni',
-    10: 'ti',
-    11: 'elve',
-    12: 'tolv',
-    13: 'tretten',
-    14: 'fjorten',
-    15: 'femten',
-    16: 'seksten',
-    17: 'sytten',
-    18: 'atten',
-    19: 'nitten',
-    20: 'tyve',
-    30: 'tredive',
-    40: 'fyrre',
-    50: 'halvtres',
-    60: 'tres',
-    70: 'halvfjers',
-    80: 'firs',
-    90: 'halvfems',
-    100: 'hundrede'
-}
-
-NUM_POWERS_OF_TEN = [
-    'hundred',
-    'tusind',
-    'million',
-    'milliard',
-    'billion',
-    'billiard',
-    'trillion',
-    'trilliard'
-]
-
-FRACTION_STRING_DA = {
-    2: 'halv',
-    3: 'trediedel',
-    4: 'fjerdedel',
-    5: 'femtedel',
-    6: 'sjettedel',
-    7: 'syvendedel',
-    8: 'ottendedel',
-    9: 'niendedel',
-    10: 'tiendedel',
-    11: 'elftedel',
-    12: 'tolvtedel',
-    13: 'trettendedel',
-    14: 'fjortendedel',
-    15: 'femtendedel',
-    16: 'sejstendedel',
-    17: 'syttendedel',
-    18: 'attendedel',
-    19: 'nittendedel',
-    20: 'tyvendedel'
-}
-
-# Numbers below 1 million are written in one word in German, yielding very
-# long words
-# In some circumstances it may better to seperate individual words
-# Set EXTRA_SPACE=" " for separating numbers below 1 million (
-# orthographically incorrect)
-# Set EXTRA_SPACE="" for correct spelling, this is standard
-
-# EXTRA_SPACE = " "
-EXTRA_SPACE = ""
 
 
 def nice_number_da(number, speech, denominators=range(1, 21)):
@@ -121,7 +44,7 @@ def nice_number_da(number, speech, denominators=range(1, 21)):
             return '{} {}/{}'.format(whole, num, den)
     if num == 0:
         return str(whole)
-    den_str = FRACTION_STRING_DA[den]
+    den_str = _FRACTION_STRING_DA[den]
     if whole == 0:
         if num == 1:
             return_string = '{} {}'.format(num, den_str)
@@ -136,17 +59,25 @@ def nice_number_da(number, speech, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_da(num, places=2):
+def pronounce_number_da(number, places=2, short_scale=True, scientific=False,
+                        ordinals=False):
     """
-    Convert a number to its spoken equivalent
+    Convert a number to it's spoken equivalent
+
     For example, '5.2' would return 'five point two'
+
     Args:
-        num(float or int): the number to pronounce (set limit below)
+        number(float or int): the number to pronounce (under 100)
         places(int): maximum decimal places to speak
+        short_scale (bool) : use short (True) or long scale (False)
+            https://en.wikipedia.org/wiki/Names_of_large_numbers
+        scientific (bool): pronounce in scientific notation
+        ordinals (bool): pronounce in ordinal form "first" instead of "one"
     Returns:
         (str): The pronounced number
-
     """
+    # TODO short_scale, scientific and ordinals
+    # currently ignored
 
     def pronounce_triplet_da(num):
         result = ""
@@ -155,26 +86,26 @@ def pronounce_number_da(num, places=2):
             hundreds = floor(num / 100)
             if hundreds > 0:
                 if hundreds == 1:
-                    result += 'et' + 'hundrede' + EXTRA_SPACE
+                    result += 'et' + 'hundrede' + _EXTRA_SPACE_DA
                 else:
-                    result += NUM_STRING_DA[hundreds] + \
-                        'hundrede' + EXTRA_SPACE
+                    result += _NUM_STRING_DA[hundreds] + \
+                        'hundrede' + _EXTRA_SPACE_DA
                     num -= hundreds * 100
         if num == 0:
             result += ''  # do nothing
         elif num == 1:
             result += 'et'
         elif num <= 20:
-            result += NUM_STRING_DA[num] + EXTRA_SPACE
+            result += _NUM_STRING_DA[num] + _EXTRA_SPACE_DA
         elif num > 20:
             ones = num % 10
             tens = num - ones
             if ones > 0:
-                result += NUM_STRING_DA[ones] + EXTRA_SPACE
+                result += _NUM_STRING_DA[ones] + _EXTRA_SPACE_DA
                 if tens > 0:
-                    result += 'og' + EXTRA_SPACE
+                    result += 'og' + _EXTRA_SPACE_DA
             if tens > 0:
-                result += NUM_STRING_DA[tens] + EXTRA_SPACE
+                result += _NUM_STRING_DA[tens] + _EXTRA_SPACE_DA
 
         return result
 
@@ -184,8 +115,8 @@ def pronounce_number_da(num, places=2):
         place = 10
         while places > 0:
             # doesn't work with 1.0001 and places = 2: int(
-            # num*place) % 10 > 0 and places > 0:
-            result += " " + NUM_STRING_DA[int(num * place) % 10]
+            # number*place) % 10 > 0 and places > 0:
+            result += " " + _NUM_STRING_DA[int(num * place) % 10]
             place *= 10
             places -= 1
         return result
@@ -205,15 +136,15 @@ def pronounce_number_da(num, places=2):
                 else:
                     result += "en"
             elif scale_level == 1:
-                result += 'et' + EXTRA_SPACE + 'tusinde' + EXTRA_SPACE
+                result += 'et' + _EXTRA_SPACE_DA + 'tusinde' + _EXTRA_SPACE_DA
             else:
-                result += "en " + NUM_POWERS_OF_TEN[scale_level] + ' '
+                result += "en " + _NUM_POWERS_OF_TEN[scale_level] + ' '
         elif last_triplet > 1:
             result += pronounce_triplet_da(last_triplet)
             if scale_level == 1:
-                result += 'tusinde' + EXTRA_SPACE
+                result += 'tusinde' + _EXTRA_SPACE_DA
             if scale_level >= 2:
-                result += "og" + NUM_POWERS_OF_TEN[scale_level]
+                result += "og" + _NUM_POWERS_OF_TEN[scale_level]
             if scale_level >= 2:
                 if scale_level % 2 == 0:
                     result += "er"  # MillionER
@@ -222,21 +153,21 @@ def pronounce_number_da(num, places=2):
         num = floor(num / 1000)
         scale_level += 1
         return pronounce_whole_number_da(num,
-                                         scale_level) + result + EXTRA_SPACE
+                                         scale_level) + result + _EXTRA_SPACE_DA
 
     result = ""
-    if abs(num) >= 1000000000000000000000000:  # cannot do more than this
-        return str(num)
-    elif num == 0:
-        return str(NUM_STRING_DA[0])
-    elif num < 0:
-        return "minus " + pronounce_number_da(abs(num), places)
+    if abs(number) >= 1000000000000000000000000:  # cannot do more than this
+        return str(number)
+    elif number == 0:
+        return str(_NUM_STRING_DA[0])
+    elif number < 0:
+        return "minus " + pronounce_number_da(abs(number), places)
     else:
-        if num == int(num):
-            return pronounce_whole_number_da(num)
+        if number == int(number):
+            return pronounce_whole_number_da(number)
         else:
-            whole_number_part = floor(num)
-            fractional_part = num - whole_number_part
+            whole_number_part = floor(number)
+            fractional_part = number - whole_number_part
             result += pronounce_whole_number_da(whole_number_part)
             if places > 0:
                 result += " komma"
@@ -244,7 +175,19 @@ def pronounce_number_da(num, places=2):
             return result
 
 
-def pronounce_ordinal_da(num):
+def pronounce_ordinal_da(number):
+    """
+    This function pronounces a number as an ordinal
+
+    1 -> first
+    2 -> second
+
+    Args:
+        number (int): the number to format
+    Returns:
+        (str): The pronounced number string.
+    """
+
     # ordinals for 1, 3, 7 and 8 are irregular
     # this produces the base form, it will have to be adapted for genus,
     # casus, numerus
@@ -253,22 +196,22 @@ def pronounce_ordinal_da(num):
                 "sjette", "syvende", "ottende", "niende", "tiende"]
 
     # only for whole positive numbers including zero
-    if num < 0 or num != int(num):
-        return num
-    if num < 10:
-        return ordinals[num]
-    if num < 30:
-        if pronounce_number_da(num)[-1:] == 'e':
-            return pronounce_number_da(num) + "nde"
+    if number < 0 or number != int(number):
+        return number
+    if number < 10:
+        return ordinals[number]
+    if number < 30:
+        if pronounce_number_da(number)[-1:] == 'e':
+            return pronounce_number_da(number) + "nde"
         else:
-            return pronounce_number_da(num) + "ende"
-    if num < 40:
-        return pronounce_number_da(num) + "fte"
+            return pronounce_number_da(number) + "ende"
+    if number < 40:
+        return pronounce_number_da(number) + "fte"
     else:
-        if pronounce_number_da(num)[-1:] == 'e':
-            return pronounce_number_da(num) + "nde"
+        if pronounce_number_da(number)[-1:] == 'e':
+            return pronounce_number_da(number) + "nde"
         else:
-            return pronounce_number_da(num) + "ende"
+            return pronounce_number_da(number) + "ende"
 
 
 def nice_time_da(dt, speech=True, use_24hour=False, use_ampm=False):
@@ -356,13 +299,13 @@ def nice_time_da(dt, speech=True, use_24hour=False, use_ampm=False):
         return speak
 
 
-def nice_response_da(text):
+def _nice_response_da(text):
     # check for months and call nice_ordinal_da declension of ordinals
     # replace "^" with "hoch" (to the power of)
     words = text.split()
 
     for idx, word in enumerate(words):
-        if word.lower() in months:
+        if word.lower() in _MONTHS_DA:
             text = nice_ordinal_da(text)
 
         if word == '^':
@@ -384,7 +327,7 @@ def nice_ordinal_da(text):
         wordPrev = words[idx - 1] if idx > 0 else ""
         if word[-1:] == ".":
             if word[:-1].isdecimal():
-                if wordNext.lower() in months:
+                if wordNext.lower() in _MONTHS_DA:
                     word = pronounce_ordinal_da(int(word[:-1]))
                     if wordPrev.lower() in ["om", "den", "fra", "til",
                                             "(fra", "(om", "til"]:
@@ -394,3 +337,8 @@ def nice_ordinal_da(text):
                     words[idx] = word
             normalized_text = " ".join(words)
     return normalized_text
+
+
+def nice_part_of_day_da(num):
+    raise NotImplementedError
+

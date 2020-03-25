@@ -15,78 +15,9 @@
 #
 
 from .format_common import convert_to_mixed_fraction
+from lingua_franca.lang.common_data_sv import _EXTRA_SPACE_SV, \
+    _FRACTION_STRING_SV, _MONTHS_SV, _NUM_POWERS_OF_TEN_SV, _NUM_STRING_SV
 from math import floor
-
-months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni',
-          'juli', 'augusti', 'september', 'oktober', 'november',
-          'december']
-
-NUM_STRING_SV = {
-    0: 'noll',
-    1: 'en',
-    2: 'två',
-    3: 'tre',
-    4: 'fyra',
-    5: 'fem',
-    6: 'sex',
-    7: 'sju',
-    8: 'åtta',
-    9: 'nio',
-    10: 'tio',
-    11: 'elva',
-    12: 'tolv',
-    13: 'tretton',
-    14: 'fjorton',
-    15: 'femton',
-    16: 'sexton',
-    17: 'sjutton',
-    18: 'arton',
-    19: 'nitton',
-    20: 'tjugo',
-    30: 'trettio',
-    40: 'fyrtio',
-    50: 'femtio',
-    60: 'sextio',
-    70: 'sjuttio',
-    80: 'åttio',
-    90: 'nittio',
-    100: 'hundra'
-}
-
-NUM_POWERS_OF_TEN = [
-    'hundra',
-    'tusen',
-    'miljon',
-    'miljard',
-    'biljon',
-    'biljard',
-    'triljon',
-    'triljard'
-]
-
-FRACTION_STRING_SV = {
-    2: 'halv',
-    3: 'tredjedel',
-    4: 'fjärdedel',
-    5: 'femtedel',
-    6: 'sjättedel',
-    7: 'sjundedel',
-    8: 'åttondel',
-    9: 'niondel',
-    10: 'tiondel',
-    11: 'elftedel',
-    12: 'tolftedel',
-    13: 'trettondel',
-    14: 'fjortondel',
-    15: 'femtondel',
-    16: 'sextondel',
-    17: 'sjuttondel',
-    18: 'artondel',
-    19: 'nittondel',
-    20: 'tjugondel'
-}
-
-EXTRA_SPACE = " "
 
 
 def nice_number_sv(number, speech, denominators=range(1, 21)):
@@ -118,7 +49,7 @@ def nice_number_sv(number, speech, denominators=range(1, 21)):
 
     if num == 0:
         return str(whole)
-    den_str = FRACTION_STRING_SV[den]
+    den_str = _FRACTION_STRING_SV[den]
     if whole == 0:
         if num == 1:
             return_string = 'en {}'.format(den_str)
@@ -133,17 +64,25 @@ def nice_number_sv(number, speech, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_sv(num, places=2):
+def pronounce_number_sv(num, places=2, short_scale=True, scientific=False,
+                        ordinals=False):
     """
-    Convert a number to its spoken equivalent
+    Convert a number to it's spoken equivalent
+
     For example, '5.2' would return 'five point two'
+
     Args:
-        num(float or int): the number to pronounce (set limit below)
+        num(float or int): the number to pronounce (under 100)
         places(int): maximum decimal places to speak
+        short_scale (bool) : use short (True) or long scale (False)
+            https://en.wikipedia.org/wiki/Names_of_large_numbers
+        scientific (bool): pronounce in scientific notation
+        ordinals (bool): pronounce in ordinal form "first" instead of "one"
     Returns:
         (str): The pronounced number
-
     """
+    # TODO short_scale, scientific and ordinals
+    # currently ignored
 
     def pronounce_triplet_sv(num):
         result = ""
@@ -155,7 +94,7 @@ def pronounce_number_sv(num, places=2):
                 if hundreds == 1:
                     result += 'ett' + 'hundra'
                 else:
-                    result += NUM_STRING_SV[hundreds] + 'hundra'
+                    result += _NUM_STRING_SV[hundreds] + 'hundra'
 
                 num -= hundreds * 100
 
@@ -164,15 +103,15 @@ def pronounce_number_sv(num, places=2):
         elif num == 1:
             result += 'ett'
         elif num <= 20:
-            result += NUM_STRING_SV[num]
+            result += _NUM_STRING_SV[num]
         elif num > 20:
             tens = num % 10
             ones = num - tens
 
             if ones > 0:
-                result += NUM_STRING_SV[ones]
+                result += _NUM_STRING_SV[ones]
             if tens > 0:
-                result += NUM_STRING_SV[tens]
+                result += _NUM_STRING_SV[tens]
 
         return result
 
@@ -183,7 +122,7 @@ def pronounce_number_sv(num, places=2):
         while places > 0:
             # doesn't work with 1.0001 and places = 2: int(
             # num*place) % 10 > 0 and places > 0:
-            result += " " + NUM_STRING_SV[int(num * place) % 10]
+            result += " " + _NUM_STRING_SV[int(num * place) % 10]
             place *= 10
             places -= 1
         return result
@@ -203,17 +142,17 @@ def pronounce_number_sv(num, places=2):
                 else:
                     result += 'en'
             elif scale_level == 1:
-                result += 'ettusen' + EXTRA_SPACE
+                result += 'ettusen' + _EXTRA_SPACE_SV
             else:
-                result += 'en ' + NUM_POWERS_OF_TEN[scale_level] + EXTRA_SPACE
+                result += 'en ' + _NUM_POWERS_OF_TEN_SV[scale_level] + _EXTRA_SPACE_SV
         elif last_triplet > 1:
             result += pronounce_triplet_sv(last_triplet)
             if scale_level == 1:
-                result += 'tusen' + EXTRA_SPACE
+                result += 'tusen' + _EXTRA_SPACE_SV
             if scale_level >= 2:
-                result += NUM_POWERS_OF_TEN[scale_level]
+                result += _NUM_POWERS_OF_TEN_SV[scale_level]
             if scale_level >= 2:
-                result += 'er' + EXTRA_SPACE  # MiljonER
+                result += 'er' + _EXTRA_SPACE_SV  # MiljonER
 
         num = floor(num / 1000)
         scale_level += 1
@@ -223,7 +162,7 @@ def pronounce_number_sv(num, places=2):
     if abs(num) >= 1000000000000000000000000:  # cannot do more than this
         return str(num)
     elif num == 0:
-        return str(NUM_STRING_SV[0])
+        return str(_NUM_STRING_SV[0])
     elif num < 0:
         return "minus " + pronounce_number_sv(abs(num), places)
     else:
@@ -239,7 +178,19 @@ def pronounce_number_sv(num, places=2):
             return result
 
 
-def pronounce_ordinal_sv(num):
+def pronounce_ordinal_sv(number):
+    """
+    This function pronounces a number as an ordinal
+
+    1 -> first
+    2 -> second
+
+    Args:
+        number (int): the number to format
+    Returns:
+        (str): The pronounced number string.
+    """
+
     # ordinals for 1, 3, 7 and 8 are irregular
     # this produces the base form, it will have to be adapted for genus,
     # casus, numerus
@@ -247,16 +198,16 @@ def pronounce_ordinal_sv(num):
     ordinals = ["noll", "första", "andra", "tredje", "fjärde", "femte",
                 "sjätte", "sjunde", "åttonde", "nionde", "tionde"]
 
-    tens = int(floor(num / 10.0)) * 10
-    ones = num % 10
+    tens = int(floor(number / 10.0)) * 10
+    ones = number % 10
 
-    if num < 0 or num != int(num):
-        return num
-    if num == 0:
-        return ordinals[num]
+    if number < 0 or number != int(number):
+        return number
+    if number == 0:
+        return ordinals[number]
 
     result = ""
-    if num > 10:
+    if number > 10:
         result += pronounce_number_sv(tens).rstrip()
 
     if ones > 0:
@@ -390,7 +341,7 @@ def nice_response_sv(text):
     words = text.split()
 
     for idx, word in enumerate(words):
-        if word.lower() in months:
+        if word.lower() in _MONTHS_SV:
             text = nice_ordinal_sv(text)
 
         if word == '^':
@@ -412,7 +363,7 @@ def nice_ordinal_sv(text):
         wordPrev = words[idx - 1] if idx > 0 else ""
         if word[-1:] == ".":
             if word[:-1].isdecimal():
-                if wordNext.lower() in months:
+                if wordNext.lower() in _MONTHS_SV:
                     word = pronounce_ordinal_sv(int(word[:-1]))
                     if wordPrev.lower() in ["om", "den", "från", "till",
                                             "(från", "(om", "till"]:

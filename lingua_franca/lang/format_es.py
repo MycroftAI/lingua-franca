@@ -18,59 +18,8 @@ Format functions for castillian (es-es)
 
 """
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
-
-NUM_STRING_ES = {
-    0: 'cero',
-    1: 'uno',
-    2: 'dos',
-    3: 'tres',
-    4: 'cuatro',
-    5: 'cinco',
-    6: 'seis',
-    7: 'siete',
-    8: 'ocho',
-    9: 'nueve',
-    10: 'diez',
-    11: 'once',
-    12: 'doce',
-    13: 'trece',
-    14: 'catorce',
-    15: 'quince',
-    16: 'dieciséis',
-    17: 'diecisete',
-    18: 'dieciocho',
-    19: 'diecinueve',
-    20: 'veinte',
-    30: 'treinta',
-    40: 'cuarenta',
-    50: 'cincuenta',
-    60: 'sesenta',
-    70: 'setenta',
-    80: 'ochenta',
-    90: 'noventa'
-}
-
-FRACTION_STRING_ES = {
-    2: 'medio',
-    3: 'tercio',
-    4: 'cuarto',
-    5: 'quinto',
-    6: 'sexto',
-    7: 'séptimo',
-    8: 'octavo',
-    9: 'noveno',
-    10: 'décimo',
-    11: 'onceavo',
-    12: 'doceavo',
-    13: 'treceavo',
-    14: 'catorceavo',
-    15: 'quinceavo',
-    16: 'dieciseisavo',
-    17: 'diecisieteavo',
-    18: 'dieciochoavo',
-    19: 'diecinueveavo',
-    20: 'veinteavo'
-}
+from lingua_franca.lang.common_data_es import _NUM_STRING_ES, \
+    _FRACTION_STRING_ES
 
 
 def nice_number_es(number, speech, denominators=range(1, 21)):
@@ -113,7 +62,7 @@ def nice_number_es(number, speech, denominators=range(1, 21)):
             strNumber = str(whole)
             strNumber = strNumber.replace(".", ",")
             return strNumber
-        den_str = FRACTION_STRING_ES[den]
+        den_str = _FRACTION_STRING_ES[den]
         # if it is not an integer
         if whole == 0:
             # if there is no whole number
@@ -167,7 +116,7 @@ def pronounce_number_es(num, places=2):
     if 20 <= num <= 29:
         tens = int(num-int(num) % 10)
         ones = int(num - tens)
-        result += NUM_STRING_ES[tens]
+        result += _NUM_STRING_ES[tens]
         if ones > 0:
             result = result[:-1]
             # a veinte le quitamos la "e" final para construir los
@@ -180,15 +129,15 @@ def pronounce_number_es(num, places=2):
             elif ones == 6:
                 result += "iséis"
             else:
-                result += "i" + NUM_STRING_ES[ones]
+                result += "i" + _NUM_STRING_ES[ones]
     elif num >= 30:  # de 30 en adelante
         tens = int(num-int(num) % 10)
         ones = int(num - tens)
-        result += NUM_STRING_ES[tens]
+        result += _NUM_STRING_ES[tens]
         if ones > 0:
-            result += " y " + NUM_STRING_ES[ones]
+            result += " y " + _NUM_STRING_ES[ones]
     else:
-        result += NUM_STRING_ES[int(num)]
+        result += _NUM_STRING_ES[int(num)]
 
     # Deal with decimal part, in spanish is commonly used the comma
     # instead the dot. Decimal part can be written both with comma
@@ -200,7 +149,7 @@ def pronounce_number_es(num, places=2):
         _num_str = str(num)
         _num_str = _num_str.split(".")[1][0:places]
         for char in _num_str:
-            result += " " + NUM_STRING_ES[int(char)]
+            result += " " + _NUM_STRING_ES[int(char)]
     return result
 
 
@@ -318,3 +267,26 @@ def nice_time_es(dt, speech=True, use_24hour=False, use_ampm=False):
             else:
                 speak += " de la noche"
     return speak
+
+
+def pronounce_ordinal_es(number):
+    """
+    This function pronounces a number as an ordinal
+
+    1 -> first
+    2 -> second
+
+    Args:
+        number (int): the number to format
+    Returns:
+        (str): The pronounced number string.
+    """
+    raise NotImplementedError
+
+
+def nice_part_of_day_es(number):
+    raise NotImplementedError
+
+
+def nice_ordinal_es(number):
+    raise NotImplementedError

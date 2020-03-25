@@ -18,7 +18,7 @@ from dateutil.relativedelta import relativedelta
 from dateutil.tz import gettz
 from lingua_franca.lang.format_es import pronounce_number_es
 from lingua_franca.lang.parse_common import *
-from lingua_franca.lang.common_data_es import _ARTICLES_ES, _NUM_STRING_ES
+from lingua_franca.lang.common_data_es import _ARTICLES_ES, _STRING_NUM_ES
 
 
 def extract_duration_es(text):
@@ -130,8 +130,8 @@ def extract_number_es(text, short_scale=True, ordinals=False):
             next_word = None
 
         # is current word a number?
-        if word in _NUM_STRING_ES:
-            val = _NUM_STRING_ES[word]
+        if word in _STRING_NUM_ES:
+            val = _STRING_NUM_ES[word]
         elif word.isdigit():  # doesn't work with decimals
             val = int(word)
         elif is_numeric(word):
@@ -243,7 +243,7 @@ def _es_number_parse(words, i):
 
     def es_number_word(i, mi, ma):
         if i < len(words):
-            v = _NUM_STRING_ES.get(words[i])
+            v = _STRING_NUM_ES.get(words[i])
             if v and v >= mi and v <= ma:
                 return v, i + 1
         return None
@@ -332,7 +332,7 @@ def extract_numbers_es(text, short_scale=True, ordinals=False):
 
 def normalize_es(text, remove_articles):
     """ Spanish string normalization """
-
+    # TODO return SpanishNormalizer().normalize(text, remove_articles)
     words = text.split()  # this also removed extra spaces
 
     normalized = ""
@@ -1148,3 +1148,7 @@ def get_gender_es(word, context=""):
         if word[-1] == "o" or word[-1] == "e":
             gender = "m"
     return gender
+
+
+class SpanishNormalizer(Normalizer):
+    """ TODO implement language specific normalizer"""

@@ -15,85 +15,9 @@
 #
 
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
+from lingua_franca.lang.common_data_de import _EXTRA_SPACE_DE, \
+    _FRACTION_STRING_DE, _MONTHS_DE, _NUM_POWERS_OF_TEN_DE, _NUM_STRING_DE
 from math import floor
-
-months = ['januar', 'februar', 'märz', 'april', 'mai', 'juni',
-          'juli', 'august', 'september', 'oktober', 'november',
-          'dezember']
-
-NUM_STRING_DE = {
-    0: 'null',
-    1: 'ein',  # ein Viertel etc., nicht eins Viertel
-    2: 'zwei',
-    3: 'drei',
-    4: 'vier',
-    5: 'fünf',
-    6: 'sechs',
-    7: 'sieben',
-    8: 'acht',
-    9: 'neun',
-    10: 'zehn',
-    11: 'elf',
-    12: 'zwölf',
-    13: 'dreizehn',
-    14: 'vierzehn',
-    15: 'fünfzehn',
-    16: 'sechzehn',
-    17: 'siebzehn',
-    18: 'achtzehn',
-    19: 'neunzehn',
-    20: 'zwanzig',
-    30: 'dreißig',
-    40: 'vierzig',
-    50: 'fünfzig',
-    60: 'sechzig',
-    70: 'siebzig',
-    80: 'achtzig',
-    90: 'neunzig',
-    100: 'hundert'
-}
-
-# German uses "long scale" https://en.wikipedia.org/wiki/Long_and_short_scales
-# Currently, numbers are limited to 1000000000000000000000000,
-# but NUM_POWERS_OF_TEN can be extended to include additional number words
-
-
-NUM_POWERS_OF_TEN = [
-    '', 'tausend', 'Million', 'Milliarde', 'Billion', 'Billiarde', 'Trillion',
-    'Trilliarde'
-]
-
-FRACTION_STRING_DE = {
-    2: 'halb',
-    3: 'drittel',
-    4: 'viertel',
-    5: 'fünftel',
-    6: 'sechstel',
-    7: 'siebtel',
-    8: 'achtel',
-    9: 'neuntel',
-    10: 'zehntel',
-    11: 'elftel',
-    12: 'zwölftel',
-    13: 'dreizehntel',
-    14: 'vierzehntel',
-    15: 'fünfzehntel',
-    16: 'sechzehntel',
-    17: 'siebzehntel',
-    18: 'achtzehntel',
-    19: 'neunzehntel',
-    20: 'zwanzigstel'
-}
-
-# Numbers below 1 million are written in one word in German, yielding very
-# long words
-# In some circumstances it may better to seperate individual words
-# Set EXTRA_SPACE=" " for separating numbers below 1 million (
-# orthographically incorrect)
-# Set EXTRA_SPACE="" for correct spelling, this is standard
-
-# EXTRA_SPACE = " "
-EXTRA_SPACE = ""
 
 
 def nice_number_de(number, speech, denominators=range(1, 21)):
@@ -120,7 +44,7 @@ def nice_number_de(number, speech, denominators=range(1, 21)):
             return '{} {}/{}'.format(whole, num, den)
     if num == 0:
         return str(whole)
-    den_str = FRACTION_STRING_DE[den]
+    den_str = _FRACTION_STRING_DE[den]
     if whole == 0:
         if num == 1:
             return_string = 'ein {}'.format(den_str)
@@ -134,17 +58,26 @@ def nice_number_de(number, speech, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_de(num, places=2):
+def pronounce_number_de(number, places=2, short_scale=True, scientific=False,
+                        ordinals=False):
     """
-    Convert a number to its spoken equivalent
+    Convert a number to it's spoken equivalent
+
     For example, '5.2' would return 'five point two'
+
     Args:
-        num(float or int): the number to pronounce (set limit below)
+        number(float or int): the number to pronounce (under 100)
         places(int): maximum decimal places to speak
+        short_scale (bool) : use short (True) or long scale (False)
+            https://en.wikipedia.org/wiki/Names_of_large_numbers
+        scientific (bool): pronounce in scientific notation
+        ordinals (bool): pronounce in ordinal form "first" instead of "one"
     Returns:
         (str): The pronounced number
-
     """
+
+    # TODO short_scale, scientific and ordinals
+    # currently ignored
 
     def pronounce_triplet_de(num):
         result = ""
@@ -152,24 +85,24 @@ def pronounce_number_de(num, places=2):
         if num > 99:
             hundreds = floor(num / 100)
             if hundreds > 0:
-                result += NUM_STRING_DE[
-                              hundreds] + EXTRA_SPACE + 'hundert' + EXTRA_SPACE
+                result += _NUM_STRING_DE[
+                              hundreds] + _EXTRA_SPACE_DE + 'hundert' + _EXTRA_SPACE_DE
                 num -= hundreds * 100
         if num == 0:
             result += ''  # do nothing
         elif num == 1:
             result += 'eins'  # need the s for the last digit
         elif num <= 20:
-            result += NUM_STRING_DE[num]  # + EXTRA_SPACE
+            result += _NUM_STRING_DE[num]  # + _EXTRA_SPACE_DA
         elif num > 20:
             ones = num % 10
             tens = num - ones
             if ones > 0:
-                result += NUM_STRING_DE[ones] + EXTRA_SPACE
+                result += _NUM_STRING_DE[ones] + _EXTRA_SPACE_DE
                 if tens > 0:
-                    result += 'und' + EXTRA_SPACE
+                    result += 'und' + _EXTRA_SPACE_DE
             if tens > 0:
-                result += NUM_STRING_DE[tens] + EXTRA_SPACE
+                result += _NUM_STRING_DE[tens] + _EXTRA_SPACE_DE
         return result
 
     def pronounce_fractional_de(num,
@@ -178,8 +111,8 @@ def pronounce_number_de(num, places=2):
         result = ""
         place = 10
         while places > 0:  # doesn't work with 1.0001 and places = 2: int(
-            # num*place) % 10 > 0 and places > 0:
-            result += " " + NUM_STRING_DE[int(num * place) % 10]
+            # number*place) % 10 > 0 and places > 0:
+            result += " " + _NUM_STRING_DE[int(num * place) % 10]
             if int(num * place) % 10 == 1:
                 result += 's'  # "1" is pronounced "eins" after the decimal
                 # point
@@ -202,18 +135,18 @@ def pronounce_number_de(num, places=2):
                 else:
                     result += "eins"
             elif scale_level == 1:
-                result += 'ein' + EXTRA_SPACE + 'tausend' + EXTRA_SPACE
+                result += 'ein' + _EXTRA_SPACE_DE + 'tausend' + _EXTRA_SPACE_DE
             else:
-                result += "eine " + NUM_POWERS_OF_TEN[scale_level] + ' '
+                result += "eine " + _NUM_POWERS_OF_TEN_DE[scale_level] + ' '
         elif last_triplet > 1:
             result += pronounce_triplet_de(last_triplet)
             if scale_level == 1:
-                # result += EXTRA_SPACE
-                result += 'tausend' + EXTRA_SPACE
+                # result += _EXTRA_SPACE_DA
+                result += 'tausend' + _EXTRA_SPACE_DE
             if scale_level >= 2:
-                # if EXTRA_SPACE == '':
+                # if _EXTRA_SPACE_DA == '':
                 #    result += " "
-                result += " " + NUM_POWERS_OF_TEN[scale_level]
+                result += " " + _NUM_POWERS_OF_TEN_DE[scale_level]
             if scale_level >= 2:
                 if scale_level % 2 == 0:
                     result += "e"  # MillionE
@@ -222,21 +155,21 @@ def pronounce_number_de(num, places=2):
         num = floor(num / 1000)
         scale_level += 1
         return pronounce_whole_number_de(num,
-                                         scale_level) + result  # + EXTRA_SPACE
+                                         scale_level) + result  # + _EXTRA_SPACE_DA
 
     result = ""
-    if abs(num) >= 1000000000000000000000000:  # cannot do more than this
-        return str(num)
-    elif num == 0:
-        return str(NUM_STRING_DE[0])
-    elif num < 0:
-        return "minus " + pronounce_number_de(abs(num), places)
+    if abs(number) >= 1000000000000000000000000:  # cannot do more than this
+        return str(number)
+    elif number == 0:
+        return str(_NUM_STRING_DE[0])
+    elif number < 0:
+        return "minus " + pronounce_number_de(abs(number), places)
     else:
-        if num == int(num):
-            return pronounce_whole_number_de(num)
+        if number == int(number):
+            return pronounce_whole_number_de(number)
         else:
-            whole_number_part = floor(num)
-            fractional_part = num - whole_number_part
+            whole_number_part = floor(number)
+            fractional_part = number - whole_number_part
             result += pronounce_whole_number_de(whole_number_part)
             if places > 0:
                 result += " Komma"
@@ -244,7 +177,18 @@ def pronounce_number_de(num, places=2):
             return result
 
 
-def pronounce_ordinal_de(num):
+def pronounce_ordinal_de(number):
+    """
+      This function pronounces a number as an ordinal
+
+      1 -> first
+      2 -> second
+
+      Args:
+          number (int): the number to format
+      Returns:
+          (str): The pronounced number string.
+      """
     # ordinals for 1, 3, 7 and 8 are irregular
     # this produces the base form, it will have to be adapted for genus,
     # casus, numerus
@@ -253,14 +197,14 @@ def pronounce_ordinal_de(num):
                 "sechste", "siebte", "achte"]
 
     # only for whole positive numbers including zero
-    if num < 0 or num != int(num):
-        return num
-    elif num < 9:
-        return ordinals[num]
-    elif num < 20:
-        return pronounce_number_de(num) + "te"
+    if number < 0 or number != int(number):
+        return number
+    elif number < 9:
+        return ordinals[number]
+    elif number < 20:
+        return pronounce_number_de(number) + "te"
     else:
-        return pronounce_number_de(num) + "ste"
+        return pronounce_number_de(number) + "ste"
 
 
 def nice_time_de(dt, speech=True, use_24hour=False, use_ampm=False):
@@ -349,7 +293,7 @@ def nice_response_de(text):
     words = text.split()
 
     for idx, word in enumerate(words):
-        if word.lower() in months:
+        if word.lower() in _MONTHS_DE:
             text = nice_ordinal_de(text)
 
         if word == '^':
@@ -371,7 +315,7 @@ def nice_ordinal_de(text):
         wordPrev = words[idx - 1] if idx > 0 else ""
         if word[-1:] == ".":
             if word[:-1].isdecimal():
-                if wordNext.lower() in months:
+                if wordNext.lower() in _MONTHS_DE:
                     word = pronounce_ordinal_de(int(word[:-1]))
                     if wordPrev.lower() in ["am", "dem", "vom", "zum",
                                             "(vom", "(am", "zum"]:

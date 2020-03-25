@@ -15,166 +15,8 @@
 #
 
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
-import collections
-
-NUM_STRING_IT = {
-    0: 'zero',
-    1: 'uno',
-    2: 'due',
-    3: 'tre',
-    4: 'quattro',
-    5: 'cinque',
-    6: 'sei',
-    7: 'sette',
-    8: 'otto',
-    9: 'nove',
-    10: 'dieci',
-    11: 'undici',
-    12: 'dodici',
-    13: 'tredici',
-    14: 'quattordici',
-    15: 'quindici',
-    16: 'sedici',
-    17: 'diciassette',
-    18: 'diciotto',
-    19: 'diciannove',
-    20: 'venti',
-    30: 'trenta',
-    40: 'quaranta',
-    50: 'cinquanta',
-    60: 'sessanta',
-    70: 'settanta',
-    80: 'ottanta',
-    90: 'novanta'
-}
-
-FRACTION_STRING_IT = {
-    2: 'mezz',
-    3: 'terz',
-    4: 'quart',
-    5: 'quint',
-    6: 'sest',
-    7: 'settim',
-    8: 'ottav',
-    9: 'non',
-    10: 'decim',
-    11: 'undicesim',
-    12: 'dodicesim',
-    13: 'tredicesim',
-    14: 'quattordicesim',
-    15: 'quindicesim',
-    16: 'sedicesim',
-    17: 'diciassettesim',
-    18: 'diciottesim',
-    19: 'diciannovesim',
-    20: 'ventesim'
-}
-
-# fonte: http://tulengua.es/numeros-texto/default.aspx
-LONG_SCALE_IT = collections.OrderedDict([
-    (100, 'cento'),
-    (1000, 'mila'),
-    (1000000, 'milioni'),
-    (1e9, "miliardi"),
-    (1e12, "bilioni"),
-    (1e18, 'trilioni'),
-    (1e24, "quadrilioni"),
-    (1e30, "quintilioni"),
-    (1e36, "sestilioni"),
-    (1e42, "settilioni"),
-    (1e48, "ottillioni"),
-    (1e54, "nonillioni"),
-    (1e60, "decemillioni"),
-    (1e66, "undicilione"),
-    (1e72, "dodicilione"),
-    (1e78, "tredicilione"),
-    (1e84, "quattordicilione"),
-    (1e90, "quindicilione"),
-    (1e96, "sedicilione"),
-    (1e102, "diciasettilione"),
-    (1e108, "diciottilione"),
-    (1e114, "dicianovilione"),
-    (1e120, "vintilione"),
-    (1e306, "unquinquagintilione"),
-    (1e312, "duoquinquagintilione"),
-    (1e336, "sesquinquagintilione"),
-    (1e366, "unsexagintilione")
-])
-
-
-SHORT_SCALE_IT = collections.OrderedDict([
-    (100, 'cento'),
-    (1000, 'mila'),
-    (1000000, 'milioni'),
-    (1e9, "miliardi"),
-    (1e12, 'bilioni'),
-    (1e15, "biliardi"),
-    (1e18, "trilioni"),
-    (1e21, "triliardi"),
-    (1e24, "quadrilioni"),
-    (1e27, "quadriliardi"),
-    (1e30, "quintilioni"),
-    (1e33, "quintiliardi"),
-    (1e36, "sestilioni"),
-    (1e39, "sestiliardi"),
-    (1e42, "settilioni"),
-    (1e45, "settiliardi"),
-    (1e48, "ottilioni"),
-    (1e51, "ottiliardi"),
-    (1e54, "nonilioni"),
-    (1e57, "noniliardi"),
-    (1e60, "decilioni"),
-    (1e63, "deciliardi"),
-    (1e66, "undicilioni"),
-    (1e69, "undiciliardi"),
-    (1e72, "dodicilioni"),
-    (1e75, "dodiciliardi"),
-    (1e78, "tredicilioni"),
-    (1e81, "trediciliardi"),
-    (1e84, "quattordicilioni"),
-    (1e87, "quattordiciliardi"),
-    (1e90, "quindicilioni"),
-    (1e93, "quindiciliardi"),
-    (1e96, "sedicilioni"),
-    (1e99, "sediciliardi"),
-    (1e102, "diciassettilioni"),
-    (1e105, "diciassettiliardi"),
-    (1e108, "diciottilioni"),
-    (1e111, "diciottiliardi"),
-    (1e114, "dicianovilioni"),
-    (1e117, "dicianoviliardi"),
-    (1e120, "vintilioni"),
-    (1e123, "vintiliardi"),
-    (1e153, "quinquagintillion"),
-    (1e183, "sexagintillion"),
-    (1e213, "septuagintillion"),
-    (1e243, "ottogintilioni"),
-    (1e273, "nonigintillioni"),
-    (1e303, "centilioni"),
-    (1e306, "uncentilioni"),
-    (1e309, "duocentilioni"),
-    (1e312, "trecentilioni"),
-    (1e333, "decicentilioni"),
-    (1e336, "undicicentilioni"),
-    (1e363, "viginticentilioni"),
-    (1e366, "unviginticentilioni"),
-    (1e393, "trigintacentilioni"),
-    (1e423, "quadragintacentillion"),
-    (1e453, "quinquagintacentillion"),
-    (1e483, "sexagintacentillion"),
-    (1e513, "septuagintacentillion"),
-    (1e543, "ctogintacentillion"),
-    (1e573, "nonagintacentillion"),
-    (1e603, "ducentillion"),
-    (1e903, "trecentillion"),
-    (1e1203, "quadringentillion"),
-    (1e1503, "quingentillion"),
-    (1e1803, "sescentillion"),
-    (1e2103, "septingentillion"),
-    (1e2403, "octingentillion"),
-    (1e2703, "nongentillion"),
-    (1e3003, "millinillion")
-])
+from lingua_franca.lang.common_data_it import _NUM_STRING_IT, \
+    _FRACTION_STRING_IT, _LONG_SCALE_IT, _SHORT_SCALE_IT
 
 
 def nice_number_it(number, speech, denominators=range(1, 21)):
@@ -207,7 +49,7 @@ def nice_number_it(number, speech, denominators=range(1, 21)):
     if num == 0:
         return str(whole)
     # denominatore
-    den_str = FRACTION_STRING_IT[den]
+    den_str = _FRACTION_STRING_IT[den]
     # frazione
     if whole == 0:
         if num == 1:
@@ -268,20 +110,20 @@ def pronounce_number_it(num, places=2, short_scale=False, scientific=False):
                 pronounce_number_it(abs(power), places, short_scale, False))
 
     if short_scale:
-        number_names = NUM_STRING_IT.copy()
-        number_names.update(SHORT_SCALE_IT)
+        number_names = _NUM_STRING_IT.copy()
+        number_names.update(_SHORT_SCALE_IT)
     else:
-        number_names = NUM_STRING_IT.copy()
-        number_names.update(LONG_SCALE_IT)
+        number_names = _NUM_STRING_IT.copy()
+        number_names.update(_LONG_SCALE_IT)
 
     digits = [number_names[n] for n in range(0, 20)]
 
     tens = [number_names[n] for n in range(10, 100, 10)]
 
     if short_scale:
-        hundreds = [SHORT_SCALE_IT[n] for n in SHORT_SCALE_IT.keys()]
+        hundreds = [_SHORT_SCALE_IT[n] for n in _SHORT_SCALE_IT.keys()]
     else:
-        hundreds = [LONG_SCALE_IT[n] for n in LONG_SCALE_IT.keys()]
+        hundreds = [_LONG_SCALE_IT[n] for n in _LONG_SCALE_IT.keys()]
 
     # deal with negatives
     result = ""
@@ -320,7 +162,7 @@ def pronounce_number_it(num, places=2, short_scale=False, scientific=False):
                 return _partial
 
         def _short_scale(n):
-            if n >= max(SHORT_SCALE_IT.keys()):
+            if n >= max(_SHORT_SCALE_IT.keys()):
                 return "numero davvero enorme"
             n = int(n)
             assert 0 <= n
@@ -345,7 +187,7 @@ def pronounce_number_it(num, places=2, short_scale=False, scientific=False):
             return res
 
         def _long_scale(n):
-            if n >= max(LONG_SCALE_IT.keys()):
+            if n >= max(_LONG_SCALE_IT.keys()):
                 return "numero davvero enorme"
             n = int(n)
             assert 0 <= n
@@ -497,3 +339,25 @@ def nice_time_it(dt, speech=True, use_24hour=False, use_ampm=False):
                 speak += " della mattina"
 
         return speak
+
+
+def pronounce_ordinal_it(number):
+    """
+    This function pronounces a number as an ordinal
+
+    1 -> first
+    2 -> second
+
+    Args:
+        number (int): the number to format
+    Returns:
+        (str): The pronounced number string.
+    """
+    raise NotImplementedError
+
+def nice_part_of_day_it(num):
+    raise NotImplementedError
+
+
+def nice_ordinal_it(num):
+    raise NotImplementedError

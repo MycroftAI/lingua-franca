@@ -46,3 +46,54 @@ _NUMBERS_FR = {
     "milliards": 1000000000}
 
 _ORDINAL_ENDINGS_FR = ("er", "re", "ère", "nd", "nde" "ième", "ème", "e")
+
+_NUM_STRING_FR = {
+    0: 'zéro',
+    1: 'un',
+    2: 'deux',
+    3: 'trois',
+    4: 'quatre',
+    5: 'cinq',
+    6: 'six',
+    7: 'sept',
+    8: 'huit',
+    9: 'neuf',
+    10: 'dix',
+    11: 'onze',
+    12: 'douze',
+    13: 'treize',
+    14: 'quatorze',
+    15: 'quinze',
+    16: 'seize',
+    20: 'vingt',
+    30: 'trente',
+    40: 'quarante',
+    50: 'cinquante',
+    60: 'soixante',
+    70: 'soixante-dix',
+    80: 'quatre-vingt',
+    90: 'quatre-vingt-dix'
+}
+
+_FRACTION_STRING_FR = {
+    2: 'demi',
+    3: 'tiers',
+    4: 'quart',
+    5: 'cinquième',
+    6: 'sixième',
+    7: 'septième',
+    8: 'huitième',
+    9: 'neuvième',
+    10: 'dixième',
+    11: 'onzième',
+    12: 'douzième',
+    13: 'treizième',
+    14: 'quatorzième',
+    15: 'quinzième',
+    16: 'seizième',
+    17: 'dix-septième',
+    18: 'dix-huitième',
+    19: 'dix-neuvième',
+    20: 'vingtième'
+}
+

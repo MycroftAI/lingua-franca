@@ -23,7 +23,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic, Normalizer
-from lingua_franca.lang.format_it import LONG_SCALE_IT, SHORT_SCALE_IT, \
+from lingua_franca.lang.format_it import _LONG_SCALE_IT, _SHORT_SCALE_IT, \
     pronounce_number_it
 from lingua_franca.lang.common_data_it import _SHORT_ORDINAL_STRING_IT, \
     _ARTICLES_IT, _LONG_ORDINAL_STRING_IT, _STRING_NUM_IT
@@ -315,13 +315,13 @@ def extract_number_it(text, short_scale=False, ordinals=False):
     decimal_marker = [' punto ', ' virgola ']
 
     if short_scale:
-        for num in SHORT_SCALE_IT:
-            num_string = SHORT_SCALE_IT[num]
+        for num in _SHORT_SCALE_IT:
+            num_string = _SHORT_SCALE_IT[num]
             _STRING_NUM_IT[num_string] = num
             multiplies.append(num_string)
     else:
-        for num in LONG_SCALE_IT:
-            num_string = LONG_SCALE_IT[num]
+        for num in _LONG_SCALE_IT:
+            num_string = _LONG_SCALE_IT[num]
             _STRING_NUM_IT[num_string] = num
             multiplies.append(num_string)
 

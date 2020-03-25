@@ -15,85 +15,9 @@
 #
 
 from .format_common import convert_to_mixed_fraction
+from lingua_franca.lang.common_data_nl import _NUM_POWERS_OF_TEN, \
+    _NUM_STRING_NL, _FRACTION_STRING_NL, _EXTRA_SPACE_NL, _MONTHS_NL
 from math import floor
-
-months = ['januari', 'februari', 'maart', 'april', 'mei', 'juni',
-          'juli', 'augustus', 'september', 'oktober', 'november',
-          'december']
-
-NUM_STRING_NL = {
-    0: 'nul',
-    1: 'één',
-    2: 'twee',
-    3: 'drie',
-    4: 'vier',
-    5: 'vijf',
-    6: 'zes',
-    7: 'zeven',
-    8: 'acht',
-    9: 'negen',
-    10: 'tien',
-    11: 'elf',
-    12: 'twaalf',
-    13: 'dertien',
-    14: 'veertien',
-    15: 'vijftien',
-    16: 'zestien',
-    17: 'zeventien',
-    18: 'actien',
-    19: 'negentien',
-    20: 'twintig',
-    30: 'dertig',
-    40: 'veertig',
-    50: 'vijftig',
-    60: 'zestig',
-    70: 'zeventig',
-    80: 'tachtig',
-    90: 'negentig',
-    100: 'honderd'
-}
-
-# German uses "long scale" https://en.wikipedia.org/wiki/Long_and_short_scales
-# Currently, numbers are limited to 1000000000000000000000000,
-# but NUM_POWERS_OF_TEN can be extended to include additional number words
-
-
-NUM_POWERS_OF_TEN = [
-    '', 'duizend', 'miljoen', 'miljard', 'biljoen', 'biljard', 'triljoen',
-    'triljard'
-]
-
-FRACTION_STRING_NL = {
-    2: 'half',
-    3: 'derde',
-    4: 'vierde',
-    5: 'vijfde',
-    6: 'zesde',
-    7: 'zevende',
-    8: 'achtste',
-    9: 'negende',
-    10: 'tiende',
-    11: 'elfde',
-    12: 'twaalfde',
-    13: 'dertiende',
-    14: 'veertiende',
-    15: 'vijftiende',
-    16: 'zestiende',
-    17: 'zeventiende',
-    18: 'achttiende',
-    19: 'negentiende',
-    20: 'twintigste'
-}
-
-# Numbers below 1 million are written in one word in dutch, yielding very
-# long words
-# In some circumstances it may better to seperate individual words
-# Set EXTRA_SPACE=" " for separating numbers below 1 million (
-# orthographically incorrect)
-# Set EXTRA_SPACE="" for correct spelling, this is standard
-
-# EXTRA_SPACE = " "
-EXTRA_SPACE = ""
 
 
 def nice_number_nl(number, speech, denominators=range(1, 21)):
@@ -120,7 +44,7 @@ def nice_number_nl(number, speech, denominators=range(1, 21)):
             return '{} {}/{}'.format(whole, num, den)
     if num == 0:
         return str(whole)
-    den_str = FRACTION_STRING_NL[den]
+    den_str = _FRACTION_STRING_NL[den]
     if whole == 0:
         if num == 1:
             return_string = 'één {}'.format(den_str)
@@ -134,17 +58,25 @@ def nice_number_nl(number, speech, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_nl(num, places=2):
+def pronounce_number_nl(number, places=2, short_scale=True, scientific=False,
+                        ordinals=False):
     """
-    Convert a number to its spoken equivalent
+    Convert a number to it's spoken equivalent
+
     For example, '5.2' would return 'five point two'
+
     Args:
-        num(float or int): the number to pronounce (set limit below)
+        number(float or int): the number to pronounce (under 100)
         places(int): maximum decimal places to speak
+        short_scale (bool) : use short (True) or long scale (False)
+            https://en.wikipedia.org/wiki/Names_of_large_numbers
+        scientific (bool): pronounce in scientific notation
+        ordinals (bool): pronounce in ordinal form "first" instead of "one"
     Returns:
         (str): The pronounced number
-
     """
+    # TODO short_scale, scientific and ordinals
+    # currently ignored
 
     def pronounce_triplet_nl(num):
         result = ""
@@ -152,22 +84,22 @@ def pronounce_number_nl(num, places=2):
         if num > 99:
             hundreds = floor(num / 100)
             if hundreds > 0:
-                result += NUM_STRING_NL[
-                              hundreds] + EXTRA_SPACE + 'honderd' + EXTRA_SPACE
+                result += _NUM_STRING_NL[
+                              hundreds] + _EXTRA_SPACE_NL + 'honderd' + _EXTRA_SPACE_NL
                 num -= hundreds * 100
         if num == 0:
             result += ''  # do nothing
         elif num <= 20:
-            result += NUM_STRING_NL[num]  # + EXTRA_SPACE
+            result += _NUM_STRING_NL[num]  # + _EXTRA_SPACE_DA
         elif num > 20:
             ones = num % 10
             tens = num - ones
             if ones > 0:
-                result += NUM_STRING_NL[ones] + EXTRA_SPACE
+                result += _NUM_STRING_NL[ones] + _EXTRA_SPACE_NL
                 if tens > 0:
-                    result += 'en' + EXTRA_SPACE
+                    result += 'en' + _EXTRA_SPACE_NL
             if tens > 0:
-                result += NUM_STRING_NL[tens] + EXTRA_SPACE
+                result += _NUM_STRING_NL[tens] + _EXTRA_SPACE_NL
         return result
 
     def pronounce_fractional_nl(num,
@@ -176,8 +108,8 @@ def pronounce_number_nl(num, places=2):
         result = ""
         place = 10
         while places > 0:  # doesn't work with 1.0001 and places = 2: int(
-            # num*place) % 10 > 0 and places > 0:
-            result += " " + NUM_STRING_NL[int(num * place) % 10]
+            # number*place) % 10 > 0 and places > 0:
+            result += " " + _NUM_STRING_NL[int(num * place) % 10]
             if int(num * place) % 10 == 1:
                 result += ''  # "1" is pronounced "eins" after the decimal
                 # point
@@ -200,18 +132,18 @@ def pronounce_number_nl(num, places=2):
                 else:
                     result += "één"
             elif scale_level == 1:
-                result += 'één' + EXTRA_SPACE + 'duizend' + EXTRA_SPACE
+                result += 'één' + _EXTRA_SPACE_NL + 'duizend' + _EXTRA_SPACE_NL
             else:
-                result += "één " + NUM_POWERS_OF_TEN[scale_level] + ' '
+                result += "één " + _NUM_POWERS_OF_TEN[scale_level] + ' '
         elif last_triplet > 1:
             result += pronounce_triplet_nl(last_triplet)
             if scale_level == 1:
-                # result += EXTRA_SPACE
-                result += 'duizend' + EXTRA_SPACE
+                # result += _EXTRA_SPACE_DA
+                result += 'duizend' + _EXTRA_SPACE_NL
             if scale_level >= 2:
-                # if EXTRA_SPACE == '':
+                # if _EXTRA_SPACE_DA == '':
                 #    result += " "
-                result += " " + NUM_POWERS_OF_TEN[scale_level] + ' '
+                result += " " + _NUM_POWERS_OF_TEN[scale_level] + ' '
             if scale_level >= 2:
                 if scale_level % 2 == 0:
                     result += ""  # Miljioen
@@ -223,18 +155,18 @@ def pronounce_number_nl(num, places=2):
                                          scale_level) + result + ''
 
     result = ""
-    if abs(num) >= 1000000000000000000000000:  # cannot do more than this
-        return str(num)
-    elif num == 0:
-        return str(NUM_STRING_NL[0])
-    elif num < 0:
-        return "min " + pronounce_number_nl(abs(num), places)
+    if abs(number) >= 1000000000000000000000000:  # cannot do more than this
+        return str(number)
+    elif number == 0:
+        return str(_NUM_STRING_NL[0])
+    elif number < 0:
+        return "min " + pronounce_number_nl(abs(number), places)
     else:
-        if num == int(num):
-            return pronounce_whole_number_nl(num)
+        if number == int(number):
+            return pronounce_whole_number_nl(number)
         else:
-            whole_number_part = floor(num)
-            fractional_part = num - whole_number_part
+            whole_number_part = floor(number)
+            fractional_part = number - whole_number_part
             result += pronounce_whole_number_nl(whole_number_part)
             if places > 0:
                 result += " komma"
@@ -242,22 +174,32 @@ def pronounce_number_nl(num, places=2):
             return result
 
 
-def pronounce_ordinal_nl(num):
+def pronounce_ordinal_nl(number):
+    """
+    This function pronounces a number as an ordinal
+
+    1 -> first
+    2 -> second
+
+    Args:
+        number (int): the number to format
+    Returns:
+        (str): The pronounced number string.
+    """
     ordinals = ["nulste", "eerste", "tweede", "derde", "vierde", "vijfde",
                 "zesde", "zevende", "achtste"]
-
     # only for whole positive numbers including zero
-    if num < 0 or num != int(num):
-        return num
-    if num < 4:
-        return ordinals[num]
-    if num < 8:
-        return pronounce_number_nl(num) + "de"
-    if num < 9:
-        return pronounce_number_nl(num) + "ste"
-    if num < 20:
-        return pronounce_number_nl(num) + "de"
-    return pronounce_number_nl(num) + "ste"
+    if number < 0 or number != int(number):
+        return number
+    if number < 4:
+        return ordinals[number]
+    if number < 8:
+        return pronounce_number_nl(number) + "de"
+    if number < 9:
+        return pronounce_number_nl(number) + "ste"
+    if number < 20:
+        return pronounce_number_nl(number) + "de"
+    return pronounce_number_nl(number) + "ste"
 
 
 def nice_time_nl(dt, speech=True, use_24hour=False, use_ampm=False):
@@ -305,33 +247,33 @@ def nice_time_nl(dt, speech=True, use_24hour=False, use_ampm=False):
             return "Middernacht"
         hour = dt.hour % 12
         if dt.minute == 0:
-            hour = fix_hour(hour)
+            hour = _fix_hour_nl(hour)
             speak += pronounce_number_nl(hour)
             speak += " uur"
         elif dt.minute == 30:
             speak += "half "
             hour += 1
-            hour = fix_hour(hour)
+            hour = _fix_hour_nl(hour)
             speak += pronounce_number_nl(hour)
         elif dt.minute == 15:
             speak += "kwart over "
-            hour = fix_hour(hour)
+            hour = _fix_hour_nl(hour)
             speak += pronounce_number_nl(hour)
         elif dt.minute == 45:
             speak += "kwart voor "
             hour += 1
-            hour = fix_hour(hour)
+            hour = _fix_hour_nl(hour)
             speak += pronounce_number_nl(hour)
         elif dt.minute > 30:
             speak += pronounce_number_nl(60 - dt.minute)
             speak += " voor "
             hour += 1
-            hour = fix_hour(hour)
+            hour = _fix_hour_nl(hour)
             speak += pronounce_number_nl(hour)
         else:
             speak += pronounce_number_nl(dt.minute)
             speak += " over "
-            hour = fix_hour(hour)
+            hour = _fix_hour_nl(hour)
             speak += pronounce_number_nl(hour)
 
         if use_ampm:
@@ -340,7 +282,7 @@ def nice_time_nl(dt, speech=True, use_24hour=False, use_ampm=False):
         return speak
 
 
-def fix_hour(hour):
+def _fix_hour_nl(hour):
     hour = hour % 12
     if hour == 0:
         hour = 12
@@ -365,7 +307,7 @@ def nice_response_nl(text):
     words = text.split()
 
     for idx, word in enumerate(words):
-        if word.lower() in months:
+        if word.lower() in _MONTHS_NL:
             text = nice_ordinal_nl(text)
 
         if word == '^':
@@ -385,7 +327,7 @@ def nice_ordinal_nl(text):
         wordNext = words[idx + 1] if idx + 1 < len(words) else ""
         wordPrev = words[idx - 1] if idx > 0 else ""
         if word[:-1].isdecimal():
-            if wordNext.lower() in months:
+            if wordNext.lower() in _MONTHS_NL:
                 if wordPrev == 'de':
                     word = pronounce_ordinal_nl(int(word))
                 else:
