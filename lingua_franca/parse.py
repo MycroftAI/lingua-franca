@@ -159,8 +159,33 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
     return text
 
 
+def extract_calendar_duration(text, lang=None, replace_token=""):
+    """
+    Equivalent to extract_duration with
+
+        resolution=DurationResolution.RELATIVEDELTA
+
+    If text contains a decimal number of months or years a ValueError is thrown
+
+     Args:
+        text (str): string containing a duration
+        lang (str): the BCP-47 code for the language to use, None uses default
+        replace_token (str): string to replace consumed words with
+
+    Returns:
+        (relativedelta, str):
+                    A tuple containing the duration and the remaining text
+                    not consumed in the parsing. The first value will
+                    be None if no duration is found. The text returned
+                    will have whitespace stripped from the ends.
+
+    """
+    return extract_duration(text, lang, DurationResolution.RELATIVEDELTA,
+                            replace_token)
+
+
 def extract_duration(text, lang=None,
-                     resolution=DurationResolution.RELATIVEDELTA,
+                     resolution=DurationResolution.TIMEDELTA,
                      replace_token=""):
     """ Convert an english phrase into a number of seconds
 

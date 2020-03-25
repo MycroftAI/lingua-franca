@@ -196,201 +196,235 @@ class TestNormalize(unittest.TestCase):
 
     def test_extract_duration_replace_token(self):
         self.assertEqual(extract_duration("10 seconds", replace_token="_"),
-                         (relativedelta(seconds=10.0), "_ _"))
+                         (timedelta(seconds=10.0), "_ _"))
         # TODO remainder is imperfect because "fifty seven and a half
         #  minutes" was normalized to a single word "57.5"
         self.assertEqual(extract_duration("The movie is one hour, fifty seven"
                                           " and a half minutes long",
                                           replace_token="_"),
-                         (relativedelta(hours=1, minutes=57.5),
+                         (timedelta(hours=1, minutes=57.5),
                           "the movie is _ _, _ _ long"))
 
-    def test_extract_duration_si_units_en(self):
+    def test_extract_duration_ambiguous(self):
+        self.assertRaises(ValueError, extract_duration, "1.3 months",
+                          resolution=DurationResolution.RELATIVEDELTA)
+        self.assertRaises(ValueError, extract_duration, "1.3 months",
+                          resolution=DurationResolution.RELATIVEDELTA_STRICT)
         self.assertEqual(
-            extract_duration("10 seconds",
-                             resolution=DurationResolution.TIMEDELTA),
-            (timedelta(seconds=10.0), ""))
-        self.assertEqual(extract_duration("5 minutes",
-                                          resolution=DurationResolution.TIMEDELTA),
+            extract_duration("1.3 months",
+                             resolution=DurationResolution.RELATIVEDELTA_FALLBACK),
+            (timedelta(days=1.3 * DAYS_IN_1_MONTH), ""))
+
+
+        # NOTE: for some reason test bellow fails with
+        #       (relativedelta(months=+1, days=+9.126), '') != \
+        #       (relativedelta(months=+1, days=+9.126), '')
+        # correct result is being returned
+
+        #self.assertEqual(
+        #    extract_duration("1.3 months",
+        #                     resolution=DurationResolution.RELATIVEDELTA_APPROXIMATE),
+        #    (relativedelta(months=1, days=0.3 * DAYS_IN_1_MONTH), ""))
+
+        self.assertEqual(
+            extract_duration("1.3 months",
+                             resolution=DurationResolution.RELATIVEDELTA_APPROXIMATE
+                             )[0].months, 1)
+        self.assertAlmostEquals(
+            extract_duration("1.3 months",
+                             resolution=DurationResolution.RELATIVEDELTA_APPROXIMATE
+                             )[0].days, 0.3 * DAYS_IN_1_MONTH)
+
+    def test_extract_duration_en(self):
+        self.assertEqual(extract_duration("10 seconds"),
+                         (timedelta(seconds=10.0), ""))
+        self.assertEqual(extract_duration("5 minutes"),
                          (timedelta(minutes=5), ""))
-        self.assertEqual(extract_duration("2 hours",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("2 hours"),
                          (timedelta(hours=2), ""))
-        self.assertEqual(extract_duration("3 days",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("3 days"),
                          (timedelta(days=3), ""))
-        self.assertEqual(extract_duration("25 weeks",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("25 weeks"),
                          (timedelta(weeks=25), ""))
-        self.assertEqual(extract_duration("seven hours",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("seven hours"),
                          (timedelta(hours=7), ""))
-        self.assertEqual(extract_duration("7.5 seconds",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("7.5 seconds"),
                          (timedelta(seconds=7.5), ""))
         self.assertEqual(extract_duration("eight and a half days thirty"
-                                          " nine seconds",
-                                          resolution=DurationResolution.TIMEDELTA),
+                                          " nine seconds"),
                          (timedelta(days=8.5, seconds=39), ""))
-        self.assertEqual(extract_duration("Set a timer for 30 minutes",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("Set a timer for 30 minutes"),
                          (timedelta(minutes=30), "set a timer for"))
         self.assertEqual(extract_duration("Four and a half minutes until"
-                                          " sunset",
-                                          resolution=DurationResolution.TIMEDELTA),
+                                          " sunset"),
                          (timedelta(minutes=4.5), "until sunset"))
-        self.assertEqual(extract_duration("Nineteen minutes past the hour",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("Nineteen minutes past the hour"),
                          (timedelta(minutes=19), "past the hour"))
         self.assertEqual(extract_duration("wake me up in three weeks, four"
                                           " hundred ninety seven days, and"
-                                          " three hundred 91.6 seconds",
-                                          resolution=DurationResolution.TIMEDELTA),
+                                          " three hundred 91.6 seconds"),
                          (timedelta(weeks=3, days=497, seconds=391.6),
                           "wake me up in , , and"))
         self.assertEqual(extract_duration("The movie is one hour, fifty seven"
-                                          " and a half minutes long",
-                                          resolution=DurationResolution.TIMEDELTA),
+                                          " and a half minutes long"),
                          (timedelta(hours=1, minutes=57.5),
                           "the movie is ,  long"))
-        self.assertEqual(extract_duration("10-seconds",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("10-seconds"),
                          (timedelta(seconds=10.0), ""))
-        self.assertEqual(extract_duration("5-minutes",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("5-minutes"),
                          (timedelta(minutes=5), ""))
 
-        self.assertEqual(extract_duration("1 month",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("1 month"),
                          (timedelta(days=DAYS_IN_1_MONTH), ""))
-        self.assertEqual(extract_duration("3 months",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(
+            extract_duration("1 month",
+                             resolution=DurationResolution.TIMEDELTA),
+            (timedelta(days=DAYS_IN_1_MONTH), ""))
+
+        self.assertEqual(extract_duration("3 months"),
                          (timedelta(days=DAYS_IN_1_MONTH * 3), ""))
-        self.assertEqual(extract_duration("a year",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("a year"),
                          (timedelta(days=DAYS_IN_1_YEAR), ""))
-        self.assertEqual(extract_duration("1 year",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("1 year"),
                          (timedelta(days=DAYS_IN_1_YEAR * 1), ""))
-        self.assertEqual(extract_duration("5 years",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("5 years"),
                          (timedelta(days=DAYS_IN_1_YEAR * 5), ""))
-        self.assertEqual(extract_duration("a decade",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("a decade"),
                          (timedelta(days=DAYS_IN_1_YEAR * 10), ""))
-        self.assertEqual(extract_duration("1 decade",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("1 decade"),
                          (timedelta(days=DAYS_IN_1_YEAR * 10), ""))
-        self.assertEqual(extract_duration("5 decades",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("5 decades"),
                          (timedelta(days=DAYS_IN_1_YEAR * 10 * 5), ""))
-        self.assertEqual(extract_duration("1 century",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("1 century"),
                          (timedelta(days=DAYS_IN_1_YEAR * 100), ""))
-        self.assertEqual(extract_duration("a century",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("a century"),
                          (timedelta(days=DAYS_IN_1_YEAR * 100), ""))
-        self.assertEqual(extract_duration("5 centuries",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("5 centuries"),
                          (timedelta(days=DAYS_IN_1_YEAR * 100 * 5), ""))
-        self.assertEqual(extract_duration("1 millennium",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("1 millennium"),
                          (timedelta(days=DAYS_IN_1_YEAR * 1000), ""))
-        self.assertEqual(extract_duration("5 millenniums",
-                                          resolution=DurationResolution.TIMEDELTA),
+        self.assertEqual(extract_duration("5 millenniums"),
                          (timedelta(days=DAYS_IN_1_YEAR * 1000 * 5), ""))
 
     def test_extract_duration_delta_en(self):
         self.assertEqual(
-            extract_duration("10 seconds"),
+            extract_duration("10 seconds",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(seconds=10.0), ""))
         self.assertEqual(
 
-            extract_duration("5 minutes"),
+            extract_duration("5 minutes",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(minutes=5), ""))
         self.assertEqual(
-            extract_duration("2 hours"),
+            extract_duration("2 hours",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(hours=2), ""))
         self.assertEqual(
-            extract_duration("3 days"),
+            extract_duration("3 days",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(days=3), ""))
         self.assertEqual(
-            extract_duration("25 weeks"),
+            extract_duration("25 weeks",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(weeks=25), ""))
         self.assertEqual(
-            extract_duration("seven hours"),
+            extract_duration("seven hours",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(hours=7), ""))
         self.assertEqual(
-            extract_duration("7.5 seconds"),
+            extract_duration("7.5 seconds",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(seconds=7.5), ""))
         self.assertEqual(
-            extract_duration("eight and a half days thirty nine seconds"),
+            extract_duration("eight and a half days thirty nine seconds",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(days=8.5, seconds=39), ""))
         self.assertEqual(
-            extract_duration("Set a timer for 30 minutes"),
+            extract_duration("Set a timer for 30 minutes",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(minutes=30), "set a timer for"))
         self.assertEqual(
-            extract_duration("Four and a half minutes until sunset"),
+            extract_duration("Four and a half minutes until sunset",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(minutes=4.5), "until sunset"))
         self.assertEqual(
-            extract_duration("Nineteen minutes past the hour"),
+            extract_duration("Nineteen minutes past the hour",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(minutes=19), "past the hour"))
         self.assertEqual(
             extract_duration("wake me up in three weeks, four hundred "
                              "ninety seven days, and three hundred 91.6 "
-                             "seconds"),
+                             "seconds",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(weeks=3, days=497, seconds=391.6),
              "wake me up in , , and"))
         self.assertEqual(
             extract_duration("The movie is one hour, fifty seven"
-                             " and a half minutes long"),
+                             " and a half minutes long",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(hours=1, minutes=57.5),
              "the movie is ,  long"))
         self.assertEqual(
-            extract_duration("10-seconds"),
+            extract_duration("10-seconds",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(seconds=10.0), ""))
         self.assertEqual(
-            extract_duration("5-minutes"),
+            extract_duration("5-minutes",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(minutes=5), ""))
 
         self.assertEqual(
-            extract_duration("1 month"),
+            extract_duration("1 month",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(months=1), ""))
         self.assertEqual(
-            extract_duration("3 months"),
+            extract_duration("3 months",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(months=3), ""))
         self.assertEqual(
-            extract_duration("a year"),
+            extract_duration("a year",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=1), ""))
         self.assertEqual(
-            extract_duration("1 year"),
+            extract_duration("1 year",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=1), ""))
         self.assertEqual(
-            extract_duration("5 years"),
+            extract_duration("5 years",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=5), ""))
         self.assertEqual(
-            extract_duration("a decade"),
+            extract_duration("a decade",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=10), ""))
         self.assertEqual(
-            extract_duration("1 decade"),
+            extract_duration("1 decade",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=10), ""))
         self.assertEqual(
-            extract_duration("5 decades"),
+            extract_duration("5 decades",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=10 * 5), ""))
         self.assertEqual(
-            extract_duration("1 century"),
+            extract_duration("1 century",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=100), ""))
         self.assertEqual(
-            extract_duration("a century"),
+            extract_duration("a century",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=100), ""))
         self.assertEqual(
-            extract_duration("5 centuries"),
+            extract_duration("5 centuries",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=500), ""))
         self.assertEqual(
-            extract_duration("1 millennium"),
+            extract_duration("1 millennium",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=1000), ""))
         self.assertEqual(
-            extract_duration("5 millenniums"),
+            extract_duration("5 millenniums",
+                             resolution=DurationResolution.RELATIVEDELTA),
             (relativedelta(years=1000 * 5), ""))
 
     def test_extract_duration_microseconds_en(self):

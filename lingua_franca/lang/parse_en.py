@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from datetime import datetime, timedelta
-
 from dateutil.relativedelta import relativedelta
 
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
@@ -25,6 +24,7 @@ from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
 
 import re
 import json
+import math
 from lingua_franca import resolve_resource_file
 from lingua_franca.time import now_local, DAYS_IN_1_MONTH, DAYS_IN_1_YEAR
 
@@ -586,7 +586,7 @@ def extractnumber_en(text, short_scale=True, ordinals=False):
                                         short_scale, ordinals).value
 
 
-def extract_duration_en(text, resolution=DurationResolution.RELATIVEDELTA,
+def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
                         replace_token=""):
     """
     Convert an english phrase into a number of seconds
@@ -620,6 +620,7 @@ def extract_duration_en(text, resolution=DurationResolution.RELATIVEDELTA,
 
     pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}s?"
     # text normalization
+    original_text = text
     text = _convert_words_to_numbers_en(text)
     text = text.replace("centuries", "century").replace("millenia",
                                                         "millennium")
@@ -678,7 +679,10 @@ def extract_duration_en(text, resolution=DurationResolution.RELATIVEDELTA,
             else:
                 si_units[unit] = value
         duration = timedelta(**si_units) if any(si_units.values()) else None
-    elif resolution == DurationResolution.RELATIVEDELTA:
+    elif resolution in [DurationResolution.RELATIVEDELTA,
+                        DurationResolution.RELATIVEDELTA_APPROXIMATE,
+                        DurationResolution.RELATIVEDELTA_FALLBACK,
+                        DurationResolution.RELATIVEDELTA_STRICT]:
         relative_units = {
             'microseconds': None,
             'seconds': None,
@@ -726,6 +730,36 @@ def extract_duration_en(text, resolution=DurationResolution.RELATIVEDELTA,
                 relative_units["years"] += value * 1000
             else:
                 relative_units[unit] = value
+
+        # microsecond, month, year must be ints
+        relative_units["microseconds"] = int(relative_units["microseconds"])
+        if resolution == DurationResolution.RELATIVEDELTA_FALLBACK:
+            for unit in ["months", "years"]:
+                value = relative_units[unit]
+                _leftover, _ = math.modf(value)
+                if _leftover != 0:
+                    print("[WARNING] relativedeltas require {unit} to be an "
+                          "integer".format(unit=unit))
+                    # fallback to timedelta resolution
+                    return extract_duration_en(original_text,
+                                               DurationResolution.TIMEDELTA,
+                                               replace_token)
+                relative_units[unit] = int(value)
+        elif resolution == DurationResolution.RELATIVEDELTA_APPROXIMATE:
+            _leftover, year = math.modf(relative_units["years"])
+            relative_units["months"] += 12 * _leftover
+            relative_units["years"] = int(year)
+            _leftover, month = math.modf(relative_units["months"])
+            relative_units["days"] += DAYS_IN_1_MONTH * _leftover
+            relative_units["months"] = int(month)
+        else:
+            for unit in ["months", "years"]:
+                value = relative_units[unit]
+                _leftover, _ = math.modf(value)
+                if _leftover != 0:
+                    raise ValueError("relativedeltas require {unit} to be an "
+                                     "integer".format(unit=unit))
+                relative_units[unit] = int(value)
         duration = relativedelta(**relative_units) if \
             any(relative_units.values()) else None
     else:
