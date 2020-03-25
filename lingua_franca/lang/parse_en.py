@@ -33,8 +33,8 @@ from lingua_franca.time import date_to_season, season_to_date, \
     get_weekend_range, get_week_range, get_century_range, \
     get_millennium_range, get_year_range, get_month_range, get_decade_range, \
     weekday_to_int, month_to_int, now_local, DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
-from lingua_franca.location import Hemisphere, get_default_hemisphere, \
-    get_default_location, get_default_location_code
+from lingua_franca.location import Hemisphere, get_active_hemisphere, \
+    get_active_location, get_active_location_code
 
 try:
     from simple_NER.annotators.locations import LocationNER
@@ -1729,7 +1729,7 @@ def normalize_en(text, remove_articles):
 
 def _get_holidays(location_code=None, year=None):
     year = year or now_local().year
-    location_code = location_code or get_default_location_code()
+    location_code = location_code or get_active_location_code()
     holidays = {}
 
     # Named Dates
@@ -1804,7 +1804,7 @@ def extract_date_en(date_str, ref_date,
     :return:
     """
     if hemisphere is None:
-        hemisphere = get_default_hemisphere()
+        hemisphere = get_active_hemisphere()
     named_dates = _get_holidays(location_code, ref_date.year)
 
     past_qualifiers = ["ago"]

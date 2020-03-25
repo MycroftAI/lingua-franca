@@ -38,8 +38,8 @@ from .lang.parse_nl import normalize_nl, extractnumber_nl, extract_datetime_nl
 
 from lingua_franca import _log_unsupported_language
 from lingua_franca.lang.parse_common import DurationResolution
-from lingua_franca.location import Hemisphere, get_default_hemisphere, \
-    get_default_location, get_default_location_code
+from lingua_franca.location import Hemisphere, get_active_hemisphere, \
+    get_active_location, get_active_location_code
 
 
 def fuzzy_match(x, against):
@@ -437,8 +437,8 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
     if location is not None:
         code, lat, lon = location
     else:
-        code = get_default_location_code()
-        lat, lon = get_default_location()
+        code = get_active_location_code()
+        lat, lon = get_active_location()
 
     if lat < 0:
         hemisphere = Hemisphere.SOUTH

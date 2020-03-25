@@ -26,7 +26,7 @@ from lingua_franca.parse import match_one
 from lingua_franca.parse import normalize
 from lingua_franca.time import DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
 from lingua_franca.parse import DurationResolution
-from lingua_franca.location import set_default_location
+from lingua_franca.location import set_active_location
 from lingua_franca.time import now_local, date_to_season, \
     get_week_range, get_weekend_range, DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
 from lingua_franca.lang.parse_common import DateResolution, Season
@@ -2447,7 +2447,7 @@ class TestExtractDate(unittest.TestCase):
                         date(day=4, month=7, year=2020), anchor=_anchor)
         self._test_date("Restauração da Independência", None)
 
-        set_default_location("PT")
+        set_active_location("PT")
         self._test_date("Restauração da Independência",
                         date(day=1, month=12, year=2020), anchor=_anchor)
         self._test_date("independence day", None)
@@ -2455,7 +2455,7 @@ class TestExtractDate(unittest.TestCase):
                         date(day=12, month=4, year=2020), anchor=_anchor)
 
         # restore location
-        set_default_location("US")
+        set_active_location("US")
         self._test_date("independence day",
                         date(day=4, month=7, year=2020), anchor=_anchor)
 

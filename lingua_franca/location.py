@@ -24,7 +24,7 @@ class Hemisphere(Enum):
     SOUTH = 1
 
 
-def get_default_location():
+def get_active_location():
     """ Get the default location
 
     Returns:
@@ -33,7 +33,7 @@ def get_default_location():
     return __latitude, __longitude
 
 
-def set_default_location(code=None, lat=None, lon=None):
+def set_active_location(code=None, lat=None, lon=None):
     """ Set the default location to be used in location aware
     formatting/parsing
 
@@ -52,7 +52,7 @@ def set_default_location(code=None, lat=None, lon=None):
         __latitude = lat
 
 
-def get_default_location_code():
+def get_active_location_code():
     """ Get the default location ISO code
 
     Returns:
@@ -62,7 +62,7 @@ def get_default_location_code():
     return __default_location
 
 
-def get_default_hemisphere():
+def get_active_hemisphere():
     """ Get the default location
 
     Returns:
