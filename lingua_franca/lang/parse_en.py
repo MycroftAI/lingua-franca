@@ -628,9 +628,12 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
         .replace("a decade", "1 decade").replace("a century", "1 century") \
         .replace("a millennium", "1 millennium")
 
+    # NOTE this is really a hack, _convert_words_to_numbers normalized the
+    # string so we can do this, but this is essentially incorrect since each
+    # replaced number word should be replaced with a replace_token
     # we are always replacing 2 words, {N} {unit}
-    if replace_token:
-        replace_token += " " + replace_token
+    _replace_token = (replace_token + " " + replace_token) \
+        if replace_token else ""
 
     if resolution == DurationResolution.TIMEDELTA:
         si_units = {
@@ -651,7 +654,7 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
                 unit=unit[:-1])  # remove 's' from unit
             matches = re.findall(unit_pattern, text)
             value = sum(map(float, matches))
-            text = re.sub(unit_pattern, replace_token, text)
+            text = re.sub(unit_pattern, _replace_token, text)
             if unit == "days":
                 if si_units["days"] is None:
                     si_units["days"] = 0
@@ -701,7 +704,7 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
                 unit=unit[:-1])  # remove 's' from unit
             matches = re.findall(unit_pattern, text)
             value = sum(map(float, matches))
-            text = re.sub(unit_pattern, replace_token, text)
+            text = re.sub(unit_pattern, _replace_token, text)
             # relativedelta does not support milliseconds
             if unit == "milliseconds":
                 if relative_units["microseconds"] is None:
@@ -773,7 +776,7 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
                 unit=unit[:-1])  # remove 's' from unit
             matches = re.findall(unit_pattern, text)
             value = sum(map(float, matches))
-            text = re.sub(unit_pattern, replace_token, text)
+            text = re.sub(unit_pattern, _replace_token, text)
             if unit == "microseconds":
                 microseconds += value
             elif unit == "milliseconds":
