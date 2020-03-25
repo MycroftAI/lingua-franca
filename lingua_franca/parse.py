@@ -163,9 +163,7 @@ def extract_calendar_duration(text, lang=None, replace_token=""):
     """
     Equivalent to extract_duration with
 
-        resolution=DurationResolution.RELATIVEDELTA
-
-    If text contains a decimal number of months or years a ValueError is thrown
+        resolution=DurationResolution.RELATIVEDELTA_FALLBACK
 
      Args:
         text (str): string containing a duration
@@ -180,7 +178,8 @@ def extract_calendar_duration(text, lang=None, replace_token=""):
                     will have whitespace stripped from the ends.
 
     """
-    return extract_duration(text, lang, DurationResolution.RELATIVEDELTA,
+    return extract_duration(text, lang,
+                            DurationResolution.RELATIVEDELTA_FALLBACK,
                             replace_token)
 
 
