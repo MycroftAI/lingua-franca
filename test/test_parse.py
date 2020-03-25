@@ -2442,15 +2442,22 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("this easter",
                         date(day=12, month=4, year=2020), anchor=_anchor)
 
+        # test location based holidays
         self._test_date("independence day",
                         date(day=4, month=7, year=2020), anchor=_anchor)
         self._test_date("Restauração da Independência", None)
 
         set_default_location("PT")
-
         self._test_date("Restauração da Independência",
                         date(day=1, month=12, year=2020), anchor=_anchor)
         self._test_date("independence day", None)
+        self._test_date("this easter",  # named dates still available
+                        date(day=12, month=4, year=2020), anchor=_anchor)
+
+        # restore location
+        set_default_location("US")
+        self._test_date("independence day",
+                        date(day=4, month=7, year=2020), anchor=_anchor)
 
         # self._test_date("last christmas",
         #                date(day=25, month=12, year=2019), anchor=_anchor)
