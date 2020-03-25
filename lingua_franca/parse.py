@@ -456,7 +456,10 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
 
 
 def get_named_dates(anchor_date=None, lang=None, location=None):
-    """ returns dict of {"name": date} for named dates """
+    """
+    returns dict of {"name": date} for named dates
+     NOTE: Dates are set in anchor_date.year
+     """
     if anchor_date:
         year = anchor_date.year
     else:
@@ -478,12 +481,19 @@ def get_named_dates(anchor_date=None, lang=None, location=None):
     return {}
 
 
-def get_named_eras(lang=None):
-    """ returns dict of {"era_name": date} for named eras """
+def get_named_eras(lang=None, location=None):
+    """ returns dict of {"era_name": date} for named eras
+    NOTE: an era is simply a reference date
+    """
     lang_code = get_primary_lang_code(lang)
 
+    if location is not None:
+        location_code, lat, lon = location
+    else:
+        location_code = get_active_location_code()
+
     if lang_code == "en":
-        return get_named_eras_en()
+        return get_named_eras_en(location_code)
 
     # TODO: get_named_eras for other languages
     _log_unsupported_language(lang_code, ['en'])

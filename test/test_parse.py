@@ -29,7 +29,7 @@ from lingua_franca.parse import DurationResolution
 from lingua_franca.location import set_active_location
 from lingua_franca.time import now_local, date_to_season, \
     get_week_range, get_weekend_range, DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
-from lingua_franca.lang.parse_common import DateResolution, Season
+from lingua_franca.lang.parse_common import DateTimeResolution, Season
 from lingua_franca.location import Hemisphere
 from lingua_franca.lang.parse_en import extract_date_en
 from datetime import date, datetime, timedelta
@@ -1692,7 +1692,7 @@ class TestExtractDate(unittest.TestCase):
     default_time = now.time()
 
     def _test_date(self, date_str, expected_date,
-                   resolution=DateResolution.DAY,
+                   resolution=DateTimeResolution.DAY,
                    anchor=None, hemi=Hemisphere.NORTH, greedy=False):
         anchor = anchor or self.ref_date
         if isinstance(expected_date, datetime):
@@ -1852,29 +1852,29 @@ class TestExtractDate(unittest.TestCase):
 
         self._test_date("before 1992", date(year=1991, month=12, day=31))
         self._test_date("before 1992", date(year=1991, day=1, month=1),
-                        DateResolution.YEAR)
+                        DateTimeResolution.YEAR)
         self._test_date("before 1992", date(year=1990, day=1, month=1),
-                        DateResolution.DECADE)
+                        DateTimeResolution.DECADE)
         self._test_date("before 1992", date(year=1900, day=1, month=1),
-                        DateResolution.CENTURY)
+                        DateTimeResolution.CENTURY)
 
         self._test_date("before april",
                         date(month=3, day=31, year=self.ref_date.year))
         self._test_date("before april",
                         date(month=1, day=1, year=self.ref_date.year - 1),
-                        DateResolution.YEAR)
+                        DateTimeResolution.YEAR)
         self._test_date("before april",
                         date(month=1, day=1, year=2110),
-                        DateResolution.DECADE)
+                        DateTimeResolution.DECADE)
 
         self._test_date("before april 1992",
                         date(month=3, day=31, year=1992))
         self._test_date("before april 1992",
                         date(month=1, day=1, year=1991),
-                        DateResolution.YEAR)
+                        DateTimeResolution.YEAR)
         self._test_date("before april 1992",
                         date(month=1, day=1, year=1990),
-                        DateResolution.DECADE)
+                        DateTimeResolution.DECADE)
 
     def test_after(self):
         # after -> next DateResolution.XXX
@@ -1886,14 +1886,14 @@ class TestExtractDate(unittest.TestCase):
 
         self._test_date("after today",
                         self.ref_date.replace(day=8),
-                        DateResolution.WEEK)
+                        DateTimeResolution.WEEK)
         self._test_date("after today",
                         date(day=1, month=self.ref_date.month + 1,
                              year=self.ref_date.year),
-                        DateResolution.MONTH)
+                        DateTimeResolution.MONTH)
         self._test_date("after tomorrow",
                         date(day=1, month=1, year=2120),
-                        DateResolution.DECADE)
+                        DateTimeResolution.DECADE)
 
         self._test_date("after march 12",
                         self.ref_date.replace(month=3, day=12) +
@@ -1901,17 +1901,17 @@ class TestExtractDate(unittest.TestCase):
 
         self._test_date("after 1992", date(year=1992, day=2, month=1))
         self._test_date("after 1992", date(year=1992, day=6, month=1),
-                        DateResolution.WEEK)
+                        DateTimeResolution.WEEK)
         self._test_date("after 1992", date(year=1992, day=1, month=2),
-                        DateResolution.MONTH)
+                        DateTimeResolution.MONTH)
         self._test_date("after 1992", date(year=1993, day=1, month=1),
-                        DateResolution.YEAR)
+                        DateTimeResolution.YEAR)
         self._test_date("after 1992", date(year=2000, day=1, month=1),
-                        DateResolution.DECADE)
+                        DateTimeResolution.DECADE)
         self._test_date("after 1992", date(year=2000, day=1, month=1),
-                        DateResolution.CENTURY)
+                        DateTimeResolution.CENTURY)
         self._test_date("after 1992", date(year=2000, day=1, month=1),
-                        DateResolution.MILLENNIUM)
+                        DateTimeResolution.MILLENNIUM)
 
         self._test_date("after april",
                         date(day=2, month=4, year=self.ref_date.year))
@@ -1920,30 +1920,30 @@ class TestExtractDate(unittest.TestCase):
                         relativedelta(days=1))
         self._test_date("after april",
                         date(year=self.ref_date.year, day=5, month=4),
-                        DateResolution.WEEK)
+                        DateTimeResolution.WEEK)
         self._test_date("after april",
                         date(year=self.ref_date.year, day=1, month=5),
-                        DateResolution.MONTH)
+                        DateTimeResolution.MONTH)
         self._test_date("after april", date(year=2120, day=1, month=1),
-                        DateResolution.DECADE)
+                        DateTimeResolution.DECADE)
 
         self._test_date("after april 1992", date(year=1992, day=1, month=5),
-                        DateResolution.MONTH)
+                        DateTimeResolution.MONTH)
         self._test_date("after april 1992", date(year=1993, day=1, month=1),
-                        DateResolution.YEAR)
+                        DateTimeResolution.YEAR)
         self._test_date("after april 1992", date(year=2000, day=1, month=1),
-                        DateResolution.CENTURY)
+                        DateTimeResolution.CENTURY)
 
         self._test_date("after 2600", date(year=2600, day=2, month=1))
         self._test_date("after 2600", date(year=2600, day=1, month=2),
-                        DateResolution.MONTH)
+                        DateTimeResolution.MONTH)
         self._test_date("after 2600", date(year=2601, day=1, month=1),
-                        DateResolution.YEAR)
+                        DateTimeResolution.YEAR)
 
         self._test_date("after 2600", date(year=2610, day=1, month=1),
-                        DateResolution.DECADE)
+                        DateTimeResolution.DECADE)
         self._test_date("after 2600", date(year=2700, day=1, month=1),
-                        DateResolution.CENTURY)
+                        DateTimeResolution.CENTURY)
 
     def test_this(self):
         _current_century = ((self.ref_date.year // 100) - 1) * 100

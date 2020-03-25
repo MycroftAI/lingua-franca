@@ -16,7 +16,8 @@
 from collections import OrderedDict
 from lingua_franca.lang.parse_common import Season
 from lingua_franca.location import Hemisphere
-from datetime import date
+from datetime import date, datetime
+from dateutil import tz
 
 
 _ARTICLES_EN = {'a', 'an', 'the'}
@@ -306,5 +307,8 @@ _NAMED_ERAS_EN = {
     "after christ": date(day=1, month=1, year=1),
     "christian era": date(day=1, month=1, year=1),
     "calendar era": date(day=1, month=1, year=1),
-    "anno domini": date(day=1, month=1, year=1)
+    "anno domini": date(day=1, month=1, year=1),
+    "unix time": datetime(day=1, month=1, year=1970, tzinfo=tz.tzutc()),
+    "lilian date": date(day=15, month=10, year=1582),
+    "rata die": date(day=1, month=1, year=1)
 }
