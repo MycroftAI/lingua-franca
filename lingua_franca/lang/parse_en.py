@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from dateutil.relativedelta import relativedelta
+from dateutil.easter import easter
 from datetime import timedelta, datetime, date, time
 from holidays import CountryHoliday
 from lingua_franca.lang.parse_common import DurationResolution, invert_dict, \
@@ -1829,7 +1830,7 @@ def extract_date_en(date_str, ref_date,
     millennium_literal = ["millennium", "millenia", "millenniums"]
     hemisphere_literal = ["hemisphere"]
     season_literal = ["season"]
-    easter = ["easter"]
+    easter_literal = ["easter"]
 
     date_words = _date_tokenize_en(date_str, named_dates)
     remainder_words = list(date_words)  # copy to track consumed words
@@ -2924,6 +2925,55 @@ def extract_date_en(date_str, ref_date,
                     date_found = True
                     extracted_date += relativedelta(years=int(wordPrev))
                     remainder_words[idx - 1] = ""
+            # parse "easter"
+            if word in easter_literal:
+                date_found = True
+                remainder_words[idx] = ""
+                # parse "last easter"
+                if wordPrev in past_markers:
+                    date_found = True
+                    # TODO check if current year or previous
+                    if True:
+                        raise NotImplementedError
+                        _year = ref_date - relativedelta(years=1)
+                        if _year.year < 1583:
+                            method = 1
+                        else:
+                            method = 3
+                        extracted_date = easter(_year.year, method)
+                    remainder_words[idx - 1] = ""
+                # parse "next easter"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    # TODO check if current year or previous
+                    if True:
+                        raise NotImplementedError
+                        _year = ref_date + relativedelta(years=1)
+                        if _year.year < 1583:
+                            method = 1
+                        else:
+                            method = 3
+                        extracted_date = easter(_year.year, method)
+                    remainder_words[idx - 1] = ""
+                # parse Nth easter
+                elif is_numeric(wordPrev):
+                    date_found = True
+                    _year = ref_date.year + int(wordPrev)
+                    if _year < 1583:
+                        method = 1
+                    else:
+                        method = 3
+                    extracted_date = easter(_year, method)
+                    remainder_words[idx - 1] = ""
+                else:
+                    # parse "this easter"
+                    if wordPrev in this:
+                        remainder_words[idx - 1] = ""
+                    if ref_date.year < 1583:
+                        method = 1
+                    else:
+                        method = 3
+                    extracted_date = easter(ref_date.year, method)
             # parse day/mont/year is NUMBER
             if word in set_qualifiers and is_numeric(wordNext):
                 _ordinal = int(wordNext)
