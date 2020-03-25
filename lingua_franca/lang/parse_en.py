@@ -738,7 +738,7 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
                 value = relative_units[unit]
                 _leftover, _ = math.modf(value)
                 if _leftover != 0:
-                    print("[WARNING] relativedeltas require {unit} to be an "
+                    print("[WARNING] relativedelta requires {unit} to be an "
                           "integer".format(unit=unit))
                     # fallback to timedelta resolution
                     return extract_duration_en(original_text,
@@ -757,7 +757,7 @@ def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
                 value = relative_units[unit]
                 _leftover, _ = math.modf(value)
                 if _leftover != 0:
-                    raise ValueError("relativedeltas require {unit} to be an "
+                    raise ValueError("relativedelta requires {unit} to be an "
                                      "integer".format(unit=unit))
                 relative_units[unit] = int(value)
         duration = relativedelta(**relative_units) if \
