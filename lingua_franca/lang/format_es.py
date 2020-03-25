@@ -284,9 +284,13 @@ def pronounce_ordinal_es(number):
     raise NotImplementedError
 
 
-def nice_part_of_day_es(number):
+def nice_response_es(text):
     raise NotImplementedError
 
 
-def nice_ordinal_es(number):
+def nice_part_of_day_es(dt, speech=True):
+    raise NotImplementedError
+
+
+def nice_ordinal_es(text, speech=True):
     raise NotImplementedError

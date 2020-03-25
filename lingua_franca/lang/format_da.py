@@ -299,7 +299,7 @@ def nice_time_da(dt, speech=True, use_24hour=False, use_ampm=False):
         return speak
 
 
-def _nice_response_da(text):
+def nice_response_da(text):
     # check for months and call nice_ordinal_da declension of ordinals
     # replace "^" with "hoch" (to the power of)
     words = text.split()
@@ -316,7 +316,7 @@ def _nice_response_da(text):
     return text
 
 
-def nice_ordinal_da(text):
+def nice_ordinal_da(text, speech=True):
     # check for months for declension of ordinals before months
     # depending on articles/prepositions
     normalized_text = text
@@ -339,6 +339,6 @@ def nice_ordinal_da(text):
     return normalized_text
 
 
-def nice_part_of_day_da(num):
+def nice_part_of_day_da(dt, speech=True):
     raise NotImplementedError
 

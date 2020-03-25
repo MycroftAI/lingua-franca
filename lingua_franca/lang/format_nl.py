@@ -289,7 +289,7 @@ def _fix_hour_nl(hour):
     return hour
 
 
-def nice_part_of_day_nl(dt):
+def nice_part_of_day_nl(dt, speech=True):
     if dt.hour < 6:
         return " 's nachts"
     if dt.hour < 12:
@@ -298,7 +298,7 @@ def nice_part_of_day_nl(dt):
         return " 's middags"
     if dt.hour < 24:
         return " 's avonds"
-    raise Exception('dt.hour is bigger than 24')
+    raise ValueError('dt.hour is bigger than 24')
 
 
 def nice_response_nl(text):
@@ -318,7 +318,7 @@ def nice_response_nl(text):
     return text
 
 
-def nice_ordinal_nl(text):
+def nice_ordinal_nl(text, speech=True):
     # check for months for declension of ordinals before months
     # depending on articles/prepositions
     normalized_text = text

@@ -236,3 +236,15 @@ def pronounce_ordinal_pt(number):
         (str): The pronounced number string.
     """
     raise NotImplementedError
+
+
+def nice_response_pt(text):
+    raise NotImplementedError
+
+
+def nice_part_of_day_pt(dt, speech=True):
+    raise NotImplementedError
+
+
+def nice_ordinal_pt(text, speech=True):
+    raise NotImplementedError

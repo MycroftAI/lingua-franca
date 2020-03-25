@@ -304,7 +304,7 @@ def nice_response_de(text):
     return text
 
 
-def nice_ordinal_de(text):
+def nice_ordinal_de(text, speech=True):
     # check for months for declension of ordinals before months
     # depending on articles/prepositions
     normalized_text = text
@@ -325,3 +325,7 @@ def nice_ordinal_de(text):
                     words[idx] = word
             normalized_text = " ".join(words)
     return normalized_text
+
+
+def nice_part_of_day_de(dt, speech=True):
+    raise NotImplementedError

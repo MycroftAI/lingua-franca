@@ -355,9 +355,14 @@ def pronounce_ordinal_it(number):
     """
     raise NotImplementedError
 
-def nice_part_of_day_it(num):
+
+def nice_response_it(text):
     raise NotImplementedError
 
 
-def nice_ordinal_it(num):
+def nice_part_of_day_it(dt, speech=True):
+    raise NotImplementedError
+
+
+def nice_ordinal_it(text, speech=True):
     raise NotImplementedError

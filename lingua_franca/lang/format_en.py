@@ -397,3 +397,15 @@ def pronounce_ordinal_en(number):
         (str): The pronounced number string.
     """
     raise NotImplementedError
+
+
+def nice_response_en(text):
+    raise NotImplementedError
+
+
+def nice_part_of_day_en(dt, speech=True):
+    raise NotImplementedError
+
+
+def nice_ordinal_en(text, speech=True):
+    raise NotImplementedError

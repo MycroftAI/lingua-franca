@@ -306,10 +306,14 @@ def nice_time_hu(dt, speech=True, use_24hour=False, use_ampm=False):
         return speak
 
 
-def nice_part_of_day_hu(num):
+def nice_response_hu(text):
     raise NotImplementedError
 
 
-def nice_ordinal_hu(num):
+def nice_part_of_day_hu(dt, speech=True):
+    raise NotImplementedError
+
+
+def nice_ordinal_hu(text, speech=True):
     raise NotImplementedError
 

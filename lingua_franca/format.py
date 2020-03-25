@@ -22,22 +22,11 @@ from lingua_franca.lang.format_pt import *
 from lingua_franca.lang.format_it import *
 from lingua_franca.lang.format_sv import *
 from lingua_franca.lang.format_hu import *
-
-from lingua_franca.lang.format_es import nice_number_es
-from lingua_franca.lang.format_es import nice_time_es
-from lingua_franca.lang.format_es import pronounce_number_es
-from lingua_franca.lang.format_de import nice_number_de
-from lingua_franca.lang.format_de import nice_time_de
-from lingua_franca.lang.format_de import pronounce_number_de
-from lingua_franca.lang.format_fr import nice_number_fr
-from lingua_franca.lang.format_fr import nice_time_fr
-from lingua_franca.lang.format_fr import pronounce_number_fr
-from lingua_franca.lang.format_nl import nice_time_nl
-from lingua_franca.lang.format_nl import pronounce_number_nl
-from lingua_franca.lang.format_nl import nice_number_nl
-from lingua_franca.lang.format_da import nice_number_da
-from lingua_franca.lang.format_da import nice_time_da
-from lingua_franca.lang.format_da import pronounce_number_da
+from lingua_franca.lang.format_es import *
+from lingua_franca.lang.format_de import *
+from lingua_franca.lang.format_fr import *
+from lingua_franca.lang.format_nl import *
+from lingua_franca.lang.format_da import *
 
 from lingua_franca.bracket_expansion import SentenceTreeParser
 from lingua_franca import _log_unsupported_language
@@ -593,3 +582,46 @@ def expand_options(parentheses_line: str) -> list:
     # 'a(this|that)b' -> [['a', 'this', 'b'], ['a', 'that', 'b']]
     options = expand_parentheses(re.split(r'([(|)])', parentheses_line))
     return [re.sub(r'\s+', ' ', ' '.join(i)).strip() for i in options]
+
+
+def nice_response(text, lang=None):
+    lang_code = get_primary_lang_code(lang)
+    if lang_code == "nl":
+        return nice_response_nl(text)
+    elif lang_code == "de":
+        return nice_response_de(text)
+    elif lang_code == "da":
+        return nice_response_da(text)
+    elif lang_code == "sv":
+        return nice_response_sv(text)
+
+    # TODO: other languages
+    _log_unsupported_language(lang_code, ['nl', "de", "da", "sv"])
+    return text
+
+
+def nice_ordinal(text, speech=True, lang=None):
+    lang_code = get_primary_lang_code(lang)
+    if lang_code == "nl":
+        return nice_ordinal_nl(text, speech)
+    elif lang_code == "de":
+        return nice_ordinal_de(text, speech)
+    elif lang_code == "da":
+        return nice_ordinal_da(text, speech)
+    elif lang_code == "sv":
+        return nice_ordinal_sv(text, speech)
+
+    # TODO: other languages
+    _log_unsupported_language(lang_code, ["nl", 'de', "da", "sv"])
+    return text
+
+
+def nice_part_of_day(dt, speech=True, lang=None):
+    lang_code = get_primary_lang_code(lang)
+    if lang_code == "nl":
+        return nice_part_of_day_nl(dt, speech)
+
+    # There is no good lang independent default
+    # TODO: other languages
+    _log_unsupported_language(lang_code, ['nl'])
+    raise NotImplementedError
