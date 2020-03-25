@@ -2474,6 +2474,7 @@ class TestExtractDate(unittest.TestCase):
         #                date(day=25, month=12, year=2021), anchor=_anchor)
 
     def test_named_eras(self):
+        # test {Nth X} of {era}
         self._test_date("20th day of the common era",
                         date(day=20, month=1, year=1))
         self._test_date("20th month of the common era",
@@ -2487,11 +2488,17 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("2nd millennium of the common era",
                         date(day=1, month=1, year=1000))
 
-        # TODO Fix me
-        # self._test_date("20 may 1992 anno domini",
-        #                date(day=20, month=5, year=1992))
-        # self._test_date("1992 christian era",
-        #                date(day=1, month=1, year=1992))
+        # test {date} of {era}
+        self._test_date("20 may 1992 anno domini",
+                        date(day=20, month=5, year=1992))
+
+        # test {year} of {era}
+        self._test_date("1992 christian era",
+                        date(day=1, month=1, year=1992))
+
+        # test ambiguous year
+        self._test_date("1 january christian era",
+                        date(day=1, month=1, year=1))
 
     def test_ambiguous(self):
         _anchor = date(day=10, month=5, year=2020)

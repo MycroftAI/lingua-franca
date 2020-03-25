@@ -475,4 +475,17 @@ def get_named_dates(anchor_date=None, lang=None, location=None):
     # TODO: get_named_dates for other languages
     _log_unsupported_language(lang_code, ['en'])
 
+    return {}
+
+
+def get_named_eras(lang=None):
+    """ returns dict of {"era_name": date} for named eras """
+    lang_code = get_primary_lang_code(lang)
+
+    if lang_code == "en":
+        return get_named_eras_en()
+
+    # TODO: get_named_eras for other languages
+    _log_unsupported_language(lang_code, ['en'])
+
     return {"anno domini": date(day=1, month=1, year=1)}

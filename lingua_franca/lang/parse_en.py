@@ -22,7 +22,7 @@ from lingua_franca.lang.parse_common import DurationResolution, invert_dict, \
     DateResolution, is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
     _LONG_ORDINAL_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN, \
-    _SEASONS_EN, _HEMISPHERES_EN, _ORDINAL_BASE_EN
+    _SEASONS_EN, _HEMISPHERES_EN, _ORDINAL_BASE_EN, _NAMED_ERAS_EN
 
 import re
 import json
@@ -1732,13 +1732,6 @@ def get_named_dates_en(location_code=None, year=None):
     location_code = location_code or get_active_location_code()
     holidays = {}
 
-    # Named Dates
-    holidays["common era"] = date(day=1, month=1, year=1)
-    holidays["after christ"] = date(day=1, month=1, year=1)
-    holidays["christian era"] = date(day=1, month=1, year=1)
-    holidays["calendar era"] = date(day=1, month=1, year=1)
-    holidays["anno domini"] = date(day=1, month=1, year=1)
-
     # "universal" holidays
     holidays["christmas"] = date(day=25, month=12, year=year)
     holidays["christmas eve"] = date(day=24, month=12, year=year)
@@ -1755,6 +1748,17 @@ def get_named_dates_en(location_code=None, year=None):
         name = name.lower().strip().replace(" ", "_").replace("'s", "")
         holidays[name] = dt
     return holidays
+
+
+def get_named_eras_en():
+    eras = _NAMED_ERAS_EN
+
+    # normalization
+    for name in list(eras.keys()):
+        dt = eras[name]
+        name = name.lower().strip().replace(" ", "_").replace("'s", "")
+        eras[name] = dt
+    return eras
 
 
 def _date_tokenize_en(date_string, holidays=None):
@@ -1793,6 +1797,14 @@ def _date_tokenize_en(date_string, holidays=None):
             .replace("'s", "")
         cleaned = cleaned.replace(name, _standard)
 
+    # normalize eras into a single word
+    eras = get_named_eras_en()
+    for name, dt in eras.items():
+        name = name.replace("_", " ")
+        _standard = name.lower().strip().replace(" ", "_") \
+            .replace("'s", "")
+        cleaned = cleaned.replace(name, _standard)
+
     return cleaned.split()
 
 
@@ -1813,6 +1825,7 @@ def extract_date_en(date_str, ref_date,
     if hemisphere is None:
         hemisphere = get_active_hemisphere()
     named_dates = get_named_dates_en(location_code, ref_date.year)
+    eras = get_named_eras_en()
 
     past_qualifiers = ["ago"]
     relative_qualifiers = ["from", "after"]
@@ -2401,10 +2414,20 @@ def extract_date_en(date_str, ref_date,
 
     # iterate the word list to extract a date
     if not date_found:
-
-        extracted_date = ref_date
         current_date = now_local()
         final_date = False
+        era_found = False
+
+        # parse {era_name} -> reference_date
+        # "common era", "after christ"
+        for idx, word in enumerate(date_words):
+            if word in eras:
+                ref_date = eras[word]
+                date_found = True
+                remainder_words[idx] = ""
+
+        extracted_date = ref_date
+
         for idx, word in enumerate(date_words):
             if final_date:
                 break  # no more date updates allowed
@@ -3107,7 +3130,11 @@ def extract_date_en(date_str, ref_date,
 
                 extracted_date = extracted_date.replace(year=_year)
                 remainder_words[idx] = ""
-
+            # parse {year} {era}
+            # "1992 after christ"
+            elif is_numeric(word) and wordNext in eras:
+                extracted_date = extracted_date.replace(year=int(word))
+                remainder_words[idx] = ""
             # parse "the {YYYY}s"
             elif not is_numeric(word) and is_numeric(word.rstrip("s")):
                 date_found = True
