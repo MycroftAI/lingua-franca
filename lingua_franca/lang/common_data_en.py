@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 from collections import OrderedDict
-from lingua_franca.lang.parse_common import Hemisphere, Season
+from lingua_franca.lang.parse_common import Season
+from lingua_franca.location import Hemisphere
 
 
 _ARTICLES_EN = {'a', 'an', 'the'}

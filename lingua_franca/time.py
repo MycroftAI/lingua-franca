@@ -16,10 +16,10 @@
 from dateutil.tz import gettz, tzlocal
 from lingua_franca.lang import get_primary_lang_code
 from datetime import timedelta, datetime, date
-from lingua_franca.lang.parse_common import Hemisphere, DateResolution, Season
+from lingua_franca.lang.parse_common import DateResolution, Season
 from lingua_franca.lang.common_data_en import _MONTH_EN, _WEEKDAY_EN, \
     _MONTH_SHORT_EN, _WEEKDAY_SHORT_EN
-
+from lingua_franca.location import Hemisphere
 # used to calculate durations
 DAYS_IN_1_YEAR = 365.2425
 DAYS_IN_1_MONTH = 30.42

@@ -15,10 +15,10 @@
 #
 from dateutil.relativedelta import relativedelta
 from datetime import timedelta, datetime, date, time
-
+from holidays import CountryHoliday
 from lingua_franca.lang.parse_common import DurationResolution, invert_dict, \
     ReplaceableNumber, partition_list, tokenize, Token, Normalizer, Season, \
-    Hemisphere, DateResolution, is_numeric, look_for_fractions
+    DateResolution, is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
     _LONG_ORDINAL_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN, \
     _SEASONS_EN, _HEMISPHERES_EN, _ORDINAL_BASE_EN
@@ -32,10 +32,12 @@ from lingua_franca.time import date_to_season, season_to_date, \
     get_weekend_range, get_week_range, get_century_range, \
     get_millennium_range, get_year_range, get_month_range, get_decade_range, \
     weekday_to_int, month_to_int, now_local, DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
-
+from lingua_franca.location import Hemisphere, get_default_hemisphere, \
+    get_default_location, get_default_location_code
 
 try:
     from simple_NER.annotators.locations import LocationNER
+
     _ner = LocationNER()
 except ImportError:
     _ner = None
@@ -1724,12 +1726,36 @@ def normalize_en(text, remove_articles):
     return EnglishNormalizer().normalize(text, remove_articles)
 
 
-def _date_tokenize_en(date_string):
+def _get_holidays(location_code=None, year=None):
+    year = year or now_local().year
+    location_code = location_code or get_default_location_code()
+    holidays = {}
+    # Universal holidays
+    holidays["christmas"] = date(day=25, month=12, year=year)
+    # Location aware holidays
+    country_holidays = CountryHoliday(location_code, years=year)
+    for dt, name in country_holidays.items():
+        _standard = name.lower().strip().replace(" ", "_") \
+            .replace("'s", "")
+        holidays[_standard] = holidays[name] = dt
+    return holidays
+
+
+def _date_tokenize_en(date_string, holidays=None):
     date_string = _convert_words_to_numbers_en(date_string, ordinals=True)
+    # normalize units
     date_string = date_string \
         .replace("a day", "1 day").replace("a month", "1 month") \
         .replace("a week", "1 week").replace("a year", "1 year") \
         .replace("a century", "1 century").replace("a decade", "1 decade")
+
+    # normalize holidays into a single word
+    holidays = holidays or {}
+    for name, dt in holidays.items():
+        _standard = name.lower().strip().replace(" ", "_") \
+            .replace("'s", "")
+        date_string = date_string.replace(name, _standard)
+
     words = date_string.split()
     cleaned = ""
     for idx, word in enumerate(words):
@@ -1754,7 +1780,8 @@ def _date_tokenize_en(date_string):
 
 def extract_date_en(date_str, ref_date,
                     resolution=DateResolution.DAY,
-                    hemisphere=Hemisphere.NORTH,
+                    hemisphere=None,
+                    location_code=None,
                     greedy=False):
     """
 
@@ -1765,6 +1792,10 @@ def extract_date_en(date_str, ref_date,
     :param greedy: (bool) parse single number as years
     :return:
     """
+    if hemisphere is None:
+        hemisphere = get_default_hemisphere()
+    holidays = _get_holidays(location_code, ref_date.year)
+
     past_qualifiers = ["ago"]
     relative_qualifiers = ["from", "after"]
     relative_past_qualifiers = ["before"]
@@ -1794,7 +1825,7 @@ def extract_date_en(date_str, ref_date,
     hemisphere_literal = ["hemisphere"]
     season_literal = ["season"]
 
-    date_words = _date_tokenize_en(date_str)
+    date_words = _date_tokenize_en(date_str, holidays)
     remainder_words = list(date_words)  # copy to track consumed words
 
     # check for word boundaries and parse reference dates
@@ -2057,7 +2088,7 @@ def extract_date_en(date_str, ref_date,
         # parse {reference_date}
         _date_str = " ".join(_date_words)
         _anchor_date, _r = extract_date_en(_date_str, ref_date, resolution,
-                                       hemisphere, greedy=True)
+                                           hemisphere, greedy=True)
 
         # update consumed words
         for idx, w in enumerate(_r.split()):
@@ -2081,7 +2112,7 @@ def extract_date_en(date_str, ref_date,
             _partial_date_str = " ".join(_ordinal_words)
             _partial_date, _r = extract_date_en(_partial_date_str,
                                                 _anchor_date,
-                                            resolution, hemisphere)
+                                                resolution, hemisphere)
 
             if _partial_date:
                 date_found = True
@@ -2129,7 +2160,7 @@ def extract_date_en(date_str, ref_date,
 
             _date_str = " ".join(date_words[index + 1:])
             _anchor_date, _r = extract_date_en(_date_str, ref_date,
-                                           hemisphere=hemisphere)
+                                               hemisphere=hemisphere)
             if not _anchor_date and len(date_words) > index + 1:
                 _year = date_words[index + 1]
                 if len(_year) == 4 and is_numeric(_year):
@@ -2269,25 +2300,25 @@ def extract_date_en(date_str, ref_date,
                 date_found = True
             # previous year
             elif resolution == DateResolution.YEAR:
-                delta = timedelta(days=DAYS_IN_1_YEAR )
+                delta = timedelta(days=DAYS_IN_1_YEAR)
                 _anchor_date = ref_date - delta
                 extracted_date, _end = get_year_range(_anchor_date)
                 date_found = True
             # previous decade
             elif resolution == DateResolution.DECADE:
-                delta = timedelta(days=DAYS_IN_1_YEAR  * 10)
+                delta = timedelta(days=DAYS_IN_1_YEAR * 10)
                 _anchor_date = ref_date - delta
                 extracted_date, _end = get_decade_range(ref_date)
                 date_found = True
             # previous century
             elif resolution == DateResolution.CENTURY:
-                delta = timedelta(days=DAYS_IN_1_YEAR  * 100)
+                delta = timedelta(days=DAYS_IN_1_YEAR * 100)
                 _anchor_date = ref_date - delta
                 extracted_date, _end = get_century_range(ref_date)
                 date_found = True
             # previous millennium
             elif resolution == DateResolution.MILLENNIUM:
-                delta = timedelta(days=DAYS_IN_1_YEAR  * 1000)
+                delta = timedelta(days=DAYS_IN_1_YEAR * 1000)
                 _anchor_date = ref_date - delta
                 extracted_date, _end = get_century_range(ref_date)
                 date_found = True
@@ -2341,7 +2372,7 @@ def extract_date_en(date_str, ref_date,
             # TODO how to handle BC dates
             # https://stackoverflow.com/questions/15857797/bc-dates-in-python
             if is_past or is_subtract:
-                year_bc = delta.days // DAYS_IN_1_YEAR  - ref_date.year
+                year_bc = delta.days // DAYS_IN_1_YEAR - ref_date.year
                 bc_str = str(year_bc) + " BC"
                 print("ERROR: extracted date is " + bc_str)
             else:
@@ -2638,13 +2669,15 @@ def extract_date_en(date_str, ref_date,
                         extracted_date, _end = get_weekend_range(ref_date)
                     else:
                         extracted_date, _end = get_weekend_range(ref_date +
-                                                         timedelta(weeks=1))
+                                                                 timedelta(
+                                                                     weeks=1))
                     remainder_words[idx - 1] = ""
                 # parse "last weekend"
                 elif wordPrev in past_markers:
                     date_found = True
                     extracted_date, _end = get_weekend_range(ref_date -
-                                                     timedelta(weeks=1))
+                                                             timedelta(
+                                                                 weeks=1))
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse "week"
@@ -2653,7 +2686,7 @@ def extract_date_en(date_str, ref_date,
                 if is_numeric(wordPrev) and 0 < int(wordPrev) <= 4 * 12:
                     date_found = True
                     _week = get_ordinal(int(wordPrev), ref_date,
-                                                 resolution=DateResolution.WEEK_OF_YEAR)
+                                        resolution=DateResolution.WEEK_OF_YEAR)
                     extracted_date, _end = get_week_range(_week)
                     remainder_words[idx - 1] = ""
                 # parse "this week"
@@ -2829,6 +2862,35 @@ def extract_date_en(date_str, ref_date,
                                                  DateResolution.CENTURY)
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
+            # parse {holiday_name}
+            if word in holidays:
+                extracted_date = holidays[word]
+                date_found = True
+                remainder_words[idx] = ""
+                # parse "this christmas"
+                if wordPrev in this:
+                    remainder_words[idx - 1] = ""
+                # parse "last christmas"
+                elif wordPrev in past_markers:
+                    date_found = True
+                    # TODO check if current year or previous
+                    if True:
+                        raise NotImplementedError
+                        extracted_date -= relativedelta(years=1)
+                    remainder_words[idx - 1] = ""
+                # parse "next christmas"
+                elif wordPrev in future_markers:
+                    date_found = True
+                    # TODO check if current year or previous
+                    if True:
+                        raise NotImplementedError
+                        extracted_date += relativedelta(years=1)
+                    remainder_words[idx - 1] = ""
+                # parse Nth christmas
+                elif is_numeric(wordPrev):
+                    date_found = True
+                    extracted_date += relativedelta(years=int(wordPrev))
+                    remainder_words[idx - 1] = ""
             # parse day/mont/year is NUMBER
             if word in set_qualifiers and is_numeric(wordNext):
                 _ordinal = int(wordNext)
@@ -2972,7 +3034,7 @@ def extract_date_en(date_str, ref_date,
 
     remainder = " ".join([w or "_" for w in remainder_words])
     remainder = " ".join([w or "_" for w in remainder_words])
-    #print(date_str, "//", remainder)
+    # print(date_str, "//", remainder)
 
     if date_found:
         if isinstance(extracted_date, datetime):

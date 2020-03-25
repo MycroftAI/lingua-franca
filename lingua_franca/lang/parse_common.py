@@ -444,11 +444,6 @@ class DateResolution(Enum):
     WEEKEND_OF_MILLENNIUM = 32
 
 
-class Hemisphere(Enum):
-    NORTH = 0
-    SOUTH = 1
-
-
 class Season(Enum):
     SPRING = 0
     SUMMER = 1

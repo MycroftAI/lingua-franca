@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from difflib import SequenceMatcher
-from lingua_franca.time import now_local
 from lingua_franca.lang import get_primary_lang_code
 
 from lingua_franca.lang.parse_en import *
@@ -39,6 +38,8 @@ from .lang.parse_nl import normalize_nl, extractnumber_nl, extract_datetime_nl
 
 from lingua_franca import _log_unsupported_language
 from lingua_franca.lang.parse_common import DurationResolution
+from lingua_franca.location import Hemisphere, get_default_hemisphere, \
+    get_default_location, get_default_location_code
 
 
 def fuzzy_match(x, against):
@@ -377,7 +378,7 @@ def get_gender(word, context="", lang=None):
     return None
 
 
-def extract_date(text, anchor_date=None, lang=None):
+def extract_date(text, anchor_date=None, lang=None, location=None):
     """
     Extracts date information from a sentence.  Parses many of the
     common ways that humans express dates, including relative dates
@@ -395,6 +396,8 @@ def extract_date(text, anchor_date=None, lang=None):
             relative dating (for example, what does "tomorrow" mean?).
             Defaults to the current local date/time.
         lang (str): the BCP-47 code for the language to use, None uses default
+        location (str, float, float): ISO code, lat, lon of reference
+            location, used for holidays and seasons
 
     Returns:
         [:obj:`date`, :obj:`str`]: 'date' is the extracted date
@@ -431,8 +434,21 @@ def extract_date(text, anchor_date=None, lang=None):
     if not anchor_date:
         anchor_date = now_local()
 
+    if location is not None:
+        code, lat, lon = location
+    else:
+        code = get_default_location_code()
+        lat, lon = get_default_location()
+
+    if lat < 0:
+        hemisphere = Hemisphere.SOUTH
+    else:
+        hemisphere = Hemisphere.NORTH
+
     if lang_code == "en":
-        return extract_date_en(text, anchor_date)
+        return extract_date_en(text, anchor_date,
+                               hemisphere=hemisphere,
+                               location_code=code)
 
     # TODO: extract_datetime for other languages
     _log_unsupported_language(lang_code, ['en'])
