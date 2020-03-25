@@ -16,9 +16,9 @@
 from dateutil.relativedelta import relativedelta
 from datetime import timedelta, datetime, date, time
 
-from lingua_franca.lang.parse_common import DurationResolution, invert_dict, ReplaceableNumber, \
-    partition_list, tokenize, Token, Normalizer, Season, Hemisphere, \
-    DateResolution, TimeResolution, is_numeric, look_for_fractions
+from lingua_franca.lang.parse_common import DurationResolution, invert_dict, \
+    ReplaceableNumber, partition_list, tokenize, Token, Normalizer, Season, \
+    Hemisphere, DateResolution, is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
     _LONG_ORDINAL_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN, \
     _SEASONS_EN, _HEMISPHERES_EN, _ORDINAL_BASE_EN
@@ -1752,32 +1752,6 @@ def _date_tokenize_en(date_string):
     return cleaned.split()
 
 
-def extract_time_en(time_str, default_time=None,
-                    sensitivity=TimeResolution.SECOND):
-    default_time = default_time or now_local().time()
-    time_qualifiers_am = ['morning']
-    time_qualifiers_pm = ['afternoon', 'evening', 'night', 'tonight']
-    markers = ['at', 'in', 'on', 'by', 'this', 'around', 'for', 'of', "within"]
-
-    extracted_time = default_time
-    time_found = False
-    words = _date_tokenize_en(time_str)
-    for idx, word in enumerate(words):
-        if word == "":
-            continue
-
-        wordPrevPrev = words[idx - 2] if idx > 1 else ""
-        wordPrev = words[idx - 1] if idx > 0 else ""
-        wordNext = words[idx + 1] if idx + 1 < len(words) else ""
-        wordNextNext = words[idx + 2] if idx + 2 < len(words) else ""
-        word = word.rstrip('s')
-
-    # TODO
-    if time_found:
-        return extracted_time
-    return None
-
-
 def extract_date_en(date_str, ref_date,
                     resolution=DateResolution.DAY,
                     hemisphere=Hemisphere.NORTH,
@@ -2123,7 +2097,7 @@ def extract_date_en(date_str, ref_date,
     if is_past:
         # parse {duration} ago
         duration_str = " ".join(date_words[:index])
-        delta, _r = extract_duration_en(duration_str, replace_with='_ _')
+        delta, _r = extract_duration_en(duration_str, replace_token='_')
         if not delta:
             raise RuntimeError(
                 "Could not extract duration from: " + duration_str)
@@ -2144,7 +2118,7 @@ def extract_date_en(date_str, ref_date,
 
         duration_str = " ".join(date_words[:index])
         if duration_str:
-            delta, _r = extract_duration_en(duration_str, replace_with='_ _')
+            delta, _r = extract_duration_en(duration_str, replace_token='_')
 
             # update consumed words
             for idx, w in enumerate(_r.split()):
@@ -2239,7 +2213,7 @@ def extract_date_en(date_str, ref_date,
 
         duration_str = " ".join(date_words[:index])
         if duration_str:
-            delta, _r = extract_duration_en(duration_str, replace_with='_ _')
+            delta, _r = extract_duration_en(duration_str, replace_token='_')
 
             # update consumed words
             for idx, w in enumerate(_r.split()):
@@ -2324,7 +2298,7 @@ def extract_date_en(date_str, ref_date,
         # parse {reference_date} minus {duration}
         # now minus 10 days
         duration_str = " ".join(date_words[index + 1:])
-        delta, _r = extract_duration_en(duration_str, replace_with='_ _')
+        delta, _r = extract_duration_en(duration_str, replace_token='_')
 
         # update consumed words
         for idx, w in enumerate(_r.split()):

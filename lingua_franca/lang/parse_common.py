@@ -408,12 +408,6 @@ class DurationResolution(Enum):
     TOTAL_MILLENNIUMS = 15
 
 
-class TimeResolution(Enum):
-    SECOND = 0
-    MINUTE = 1
-    HOUR = 2
-
-
 class DateResolution(Enum):
     DAY_OF_MONTH = 0
     WEEK_OF_MONTH = 1
