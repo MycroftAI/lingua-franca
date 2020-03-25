@@ -49,12 +49,14 @@ def extract_duration_es(text):
     raise NotImplementedError
 
 
-def is_fractional_es(input_str):
+def is_fractional_es(input_str, short_scale=True):
     """
     This function takes the given text and checks if it is a fraction.
 
     Args:
         text (str): the string to check if fractional
+
+        short_scale (bool): use short scale if True, long scale if False
     Returns:
         (bool) or (float): False if not a fraction, otherwise the fraction
 

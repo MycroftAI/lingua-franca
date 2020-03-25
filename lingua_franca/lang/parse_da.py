@@ -796,7 +796,7 @@ def extract_datetime_da(string, currentDate, default_time):
     return [extractedDate, resultStr]
 
 
-def is_fractional_da(input_str):
+def is_fractional_da(input_str, short_scale=True):
     """
     This function takes the given text and checks if it is a fraction.
 
