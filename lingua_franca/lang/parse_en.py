@@ -1734,15 +1734,19 @@ def _get_holidays(location_code=None, year=None):
 
     # Named Dates
     holidays["christmas"] = date(day=25, month=12, year=year)
-    holidays["christmas_eve"] = date(day=24, month=12, year=year)
-    holidays["new_year_eve"] = date(day=31, month=12, year=year)
+    holidays["christmas eve"] = date(day=24, month=12, year=year)
+    holidays["new year's eve"] = date(day=31, month=12, year=year)
 
     # Location aware holidays
     country_holidays = CountryHoliday(location_code, years=year)
     for dt, name in country_holidays.items():
-        _standard = name.lower().strip().replace(" ", "_") \
-            .replace("'s", "")
-        holidays[_standard] = dt
+        holidays[name] = dt
+
+    # normalization
+    for name in list(holidays.keys()):
+        dt = holidays[name]
+        name = name.lower().strip().replace(" ", "_").replace("'s", "")
+        holidays[name] = dt
     return holidays
 
 
@@ -1753,13 +1757,6 @@ def _date_tokenize_en(date_string, holidays=None):
         .replace("a day", "1 day").replace("a month", "1 month") \
         .replace("a week", "1 week").replace("a year", "1 year") \
         .replace("a century", "1 century").replace("a decade", "1 decade")
-
-    # normalize holidays into a single word
-    holidays = holidays or {}
-    for name, dt in holidays.items():
-        _standard = name.lower().strip().replace(" ", "_") \
-            .replace("'s", "")
-        date_string = date_string.replace(name, _standard)
 
     words = date_string.split()
     cleaned = ""
@@ -1780,6 +1777,15 @@ def _date_tokenize_en(date_string, holidays=None):
     for n, ordinal in _ORDINAL_BASE_EN.items():
         cleaned = cleaned.replace(ordinal, str(n))
     cleaned = normalize_en(cleaned, remove_articles=False)
+
+    # normalize holidays into a single word
+    holidays = holidays or _get_holidays()
+    for name, dt in holidays.items():
+        name = name.replace("_", " ")
+        _standard = name.lower().strip().replace(" ", "_") \
+            .replace("'s", "")
+        cleaned = cleaned.replace(name, _standard)
+
     return cleaned.split()
 
 

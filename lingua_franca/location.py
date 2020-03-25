@@ -33,7 +33,7 @@ def get_default_location():
     return __latitude, __longitude
 
 
-def set_default_location(code, lat, lon):
+def set_default_location(code=None, lat=None, lon=None):
     """ Set the default location to be used in location aware
     formatting/parsing
 
@@ -43,11 +43,13 @@ def set_default_location(code, lat, lon):
         lon (float): longitude
     """
     global __default_location, __longitude, __latitude
-    if __default_location != code:
+    if code and __default_location != code:
         # TODO: Validate location codes?
         __default_location = code
-    __longitude = lon
-    __latitude = lat
+    if lon:
+        __longitude = lon
+    if lat:
+        __latitude = lat
 
 
 def get_default_location_code():
