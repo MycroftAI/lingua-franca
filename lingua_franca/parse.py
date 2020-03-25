@@ -454,3 +454,25 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
     _log_unsupported_language(lang_code, ['en'])
     return text
 
+
+def get_named_dates(anchor_date=None, lang=None, location=None):
+    """ returns dict of {"name": date} for named dates """
+    if anchor_date:
+        year = anchor_date.year
+    else:
+        year = now_local().year
+
+    if location is not None:
+        location_code, lat, lon = location
+    else:
+        location_code = get_active_location_code()
+
+    lang_code = get_primary_lang_code(lang)
+
+    if lang_code == "en":
+        return get_named_dates_en(location_code, year)
+
+    # TODO: get_named_dates for other languages
+    _log_unsupported_language(lang_code, ['en'])
+
+    return {"anno domini": date(day=1, month=1, year=1)}

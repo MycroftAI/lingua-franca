@@ -2473,6 +2473,26 @@ class TestExtractDate(unittest.TestCase):
         # self._test_date("next christmas",
         #                date(day=25, month=12, year=2021), anchor=_anchor)
 
+    def test_named_eras(self):
+        self._test_date("20th day of the common era",
+                        date(day=20, month=1, year=1))
+        self._test_date("20th month of the common era",
+                        date(day=1, month=8, year=2))
+        self._test_date("20th year of the common era",
+                        date(day=1, month=1, year=20))
+        self._test_date("20th decade of the common era",
+                        date(day=1, month=1, year=190))
+        self._test_date("21th century of the common era",
+                        date(day=1, month=1, year=2000))
+        self._test_date("2nd millennium of the common era",
+                        date(day=1, month=1, year=1000))
+
+        # TODO Fix me
+        # self._test_date("20 may 1992 anno domini",
+        #                date(day=20, month=5, year=1992))
+        # self._test_date("1992 christian era",
+        #                date(day=1, month=1, year=1992))
+
     def test_ambiguous(self):
         _anchor = date(day=10, month=5, year=2020)
 

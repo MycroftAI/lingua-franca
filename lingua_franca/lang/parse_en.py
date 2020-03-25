@@ -1727,12 +1727,19 @@ def normalize_en(text, remove_articles):
     return EnglishNormalizer().normalize(text, remove_articles)
 
 
-def _get_holidays(location_code=None, year=None):
+def get_named_dates_en(location_code=None, year=None):
     year = year or now_local().year
     location_code = location_code or get_active_location_code()
     holidays = {}
 
     # Named Dates
+    holidays["common era"] = date(day=1, month=1, year=1)
+    holidays["after christ"] = date(day=1, month=1, year=1)
+    holidays["christian era"] = date(day=1, month=1, year=1)
+    holidays["calendar era"] = date(day=1, month=1, year=1)
+    holidays["anno domini"] = date(day=1, month=1, year=1)
+
+    # "universal" holidays
     holidays["christmas"] = date(day=25, month=12, year=year)
     holidays["christmas eve"] = date(day=24, month=12, year=year)
     holidays["new year's eve"] = date(day=31, month=12, year=year)
@@ -1779,7 +1786,7 @@ def _date_tokenize_en(date_string, holidays=None):
     cleaned = normalize_en(cleaned, remove_articles=False)
 
     # normalize holidays into a single word
-    holidays = holidays or _get_holidays()
+    holidays = holidays or get_named_dates_en()
     for name, dt in holidays.items():
         name = name.replace("_", " ")
         _standard = name.lower().strip().replace(" ", "_") \
@@ -1805,7 +1812,7 @@ def extract_date_en(date_str, ref_date,
     """
     if hemisphere is None:
         hemisphere = get_active_hemisphere()
-    named_dates = _get_holidays(location_code, ref_date.year)
+    named_dates = get_named_dates_en(location_code, ref_date.year)
 
     past_qualifiers = ["ago"]
     relative_qualifiers = ["from", "after"]

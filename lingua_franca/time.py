@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from dateutil.tz import gettz, tzlocal
+from dateutil.relativedelta import relativedelta
 from lingua_franca.lang import get_primary_lang_code
 from datetime import timedelta, datetime, date
 from lingua_franca.lang.parse_common import DateResolution, Season
@@ -286,29 +287,30 @@ def get_ordinal(ordinal, ref_date=None,
         if ordinal < 0:
             raise OverflowError("The last month of existence can not be "
                                 "represented")
-        return date(year=1, day=1, month=1) + timedelta(weeks=ordinal * 4)
+        return date(year=1, day=1, month=1) + relativedelta(months=ordinal - 1)
     if resolution == DateResolution.MONTH_OF_YEAR:
         if ordinal == -1:
             return ref_date.replace(month=12, day=1)
-        return ref_date.replace(month=ordinal, day=1)
+        return ref_date.replace(day=1, month=1) + \
+               relativedelta(months=ordinal - 1)
     if resolution == DateResolution.MONTH_OF_CENTURY:
         if ordinal == -1:
             return date(year=_century + 99, day=1, month=12)
         _date = ref_date.replace(month=1, day=1, year=_century)
-        _date += ordinal * timedelta(weeks=4)
-        return _date - timedelta(days=1)
+        _date += relativedelta(months=ordinal - 1)
+        return _date
     if resolution == DateResolution.MONTH_OF_DECADE:
         if ordinal == -1:
             return date(year=_decade + 9, day=1, month=12)
         _date = ref_date.replace(month=1, day=1, year=_decade)
-        _date += ordinal * timedelta(weeks=4)
-        return _date - timedelta(days=1)
+        _date += relativedelta(months=ordinal - 1)
+        return _date
     if resolution == DateResolution.MONTH_OF_MILLENIUM:
         if ordinal == -1:
             return date(year=_mil + 999, day=1, month=12)
         _date = ref_date.replace(month=1, day=1, year=_mil)
-        _date += ordinal * timedelta(weeks=4)
-        return _date - timedelta(days=1)
+        _date += relativedelta(months=ordinal - 1)
+        return _date
 
     if ordinal == 0:
         # NOTE: no year 0
@@ -365,6 +367,8 @@ def get_ordinal(ordinal, ref_date=None,
         if ordinal == -1:
             raise OverflowError("The last century of existence can not be "
                                 "represented")
+        # there is no century 0
+        ordinal -= 1
         return date(year=ordinal * 100, day=1, month=1)
     if resolution == DateResolution.CENTURY_OF_MILLENIUM:
         if ordinal == -1:
@@ -380,8 +384,8 @@ def get_ordinal(ordinal, ref_date=None,
         if ordinal < 0:
             raise OverflowError("The last millennium of existence can not be "
                                 "represented")
-        if ordinal == 1:
-            return date(day=1, month=1, year=1)
+        # there is no millennium 0
+        ordinal -= 1
         return date(year=ordinal * 1000, day=1, month=1)
     raise ValueError
 
