@@ -1,2 +1,2 @@
 python-dateutil==2.6.0
-holidays
+holidays==0.10.1
