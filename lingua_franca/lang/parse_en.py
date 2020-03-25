@@ -2097,7 +2097,8 @@ def extract_date_en(date_str, ref_date,
     if is_past:
         # parse {duration} ago
         duration_str = " ".join(date_words[:index])
-        delta, _r = extract_duration_en(duration_str, replace_token='_')
+        delta, _r = extract_duration_en(duration_str, replace_token='_',
+                                        resolution=DurationResolution.RELATIVEDELTA_FALLBACK)
         if not delta:
             raise RuntimeError(
                 "Could not extract duration from: " + duration_str)
@@ -2118,7 +2119,8 @@ def extract_date_en(date_str, ref_date,
 
         duration_str = " ".join(date_words[:index])
         if duration_str:
-            delta, _r = extract_duration_en(duration_str, replace_token='_')
+            delta, _r = extract_duration_en(duration_str, replace_token='_',
+                                            resolution=DurationResolution.RELATIVEDELTA_FALLBACK)
 
             # update consumed words
             for idx, w in enumerate(_r.split()):
@@ -2213,7 +2215,8 @@ def extract_date_en(date_str, ref_date,
 
         duration_str = " ".join(date_words[:index])
         if duration_str:
-            delta, _r = extract_duration_en(duration_str, replace_token='_')
+            delta, _r = extract_duration_en(duration_str, replace_token='_',
+                                            resolution=DurationResolution.RELATIVEDELTA_FALLBACK)
 
             # update consumed words
             for idx, w in enumerate(_r.split()):
@@ -2298,7 +2301,8 @@ def extract_date_en(date_str, ref_date,
         # parse {reference_date} minus {duration}
         # now minus 10 days
         duration_str = " ".join(date_words[index + 1:])
-        delta, _r = extract_duration_en(duration_str, replace_token='_')
+        delta, _r = extract_duration_en(duration_str, replace_token='_',
+                                        resolution=DurationResolution.RELATIVEDELTA_FALLBACK)
 
         # update consumed words
         for idx, w in enumerate(_r.split()):

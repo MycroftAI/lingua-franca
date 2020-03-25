@@ -236,7 +236,7 @@ class TestNormalize(unittest.TestCase):
             extract_duration("1.3 months",
                              resolution=DurationResolution.RELATIVEDELTA_APPROXIMATE
                              )[0].months, 1)
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             extract_duration("1.3 months",
                              resolution=DurationResolution.RELATIVEDELTA_APPROXIMATE
                              )[0].days, 0.3 * DAYS_IN_1_MONTH)
@@ -1709,38 +1709,34 @@ class TestExtractDate(unittest.TestCase):
     def test_now(self):
         self._test_date("now", self.now)
         self._test_date("today", self.ref_date)
-        self._test_date("tomorrow", self.ref_date + timedelta(days=1))
-        self._test_date("yesterday", self.ref_date - timedelta(days=1))
+        self._test_date("tomorrow", self.ref_date + relativedelta(days=1))
+        self._test_date("yesterday", self.ref_date - relativedelta(days=1))
         self._test_date("twenty two thousand days before now",
-                        self.now - timedelta(days=22000))
+                        self.now - relativedelta(days=22000))
         self._test_date("10 days from now",
-                        self.now + timedelta(days=10))
+                        self.now + relativedelta(days=10))
 
     def test_duration_ago(self):
         self._test_date("twenty two weeks ago",
-                        self.ref_date - timedelta(weeks=22))
+                        self.ref_date - relativedelta(weeks=22))
         self._test_date("twenty two months ago",
-                        self.ref_date - timedelta(days=DAYS_IN_1_MONTH * 22))
+                        self.ref_date - relativedelta(months=22))
         self._test_date("twenty two decades ago",
-                        self.ref_date - timedelta(
-                            days=DAYS_IN_1_YEAR * 10 * 22))
+                        self.ref_date - relativedelta(years=10 * 22))
         self._test_date("1 century ago",
-                        self.ref_date - timedelta(days=DAYS_IN_1_YEAR * 100))
+                        self.ref_date - relativedelta(years=100))
         self._test_date("ten centuries ago",
-                        self.ref_date - timedelta(
-                            days=DAYS_IN_1_YEAR * 100 * 10))
+                        self.ref_date - relativedelta(years=1000))
         self._test_date("two millenniums ago",
-                        self.ref_date - timedelta(
-                            days=DAYS_IN_1_YEAR * 1000 * 2))
+                        self.ref_date - relativedelta(years=2000))
         self._test_date("twenty two thousand days ago",
-                        self.ref_date - timedelta(days=22000))
+                        self.ref_date - relativedelta(days=22000))
         try:
             self._test_date("twenty two thousand years ago",
-                            self.ref_date - timedelta(
-                                days=DAYS_IN_1_YEAR * 22000))
-        except OverflowError as e:
-            # ERROR: extracted date is 19980 BC
-            assert str(e) == "date value out of range"
+                            self.ref_date - relativedelta(years=22000))
+        except ValueError as e:
+            # ERROR: no dates BC
+            assert str(e) == "year -19883 is out of range"
 
     def test_spoken_date(self):
         self._test_date("13 may 1992", date(month=5, year=1992, day=13))
@@ -1766,13 +1762,13 @@ class TestExtractDate(unittest.TestCase):
 
     def test_from(self):
         self._test_date("10 days from today",
-                        self.ref_date + timedelta(days=10))
+                        self.ref_date + relativedelta(days=10))
         self._test_date("10 days from tomorrow",
-                        self.ref_date + timedelta(days=11))
+                        self.ref_date + relativedelta(days=11))
         self._test_date("10 days from yesterday",
-                        self.ref_date + timedelta(days=9))
+                        self.ref_date + relativedelta(days=9))
         # self._test_date("10 days from after tomorrow",  # TODO fix me
-        #          self.ref_date + timedelta(days=12))
+        #          self.ref_date + relativedelta(days=12))
 
     def test_ordinals(self):
         self._test_date("the 5th day", self.ref_date.replace(day=5))
@@ -1790,56 +1786,56 @@ class TestExtractDate(unittest.TestCase):
                         self.ref_date.replace(day=2, month=1, year=2020))
         self._test_date("300 day of 2020",
                         self.ref_date.replace(day=1, month=1, year=2020) +
-                        timedelta(days=299))
+                        relativedelta(days=299))
 
     def test_plus(self):
         self._test_date("now plus 10 days",
-                        self.now + timedelta(days=10))
+                        self.now + relativedelta(days=10))
         self._test_date("today plus 10 days",
-                        self.ref_date + timedelta(days=10))
+                        self.ref_date + relativedelta(days=10))
         self._test_date("yesterday plus 10 days",
-                        self.ref_date + timedelta(days=9))
+                        self.ref_date + relativedelta(days=9))
         self._test_date("tomorrow plus 10 days",
-                        self.ref_date + timedelta(days=11))
+                        self.ref_date + relativedelta(days=11))
         self._test_date("today plus 10 months",
-                        self.ref_date + timedelta(days=DAYS_IN_1_MONTH * 10))
+                        self.ref_date + relativedelta(months=10))
         self._test_date("today plus 10 years",
-                        self.ref_date + timedelta(days=10 * DAYS_IN_1_YEAR))
+                        self.ref_date + relativedelta(years=10))
         self._test_date("today plus 10 years, 10 months and 1 day",
-                        self.ref_date + timedelta(
-                            days=10 * DAYS_IN_1_YEAR + 10 * DAYS_IN_1_MONTH + 1))
+                        self.ref_date + relativedelta(
+                            days=1, months=10, years=10))
         # TODO Fix me
         # self._test_date("tomorrow + 10 days",
-        #           self.ref_date + timedelta(days=11))
+        #           self.ref_date + relativedelta(days=11))
 
     def test_minus(self):
         self._test_date("now minus 10 days",
-                        self.now - timedelta(days=10))
+                        self.now - relativedelta(days=10))
         self._test_date("today minus 10 days",
-                        self.ref_date - timedelta(days=10))
+                        self.ref_date - relativedelta(days=10))
         # TODO fix me
         # self._test_date("today - 10 days",
-        #           self.ref_date - timedelta(days=10))
+        #           self.ref_date - relativedelta(days=10))
         # self._test_date("yesterday - 10 days",
-        #           self.ref_date - timedelta(days=11))
+        #           self.ref_date - relativedelta(days=11))
         # self._test_date("today - 10 years",
         #            self.ref_date.replace(year=self.ref_date.year - 10))
 
         self._test_date("tomorrow minus 10 days",
-                        self.ref_date - timedelta(days=9))
+                        self.ref_date - relativedelta(days=9))
         self._test_date("today minus 10 months",
-                        self.ref_date - timedelta(days=DAYS_IN_1_MONTH * 10))
+                        self.ref_date - relativedelta(months=10))
         self._test_date("today minus 10 years, 10 months and 1 day",
-                        self.ref_date - timedelta(
-                            days=10 * DAYS_IN_1_YEAR + 10 * DAYS_IN_1_MONTH + 1))
+                        self.ref_date - relativedelta(days=1, months=10,
+                                                      years=10))
 
     def test_before(self):
         # before -> nearest DateResolution.XXX
         self._test_date("before today",
-                        self.ref_date - timedelta(days=1))
+                        self.ref_date - relativedelta(days=1))
         self._test_date("before tomorrow", self.ref_date)
         self._test_date("before yesterday",
-                        self.ref_date - timedelta(days=2))
+                        self.ref_date - relativedelta(days=2))
         self._test_date("before march 12",
                         self.ref_date.replace(month=3, day=11))
 
@@ -1872,10 +1868,10 @@ class TestExtractDate(unittest.TestCase):
     def test_after(self):
         # after -> next DateResolution.XXX
         self._test_date("after today",
-                        self.ref_date + timedelta(days=1))
+                        self.ref_date + relativedelta(days=1))
         self._test_date("after yesterday", self.ref_date)
         self._test_date("after tomorrow",
-                        self.ref_date + timedelta(days=2))
+                        self.ref_date + relativedelta(days=2))
 
         self._test_date("after today",
                         self.ref_date.replace(day=8),
@@ -1890,7 +1886,7 @@ class TestExtractDate(unittest.TestCase):
 
         self._test_date("after march 12",
                         self.ref_date.replace(month=3, day=12) +
-                        timedelta(days=1))
+                        relativedelta(days=1))
 
         self._test_date("after 1992", date(year=1992, day=2, month=1))
         self._test_date("after 1992", date(year=1992, day=6, month=1),
@@ -1910,7 +1906,7 @@ class TestExtractDate(unittest.TestCase):
                         date(day=2, month=4, year=self.ref_date.year))
         self._test_date("after april",
                         date(day=1, month=4, year=self.ref_date.year) +
-                        timedelta(days=1))
+                        relativedelta(days=1))
         self._test_date("after april",
                         date(year=self.ref_date.year, day=5, month=4),
                         DateResolution.WEEK)
@@ -1943,7 +1939,7 @@ class TestExtractDate(unittest.TestCase):
         _current_decade = (self.ref_date.year // 10) * 10
 
         self._test_date("this month", self.ref_date.replace(day=1))
-        self._test_date("this week", self.ref_date - timedelta(
+        self._test_date("this week", self.ref_date - relativedelta(
             days=self.ref_date.weekday()))
         self._test_date("this year", self.ref_date.replace(day=1, month=1))
         self._test_date("current year", self.ref_date.replace(day=1, month=1))
@@ -1953,9 +1949,11 @@ class TestExtractDate(unittest.TestCase):
 
     def test_next(self):
         self._test_date("next month",
-                        (self.ref_date + timedelta(days=DAYS_IN_1_MONTH)).replace(day=1))
+                        (self.ref_date + relativedelta(
+                            days=DAYS_IN_1_MONTH)).replace(day=1))
         self._test_date("next week",
-                        get_week_range(self.ref_date + timedelta(weeks=1))[0])
+                        get_week_range(self.ref_date + relativedelta(weeks=1))[
+                            0])
         self._test_date("next century",
                         date(year=2200, day=1, month=1))
         self._test_date("next year",
@@ -1963,9 +1961,11 @@ class TestExtractDate(unittest.TestCase):
 
     def test_last(self):
         self._test_date("last month",
-                        (self.ref_date - timedelta(days=DAYS_IN_1_MONTH)).replace(day=1))
+                        (self.ref_date - relativedelta(
+                            days=DAYS_IN_1_MONTH)).replace(day=1))
         self._test_date("last week",
-                        get_week_range(self.ref_date - timedelta(weeks=1))[0])
+                        get_week_range(self.ref_date - relativedelta(weeks=1))[
+                            0])
         self._test_date("last year", date(year=self.ref_date.year - 1,
                                           day=1,
                                           month=1))
@@ -2198,19 +2198,19 @@ class TestExtractDate(unittest.TestCase):
 
         self._test_date("this weekend", saturday)
         self._test_date("next weekend", saturday)
-        self._test_date("last weekend", saturday - timedelta(days=7))
+        self._test_date("last weekend", saturday - relativedelta(days=7))
 
         self._test_date("this weekend", saturday,
                         anchor=saturday)
         self._test_date("this weekend", saturday,
                         anchor=sunday)
-        self._test_date("next weekend", saturday + timedelta(days=7),
+        self._test_date("next weekend", saturday + relativedelta(days=7),
                         anchor=saturday)
-        self._test_date("next weekend", saturday + timedelta(days=7),
+        self._test_date("next weekend", saturday + relativedelta(days=7),
                         anchor=sunday)
-        self._test_date("last weekend", saturday - timedelta(days=7),
+        self._test_date("last weekend", saturday - relativedelta(days=7),
                         anchor=saturday)
-        self._test_date("last weekend", saturday - timedelta(days=7),
+        self._test_date("last weekend", saturday - relativedelta(days=7),
                         anchor=sunday)
 
     def test_is(self):
@@ -2461,7 +2461,7 @@ class TestExtractDate(unittest.TestCase):
         #   Nth day of {year}
         #   TODO not matching?
         # self._test_date("1992 of 2020",
-        #                _anchor + timedelta(days=1992),
+        #                _anchor + relativedelta(days=1992),
         #                anchor=_anchor)
 
         # {season} of {season2} ..... of {seasonN}
