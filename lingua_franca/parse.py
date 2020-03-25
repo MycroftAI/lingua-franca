@@ -38,6 +38,7 @@ from lingua_franca.lang.parse_da import normalize_da
 from .lang.parse_nl import normalize_nl, extractnumber_nl, extract_datetime_nl
 
 from lingua_franca import _log_unsupported_language
+from lingua_franca.lang.parse_common import DurationResolution
 
 
 def fuzzy_match(x, against):
@@ -158,7 +159,33 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
     return text
 
 
-def extract_duration(text, lang=None):
+def extract_calendar_duration(text, lang=None, replace_token=""):
+    """
+    Equivalent to extract_duration with
+
+        resolution=DurationResolution.RELATIVEDELTA_FALLBACK
+
+     Args:
+        text (str): string containing a duration
+        lang (str): the BCP-47 code for the language to use, None uses default
+        replace_token (str): string to replace consumed words with
+
+    Returns:
+        (relativedelta, str):
+                    A tuple containing the duration and the remaining text
+                    not consumed in the parsing. The first value will
+                    be None if no duration is found. The text returned
+                    will have whitespace stripped from the ends.
+
+    """
+    return extract_duration(text, lang,
+                            DurationResolution.RELATIVEDELTA_FALLBACK,
+                            replace_token)
+
+
+def extract_duration(text, lang=None,
+                     resolution=DurationResolution.TIMEDELTA,
+                     replace_token=""):
     """ Convert an english phrase into a number of seconds
 
     Convert things like:
@@ -176,6 +203,8 @@ def extract_duration(text, lang=None):
     Args:
         text (str): string containing a duration
         lang (str): the BCP-47 code for the language to use, None uses default
+        resolution (DurationResolution): format to return extracted duration on
+        replace_token (str): string to replace consumed words with
 
     Returns:
         (timedelta, str):
@@ -187,7 +216,7 @@ def extract_duration(text, lang=None):
     lang_code = get_primary_lang_code(lang)
 
     if lang_code == "en":
-        return extract_duration_en(text)
+        return extract_duration_en(text, resolution, replace_token)
 
     # TODO: extract_duration for other languages
     _log_unsupported_language(lang_code, ['en'])

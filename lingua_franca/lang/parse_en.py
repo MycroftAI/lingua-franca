@@ -14,18 +14,19 @@
 # limitations under the License.
 #
 from datetime import datetime, timedelta
-
 from dateutil.relativedelta import relativedelta
 
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
-    invert_dict, ReplaceableNumber, partition_list, tokenize, Token, Normalizer
+    invert_dict, ReplaceableNumber, partition_list, tokenize, Token, \
+    Normalizer, DurationResolution
 from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
     _LONG_ORDINAL_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN
 
 import re
 import json
+import math
 from lingua_franca import resolve_resource_file
-from lingua_franca.time import now_local
+from lingua_franca.time import now_local, DAYS_IN_1_MONTH, DAYS_IN_1_YEAR
 
 
 def generate_plurals_en(originals):
@@ -54,10 +55,10 @@ _SUMS = {'twenty', '20', 'thirty', '30', 'forty', '40', 'fifty', '50',
          'sixty', '60', 'seventy', '70', 'eighty', '80', 'ninety', '90'}
 
 _MULTIPLIES_LONG_SCALE_EN = set(_LONG_SCALE_EN.values()) | \
-    generate_plurals_en(_LONG_SCALE_EN.values())
+                            generate_plurals_en(_LONG_SCALE_EN.values())
 
 _MULTIPLIES_SHORT_SCALE_EN = set(_SHORT_SCALE_EN.values()) | \
-    generate_plurals_en(_SHORT_SCALE_EN.values())
+                             generate_plurals_en(_SHORT_SCALE_EN.values())
 
 # split sentence parse separately and sum ( 2 and a half = 2 + 0.5 )
 _FRACTION_MARKER = {"and"}
@@ -236,10 +237,12 @@ def _extract_fraction_with_text_en(tokens, short_scale, ordinals):
         if len(partitions) == 3:
             numbers1 = \
                 _extract_numbers_with_text_en(partitions[0], short_scale,
-                                              ordinals, fractional_numbers=False)
+                                              ordinals,
+                                              fractional_numbers=False)
             numbers2 = \
                 _extract_numbers_with_text_en(partitions[2], short_scale,
-                                              ordinals, fractional_numbers=True)
+                                              ordinals,
+                                              fractional_numbers=True)
 
             if not numbers1 or not numbers2:
                 return None, None
@@ -249,7 +252,7 @@ def _extract_fraction_with_text_en(tokens, short_scale, ordinals):
             num2 = numbers2[0]
             if num1.value >= 1 and 0 < num2.value < 1:
                 return num1.value + num2.value, \
-                    num1.tokens + partitions[1] + num2.tokens
+                       num1.tokens + partitions[1] + num2.tokens
 
     return None, None
 
@@ -284,10 +287,12 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals):
         if len(partitions) == 3:
             numbers1 = \
                 _extract_numbers_with_text_en(partitions[0], short_scale,
-                                              ordinals, fractional_numbers=False)
+                                              ordinals,
+                                              fractional_numbers=False)
             numbers2 = \
                 _extract_numbers_with_text_en(partitions[2], short_scale,
-                                              ordinals, fractional_numbers=False)
+                                              ordinals,
+                                              fractional_numbers=False)
 
             if not numbers1 or not numbers2:
                 return None, None
@@ -298,7 +303,7 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals):
             # TODO handle number dot number number number
             if "." not in str(decimal.text):
                 return number.value + float('0.' + str(decimal.value)), \
-                    number.tokens + partitions[1] + decimal.tokens
+                       number.tokens + partitions[1] + decimal.tokens
     return None, None
 
 
@@ -342,7 +347,8 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
         next_word = tokens[idx + 1].word if idx + 1 < len(tokens) else ""
 
         if is_numeric(word[:-2]) and \
-                (word.endswith("st") or word.endswith("nd") or word.endswith("rd") or word.endswith("th")):
+                (word.endswith("st") or word.endswith("nd") or
+                 word.endswith("rd") or word.endswith("th")):
 
             # explicit ordinals, 1st, 2nd, 3rd, 4th.... Nth
             word = word[:-2]
@@ -447,10 +453,10 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
 
         else:
             if all([
-                    prev_word in _SUMS,
-                    word not in _SUMS,
-                    word not in multiplies,
-                    current_val >= 10]):
+                prev_word in _SUMS,
+                word not in _SUMS,
+                word not in multiplies,
+                current_val >= 10]):
                 # Backtrack - we've got numbers we can't sum.
                 number_words.pop()
                 val = prev_val
@@ -515,7 +521,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 # 9907657
 
                 time_to_sum = True
-                for other_token in tokens[idx+1:]:
+                for other_token in tokens[idx + 1:]:
                     if other_token.word in multiplies:
                         if string_num_scale[other_token.word] >= current_val:
                             time_to_sum = False
@@ -580,7 +586,8 @@ def extractnumber_en(text, short_scale=True, ordinals=False):
                                         short_scale, ordinals).value
 
 
-def extract_duration_en(text):
+def extract_duration_en(text, resolution=DurationResolution.TIMEDELTA,
+                        replace_token=""):
     """
     Convert an english phrase into a number of seconds
 
@@ -598,6 +605,8 @@ def extract_duration_en(text):
 
     Args:
         text (str): string containing a duration
+        resolution (DurationResolution): format to return extracted duration on
+        replace_token (str): string to replace consumed words with
 
     Returns:
         (timedelta, str):
@@ -609,30 +618,229 @@ def extract_duration_en(text):
     if not text:
         return None
 
-    time_units = {
-        'microseconds': None,
-        'milliseconds': None,
-        'seconds': None,
-        'minutes': None,
-        'hours': None,
-        'days': None,
-        'weeks': None
-    }
-
     pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}s?"
+    # text normalization
+    original_text = text
     text = _convert_words_to_numbers_en(text)
+    text = text.replace("centuries", "century").replace("millenia",
+                                                        "millennium")
+    text = text.replace("a day", "1 day").replace("a year", "1 year") \
+        .replace("a decade", "1 decade").replace("a century", "1 century") \
+        .replace("a millennium", "1 millennium")
 
-    for unit in time_units:
-        unit_pattern = pattern.format(unit=unit[:-1])  # remove 's' from unit
-        matches = re.findall(unit_pattern, text)
-        value = sum(map(float, matches))
-        time_units[unit] = value
-        text = re.sub(unit_pattern, '', text)
+    # NOTE this is really a hack, _convert_words_to_numbers normalized the
+    # string so we can do this, but this is essentially incorrect since each
+    # replaced number word should be replaced with a replace_token
+    # we are always replacing 2 words, {N} {unit}
+    _replace_token = (replace_token + " " + replace_token) \
+        if replace_token else ""
 
-    text = text.strip()
-    duration = timedelta(**time_units) if any(time_units.values()) else None
+    if resolution == DurationResolution.TIMEDELTA:
+        si_units = {
+            'microseconds': None,
+            'milliseconds': None,
+            'seconds': None,
+            'minutes': None,
+            'hours': None,
+            'days': None,
+            'weeks': None
+        }
 
-    return (duration, text)
+        units = ['months', 'years', 'decades', 'centurys', 'millenniums'] + \
+                list(si_units.keys())
+
+        for unit in units:
+            unit_pattern = pattern.format(
+                unit=unit[:-1])  # remove 's' from unit
+            matches = re.findall(unit_pattern, text)
+            value = sum(map(float, matches))
+            text = re.sub(unit_pattern, _replace_token, text)
+            if unit == "days":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += value
+            elif unit == "months":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += DAYS_IN_1_MONTH * value
+            elif unit == "years":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += DAYS_IN_1_YEAR * value
+            elif unit == "decades":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += 10 * DAYS_IN_1_YEAR * value
+            elif unit == "centurys":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += 100 * DAYS_IN_1_YEAR * value
+            elif unit == "millenniums":
+                if si_units["days"] is None:
+                    si_units["days"] = 0
+                si_units["days"] += 1000 * DAYS_IN_1_YEAR * value
+            else:
+                si_units[unit] = value
+        duration = timedelta(**si_units) if any(si_units.values()) else None
+    elif resolution in [DurationResolution.RELATIVEDELTA,
+                        DurationResolution.RELATIVEDELTA_APPROXIMATE,
+                        DurationResolution.RELATIVEDELTA_FALLBACK,
+                        DurationResolution.RELATIVEDELTA_STRICT]:
+        relative_units = {
+            'microseconds': None,
+            'seconds': None,
+            'minutes': None,
+            'hours': None,
+            'days': None,
+            'weeks': None,
+            'months': None,
+            'years': None
+        }
+
+        units = ['decades', 'centurys', 'millenniums', 'milliseconds'] + \
+                list(relative_units.keys())
+        for unit in units:
+            unit_pattern = pattern.format(
+                unit=unit[:-1])  # remove 's' from unit
+            matches = re.findall(unit_pattern, text)
+            value = sum(map(float, matches))
+            text = re.sub(unit_pattern, _replace_token, text)
+            # relativedelta does not support milliseconds
+            if unit == "milliseconds":
+                if relative_units["microseconds"] is None:
+                    relative_units["microseconds"] = 0
+                relative_units["microseconds"] += value * 1000
+            elif unit == "microseconds":
+                if relative_units["microseconds"] is None:
+                    relative_units["microseconds"] = 0
+                relative_units["microseconds"] += value
+            # relativedelta does not support decades, centuries or millennia
+            elif unit == "years":
+                if relative_units["years"] is None:
+                    relative_units["years"] = 0
+                relative_units["years"] += value
+            elif unit == "decades":
+                if relative_units["years"] is None:
+                    relative_units["years"] = 0
+                relative_units["years"] += value * 10
+            elif unit == "centurys":
+                if relative_units["years"] is None:
+                    relative_units["years"] = 0
+                relative_units["years"] += value * 100
+            elif unit == "millenniums":
+                if relative_units["years"] is None:
+                    relative_units["years"] = 0
+                relative_units["years"] += value * 1000
+            else:
+                relative_units[unit] = value
+
+        # microsecond, month, year must be ints
+        relative_units["microseconds"] = int(relative_units["microseconds"])
+        if resolution == DurationResolution.RELATIVEDELTA_FALLBACK:
+            for unit in ["months", "years"]:
+                value = relative_units[unit]
+                _leftover, _ = math.modf(value)
+                if _leftover != 0:
+                    print("[WARNING] relativedelta requires {unit} to be an "
+                          "integer".format(unit=unit))
+                    # fallback to timedelta resolution
+                    return extract_duration_en(original_text,
+                                               DurationResolution.TIMEDELTA,
+                                               replace_token)
+                relative_units[unit] = int(value)
+        elif resolution == DurationResolution.RELATIVEDELTA_APPROXIMATE:
+            _leftover, year = math.modf(relative_units["years"])
+            relative_units["months"] += 12 * _leftover
+            relative_units["years"] = int(year)
+            _leftover, month = math.modf(relative_units["months"])
+            relative_units["days"] += DAYS_IN_1_MONTH * _leftover
+            relative_units["months"] = int(month)
+        else:
+            for unit in ["months", "years"]:
+                value = relative_units[unit]
+                _leftover, _ = math.modf(value)
+                if _leftover != 0:
+                    raise ValueError("relativedelta requires {unit} to be an "
+                                     "integer".format(unit=unit))
+                relative_units[unit] = int(value)
+        duration = relativedelta(**relative_units) if \
+            any(relative_units.values()) else None
+    else:
+        microseconds = 0
+        units = ['months', 'years', 'decades', 'centurys', 'millenniums',
+                 "microseconds", "milliseconds", "seconds", "minutes",
+                 "hours", "days", "weeks"]
+
+        for unit in units:
+            unit_pattern = pattern.format(
+                unit=unit[:-1])  # remove 's' from unit
+            matches = re.findall(unit_pattern, text)
+            value = sum(map(float, matches))
+            text = re.sub(unit_pattern, _replace_token, text)
+            if unit == "microseconds":
+                microseconds += value
+            elif unit == "milliseconds":
+                microseconds += value * 1000
+            elif unit == "seconds":
+                microseconds += value * 1000 * 1000
+            elif unit == "minutes":
+                microseconds += value * 1000 * 1000 * 60
+            elif unit == "hours":
+                microseconds += value * 1000 * 1000 * 60 * 60
+            elif unit == "days":
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24
+            elif unit == "weeks":
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * 7
+            elif unit == "months":
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_MONTH
+            elif unit == "years":
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_YEAR
+            elif unit == "decades":
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_YEAR * 10
+            elif unit == "centurys":
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_YEAR * 100
+            elif unit == "millenniums":
+                microseconds += value * 1000 * 1000 * 60 * 60 * 24 * \
+                                DAYS_IN_1_YEAR * 1000
+
+        if resolution == DurationResolution.TOTAL_MICROSECONDS:
+            duration = microseconds
+        elif resolution == DurationResolution.TOTAL_MILLISECONDS:
+            duration = microseconds / 1000
+        elif resolution == DurationResolution.TOTAL_SECONDS:
+            duration = microseconds / (1000 * 1000)
+        elif resolution == DurationResolution.TOTAL_MINUTES:
+            duration = microseconds / (1000 * 1000 * 60)
+        elif resolution == DurationResolution.TOTAL_HOURS:
+            duration = microseconds / (1000 * 1000 * 60 * 60)
+        elif resolution == DurationResolution.TOTAL_DAYS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24)
+        elif resolution == DurationResolution.TOTAL_WEEKS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 * 7)
+        elif resolution == DurationResolution.TOTAL_MONTHS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_MONTH)
+        elif resolution == DurationResolution.TOTAL_YEARS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_YEAR)
+        elif resolution == DurationResolution.TOTAL_DECADES:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_YEAR * 10)
+        elif resolution == DurationResolution.TOTAL_CENTURIES:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_YEAR * 100)
+        elif resolution == DurationResolution.TOTAL_MILLENNIUMS:
+            duration = microseconds / (1000 * 1000 * 60 * 60 * 24 *
+                                       DAYS_IN_1_YEAR * 1000)
+        else:
+            raise ValueError
+    if not replace_token:
+        text = text.strip()
+    return duration, text
 
 
 def extract_datetime_en(string, dateNow, default_time):
@@ -692,13 +900,13 @@ def extract_datetime_en(string, dateNow, default_time):
 
     def date_found():
         return found or \
-            (
-                datestr != "" or
-                yearOffset != 0 or monthOffset != 0 or
-                dayOffset is True or hrOffset != 0 or
-                hrAbs or minOffset != 0 or
-                minAbs or secOffset != 0
-            )
+               (
+                       datestr != "" or
+                       yearOffset != 0 or monthOffset != 0 or
+                       dayOffset is True or hrOffset != 0 or
+                       hrAbs or minOffset != 0 or
+                       minAbs or secOffset != 0
+               )
 
     if string == "" or not dateNow:
         return None
@@ -1198,8 +1406,8 @@ def extract_datetime_en(string, dateNow, default_time):
                     if (
                             int(strNum) > 100 and
                             (
-                                wordPrev == "o" or
-                                wordPrev == "oh"
+                                    wordPrev == "o" or
+                                    wordPrev == "oh"
                             )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = str(int(strNum) // 100)
@@ -1212,8 +1420,8 @@ def extract_datetime_en(string, dateNow, default_time):
                              remainder == "hours" or remainder == "hour") and
                             word[0] != '0' and
                             (
-                                int(strNum) < 100 or
-                                int(strNum) > 2400
+                                    int(strNum) < 100 or
+                                    int(strNum) > 2400
                             )):
                         # ignores military time
                         # "in 3 hours"
@@ -1260,11 +1468,11 @@ def extract_datetime_en(string, dateNow, default_time):
                     elif (
                             wordNext == "" or wordNext == "o'clock" or
                             (
-                                wordNext == "in" and
-                                (
-                                        wordNextNext == "the" or
-                                        wordNextNext == timeQualifier
-                                )
+                                    wordNext == "in" and
+                                    (
+                                            wordNextNext == "the" or
+                                            wordNextNext == timeQualifier
+                                    )
                             ) or wordNext == 'tonight' or
                             wordNextNext == 'tonight'):
 

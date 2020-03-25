@@ -15,6 +15,7 @@
 #
 from collections import namedtuple
 import re
+from enum import Enum
 
 
 class Normalizer:
@@ -385,3 +386,23 @@ def extract_numbers_generic(text, pronounce_handler, extract_handler,
             extract = extract_handler(to_parse, short_scale, ordinals)
     numbers.reverse()
     return numbers
+
+
+class DurationResolution(Enum):
+    TIMEDELTA = 0
+    RELATIVEDELTA = 1
+    RELATIVEDELTA_STRICT = 1
+    RELATIVEDELTA_FALLBACK = 2
+    RELATIVEDELTA_APPROXIMATE = 3
+    TOTAL_SECONDS = 4
+    TOTAL_MICROSECONDS = 5
+    TOTAL_MILLISECONDS = 6
+    TOTAL_MINUTES = 7
+    TOTAL_HOURS = 8
+    TOTAL_DAYS = 9
+    TOTAL_WEEKS = 10
+    TOTAL_MONTHS = 11
+    TOTAL_YEARS = 12
+    TOTAL_DECADES = 13
+    TOTAL_CENTURIES = 14
+    TOTAL_MILLENNIUMS = 15
