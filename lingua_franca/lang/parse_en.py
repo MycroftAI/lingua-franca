@@ -1730,14 +1730,18 @@ def _get_holidays(location_code=None, year=None):
     year = year or now_local().year
     location_code = location_code or get_default_location_code()
     holidays = {}
-    # Universal holidays
+
+    # Named Dates
     holidays["christmas"] = date(day=25, month=12, year=year)
+    holidays["christmas_eve"] = date(day=24, month=12, year=year)
+    holidays["new_year_eve"] = date(day=31, month=12, year=year)
+
     # Location aware holidays
     country_holidays = CountryHoliday(location_code, years=year)
     for dt, name in country_holidays.items():
         _standard = name.lower().strip().replace(" ", "_") \
             .replace("'s", "")
-        holidays[_standard] = holidays[name] = dt
+        holidays[_standard] = dt
     return holidays
 
 
@@ -1794,7 +1798,7 @@ def extract_date_en(date_str, ref_date,
     """
     if hemisphere is None:
         hemisphere = get_default_hemisphere()
-    holidays = _get_holidays(location_code, ref_date.year)
+    named_dates = _get_holidays(location_code, ref_date.year)
 
     past_qualifiers = ["ago"]
     relative_qualifiers = ["from", "after"]
@@ -1812,6 +1816,7 @@ def extract_date_en(date_str, ref_date,
     now = ["now"]
     today = ["today"]
     this = ["this", "current", "present", "the"]
+    mid = ["mid", "middle"]
     tomorrow = ["tomorrow"]
     yesterday = ["yesterday"]
     day_literal = ["day", "days"]
@@ -1824,8 +1829,9 @@ def extract_date_en(date_str, ref_date,
     millennium_literal = ["millennium", "millenia", "millenniums"]
     hemisphere_literal = ["hemisphere"]
     season_literal = ["season"]
+    easter = ["easter"]
 
-    date_words = _date_tokenize_en(date_str, holidays)
+    date_words = _date_tokenize_en(date_str, named_dates)
     remainder_words = list(date_words)  # copy to track consumed words
 
     # check for word boundaries and parse reference dates
@@ -2522,6 +2528,11 @@ def extract_date_en(date_str, ref_date,
                     date_found = True
                     extracted_date = _end + timedelta(days=1)
                     remainder_words[idx - 1] = ""
+                # parse "mid season"
+                elif wordPrev in mid:
+                    date_found = True
+                    extracted_date = _start + (_end - _start) / 2
+                    remainder_words[idx - 1] = ""
 
                 remainder_words[idx] = ""
             # parse "spring"
@@ -2543,6 +2554,7 @@ def extract_date_en(date_str, ref_date,
                                                       ref_date,
                                                       hemisphere)
                     remainder_words[idx - 1] = ""
+
                 else:
                     # parse "[this] spring"
                     extracted_date = season_to_date(Season.SPRING,
@@ -2550,6 +2562,12 @@ def extract_date_en(date_str, ref_date,
                                                     hemisphere)
                     if wordPrev in this:
                         remainder_words[idx - 1] = ""
+                    # parse "mid {season}"
+                    elif wordPrev in mid:
+                        _start, _end = get_season_range(extracted_date)
+                        extracted_date = _start + (_end - _start) / 2
+                        remainder_words[idx - 1] = ""
+
                 remainder_words[idx] = ""
             # parse "fall"
             if word in _SEASONS_EN[Season.FALL]:
@@ -2574,6 +2592,11 @@ def extract_date_en(date_str, ref_date,
                                                     ref_date,
                                                     hemisphere)
                     if wordPrev in this:
+                        remainder_words[idx - 1] = ""
+                    # parse "mid {season}"
+                    elif wordPrev in mid:
+                        _start, _end = get_season_range(extracted_date)
+                        extracted_date = _start + (_end - _start) / 2
                         remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse "summer"
@@ -2600,6 +2623,11 @@ def extract_date_en(date_str, ref_date,
                                                     hemisphere)
                     if wordPrev in this:
                         remainder_words[idx - 1] = ""
+                    # parse "mid {season}"
+                    elif wordPrev in mid:
+                        _start, _end = get_season_range(extracted_date)
+                        extracted_date = _start + (_end - _start) / 2
+                        remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse "winter"
             if word in _SEASONS_EN[Season.WINTER]:
@@ -2624,6 +2652,11 @@ def extract_date_en(date_str, ref_date,
                                                     ref_date,
                                                     hemisphere)
                     if wordPrev in this:
+                        remainder_words[idx - 1] = ""
+                    # parse "mid {season}"
+                    elif wordPrev in mid:
+                        _start, _end = get_season_range(extracted_date)
+                        extracted_date = _start + (_end - _start) / 2
                         remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse "day"
@@ -2863,8 +2896,8 @@ def extract_date_en(date_str, ref_date,
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse {holiday_name}
-            if word in holidays:
-                extracted_date = holidays[word]
+            if word in named_dates:
+                extracted_date = named_dates[word]
                 date_found = True
                 remainder_words[idx] = ""
                 # parse "this christmas"

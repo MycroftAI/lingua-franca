@@ -15,7 +15,7 @@
 
 import unittest
 
-from lingua_franca.lang.parse_common import Hemisphere
+from lingua_franca.location import Hemisphere
 from lingua_franca.time import get_season_range
 from datetime import date
 

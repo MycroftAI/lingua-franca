@@ -29,7 +29,8 @@ from lingua_franca.parse import DurationResolution
 
 from lingua_franca.time import now_local, date_to_season, \
     get_week_range, get_weekend_range, DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
-from lingua_franca.lang.parse_common import DateResolution, Hemisphere, Season
+from lingua_franca.lang.parse_common import DateResolution, Season
+from lingua_franca.location import Hemisphere
 from lingua_franca.lang.parse_en import extract_date_en
 from datetime import date, datetime, timedelta
 
