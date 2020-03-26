@@ -471,14 +471,13 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
     else:
         hemisphere = Hemisphere.NORTH
 
-    extracted_date = None
-
     if lang_code == "en":
         extracted_date = extract_date_en(text, anchor_date,
                                          hemisphere=hemisphere,
                                          location_code=code)
     else:
-        # TODO: extract_datetime for other languages
+        extracted_date = None
+        # TODO: extract_date for other languages
         _log_unsupported_language(lang_code, ['en'])
 
     if extracted_date is None:
@@ -493,6 +492,68 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
             extracted_date = extracted_datetime.date()
 
     return extracted_date
+
+
+def extract_time(text, anchor_date=None, lang=None, location=None):
+    """
+    Extracts date information from a sentence.  Parses many of the
+    common ways that humans express dates, including relative dates
+   "tomorrow morning', and "Tuesday evening".
+
+    Vague terminology are given arbitrary values, accounting for
+    geographic location (timezones), like:
+        TODO
+
+    Args:
+        text (str): the text to be interpreted
+        anchor_date (:obj:`datetime`, optional): the date to be used for
+            relative dating (for example, what does "tomorrow" mean?).
+            Defaults to the current local date/time.
+        lang (str): the BCP-47 code for the language to use, None uses default
+        location (str, float, float): ISO code, lat, lon of reference
+            location, used for holidays and seasons
+
+    Returns:
+        [:obj:`time`, :obj:`str`]: 'time' is the extracted time
+            as a time object in the user's local timezone or parsed timezone.
+            'leftover_string' is the original phrase with all date
+            related keywords stripped out. See examples for further
+            clarification
+
+            Returns 'None' if no time related text is found.
+
+    Examples:
+
+        TODO
+    """
+
+    lang_code = get_primary_lang_code(lang)
+
+    if not anchor_date:
+        anchor_date = now_local()
+
+    if location is not None:
+        code, lat, lon = location
+    else:
+        code = get_active_location_code()
+        lat, lon = get_active_location()
+
+    if True:  # TODO parsers per language
+        extracted_time = None
+        _log_unsupported_language(lang_code, [])
+
+    if extracted_time is None:
+        # hard-parse, fallback to dateparser
+        # this brings "free support" for many languages
+        print("No times found, falling back to strict parser")
+        _dates = search_dates(text, languages=[lang_code],
+                              settings={'RELATIVE_BASE': anchor_date})
+        if len(_dates) > 0:
+            date_str, extracted_datetime = _dates[0]
+            remainder = text.replace(date_str, "")
+            extracted_time = extracted_datetime.time()
+
+    return extracted_time
 
 
 def get_named_dates(anchor_date=None, lang=None, location=None):
