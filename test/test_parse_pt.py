@@ -15,7 +15,7 @@
 #
 import unittest
 from datetime import datetime, time, date
-
+from dateutil.relativedelta import relativedelta
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_date
@@ -277,20 +277,18 @@ class TestExtractDate(unittest.TestCase):
         # pt parser not implemented, testing fallback to dateparser module
         self.assertEqual(extract_date("1 Janeiro 2020", lang="pt"),
                          date(day=1, month=1, year=2020))
+        self.assertEqual(extract_date("o meu aniversário é a 12 janeiro 2020",
+                                      lang="pt"),
+                         date(day=12, month=1, year=2020))
 
         # relative dates
         now = now_local()
+        self.assertEqual(extract_date("ontem", lang="pt"),
+                         now.date() - relativedelta(days=1))
+        self.assertEqual(extract_date("2 dias atrás", lang="pt"),
+                         now.date() - relativedelta(days=2))
         self.assertEqual(extract_date("2029", lang="pt"),
                          now.replace(year=2029).date())
-
-        # ambiguous dates
-        self.assertEqual(extract_date("20/12/11", lang="pt"),
-                         date(day=20, month=12, year=2011))
-        self.assertEqual(extract_date("10/12/11", lang="pt"),
-                         date(day=10, month=12, year=2011))
-        self.assertEqual(extract_date("12/31/11", lang="pt"),
-                         date(day=12, month=11, year=2031))
-
 
 
 if __name__ == "__main__":

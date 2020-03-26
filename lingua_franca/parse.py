@@ -42,6 +42,7 @@ from lingua_franca.location import Hemisphere, get_active_hemisphere, \
     get_active_location, get_active_location_code
 
 import dateparser
+from dateparser.search import search_dates
 
 
 def fuzzy_match(x, against):
@@ -284,25 +285,35 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
         anchorDate = now_local()
 
     if lang_code == "en":
-        extracted_date = extract_datetime_en(text, anchorDate, default_time)
+        extracted_date, remainder = extract_datetime_en(text, anchorDate,
+                                                        default_time)
     elif lang_code == "es":
-        extracted_date = extract_datetime_es(text, anchorDate, default_time)
+        extracted_date, remainder = extract_datetime_es(text, anchorDate,
+                                                        default_time)
     elif lang_code == "pt":
-        extracted_date = extract_datetime_pt(text, anchorDate, default_time)
+        extracted_date, remainder = extract_datetime_pt(text, anchorDate,
+                                                        default_time)
     elif lang_code == "it":
-        extracted_date = extract_datetime_it(text, anchorDate, default_time)
+        extracted_date, remainder = extract_datetime_it(text, anchorDate,
+                                                        default_time)
     elif lang_code == "fr":
-        extracted_date = extract_datetime_fr(text, anchorDate, default_time)
+        extracted_date, remainder = extract_datetime_fr(text, anchorDate,
+                                                        default_time)
     elif lang_code == "sv":
-        extracted_date = extract_datetime_sv(text, anchorDate, default_time)
+        extracted_date, remainder = extract_datetime_sv(text, anchorDate,
+                                                        default_time)
     elif lang_code == "de":
-        extracted_date = extract_datetime_de(text, anchorDate, default_time)
+        extracted_date, remainder = extract_datetime_de(text, anchorDate,
+                                                        default_time)
     elif lang_code == "da":
-        extracted_date = extract_datetime_da(text, anchorDate, default_time)
+        extracted_date, remainder = extract_datetime_da(text, anchorDate,
+                                                        default_time)
     elif lang_code == "nl":
-        extracted_date = extract_datetime_nl(text, anchorDate, default_time)
+        extracted_date, remainder = extract_datetime_nl(text, anchorDate,
+                                                        default_time)
     else:
         extracted_date = None
+        remainder = text
         # TODO: extract_datetime for other languages
         _log_unsupported_language(lang_code,
                                   ['en', 'es', 'pt', 'it', 'fr', 'sv', 'de',
@@ -310,14 +321,14 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
 
     if extracted_date is None:
         # hard-parse, fallback to dateparser
-        # string must be a date only, any natural language text will make it
-        # fail, however this brings "free support" for many languages and
-        # ISO representations
-        print("[WARNING] Falling back to strict parser")
-        text = normalize(text, lang_code, True)
-        extracted_date = dateparser.parse(text, languages=[lang_code])
+        # this brings "free support" for many languages
+        print("No dates found, falling back to strict parser")
+        _dates = search_dates(text, languages=[lang_code])
+        if len(_dates) > 0:
+            date_str, extracted_date = _dates[0]
+            remainder = text.replace(date_str, "")
 
-    return extracted_date
+    return extracted_date, remainder
 
 
 def normalize(text, lang=None, remove_articles=True):
@@ -471,11 +482,13 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
 
     if extracted_date is None:
         # hard-parse, fallback to dateparser
-        # string must be a date only, any natural language text will make it
-        # fail, however this brings "free support" for many languages
-        print("[WARNING] Falling back to strict parser")
-        text = normalize(text, lang_code, True)
-        extracted_date = dateparser.parse(text, languages=[lang_code]).date()
+        # this brings "free support" for many languages
+        print("No dates found, falling back to strict parser")
+        _dates = search_dates(text, languages=[lang_code])
+        if len(_dates) > 0:
+            date_str, extracted_datetime = _dates[0]
+            remainder = text.replace(date_str, "")
+            extracted_date = extracted_datetime.date()
 
     return extracted_date
 
