@@ -315,8 +315,6 @@ _NAMED_ERAS_EN = {
     "lilian date": date(day=15, month=10, year=1582),
     "rata die": date(day=1, month=1, year=1),
     "armenian Calendar ": date(day=1, month=1, year=552),
-    "holocene era": date(day=1, month=1, year=10001),
-    "human era": date(day=1, month=1, year=10001),
     "anno lucis": date(day=1, month=1, year=4001),
     "National Thai Era": date(day=6, month=4, year=1941),
     "Bahá'í calendar": date(day=21, month=3, year=1844),
@@ -329,9 +327,13 @@ _NAMED_ERAS_EN = {
     "Era vulgaris": date(day=20, month=3, year=1904),
     "incarnation era": date(day=27, month=8, year=8)
 
+    # TODO how to support year > 9999
     # TODO how to support BC?
     # "Vikrama Samvat,": date(day=1, month=1, year=-57)
     # "Seleucid era": date(day=1, month=1, year=-312)
+    # "Anno Graecorum": date(day=1, month=1, year=-312)
+    # "Spanish era": date(day=1, month=1, year=-38)
+    # "era of Caesar": date(day=1, month=1, year=-38)
     # "discordian era: date(day=1, month=1, year=-1166)
     # "Hindu Calendar ": date(day=23, month=1, year=-3102)
     # "Mayan era": date(day=11, month=8, year=-3113)
@@ -339,5 +341,7 @@ _NAMED_ERAS_EN = {
     # "Julian era": date(day=24, month=11, year=-4714),
     # "Assyrian calendar": date(day=1, month=1, year=-4750),
     # "Byzantine Calendar ": date(day=1, month=1, year=-5509)
+    # "holocene era": date(day=1, month=1, year=-10000),
+    # "human era": date(day=1, month=1, year=-10000),
 
 }
