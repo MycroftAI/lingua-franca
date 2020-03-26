@@ -2535,12 +2535,28 @@ class TestExtractDate(unittest.TestCase):
                         date(day=1, month=1, year=1))
 
     def test_negative_eras(self):
-        self._test_date("before present", date(day=1, month=1, year=1950))
-        self._test_date("2 years before present", date(day=1, month=1,
-                                                       year=1948))
-        self._test_date("556 before present", date(day=1, month=1, year=1394))
-        self._test_date("march 1st 556 before present", date(day=1, month=3,
-                                                             year=1394))
+        bp = date(day=1, month=1, year=1950)
+        self._test_date("before present", bp)
+        self._test_date("2 years before present",
+                        date(day=1, month=1, year=1948))
+        self._test_date("556 before present",
+                        date(day=1, month=1, year=1394))
+        self._test_date("march 1st 556 before present",
+                        date(day=1, month=3, year=1394))
+        self._test_date("10th day of the 1st year before present",
+                        (bp - relativedelta(years=1)).replace(day=10))
+        self._test_date("364th day before present",
+                        bp - timedelta(days=364))
+        self._test_date("364th month before present",
+                        bp - relativedelta(months=364))
+        self._test_date("364th week before present",
+                        bp - timedelta(weeks=364))
+        self._test_date("3rd century before present",
+                        bp - relativedelta(years=300))
+        self._test_date("11th decade before present",
+                        bp - relativedelta(years=110))
+        self._test_date("1st millennium before present",
+                        bp - relativedelta(years=1000))
 
     def test_ambiguous(self):
         _anchor = date(day=10, month=5, year=2020)

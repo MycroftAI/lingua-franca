@@ -1958,41 +1958,36 @@ def extract_date_en(date_str, ref_date,
         # equivalent to {negative_era} - {duration}
         if duration_str:
 
-            # parse {duration} {negative_era}
-            delta, _r = extract_duration_en(
-                duration_str, replace_token='_',
-                resolution=DurationResolution.RELATIVEDELTA_FALLBACK)
+            # parse {date} {negative_era}
+            extracted_date, _r = extract_date_en(
+                duration_str, _anchor_date,
+                resolution=DateTimeResolution.BEFORE_PRESENT)
+            # TODO save era resolution in dict, this is hardcoded for
+            #  testing only
 
-            if not delta:
-                _year = date_words[index - 1]
+            if not extracted_date:
+                # parse {duration} {negative_era}
+                delta, _r = extract_duration_en(
+                    duration_str, replace_token='_',
+                    resolution=DurationResolution.RELATIVEDELTA_FALLBACK)
 
-                # parse {date} {negative_era}
-                _extracted_date, _r = extract_date_en(
-                    duration_str, _anchor_date, greedy=True,
-                    resolution=DateTimeResolution.BEFORE_PRESENT)
-                if _extracted_date:
-                    # only year is counted backwards from {era}
-                    delta = relativedelta(years=_extracted_date.year)
+                if not delta:
+                    _year = date_words[index - 1]
+                    # parse {YEAR} {negative_era}
+                    if is_numeric(_year):
+                        delta = relativedelta(years=int(_year))
+                    else:
+                        raise RuntimeError(
+                            "Could not extract duration from: " + duration_str)
 
-                # parse {YEAR} {negative_era}
-                elif is_numeric(_year):
-                    delta = relativedelta(years=int(_year))
-                else:
-                    raise RuntimeError(
-                        "Could not extract duration from: " + duration_str)
+                # subtract duration
+                extracted_date = _anchor_date - delta
 
-            # subtract duration
-            extracted_date = _anchor_date - delta
-            if _extracted_date:
-                # restore day / month of extracted date
-                extracted_date = extracted_date.replace(
-                    day=_extracted_date.day, month=_extracted_date.month)
-
-            # update consumed words
-            remainder_words[index] = "_"
-            for idx, w in enumerate(_r.split()):
-                if w == "_":
-                    remainder_words[idx] = "_"
+                # update consumed words
+                remainder_words[index] = "_"
+                for idx, w in enumerate(_r.split()):
+                    if w == "_":
+                        remainder_words[idx] = "_"
         else:
             extracted_date = _anchor_date
         date_found = True
@@ -2603,9 +2598,16 @@ def extract_date_en(date_str, ref_date,
                     extracted_date = extracted_date.replace(day=int(wordNext))
                     remainder_words[idx + 1] = ""
                     # parse {month} {DAY_OF_MONTH} {YYYY}
-                    if len(wordNextNext) == 4 and is_numeric(wordNextNext):
-                        extracted_date = extracted_date \
-                            .replace(year=int(wordNextNext))
+                    if resolution == DateTimeResolution.BEFORE_PRESENT and \
+                            is_numeric(wordNextNext):
+                        _year = get_ordinal(
+                            int(wordNextNext), extracted_date,
+                            DateTimeResolution.BEFORE_PRESENT_YEAR).year
+                        extracted_date = extracted_date.replace(year=_year)
+                        remainder_words[idx + 2] = ""
+                    elif len(wordNextNext) == 4 and is_numeric(wordNextNext):
+                        _year = int(wordNextNext)
+                        extracted_date = extracted_date.replace(year=_year)
                         remainder_words[idx + 2] = ""
 
                 # parse {DAY_OF_MONTH} {month}
@@ -2786,7 +2788,13 @@ def extract_date_en(date_str, ref_date,
                 # parse {ORDINAL} day
                 if is_numeric(wordPrev):
                     date_found = True
-                    extracted_date = extracted_date.replace(day=int(wordPrev))
+                    if resolution == DateTimeResolution.BEFORE_PRESENT:
+                        extracted_date = get_ordinal(int(wordPrev),
+                                                     ref_date,
+                                                     DateTimeResolution.BEFORE_PRESENT_DAY)
+                    else:
+                        extracted_date = extracted_date.replace(
+                            day=int(wordPrev))
                     remainder_words[idx - 1] = ""
                 # parse day {NUMBER}
                 elif is_numeric(wordNext):
@@ -2806,7 +2814,12 @@ def extract_date_en(date_str, ref_date,
                 if is_numeric(wordPrev):
                     date_found = True
                     remainder_words[idx - 1] = ""
-                    raise NotImplementedError
+                    if resolution == DateTimeResolution.BEFORE_PRESENT:
+                        extracted_date = get_ordinal(
+                            int(wordPrev),
+                            resolution=DateTimeResolution.BEFORE_PRESENT_WEEKEND)
+                    else:
+                        raise NotImplementedError
                 # parse weekend {NUMBER}
                 elif is_numeric(wordNext):
                     date_found = True
@@ -2840,8 +2853,13 @@ def extract_date_en(date_str, ref_date,
                 # parse {ORDINAL} week
                 if is_numeric(wordPrev) and 0 < int(wordPrev) <= 4 * 12:
                     date_found = True
-                    _week = get_ordinal(int(wordPrev), ref_date,
-                                        resolution=DateTimeResolution.WEEK_OF_YEAR)
+                    if resolution == DateTimeResolution.BEFORE_PRESENT:
+                        _week = get_ordinal(
+                            int(wordPrev),
+                            resolution=DateTimeResolution.BEFORE_PRESENT_WEEK)
+                    else:
+                        _week = get_ordinal(int(wordPrev), ref_date,
+                                            resolution=DateTimeResolution.WEEK_OF_YEAR)
                     extracted_date, _end = get_week_range(_week)
                     remainder_words[idx - 1] = ""
                 # parse "this week"
@@ -2874,7 +2892,12 @@ def extract_date_en(date_str, ref_date,
                 # parse {ORDINAL} month
                 if is_numeric(wordPrev) and 0 < int(wordPrev) <= 12:
                     date_found = True
-                    extracted_date = get_ordinal(int(wordPrev), ref_date,
+                    if resolution == DateTimeResolution.BEFORE_PRESENT:
+                        extracted_date = get_ordinal(
+                            int(wordPrev),
+                            resolution=DateTimeResolution.BEFORE_PRESENT_MONTH)
+                    else:
+                        extracted_date = get_ordinal(int(wordPrev), ref_date,
                                                  DateTimeResolution.MONTH_OF_YEAR)
                     remainder_words[idx - 1] = ""
                 # parse month {NUMBER}
@@ -2924,8 +2947,14 @@ def extract_date_en(date_str, ref_date,
                 # parse Nth year
                 elif is_numeric(wordPrev):
                     date_found = True
-                    extracted_date = get_ordinal(int(wordPrev) - 1,
-                                                 resolution=DateTimeResolution.YEAR)
+                    if resolution == DateTimeResolution.BEFORE_PRESENT:
+                        extracted_date = get_ordinal(
+                            int(wordPrev),
+                            resolution=DateTimeResolution.BEFORE_PRESENT_YEAR)
+                    else:
+                        extracted_date = get_ordinal(
+                            int(wordPrev) - 1,
+                            resolution=DateTimeResolution.YEAR)
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse "decade"
@@ -2952,7 +2981,12 @@ def extract_date_en(date_str, ref_date,
                 # parse Nth decade
                 elif is_numeric(wordPrev):
                     date_found = True
-                    extracted_date = get_ordinal(int(wordPrev),
+                    if resolution == DateTimeResolution.BEFORE_PRESENT:
+                        extracted_date = get_ordinal(
+                            int(wordPrev),
+                            resolution=DateTimeResolution.BEFORE_PRESENT_DECADE)
+                    else:
+                        extracted_date = get_ordinal(int(wordPrev),
                                                  resolution=DateTimeResolution.DECADE)
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
@@ -2980,9 +3014,14 @@ def extract_date_en(date_str, ref_date,
                 # parse Nth millennium
                 elif is_numeric(wordPrev):
                     date_found = True
-                    extracted_date = get_ordinal(int(wordPrev) - 1,
-                                                 extracted_date,
-                                                 DateTimeResolution.MILLENNIUM)
+                    if resolution == DateTimeResolution.BEFORE_PRESENT:
+                        extracted_date = get_ordinal(
+                            int(wordPrev), extracted_date,
+                            DateTimeResolution.BEFORE_PRESENT_MILLENNIUM)
+                    else:
+                        extracted_date = get_ordinal(
+                            int(wordPrev) - 1, extracted_date,
+                            DateTimeResolution.MILLENNIUM)
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse "century"
@@ -3011,8 +3050,12 @@ def extract_date_en(date_str, ref_date,
                 # parse Nth century
                 elif is_numeric(wordPrev):
                     date_found = True
-
-                    extracted_date = get_ordinal(int(wordPrev) - 1,
+                    if resolution == DateTimeResolution.BEFORE_PRESENT:
+                        extracted_date = get_ordinal(
+                            int(wordPrev), extracted_date,
+                            DateTimeResolution.BEFORE_PRESENT_CENTURY)
+                    else:
+                        extracted_date = get_ordinal(int(wordPrev) - 1,
                                                  extracted_date,
                                                  DateTimeResolution.CENTURY)
                     remainder_words[idx - 1] = ""
@@ -3178,9 +3221,15 @@ def extract_date_en(date_str, ref_date,
                                 else:
                                     hemisphere = Hemisphere.NORTH
 
+            # parse {YYYY} before present
+            if not date_found and is_numeric(word) and resolution == \
+                    DateTimeResolution.BEFORE_PRESENT:
+                extracted_date = get_ordinal(
+                    int(word), extracted_date,
+                    DateTimeResolution.BEFORE_PRESENT_YEAR)
             # parse {YYYY}
             # NOTE: assumes a full date has at least 3 digits
-            if greedy and is_numeric(word) and len(word) >= 3 \
+            elif greedy and is_numeric(word) and len(word) >= 3 \
                     and wordPrev not in day_literal + week_literal + \
                     weekend_literal + month_literal + decade_literal + \
                     century_literal + millennium_literal \

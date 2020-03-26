@@ -738,6 +738,7 @@ class DateTimeResolution(Enum):
     # geology and other scientific disciplines to specify when events
     # occurred in the past. Because the "present" time changes, standard
     # practice is to use 1 January 1950 as the commencement date
+    BEFORE_PRESENT = 666
     BEFORE_PRESENT_MICROSECOND = 268
     BEFORE_PRESENT_MILLISECOND = 269
     BEFORE_PRESENT_SECOND = 270

@@ -398,6 +398,38 @@ def get_ordinal(ordinal, ref_date=None,
             raise OverflowError("The last millennium of existence can not be "
                                 "represented")
         return date(year=ordinal * 1000, day=1, month=1)
+
+    bp = date(year=1950, day=1, month=1)
+    if resolution == DateTimeResolution.BEFORE_PRESENT_DAY:
+        if ordinal < 0:
+            raise OverflowError("Can not represent dates BC")
+        return bp - relativedelta(days=ordinal)
+    if resolution == DateTimeResolution.BEFORE_PRESENT_WEEK:
+        if ordinal < 0:
+            raise OverflowError("Can not represent dates BC")
+        _week = bp - relativedelta(weeks=ordinal)
+        _start, _end = get_week_range(_week)
+        return _end
+    if resolution == DateTimeResolution.BEFORE_PRESENT_MONTH:
+        if ordinal < 0:
+            raise OverflowError("Can not represent dates BC")
+        return bp - relativedelta(months=ordinal)
+    if resolution == DateTimeResolution.BEFORE_PRESENT_YEAR:
+        if ordinal < 0:
+            raise OverflowError("Can not represent dates BC")
+        return bp - relativedelta(years=ordinal)
+    if resolution == DateTimeResolution.BEFORE_PRESENT_DECADE:
+        if ordinal < 0:
+            raise OverflowError("Can not represent dates BC")
+        return bp - relativedelta(years=10 * ordinal)
+    if resolution == DateTimeResolution.BEFORE_PRESENT_CENTURY:
+        if ordinal < 0:
+            raise OverflowError("Can not represent dates BC")
+        return bp - relativedelta(years=100 * ordinal)
+    if resolution == DateTimeResolution.BEFORE_PRESENT_MILLENNIUM:
+        if ordinal < 0:
+            raise OverflowError("Can not represent dates BC")
+        return bp - relativedelta(years=1000 * ordinal)
     raise ValueError
 
 
