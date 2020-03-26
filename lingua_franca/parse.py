@@ -285,51 +285,46 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
         anchorDate = now_local()
 
     if lang_code == "en":
-        extracted_date, remainder = extract_datetime_en(text, anchorDate,
-                                                        default_time)
+        res = extract_datetime_en(text, anchorDate, default_time)
     elif lang_code == "es":
-        extracted_date, remainder = extract_datetime_es(text, anchorDate,
-                                                        default_time)
+        res = extract_datetime_es(text, anchorDate, default_time)
     elif lang_code == "pt":
-        extracted_date, remainder = extract_datetime_pt(text, anchorDate,
-                                                        default_time)
+        res = extract_datetime_pt(text, anchorDate, default_time)
     elif lang_code == "it":
-        extracted_date, remainder = extract_datetime_it(text, anchorDate,
-                                                        default_time)
+        res = extract_datetime_it(text, anchorDate, default_time)
     elif lang_code == "fr":
-        extracted_date, remainder = extract_datetime_fr(text, anchorDate,
-                                                        default_time)
+        res = extract_datetime_fr(text, anchorDate, default_time)
     elif lang_code == "sv":
-        extracted_date, remainder = extract_datetime_sv(text, anchorDate,
-                                                        default_time)
+        res = extract_datetime_sv(text, anchorDate, default_time)
     elif lang_code == "de":
-        extracted_date, remainder = extract_datetime_de(text, anchorDate,
-                                                        default_time)
+        res = extract_datetime_de(text, anchorDate, default_time)
     elif lang_code == "da":
-        extracted_date, remainder = extract_datetime_da(text, anchorDate,
-                                                        default_time)
+        res = extract_datetime_da(text, anchorDate, default_time)
     elif lang_code == "nl":
-        extracted_date, remainder = extract_datetime_nl(text, anchorDate,
-                                                        default_time)
+        res = extract_datetime_nl(text, anchorDate, default_time)
     else:
-        extracted_date = None
+        res = None
         # TODO: extract_datetime for other languages
         _log_unsupported_language(lang_code,
                                   ['en', 'es', 'pt', 'it', 'fr', 'sv', 'de',
                                    'da'])
 
-    if extracted_date is None:
+    if res is None:
         # hard-parse, fallback to dateparser
         # this brings "free support" for many languages
         print("No dates found, falling back to strict parser")
         _dates = search_dates(text, languages=[lang_code],
-                              settings={'RELATIVE_BASE': anchorDate})
-        if len(_dates) > 0:
+                              settings={'RELATIVE_BASE': anchorDate,
+                                        'STRICT_PARSING': True})
+        if _dates is not None:
+            # return first datetime only
+            # TODO extract_datetimes
+            # TODO extract_datetime_range
             date_str, extracted_date = _dates[0]
             remainder = text.replace(date_str, "")
-
-    if extracted_date is not None:
-        return extracted_date, remainder
+            return extracted_date, remainder
+    else:
+        return res
     return None
 
 
@@ -486,8 +481,12 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
         # this brings "free support" for many languages
         print("No dates found, falling back to strict parser")
         _dates = search_dates(text, languages=[lang_code],
-                              settings={'RELATIVE_BASE': anchor_date})
-        if len(_dates) > 0:
+                              settings={'RELATIVE_BASE': anchor_date,
+                                        'STRICT_PARSING': True})
+        if _dates:
+            # return first date only
+            # TODO extract_dates
+            # TODO extract_date_range
             date_str, extracted_datetime = _dates[0]
             remainder = text.replace(date_str, "")
             extracted_date = extracted_datetime.date()
