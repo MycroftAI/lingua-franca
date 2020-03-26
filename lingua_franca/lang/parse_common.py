@@ -710,27 +710,165 @@ class DateTimeResolution(Enum):
     LILIAN_WINTER = 248
     LILIAN_SUMMER = 249
 
-    # Rata Die, number of days elapsed since 1 January 1 AD 1 in the
-    # proleptic Gregorian calendar. Equivalent to absolute units
-    RATADIE_MICROSECOND = 250
-    RATADIE_MILLISECOND = 251
-    RATADIE_SECOND = 252
-    RATADIE_MINUTE = 253
-    RATADIE_HOUR = 254
-    RATADIE_DAY = 255
-    RATADIE_WEEK = 256
-    RATADIE_WEEKEND = 257
-    RATADIE_MONTH = 258
-    RATADIE_YEAR = 259
-    RATADIE_DECADE = 260
-    RATADIE_CENTURY = 261
-    RATADIE_MILLENNIUM = 262
+    # Holocene/Human Era s a year numbering system that adds exactly
+    # 10,000 years to the currently dominant (AD/BC or CE/BCE) numbering scheme,
+    # placing its first year near the beginning of the Holocene geological
+    # epoch and the Neolithic Revolution
+    HOLOCENE_MICROSECOND = 250
+    HOLOCENE_MILLISECOND = 251
+    HOLOCENE_SECOND = 252
+    HOLOCENE_MINUTE = 253
+    HOLOCENE_HOUR = 254
+    HOLOCENE_DAY = 255
+    HOLOCENE_WEEK = 256
+    HOLOCENE_WEEKEND = 257
+    HOLOCENE_MONTH = 258
+    HOLOCENE_YEAR = 259
+    HOLOCENE_DECADE = 260
+    HOLOCENE_CENTURY = 261
+    HOLOCENE_MILLENNIUM = 262
 
-    RATADIE_SEASON = 263
-    RATADIE_SPRING = 264
-    RATADIE_FALL = 265
-    RATADIE_WINTER = 266
-    RATADIE_SUMMER = 267
+    HOLOCENE_SEASON = 263
+    HOLOCENE_SPRING = 264
+    HOLOCENE_FALL = 265
+    HOLOCENE_WINTER = 266
+    HOLOCENE_SUMMER = 267
+
+    # Before Present (BP) years is a time scale used mainly in archaeology,
+    # geology and other scientific disciplines to specify when events
+    # occurred in the past. Because the "present" time changes, standard
+    # practice is to use 1 January 1950 as the commencement date
+    BEFORE_PRESENT_MICROSECOND = 268
+    BEFORE_PRESENT_MILLISECOND = 269
+    BEFORE_PRESENT_SECOND = 270
+    BEFORE_PRESENT_MINUTE = 271
+    BEFORE_PRESENT_HOUR = 272
+    BEFORE_PRESENT_DAY = 273
+    BEFORE_PRESENT_WEEK = 274
+    BEFORE_PRESENT_WEEKEND = 275
+    BEFORE_PRESENT_MONTH = 276
+    BEFORE_PRESENT_YEAR = 277
+    BEFORE_PRESENT_DECADE = 278
+    BEFORE_PRESENT_CENTURY = 279
+    BEFORE_PRESENT_MILLENNIUM = 280
+
+    BEFORE_PRESENT_SEASON = 281
+    BEFORE_PRESENT_SPRING = 282
+    BEFORE_PRESENT_FALL = 283
+    BEFORE_PRESENT_WINTER = 284
+    BEFORE_PRESENT_SUMMER = 285
+
+    # After the Development of Agriculture (ADA) is a system for
+    # counting years forward from 8000 BCE, making 2020 the year 10020 ADA
+    ADA_MICROSECOND = 286
+    ADA_MILLISECOND = 287
+    ADA_SECOND = 288
+    ADA_MINUTE = 289
+    ADA_HOUR = 290
+    ADA_DAY = 291
+    ADA_WEEK = 292
+    ADA_WEEKEND = 293
+    ADA_MONTH = 294
+    ADA_YEAR = 295
+    ADA_DECADE = 296
+    ADA_CENTURY = 297
+    ADA_MILLENNIUM = 298
+
+    ADA_SEASON = 299
+    ADA_SPRING = 300
+    ADA_FALL = 301
+    ADA_WINTER = 302
+    ADA_SUMMER = 303
+
+    # Alexandrian Era - 25 March 5493 BC
+    ALEXANDRIAN_MICROSECOND = 304
+    ALEXANDRIAN_MILLISECOND = 305
+    ALEXANDRIAN_SECOND = 306
+    ALEXANDRIAN_MINUTE = 307
+    ALEXANDRIAN_HOUR = 308
+    ALEXANDRIAN_DAY = 309
+    ALEXANDRIAN_WEEK = 310
+    ALEXANDRIAN_WEEKEND = 311
+    ALEXANDRIAN_MONTH = 312
+    ALEXANDRIAN_YEAR = 313
+    ALEXANDRIAN_DECADE = 314
+    ALEXANDRIAN_CENTURY = 315
+    ALEXANDRIAN_MILLENNIUM = 316
+
+    ALEXANDRIAN_SEASON = 317
+    ALEXANDRIAN_SPRING = 318
+    ALEXANDRIAN_FALL = 319
+    ALEXANDRIAN_WINTER = 320
+    ALEXANDRIAN_SUMMER = 321
+
+    # "Creation Era of Constantinople" or "Era of the World"
+    # September 1, 5509 BC
+    CEC_MICROSECOND = 322
+    CEC_MILLISECOND = 323
+    CEC_SECOND = 324
+    CEC_MINUTE = 325
+    CEC_HOUR = 326
+    CEC_DAY = 327
+    CEC_WEEK = 328
+    CEC_WEEKEND = 329
+    CEC_MONTH = 330
+    CEC_YEAR = 331
+    CEC_DECADE = 332
+    CEC_CENTURY = 333
+    CEC_MILLENNIUM = 334
+
+    CEC_SEASON = 335
+    CEC_SPRING = 336
+    CEC_FALL = 337
+    CEC_WINTER = 338
+    CEC_SUMMER = 339
+
+    ### Everything bellow only for convenience
+
+    # Rata Die, number of days elapsed since 1 January 1 in the proleptic
+    # Gregorian calendar.
+    RATADIE = DAY
+    RATADIE_MICROSECOND = MICROSECOND
+    RATADIE_MILLISECOND = MILLISECOND
+    RATADIE_SECOND = SECOND
+    RATADIE_MINUTE = MINUTE
+    RATADIE_HOUR = HOUR
+    RATADIE_DAY = DAY
+    RATADIE_WEEK = WEEK
+    RATADIE_WEEKEND = WEEKEND
+    RATADIE_MONTH = MONTH
+    RATADIE_YEAR = YEAR
+    RATADIE_DECADE = DECADE
+    RATADIE_CENTURY = CENTURY
+    RATADIE_MILLENNIUM = MILLENNIUM
+
+    RATADIE_SEASON = SEASON
+    RATADIE_SPRING = SPRING
+    RATADIE_FALL = FALL
+    RATADIE_WINTER = WINTER
+    RATADIE_SUMMER = SUMMER
+
+    # CommonEra, since 1 January 1 in the proleptic Gregorian calendar.
+    CE = DAY
+    CE_MICROSECOND = MICROSECOND
+    CE_MILLISECOND = MILLISECOND
+    CE_SECOND = SECOND
+    CE_MINUTE = MINUTE
+    CE_HOUR = HOUR
+    CE_DAY = DAY
+    CE_WEEK = WEEK
+    CE_WEEKEND = WEEKEND
+    CE_MONTH = MONTH
+    CE_YEAR = YEAR
+    CE_DECADE = DECADE
+    CE_CENTURY = CENTURY
+    CE_MILLENNIUM = MILLENNIUM
+
+    CE_SEASON = SEASON
+    CE_SPRING = SPRING
+    CE_FALL = FALL
+    CE_WINTER = WINTER
+    CE_SUMMER = SUMMER
 
 
 class Season(Enum):
