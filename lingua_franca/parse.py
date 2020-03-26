@@ -41,6 +41,8 @@ from lingua_franca.lang.parse_common import DurationResolution
 from lingua_franca.location import Hemisphere, get_active_hemisphere, \
     get_active_location, get_active_location_code
 
+import dateparser
+
 
 def fuzzy_match(x, against):
     """Perform a 'fuzzy' comparison between two strings.
@@ -445,14 +447,25 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
     else:
         hemisphere = Hemisphere.NORTH
 
-    if lang_code == "en":
-        return extract_date_en(text, anchor_date,
-                               hemisphere=hemisphere,
-                               location_code=code)
+    extracted_date = None
 
-    # TODO: extract_datetime for other languages
-    _log_unsupported_language(lang_code, ['en'])
-    return text
+    if lang_code == "en":
+        extracted_date = extract_date_en(text, anchor_date,
+                                         hemisphere=hemisphere,
+                                         location_code=code)
+    else:
+        # TODO: extract_datetime for other languages
+        _log_unsupported_language(lang_code, ['en'])
+
+    if extracted_date is None:
+        # hard-parse, fallback to dateparser
+        # string must be a date only, any natural language text will make it
+        # fail, however this brings "free support" for many languages
+        print("[WARNING] Falling back to strict parser")
+        text = normalize(text, lang_code, True)
+        extracted_date = dateparser.parse(text, languages=[lang_code])
+
+    return extracted_date
 
 
 def get_named_dates(anchor_date=None, lang=None, location=None):
