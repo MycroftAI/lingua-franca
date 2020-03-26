@@ -303,6 +303,9 @@ _SEASONS_EN = {
 }
 
 _NAMED_ERAS_EN = {
+    # NOTE calendars have different year/month lengths and starting years,
+    # this is just a reference point in gregorian_date
+
     "common era": date(day=1, month=1, year=1),
     "after christ": date(day=1, month=1, year=1),
     "christian era": date(day=1, month=1, year=1),
@@ -310,5 +313,31 @@ _NAMED_ERAS_EN = {
     "anno domini": date(day=1, month=1, year=1),
     "unix time": datetime(day=1, month=1, year=1970, tzinfo=tz.tzutc()),
     "lilian date": date(day=15, month=10, year=1582),
-    "rata die": date(day=1, month=1, year=1)
+    "rata die": date(day=1, month=1, year=1),
+    "armenian Calendar ": date(day=1, month=1, year=552),
+    "holocene era": date(day=1, month=1, year=10001),
+    "human era": date(day=1, month=1, year=10001),
+    "anno lucis": date(day=1, month=1, year=4001),
+    "National Thai Era": date(day=6, month=4, year=1941),
+    "Bahá'í calendar": date(day=21, month=3, year=1844),
+    "Yazdegerd era": date(day=16, month=6, year=632),
+    "French Republican era": date(day=22, month=9, year=1792),
+    "Positivist era": date(day=1, month=1, year=1789),
+    "Chinese Republican era": date(day=1, month=1, year=1912),
+    "Era Fascista": date(day=1, month=1, year=1922),
+    "After Dianetics": date(day=1, month=1, year=1950),
+    "Era vulgaris": date(day=20, month=3, year=1904),
+    "incarnation era": date(day=27, month=8, year=8)
+
+    # TODO how to support BC?
+    # "Vikrama Samvat,": date(day=1, month=1, year=-57)
+    # "Seleucid era": date(day=1, month=1, year=-312)
+    # "discordian era: date(day=1, month=1, year=-1166)
+    # "Hindu Calendar ": date(day=23, month=1, year=-3102)
+    # "Mayan era": date(day=11, month=8, year=-3113)
+    # "anno mundi": date(day=1, month=1, year=-3761),
+    # "Julian era": date(day=24, month=11, year=-4714),
+    # "Assyrian calendar": date(day=1, month=1, year=-4750),
+    # "Byzantine Calendar ": date(day=1, month=1, year=-5509)
+
 }
