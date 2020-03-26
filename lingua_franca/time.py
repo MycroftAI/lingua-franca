@@ -447,7 +447,8 @@ def get_ordinal(ordinal, ref_date=None,
         if ordinal < 0:
             raise OverflowError("Can not represent dates BC")
         return bp - relativedelta(years=1000 * ordinal)
-    raise ValueError
+
+    raise ValueError("Invalid DateTimeResolution")
 
 
 def date_to_season(ref_date=None, hemisphere=Hemisphere.NORTH):
