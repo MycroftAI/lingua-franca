@@ -1832,12 +1832,12 @@ class TestExtractDate(unittest.TestCase):
     def test_timedelta_fallback(self):
         self._test_date("now plus 10 months",
                         self.now + relativedelta(months=10))
-        #        self._test_date("now plus 10.5 months",
-        #                        self.now + timedelta(days=10.5 * DAYS_IN_1_MONTH))
+        self._test_date("today plus 10.5 months",
+                        self.ref_date + timedelta(days=10.5 * DAYS_IN_1_MONTH))
         self._test_date("now plus 10 years",
                         self.now + relativedelta(years=10))
-        self._test_date("now plus 10.5 years",
-                        self.now + timedelta(days=10.5 * DAYS_IN_1_YEAR))
+        self._test_date("today plus 10.5 years",
+                        self.ref_date + timedelta(days=10.5 * DAYS_IN_1_YEAR))
 
     def test_before(self):
         # before -> nearest DateResolution.XXX
@@ -2245,8 +2245,8 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("first day of the first year",
                         date(day=1, month=1, year=1))
 
-        # self._test_date("first day of the first week",
-        #                date(day=1, month=1, year=self.ref_date.year))
+        self._test_date("first day of the first week",
+                        date(day=1, month=1, year=self.ref_date.year))
 
         self._test_date("3rd day",
                         self.ref_date.replace(day=3))
