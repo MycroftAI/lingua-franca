@@ -284,28 +284,40 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
         anchorDate = now_local()
 
     if lang_code == "en":
-        return extract_datetime_en(text, anchorDate, default_time)
+        extracted_date = extract_datetime_en(text, anchorDate, default_time)
     elif lang_code == "es":
-        return extract_datetime_es(text, anchorDate, default_time)
+        extracted_date = extract_datetime_es(text, anchorDate, default_time)
     elif lang_code == "pt":
-        return extract_datetime_pt(text, anchorDate, default_time)
+        extracted_date = extract_datetime_pt(text, anchorDate, default_time)
     elif lang_code == "it":
-        return extract_datetime_it(text, anchorDate, default_time)
+        extracted_date = extract_datetime_it(text, anchorDate, default_time)
     elif lang_code == "fr":
-        return extract_datetime_fr(text, anchorDate, default_time)
+        extracted_date = extract_datetime_fr(text, anchorDate, default_time)
     elif lang_code == "sv":
-        return extract_datetime_sv(text, anchorDate, default_time)
+        extracted_date = extract_datetime_sv(text, anchorDate, default_time)
     elif lang_code == "de":
-        return extract_datetime_de(text, anchorDate, default_time)
+        extracted_date = extract_datetime_de(text, anchorDate, default_time)
     elif lang_code == "da":
-        return extract_datetime_da(text, anchorDate, default_time)
+        extracted_date = extract_datetime_da(text, anchorDate, default_time)
     elif lang_code == "nl":
-        return extract_datetime_nl(text, anchorDate, default_time)
+        extracted_date = extract_datetime_nl(text, anchorDate, default_time)
+    else:
+        extracted_date = None
+        # TODO: extract_datetime for other languages
+        _log_unsupported_language(lang_code,
+                                  ['en', 'es', 'pt', 'it', 'fr', 'sv', 'de',
+                                   'da'])
 
-    # TODO: extract_datetime for other languages
-    _log_unsupported_language(lang_code,
-                              ['en', 'es', 'pt', 'it', 'fr', 'sv', 'de', 'da'])
-    return text
+    if extracted_date is None:
+        # hard-parse, fallback to dateparser
+        # string must be a date only, any natural language text will make it
+        # fail, however this brings "free support" for many languages and
+        # ISO representations
+        print("[WARNING] Falling back to strict parser")
+        text = normalize(text, lang_code, True)
+        extracted_date = dateparser.parse(text, languages=[lang_code])
+
+    return extracted_date
 
 
 def normalize(text, lang=None, remove_articles=True):
@@ -463,7 +475,7 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
         # fail, however this brings "free support" for many languages
         print("[WARNING] Falling back to strict parser")
         text = normalize(text, lang_code, True)
-        extracted_date = dateparser.parse(text, languages=[lang_code])
+        extracted_date = dateparser.parse(text, languages=[lang_code]).date()
 
     return extracted_date
 
