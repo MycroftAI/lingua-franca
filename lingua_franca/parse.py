@@ -323,7 +323,8 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
         # hard-parse, fallback to dateparser
         # this brings "free support" for many languages
         print("No dates found, falling back to strict parser")
-        _dates = search_dates(text, languages=[lang_code])
+        _dates = search_dates(text, languages=[lang_code],
+                              settings={'RELATIVE_BASE': anchorDate})
         if len(_dates) > 0:
             date_str, extracted_date = _dates[0]
             remainder = text.replace(date_str, "")
@@ -484,7 +485,8 @@ def extract_date(text, anchor_date=None, lang=None, location=None):
         # hard-parse, fallback to dateparser
         # this brings "free support" for many languages
         print("No dates found, falling back to strict parser")
-        _dates = search_dates(text, languages=[lang_code])
+        _dates = search_dates(text, languages=[lang_code],
+                              settings={'RELATIVE_BASE': anchor_date})
         if len(_dates) > 0:
             date_str, extracted_datetime = _dates[0]
             remainder = text.replace(date_str, "")
