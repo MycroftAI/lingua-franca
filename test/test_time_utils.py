@@ -16,8 +16,63 @@
 import unittest
 
 from lingua_franca.location import Hemisphere
-from lingua_franca.time import get_season_range
+from lingua_franca.time import get_season_range, get_weekend_range, \
+    get_week_range, get_decade_range, get_month_range, get_year_range, \
+    get_millennium_range, get_century_range, get_ordinal, get_week_number
 from datetime import date
+
+
+class TestRanges(unittest.TestCase):
+    def test_range(self):
+        ref_date = date(day=27, month=2, year=1994)
+
+        weekend_range = (date(day=26, month=2, year=1994),
+                         date(day=27, month=2, year=1994))
+        week_range = (date(day=21, month=2, year=1994),
+                      date(day=27, month=2, year=1994))
+        month_range = (date(day=1, month=2, year=1994),
+                       date(day=28, month=2, year=1994))
+        year_range = (date(day=1, month=1, year=1994),
+                      date(day=31, month=12, year=1994))
+        decade_range = (date(day=1, month=1, year=1990),
+                        date(day=31, month=12, year=1999))
+        century_range = (date(day=1, month=1, year=1900),
+                         date(day=31, month=12, year=1999))
+        millennium_range = (date(day=1, month=1, year=1000),
+                            date(day=31, month=12, year=1999))
+
+        self.assertEqual(get_weekend_range(ref_date), weekend_range)
+        self.assertEqual(get_week_range(ref_date), week_range)
+        self.assertEqual(get_month_range(ref_date), month_range)
+        self.assertEqual(get_year_range(ref_date), year_range)
+        self.assertEqual(get_decade_range(ref_date), decade_range)
+        self.assertEqual(get_century_range(ref_date), century_range)
+        self.assertEqual(get_millennium_range(ref_date), millennium_range)
+
+        ref_date = date(day=27, month=2, year=2112)
+
+        weekend_range = (date(day=27, month=2, year=2112),
+                         date(day=28, month=2, year=2112))
+        week_range = (date(day=22, month=2, year=2112),
+                      date(day=28, month=2, year=2112))
+        month_range = (date(day=1, month=2, year=2112),
+                       date(day=29, month=2, year=2112))
+        year_range = (date(day=1, month=1, year=2112),
+                      date(day=31, month=12, year=2112))
+        decade_range = (date(day=1, month=1, year=2110),
+                        date(day=31, month=12, year=2119))
+        century_range = (date(day=1, month=1, year=2100),
+                         date(day=31, month=12, year=2199))
+        millennium_range = (date(day=1, month=1, year=2000),
+                            date(day=31, month=12, year=2999))
+
+        self.assertEqual(get_weekend_range(ref_date), weekend_range)
+        self.assertEqual(get_week_range(ref_date), week_range)
+        self.assertEqual(get_month_range(ref_date), month_range)
+        self.assertEqual(get_year_range(ref_date), year_range)
+        self.assertEqual(get_decade_range(ref_date), decade_range)
+        self.assertEqual(get_century_range(ref_date), century_range)
+        self.assertEqual(get_millennium_range(ref_date), millennium_range)
 
 
 class TestHemisphere(unittest.TestCase):
