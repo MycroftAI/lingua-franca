@@ -1841,7 +1841,7 @@ def extract_date_en(date_str, ref_date,
     more_markers = ["plus", "add", "+"]
     less_markers = ["minus", "subtract", "-"]
     past_markers = ["past", "last"]
-    future_markers = ["next"]
+    future_markers = ["next", "upcoming"]
     most_recent_qualifiers = ["last"]
     location_markers = ["in", "on", "at", "for"]
 
