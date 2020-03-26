@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import unittest
-from datetime import datetime, time, date
+from datetime import datetime, time, date, timedelta
 
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
@@ -29,6 +29,13 @@ class TestExtractDate(unittest.TestCase):
         self.assertEqual(extract_date("Le 11 Décembre 2014 à 09:00",
                                       lang="fr"),
                          date(day=11, month=12, year=2014))
+
+        # test case missed by extract_datetime_fr
+        dt = datetime.now() - timedelta(hours=37)
+        dt = dt.replace(microsecond=0)
+        self.assertEqual(extract_datetime(
+            "apprendre à compter à 37 heures",
+            lang="fr-fr")[0].replace(microsecond=0), dt)
 
 
 class TestNormalize_fr(unittest.TestCase):
@@ -317,8 +324,6 @@ class TestNormalize_fr(unittest.TestCase):
         self.assertEqual(extract_datetime("", lang="fr-fr"), None)
         self.assertEqual(extract_datetime("phrase inutile", lang="fr-fr"),
                          None)
-        self.assertEqual(extract_datetime(
-            "apprendre à compter à 37 heures", lang="fr-fr"), None)
 
     def test_extractdatetime_default_fr(self):
         default = time(9, 0, 0)

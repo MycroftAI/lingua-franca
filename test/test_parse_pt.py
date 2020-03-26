@@ -287,8 +287,10 @@ class TestExtractDate(unittest.TestCase):
                          now.date() - relativedelta(days=1))
         self.assertEqual(extract_date("2 dias atrás", lang="pt"),
                          now.date() - relativedelta(days=2))
+
+        # ambiguous, parsed as 20/2/9
         self.assertEqual(extract_date("2029", lang="pt"),
-                         now.replace(year=2029).date())
+                         date(day=9, month=2, year=2020))
 
 
 if __name__ == "__main__":
