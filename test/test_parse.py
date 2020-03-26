@@ -1731,12 +1731,9 @@ class TestExtractDate(unittest.TestCase):
                         self.ref_date - relativedelta(years=2000))
         self._test_date("twenty two thousand days ago",
                         self.ref_date - relativedelta(days=22000))
-        try:
-            self._test_date("twenty two thousand years ago",
-                            self.ref_date - relativedelta(years=22000))
-        except ValueError as e:
-            # ERROR: no dates BC
-            assert str(e) == "year -19883 is out of range"
+        # years BC not supported
+        self.assertRaises(ValueError, extract_date_en,
+                          "twenty two thousand years ago", self.ref_date)
 
     def test_spoken_date(self):
         self._test_date("13 may 1992", date(month=5, year=1992, day=13))
@@ -1769,6 +1766,10 @@ class TestExtractDate(unittest.TestCase):
                         self.ref_date + relativedelta(days=9))
         # self._test_date("10 days from after tomorrow",  # TODO fix me
         #          self.ref_date + relativedelta(days=12))
+
+        # years > 9999 not supported
+        self.assertRaises(ValueError, extract_date_en,
+                          "twenty two million years from now", self.ref_date)
 
     def test_ordinals(self):
         self._test_date("the 5th day", self.ref_date.replace(day=5))
