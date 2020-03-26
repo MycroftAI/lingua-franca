@@ -1736,6 +1736,8 @@ def get_named_dates_en(location_code=None, year=None):
     holidays["christmas"] = date(day=25, month=12, year=year)
     holidays["christmas eve"] = date(day=24, month=12, year=year)
     holidays["new year's eve"] = date(day=31, month=12, year=year)
+    holidays["new year"] = date(day=1, month=1, year=year + 1)
+    holidays["valentine's day"] = date(day=14, month=2, year=year)
 
     # Location aware holidays
     country_holidays = CountryHoliday(location_code, years=year)
