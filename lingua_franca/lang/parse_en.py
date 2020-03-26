@@ -1754,11 +1754,29 @@ def get_named_dates_en(location_code=None, year=None):
 
 def get_named_eras_en(location_code=None):
     # NOTE an era is simply a reference date
+    # days are counted forwards from this date
     eras = _NAMED_ERAS_EN
 
     location_code = location_code or get_active_location_code()
     # location dependent eras
-    # TODO "fiscal year" varies by country
+
+    # normalization
+    for name in list(eras.keys()):
+        dt = eras[name]
+        name = name.lower().strip().replace(" ", "_").replace("'s", "")
+        eras[name] = dt
+    return eras
+
+
+def get_negative_named_eras_en(location_code=None):
+    # NOTE an era is simply a reference date
+    # negative era means we count backwards from this date
+    eras = {
+        "before present": date(day=1, month=1, year=1950)
+    }
+
+    location_code = location_code or get_active_location_code()
+    # location dependent eras
 
     # normalization
     for name in list(eras.keys()):
@@ -1812,6 +1830,13 @@ def _date_tokenize_en(date_string, holidays=None):
             .replace("'s", "")
         cleaned = cleaned.replace(name, _standard)
 
+    eras = get_negative_named_eras_en()
+    for name, dt in eras.items():
+        name = name.replace("_", " ")
+        _standard = name.lower().strip().replace(" ", "_") \
+            .replace("'s", "")
+        cleaned = cleaned.replace(name, _standard)
+
     return cleaned.split()
 
 
@@ -1832,7 +1857,8 @@ def extract_date_en(date_str, ref_date,
     if hemisphere is None:
         hemisphere = get_active_hemisphere()
     named_dates = get_named_dates_en(location_code, ref_date.year)
-    eras = get_named_eras_en()
+    eras = get_named_eras_en(location_code)
+    negative_eras = get_negative_named_eras_en(location_code)
 
     past_qualifiers = ["ago"]
     relative_qualifiers = ["from", "after", "since"]
@@ -1876,6 +1902,7 @@ def extract_date_en(date_str, ref_date,
     is_sum = False
     is_subtract = False
     is_of = False
+    is_negative_era = False
     delta = None
     date_found = False
 
@@ -1915,6 +1942,62 @@ def extract_date_en(date_str, ref_date,
         if marker in date_words:
             is_of = True
             index = date_words.index(marker)
+
+    # parse negative eras, "5467 before present"
+    for era in negative_eras:
+        if era in date_words:
+            is_negative_era = True
+            index = date_words.index(era)
+
+    # parse {date} of {negative_era}
+    if is_negative_era:
+        _anchor_date = negative_eras[date_words[index]]
+        _extracted_date = None
+        duration_str = " ".join(date_words[:index])
+
+        # equivalent to {negative_era} - {duration}
+        if duration_str:
+
+            # parse {duration} {negative_era}
+            delta, _r = extract_duration_en(
+                duration_str, replace_token='_',
+                resolution=DurationResolution.RELATIVEDELTA_FALLBACK)
+
+            if not delta:
+                _year = date_words[index - 1]
+
+                # parse {date} {negative_era}
+                _extracted_date, _r = extract_date_en(
+                    duration_str, _anchor_date, greedy=True,
+                    resolution=DateTimeResolution.BEFORE_PRESENT)
+                if _extracted_date:
+                    # only year is counted backwards from {era}
+                    delta = relativedelta(years=_extracted_date.year)
+
+                # parse {YEAR} {negative_era}
+                elif is_numeric(_year):
+                    delta = relativedelta(years=int(_year))
+                else:
+                    raise RuntimeError(
+                        "Could not extract duration from: " + duration_str)
+
+            # subtract duration
+            extracted_date = _anchor_date - delta
+            if _extracted_date:
+                # restore day / month of extracted date
+                extracted_date = extracted_date.replace(
+                    day=_extracted_date.day, month=_extracted_date.month)
+
+            # update consumed words
+            remainder_words[index] = "_"
+            for idx, w in enumerate(_r.split()):
+                if w == "_":
+                    remainder_words[idx] = "_"
+        else:
+            extracted_date = _anchor_date
+        date_found = True
+        # update consumed words
+        remainder_words[index] = "_"
 
     # parse {X} of {reference_date}
     if is_of:
@@ -2185,7 +2268,6 @@ def extract_date_en(date_str, ref_date,
         # 1 hour 3 minutes from now
         # 5 days from now
         # 3 weeks after tomorrow
-        # 5 days before today/tomorrow/tuesday
         remainder_words[index] = ""
 
         duration_str = " ".join(date_words[:index])
@@ -2277,13 +2359,10 @@ def extract_date_en(date_str, ref_date,
 
     # parse {duration} before {date}
     if is_relative_past:
-        # parse {duration} from {reference_date}
-        # 1 hour 3 minutes from now
-        # 5 days from now
-        # 3 weeks after tomorrow
+        # parse {duration} before {reference_date}
+        # 3 weeks before tomorrow
         # 5 days before today/tomorrow/tuesday
         remainder_words[index] = ""
-
         duration_str = " ".join(date_words[:index])
         if duration_str:
             delta, _r = extract_duration_en(duration_str, replace_token='_',
@@ -2311,7 +2390,7 @@ def extract_date_en(date_str, ref_date,
         else:
             _date_str = " ".join(date_words[index + 1:])
             _anchor_date, _r = extract_date_en(_date_str, ref_date)
-            if not _anchor_date:
+            if not _anchor_date and len(date_words) > index + 1:
                 _year = date_words[index + 1]
                 if len(_year) == 4 and is_numeric(_year):
                     _anchor_date = date(day=1, month=1, year=int(_year))

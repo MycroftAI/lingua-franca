@@ -2534,6 +2534,14 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("1 january christian era",
                         date(day=1, month=1, year=1))
 
+    def test_negative_eras(self):
+        self._test_date("before present", date(day=1, month=1, year=1950))
+        self._test_date("2 years before present", date(day=1, month=1,
+                                                       year=1948))
+        self._test_date("556 before present", date(day=1, month=1, year=1394))
+        self._test_date("march 1st 556 before present", date(day=1, month=3,
+                                                             year=1394))
+
     def test_ambiguous(self):
         _anchor = date(day=10, month=5, year=2020)
 
