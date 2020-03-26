@@ -313,7 +313,6 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
                                                         default_time)
     else:
         extracted_date = None
-        remainder = text
         # TODO: extract_datetime for other languages
         _log_unsupported_language(lang_code,
                                   ['en', 'es', 'pt', 'it', 'fr', 'sv', 'de',
@@ -329,7 +328,9 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
             date_str, extracted_date = _dates[0]
             remainder = text.replace(date_str, "")
 
-    return extracted_date, remainder
+    if extracted_date is not None:
+        return extracted_date, remainder
+    return None
 
 
 def normalize(text, lang=None, remove_articles=True):
