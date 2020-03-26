@@ -222,13 +222,12 @@ class TestNormalize(unittest.TestCase):
                              resolution=DurationResolution.RELATIVEDELTA_FALLBACK),
             (timedelta(days=1.3 * DAYS_IN_1_MONTH), ""))
 
-
         # NOTE: for some reason test bellow fails with
         #       (relativedelta(months=+1, days=+9.126), '') != \
         #       (relativedelta(months=+1, days=+9.126), '')
         # correct result is being returned
 
-        #self.assertEqual(
+        # self.assertEqual(
         #    extract_duration("1.3 months",
         #                     resolution=DurationResolution.RELATIVEDELTA_APPROXIMATE),
         #    (relativedelta(months=1, days=0.3 * DAYS_IN_1_MONTH), ""))
@@ -2025,7 +2024,7 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("first day of this decade", date(day=1, month=1,
                                                          year=2110))
         self._test_date("first day of this century", date(day=1, month=1,
-                                                          year=2100))
+                                                          year=2000))
         self._test_date("first day of this millennium", date(day=1, month=1,
                                                              year=2000))
 
@@ -2248,7 +2247,7 @@ class TestExtractDate(unittest.TestCase):
         self._test_date("first day of the first year",
                         date(day=1, month=1, year=1))
 
-        #self._test_date("first day of the first week",
+        # self._test_date("first day of the first week",
         #                date(day=1, month=1, year=self.ref_date.year))
 
         self._test_date("3rd day",
@@ -2300,62 +2299,97 @@ class TestExtractDate(unittest.TestCase):
                         date(day=3, month=11, year=1872))
 
     def test_week(self):
-        self._test_date("this week", self.ref_date.replace(day=1))
-        self._test_date("next week", self.ref_date.replace(day=8))
-        self._test_date("last week", self.ref_date.replace(day=25, month=1))
 
-        self._test_date("first week of this month",
-                        self.ref_date.replace(day=1))
-        self._test_date("first week of this year",
-                        self.ref_date.replace(day=1, month=1))
-        self._test_date("first week of this decade",
-                        date(day=1, month=1, year=2110))
-        self._test_date("first week of this century",
-                        date(day=1, month=1, year=2100))
-        self._test_date("first week of this millennium",
-                        date(day=1, month=1, year=2000))
+        def _test_week(date_str, expected_date, anchor=self.ref_date):
+            extracted, _ = extract_date_en(date_str, anchor)
+            self.assertEqual(extracted, expected_date)
+            # NOTE: weeks start on sunday
+            # TODO start on thursdays?
+            self.assertEqual(extracted.weekday(), 0)
 
-        self._test_date("second week of this month",
-                        self.ref_date.replace(day=8, month=2))
-        self._test_date("2nd week of this year",
-                        self.ref_date.replace(day=8, month=1))
-        self._test_date("2nd week of this decade",
-                        date(day=8, month=1, year=2110))
-        self._test_date("2 week of this century",
-                        date(day=8, month=1, year=2100))
-        self._test_date("2 week of this millennium",
-                        date(day=8, month=1, year=2000))
+        _test_week("this week", self.ref_date.replace(day=1))
+        _test_week("next week", self.ref_date.replace(day=8))
+        _test_week("last week", self.ref_date.replace(day=25, month=1))
 
-        self._test_date("3rd week of this month",
-                        self.ref_date.replace(day=15, month=2))
-        self._test_date("3rd week of this year",
-                        self.ref_date.replace(day=15, month=1))
-        self._test_date("third week of this decade",
-                        date(day=15, month=1, year=2110))
-        self._test_date("3 week of this century",
-                        date(day=15, month=1, year=2100))
-        self._test_date("3 week of this millennium",
-                        date(day=15, month=1, year=2000))
+        # test Nth week
+        self.assertRaises(ValueError, extract_date_en,
+                          "5th week of this month", now_local())
 
-        self._test_date("10th week of this year",
-                        self.ref_date.replace(day=5, month=3))
-        self._test_date("100 week of this decade",
-                        date(day=25, month=11, year=2111))
-        self._test_date("1000 week of this century",
-                        date(day=24, month=2, year=2119))
-        self._test_date("10000 week of this millennium",
-                        date(day=20, month=8, year=2191))
+        # test week of month  -  day=1 in week
+        assert self.ref_date.replace(day=1).weekday() == 0
+        _test_week("first week of this month",
+                   self.ref_date.replace(day=1))
+        _test_week("second week of this month",
+                   self.ref_date.replace(day=8, month=2))
+        _test_week("3rd week of this month",
+                   self.ref_date.replace(day=15, month=2))
+        _test_week("4th week of this month",
+                   self.ref_date.replace(day=22, month=2))
 
-        self._test_date("last week of this month",
-                        self.ref_date.replace(day=22))
-        self._test_date("last week of this year",
-                        self.ref_date.replace(day=27, month=12))
-        self._test_date("last week of this decade",
-                        date(day=25, month=12, year=2119))
-        self._test_date("last week of this century",
-                        date(day=30, month=12, year=2199))
-        self._test_date("last week of this millennium",
-                        date(day=30, month=12, year=2999))
+        # test week of month - month day=1 not in week (weeks start on sundays)
+        _anchor = date(day=1, month=2, year=1991)
+        assert _anchor.replace(day=1).weekday() != 0
+
+        _test_week("first week of this month",
+                   _anchor.replace(day=4), anchor=_anchor)
+        _test_week("second week of this month",
+                   _anchor.replace(day=11), anchor=_anchor)
+        _test_week("3rd week of this month",
+                   _anchor.replace(day=18), anchor=_anchor)
+        _test_week("4th week of this month",
+                   _anchor.replace(day=25), anchor=_anchor)
+
+        # test week of year
+        _test_week("first week of this year",
+                   self.ref_date.replace(day=4, month=1))
+        _test_week("2nd week of this year",
+                   self.ref_date.replace(day=11, month=1))
+        _test_week("3rd week of this year",
+                   self.ref_date.replace(day=18, month=1))
+        _test_week("10th week of this year",
+                   self.ref_date.replace(day=8, month=3))
+
+        # test week of decade
+        _test_week("first week of this decade",
+                   date(day=6, month=1, year=2110))
+        _test_week("2nd week of this decade",
+                   date(day=13, month=1, year=2110))
+        _test_week("third week of this decade",
+                   date(day=20, month=1, year=2110))
+        _test_week("100 week of this decade",
+                   date(day=30, month=11, year=2111))
+
+        # test week of century
+        _test_week("first week of this century",
+                   date(day=4, month=1, year=2100))
+        _test_week("2 week of this century",
+                   date(day=11, month=1, year=2100))
+        _test_week("3 week of this century",
+                   date(day=18, month=1, year=2100))
+        _test_week("1000 week of this century",
+                   date(day=27, month=2, year=2119))
+
+        # test week of millennium
+        _test_week("first week of this millennium",
+                   date(day=3, month=1, year=2000))
+        _test_week("2 week of this millennium",
+                   date(day=10, month=1, year=2000))
+        _test_week("3 week of this millennium",
+                   date(day=17, month=1, year=2000))
+        _test_week("10000 week of this millennium",
+                   date(day=22, month=8, year=2191))
+
+        # test last week
+        _test_week("last week of this month",
+                   self.ref_date.replace(day=22))
+        _test_week("last week of this year",
+                   self.ref_date.replace(day=27, month=12))
+        _test_week("last week of this decade",
+                   date(day=25, month=12, year=2119))
+        _test_week("last week of this century",
+                   date(day=30, month=12, year=2199))
+        _test_week("last week of this millennium",
+                   date(day=30, month=12, year=2999))
 
     def test_years(self):
         _anchor = date(day=10, month=5, year=2020)
