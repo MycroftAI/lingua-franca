@@ -14,12 +14,25 @@
 # limitations under the License.
 #
 import unittest
-from datetime import datetime, time
-
+from datetime import datetime, time, date, timedelta
+from dateutil.relativedelta import relativedelta
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number, extract_numbers
 from lingua_franca.parse import normalize
+from lingua_franca.time import now_local
+from lingua_franca.parse import extract_date
+
+
+class TestExtractDate(unittest.TestCase):
+    def test_fallback_parser(self):
+        now = now_local()
+        # parser not implemented, testing fallback to dateparser module
+
+        # relative
+        self.assertEqual(
+            extract_date('1 anno 2 mesi', lang="it"),
+            now.date() - relativedelta(years=1, months=2))
 
 
 class TestNormalize(unittest.TestCase):

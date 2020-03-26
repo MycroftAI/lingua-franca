@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime
+from datetime import datetime, time, date, timedelta
 import unittest
-
+from lingua_franca.time import now_local
 from lingua_franca.parse import (normalize, extract_numbers, extract_number,
                                  extract_datetime, extract_datetime_es,
-                                 isFractional_es)
+                                 isFractional_es, extract_date)
 
 
 class TestNormalize(unittest.TestCase):
@@ -230,6 +230,21 @@ class TestDatetime_es(unittest.TestCase):
         self.assertEqual(extract_datetime(
             "hace tres noches", anchorDate=datetime(1998, 1, 1),
             lang='es')[0], datetime(1997, 12, 29, 21))
+
+
+class TestExtractDate(unittest.TestCase):
+    def test_fallback_parser(self):
+        now = now_local()
+        # parser not implemented, testing fallback to dateparser module
+
+        self.assertEqual(
+            extract_date("Martes 21 de Octubre de 2014", lang="es"),
+            date(day=21, month=10, year=2014))
+
+        # relative
+        self.assertEqual(
+            extract_date('Hace una semana', lang="es"),
+            now.date() - timedelta(weeks=1))
 
 
 if __name__ == "__main__":

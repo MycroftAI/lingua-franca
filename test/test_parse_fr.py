@@ -14,12 +14,21 @@
 # limitations under the License.
 #
 import unittest
-from datetime import datetime, time
+from datetime import datetime, time, date
 
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number
 from lingua_franca.parse import normalize
+from lingua_franca.parse import extract_date
+
+
+class TestExtractDate(unittest.TestCase):
+    def test_fallback_parser(self):
+        # parser not implemented, testing fallback to dateparser module
+        self.assertEqual(extract_date("Le 11 Décembre 2014 à 09:00",
+                                      lang="fr"),
+                         date(day=11, month=12, year=2014))
 
 
 class TestNormalize_fr(unittest.TestCase):

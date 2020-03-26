@@ -14,12 +14,14 @@
 # limitations under the License.
 #
 import unittest
-from datetime import datetime, time
+from datetime import datetime, time, date
 
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
+from lingua_franca.parse import extract_date
 from lingua_franca.parse import extract_number
 from lingua_franca.parse import normalize
+from lingua_franca.time import now_local
 
 
 class TestNormalize(unittest.TestCase):
@@ -268,6 +270,27 @@ class TestExtractGender(unittest.TestCase):
         self.assertEqual(get_gender("ponte", lang="pt"), None)
         self.assertEqual(get_gender("ponte", "essa ponte caiu",
                                     lang="pt"), "f")
+
+
+class TestExtractDate(unittest.TestCase):
+    def test_fallback_parser(self):
+        # pt parser not implemented, testing fallback to dateparser module
+        self.assertEqual(extract_date("1 Janeiro 2020", lang="pt"),
+                         date(day=1, month=1, year=2020))
+
+        # relative dates
+        now = now_local()
+        self.assertEqual(extract_date("2029", lang="pt"),
+                         now.replace(year=2029).date())
+
+        # ambiguous dates
+        self.assertEqual(extract_date("20/12/11", lang="pt"),
+                         date(day=20, month=12, year=2011))
+        self.assertEqual(extract_date("10/12/11", lang="pt"),
+                         date(day=10, month=12, year=2011))
+        self.assertEqual(extract_date("12/31/11", lang="pt"),
+                         date(day=12, month=11, year=2031))
+
 
 
 if __name__ == "__main__":
