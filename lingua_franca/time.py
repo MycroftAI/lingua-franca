@@ -393,9 +393,9 @@ def get_ordinal(ordinal, ref_date=None,
         if ordinal == -1:
             raise OverflowError("The last century of existence can not be "
                                 "represented")
-        ordinal -= 1  # no century 0 / year 0
-        if ordinal == 0:
+        if ordinal == 1:
             return date(day=1, month=1, year=1)
+        ordinal -= 1  # no century 0 / year 0
         return date(year=ordinal * 100, day=1, month=1)
     if resolution == DateTimeResolution.CENTURY_OF_MILLENNIUM:
         if ordinal == -1:
@@ -403,7 +403,7 @@ def get_ordinal(ordinal, ref_date=None,
 
         assert 0 < ordinal < 100
 
-        if ordinal == 0:
+        if ordinal == 1:
             return date(day=1, month=1, year=_mil)
         ordinal -= 1
         return date(year=_mil + ordinal * 100,  day=1, month=1)

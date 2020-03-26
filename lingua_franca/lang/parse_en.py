@@ -2992,7 +2992,7 @@ def extract_date_en(date_str, ref_date,
                 remainder_words[idx] = ""
             # parse "millennium"
             if word in millennium_literal:
-                _mil = ref_date.year // 1000
+                _mil = (ref_date.year // 1000) + 1
                 # parse "current millennium"
                 if wordPrev in this:
                     date_found = True
@@ -3020,13 +3020,13 @@ def extract_date_en(date_str, ref_date,
                             DateTimeResolution.BEFORE_PRESENT_MILLENNIUM)
                     else:
                         extracted_date = get_ordinal(
-                            int(wordPrev) - 1, extracted_date,
+                            int(wordPrev), extracted_date,
                             DateTimeResolution.MILLENNIUM)
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse "century"
             if word in century_literal:
-                _century = ref_date.year // 100
+                _century = (ref_date.year // 100) + 1
                 # parse "current century"
                 if wordPrev in this:
                     date_found = True
@@ -3055,9 +3055,9 @@ def extract_date_en(date_str, ref_date,
                             int(wordPrev), extracted_date,
                             DateTimeResolution.BEFORE_PRESENT_CENTURY)
                     else:
-                        extracted_date = get_ordinal(int(wordPrev) - 1,
-                                                 extracted_date,
-                                                 DateTimeResolution.CENTURY)
+                        extracted_date = get_ordinal(int(wordPrev),
+                                                     extracted_date,
+                                                     DateTimeResolution.CENTURY)
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse {holiday_name}
