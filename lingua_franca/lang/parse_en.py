@@ -29,7 +29,7 @@ import json
 import math
 from lingua_franca import resolve_resource_file
 from lingua_franca.time import date_to_season, season_to_date, \
-    get_season_range, next_season_date, last_season_date, get_ordinal, \
+    get_season_range, next_season_date, last_season_date, get_date_ordinal, \
     get_weekend_range, get_week_range, get_century_range, \
     get_millennium_range, get_year_range, get_month_range, get_decade_range, \
     weekday_to_int, month_to_int, now_local, DAYS_IN_1_YEAR, DAYS_IN_1_MONTH
@@ -2216,7 +2216,7 @@ def extract_date_en(date_str, ref_date,
         # Parse {Nth} day/week/month/year... of {reference_date}
         if _number and _anchor_date:
             date_found = True
-            extracted_date = get_ordinal(_number, _anchor_date, _res)
+            extracted_date = get_date_ordinal(_number, _anchor_date, _res)
             remainder_words[index] = ""
 
         # Parse {partial_date} of {partial_reference_date}
@@ -2600,7 +2600,7 @@ def extract_date_en(date_str, ref_date,
                     # parse {month} {DAY_OF_MONTH} {YYYY}
                     if resolution == DateTimeResolution.BEFORE_PRESENT and \
                             is_numeric(wordNextNext):
-                        _year = get_ordinal(
+                        _year = get_date_ordinal(
                             int(wordNextNext), extracted_date,
                             DateTimeResolution.BEFORE_PRESENT_YEAR).year
                         extracted_date = extracted_date.replace(year=_year)
@@ -2789,9 +2789,9 @@ def extract_date_en(date_str, ref_date,
                 if is_numeric(wordPrev):
                     date_found = True
                     if resolution == DateTimeResolution.BEFORE_PRESENT:
-                        extracted_date = get_ordinal(int(wordPrev),
-                                                     ref_date,
-                                                     DateTimeResolution.BEFORE_PRESENT_DAY)
+                        extracted_date = get_date_ordinal(int(wordPrev),
+                                                          ref_date,
+                                                          DateTimeResolution.BEFORE_PRESENT_DAY)
                     else:
                         extracted_date = extracted_date.replace(
                             day=int(wordPrev))
@@ -2815,7 +2815,7 @@ def extract_date_en(date_str, ref_date,
                     date_found = True
                     remainder_words[idx - 1] = ""
                     if resolution == DateTimeResolution.BEFORE_PRESENT:
-                        extracted_date = get_ordinal(
+                        extracted_date = get_date_ordinal(
                             int(wordPrev),
                             resolution=DateTimeResolution.BEFORE_PRESENT_WEEKEND)
                     else:
@@ -2854,12 +2854,12 @@ def extract_date_en(date_str, ref_date,
                 if is_numeric(wordPrev) and 0 < int(wordPrev) <= 4 * 12:
                     date_found = True
                     if resolution == DateTimeResolution.BEFORE_PRESENT:
-                        _week = get_ordinal(
+                        _week = get_date_ordinal(
                             int(wordPrev),
                             resolution=DateTimeResolution.BEFORE_PRESENT_WEEK)
                     else:
-                        _week = get_ordinal(int(wordPrev), ref_date,
-                                            resolution=DateTimeResolution.WEEK_OF_YEAR)
+                        _week = get_date_ordinal(int(wordPrev), ref_date,
+                                                 resolution=DateTimeResolution.WEEK_OF_YEAR)
                     extracted_date, _end = get_week_range(_week)
                     remainder_words[idx - 1] = ""
                 # parse "this week"
@@ -2882,8 +2882,8 @@ def extract_date_en(date_str, ref_date,
                 # parse week {NUMBER}
                 elif is_numeric(wordNext) and 0 < int(wordNext) <= 12:
                     date_found = True
-                    extracted_date = get_ordinal(int(wordNext), ref_date,
-                                                 resolution=DateTimeResolution.WEEK_OF_YEAR)
+                    extracted_date = get_date_ordinal(int(wordNext), ref_date,
+                                                      resolution=DateTimeResolution.WEEK_OF_YEAR)
                     remainder_words[idx + 1] = ""
                 remainder_words[idx] = ""
             # parse "month"
@@ -2893,18 +2893,19 @@ def extract_date_en(date_str, ref_date,
                 if is_numeric(wordPrev) and 0 < int(wordPrev) <= 12:
                     date_found = True
                     if resolution == DateTimeResolution.BEFORE_PRESENT:
-                        extracted_date = get_ordinal(
+                        extracted_date = get_date_ordinal(
                             int(wordPrev),
                             resolution=DateTimeResolution.BEFORE_PRESENT_MONTH)
                     else:
-                        extracted_date = get_ordinal(int(wordPrev), ref_date,
-                                                 DateTimeResolution.MONTH_OF_YEAR)
+                        extracted_date = get_date_ordinal(int(wordPrev),
+                                                          ref_date,
+                                                          DateTimeResolution.MONTH_OF_YEAR)
                     remainder_words[idx - 1] = ""
                 # parse month {NUMBER}
                 elif is_numeric(wordNext) and 0 < int(wordNext) <= 12:
                     date_found = True
-                    extracted_date = get_ordinal(int(wordNext), ref_date,
-                                                 DateTimeResolution.MONTH_OF_YEAR)
+                    extracted_date = get_date_ordinal(int(wordNext), ref_date,
+                                                      DateTimeResolution.MONTH_OF_YEAR)
                     remainder_words[idx - 1] = ""
                 # parse "this month"
                 elif wordPrev in this:
@@ -2929,30 +2930,30 @@ def extract_date_en(date_str, ref_date,
                 # parse "current year"
                 if wordPrev in this:
                     date_found = True
-                    extracted_date = get_ordinal(ref_date.year,
-                                                 resolution=DateTimeResolution.YEAR)
+                    extracted_date = get_date_ordinal(ref_date.year,
+                                                      resolution=DateTimeResolution.YEAR)
                     remainder_words[idx - 1] = ""
                 # parse "last year"
                 elif wordPrev in past_markers:
                     date_found = True
-                    extracted_date = get_ordinal(ref_date.year - 1,
-                                                 resolution=DateTimeResolution.YEAR)
+                    extracted_date = get_date_ordinal(ref_date.year - 1,
+                                                      resolution=DateTimeResolution.YEAR)
                     remainder_words[idx - 1] = ""
                 # parse "next year"
                 elif wordPrev in future_markers:
                     date_found = True
-                    extracted_date = get_ordinal(ref_date.year + 1,
-                                                 resolution=DateTimeResolution.YEAR)
+                    extracted_date = get_date_ordinal(ref_date.year + 1,
+                                                      resolution=DateTimeResolution.YEAR)
                     remainder_words[idx - 1] = ""
                 # parse Nth year
                 elif is_numeric(wordPrev):
                     date_found = True
                     if resolution == DateTimeResolution.BEFORE_PRESENT:
-                        extracted_date = get_ordinal(
+                        extracted_date = get_date_ordinal(
                             int(wordPrev),
                             resolution=DateTimeResolution.BEFORE_PRESENT_YEAR)
                     else:
-                        extracted_date = get_ordinal(
+                        extracted_date = get_date_ordinal(
                             int(wordPrev) - 1,
                             resolution=DateTimeResolution.YEAR)
                     remainder_words[idx - 1] = ""
@@ -2963,31 +2964,31 @@ def extract_date_en(date_str, ref_date,
                 # parse "current decade"
                 if wordPrev in this:
                     date_found = True
-                    extracted_date = get_ordinal(_decade,
-                                                 resolution=DateTimeResolution.DECADE)
+                    extracted_date = get_date_ordinal(_decade,
+                                                      resolution=DateTimeResolution.DECADE)
                     remainder_words[idx - 1] = ""
                 # parse "last decade"
                 elif wordPrev in past_markers:
                     date_found = True
-                    extracted_date = get_ordinal(_decade - 1,
-                                                 resolution=DateTimeResolution.DECADE)
+                    extracted_date = get_date_ordinal(_decade - 1,
+                                                      resolution=DateTimeResolution.DECADE)
                     remainder_words[idx - 1] = ""
                 # parse "next decade"
                 elif wordPrev in future_markers:
                     date_found = True
-                    extracted_date = get_ordinal(_decade + 1,
-                                                 resolution=DateTimeResolution.DECADE)
+                    extracted_date = get_date_ordinal(_decade + 1,
+                                                      resolution=DateTimeResolution.DECADE)
                     remainder_words[idx - 1] = ""
                 # parse Nth decade
                 elif is_numeric(wordPrev):
                     date_found = True
                     if resolution == DateTimeResolution.BEFORE_PRESENT:
-                        extracted_date = get_ordinal(
+                        extracted_date = get_date_ordinal(
                             int(wordPrev),
                             resolution=DateTimeResolution.BEFORE_PRESENT_DECADE)
                     else:
-                        extracted_date = get_ordinal(int(wordPrev),
-                                                 resolution=DateTimeResolution.DECADE)
+                        extracted_date = get_date_ordinal(int(wordPrev),
+                                                          resolution=DateTimeResolution.DECADE)
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse "millennium"
@@ -2996,30 +2997,30 @@ def extract_date_en(date_str, ref_date,
                 # parse "current millennium"
                 if wordPrev in this:
                     date_found = True
-                    extracted_date = get_ordinal(_mil, ref_date,
-                                                 DateTimeResolution.MILLENNIUM)
+                    extracted_date = get_date_ordinal(_mil, ref_date,
+                                                      DateTimeResolution.MILLENNIUM)
                     remainder_words[idx - 1] = ""
                 # parse "last millennium"
                 elif wordPrev in past_markers:
                     date_found = True
-                    extracted_date = get_ordinal(_mil - 1, ref_date,
-                                                 DateTimeResolution.MILLENNIUM)
+                    extracted_date = get_date_ordinal(_mil - 1, ref_date,
+                                                      DateTimeResolution.MILLENNIUM)
                     remainder_words[idx - 1] = ""
                 # parse "next millennium"
                 elif wordPrev in future_markers:
                     date_found = True
-                    extracted_date = get_ordinal(_mil + 1, ref_date,
-                                                 DateTimeResolution.MILLENNIUM)
+                    extracted_date = get_date_ordinal(_mil + 1, ref_date,
+                                                      DateTimeResolution.MILLENNIUM)
                     remainder_words[idx - 1] = ""
                 # parse Nth millennium
                 elif is_numeric(wordPrev):
                     date_found = True
                     if resolution == DateTimeResolution.BEFORE_PRESENT:
-                        extracted_date = get_ordinal(
+                        extracted_date = get_date_ordinal(
                             int(wordPrev), extracted_date,
                             DateTimeResolution.BEFORE_PRESENT_MILLENNIUM)
                     else:
-                        extracted_date = get_ordinal(
+                        extracted_date = get_date_ordinal(
                             int(wordPrev), extracted_date,
                             DateTimeResolution.MILLENNIUM)
                     remainder_words[idx - 1] = ""
@@ -3030,34 +3031,34 @@ def extract_date_en(date_str, ref_date,
                 # parse "current century"
                 if wordPrev in this:
                     date_found = True
-                    extracted_date = get_ordinal(_century, ref_date,
-                                                 DateTimeResolution.CENTURY)
+                    extracted_date = get_date_ordinal(_century, ref_date,
+                                                      DateTimeResolution.CENTURY)
                     remainder_words[idx - 1] = ""
                 # parse "last century"
                 elif wordPrev in past_markers:
                     date_found = True
-                    extracted_date = get_ordinal(_century - 1,
-                                                 ref_date,
-                                                 DateTimeResolution.CENTURY)
+                    extracted_date = get_date_ordinal(_century - 1,
+                                                      ref_date,
+                                                      DateTimeResolution.CENTURY)
                     remainder_words[idx - 1] = ""
                 # parse "next century"
                 elif wordPrev in future_markers:
                     date_found = True
-                    extracted_date = get_ordinal(_century + 1,
-                                                 ref_date,
-                                                 DateTimeResolution.CENTURY)
+                    extracted_date = get_date_ordinal(_century + 1,
+                                                      ref_date,
+                                                      DateTimeResolution.CENTURY)
                     remainder_words[idx - 1] = ""
                 # parse Nth century
                 elif is_numeric(wordPrev):
                     date_found = True
                     if resolution == DateTimeResolution.BEFORE_PRESENT:
-                        extracted_date = get_ordinal(
+                        extracted_date = get_date_ordinal(
                             int(wordPrev), extracted_date,
                             DateTimeResolution.BEFORE_PRESENT_CENTURY)
                     else:
-                        extracted_date = get_ordinal(int(wordPrev),
-                                                     extracted_date,
-                                                     DateTimeResolution.CENTURY)
+                        extracted_date = get_date_ordinal(int(wordPrev),
+                                                          extracted_date,
+                                                          DateTimeResolution.CENTURY)
                     remainder_words[idx - 1] = ""
                 remainder_words[idx] = ""
             # parse {holiday_name}
@@ -3143,43 +3144,43 @@ def extract_date_en(date_str, ref_date,
                 _ordinal = int(wordNext)
                 if wordPrev in day_literal:
                     date_found = True
-                    extracted_date = get_ordinal(_ordinal, extracted_date,
-                                                 DateTimeResolution.DAY_OF_MONTH)
+                    extracted_date = get_date_ordinal(_ordinal, extracted_date,
+                                                      DateTimeResolution.DAY_OF_MONTH)
                     remainder_words[idx - 1] = ""
                     remainder_words[idx + 1] = ""
                     remainder_words[idx] = ""
                 elif wordPrev in month_literal:
                     date_found = True
-                    extracted_date = get_ordinal(_ordinal, extracted_date,
-                                                 DateTimeResolution.MONTH_OF_YEAR)
+                    extracted_date = get_date_ordinal(_ordinal, extracted_date,
+                                                      DateTimeResolution.MONTH_OF_YEAR)
                     remainder_words[idx - 1] = ""
                     remainder_words[idx + 1] = ""
                     remainder_words[idx] = ""
                 elif wordPrev in year_literal:
                     date_found = True
-                    extracted_date = get_ordinal(_ordinal, extracted_date,
-                                                 DateTimeResolution.YEAR)
+                    extracted_date = get_date_ordinal(_ordinal, extracted_date,
+                                                      DateTimeResolution.YEAR)
                     remainder_words[idx - 1] = ""
                     remainder_words[idx + 1] = ""
                     remainder_words[idx] = ""
                 elif wordPrev in decade_literal:
                     date_found = True
-                    extracted_date = get_ordinal(_ordinal, extracted_date,
-                                                 DateTimeResolution.DECADE)
+                    extracted_date = get_date_ordinal(_ordinal, extracted_date,
+                                                      DateTimeResolution.DECADE)
                     remainder_words[idx - 1] = ""
                     remainder_words[idx + 1] = ""
                     remainder_words[idx] = ""
                 elif wordPrev in century_literal:
                     date_found = True
-                    extracted_date = get_ordinal(_ordinal, extracted_date,
-                                                 DateTimeResolution.CENTURY)
+                    extracted_date = get_date_ordinal(_ordinal, extracted_date,
+                                                      DateTimeResolution.CENTURY)
                     remainder_words[idx - 1] = ""
                     remainder_words[idx + 1] = ""
                     remainder_words[idx] = ""
                 elif wordPrev in millennium_literal:
                     date_found = True
-                    extracted_date = get_ordinal(_ordinal, extracted_date,
-                                                 DateTimeResolution.MILLENNIUM)
+                    extracted_date = get_date_ordinal(_ordinal, extracted_date,
+                                                      DateTimeResolution.MILLENNIUM)
                     remainder_words[idx - 1] = ""
                     remainder_words[idx + 1] = ""
                     remainder_words[idx] = ""
@@ -3224,7 +3225,7 @@ def extract_date_en(date_str, ref_date,
             # parse {YYYY} before present
             if not date_found and is_numeric(word) and resolution == \
                     DateTimeResolution.BEFORE_PRESENT:
-                extracted_date = get_ordinal(
+                extracted_date = get_date_ordinal(
                     int(word), extracted_date,
                     DateTimeResolution.BEFORE_PRESENT_YEAR)
             # parse {YYYY}

@@ -18,7 +18,7 @@ import unittest
 from lingua_franca.location import Hemisphere
 from lingua_franca.time import get_season_range, get_weekend_range, \
     get_week_range, get_decade_range, get_month_range, get_year_range, \
-    get_millennium_range, get_century_range, get_ordinal, get_week_number, \
+    get_millennium_range, get_century_range, get_date_ordinal, get_week_number, \
     DateTimeResolution
 from datetime import date
 from dateutil.relativedelta import relativedelta
@@ -83,8 +83,8 @@ class TestOrdinals(unittest.TestCase):
         week_start, week_end = get_week_range(ref_date)
         weekend_start, weekend_end = get_weekend_range(ref_date)
 
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.DAY),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.DAY),
                          date(day=1, month=1, year=1))
         # TODO not implemented yet
         # self.assertEqual(get_ordinal(1, ref_date,
@@ -93,20 +93,20 @@ class TestOrdinals(unittest.TestCase):
         # self.assertEqual(get_ordinal(1, ref_date,
         #                             DateTimeResolution.DAY_OF_WEEKEND),
         #                 weekend_start)
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.DAY_OF_MONTH),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.DAY_OF_MONTH),
                          ref_date.replace(day=1))
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.DAY_OF_YEAR),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.DAY_OF_YEAR),
                          ref_date.replace(day=1, month=1))
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.DAY_OF_DECADE),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.DAY_OF_DECADE),
                          date(day=1, month=1, year=4560))
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.DAY_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.DAY_OF_CENTURY),
                          date(day=1, month=1, year=4500))
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.DAY_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.DAY_OF_MILLENNIUM),
                          date(day=1, month=1, year=4000))
 
     def test_first_week(self):
@@ -114,7 +114,7 @@ class TestOrdinals(unittest.TestCase):
 
         def _test_week(n, expected_date, anchor=ref_date,
                        res=DateTimeResolution.WEEK):
-            extracted = get_ordinal(n, anchor, res)
+            extracted = get_date_ordinal(n, anchor, res)
             self.assertEqual(extracted, expected_date)
             # NOTE: weeks start on sunday
             # TODO start on thursdays?
@@ -143,90 +143,90 @@ class TestOrdinals(unittest.TestCase):
 
     def test_first_month(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.MONTH),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.MONTH),
                          date(day=1, month=1, year=1))
 
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.MONTH_OF_YEAR),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.MONTH_OF_YEAR),
                          ref_date.replace(day=1, month=1))
 
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.MONTH_OF_DECADE),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.MONTH_OF_DECADE),
                          date(day=1, month=1, year=4560))
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.MONTH_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.MONTH_OF_CENTURY),
                          date(day=1, month=1, year=4500))
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.MONTH_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.MONTH_OF_MILLENNIUM),
                          date(day=1, month=1, year=4000))
 
     def test_first_year(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.YEAR),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.YEAR),
                          date(day=1, month=1, year=1))
 
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.YEAR_OF_DECADE),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.YEAR_OF_DECADE),
                          date(day=1, month=1, year=4560))
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.YEAR_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.YEAR_OF_CENTURY),
                          date(day=1, month=1, year=4500))
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.YEAR_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.YEAR_OF_MILLENNIUM),
                          date(day=1, month=1, year=4000))
 
     def test_first_decade(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.DECADE),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.DECADE),
                          date(day=1, month=1, year=1))
 
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.DECADE_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.DECADE_OF_CENTURY),
                          date(day=1, month=1, year=4500))
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.DECADE_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.DECADE_OF_MILLENNIUM),
                          date(day=1, month=1, year=4000))
 
     def test_first_century(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.CENTURY),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.CENTURY),
                          date(day=1, month=1, year=1))
 
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.CENTURY_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.CENTURY_OF_MILLENNIUM),
                          date(day=1, month=1, year=4000))
 
     def test_first_millennium(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.MILLENNIUM),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.MILLENNIUM),
                          date(day=1, month=1, year=1))
 
     def test_N_day(self):
         ref_date = date(day=27, month=2, year=4567)
 
-        self.assertEqual(get_ordinal(21, ref_date,
-                                     DateTimeResolution.DAY),
+        self.assertEqual(get_date_ordinal(21, ref_date,
+                                          DateTimeResolution.DAY),
                          date(day=21, month=1, year=1))
 
-        self.assertEqual(get_ordinal(12, ref_date,
-                                     DateTimeResolution.DAY_OF_MONTH),
+        self.assertEqual(get_date_ordinal(12, ref_date,
+                                          DateTimeResolution.DAY_OF_MONTH),
                          ref_date.replace(day=12))
-        self.assertEqual(get_ordinal(21, ref_date,
-                                     DateTimeResolution.DAY_OF_YEAR),
+        self.assertEqual(get_date_ordinal(21, ref_date,
+                                          DateTimeResolution.DAY_OF_YEAR),
                          ref_date.replace(day=21, month=1))
-        self.assertEqual(get_ordinal(12, ref_date,
-                                     DateTimeResolution.DAY_OF_DECADE),
+        self.assertEqual(get_date_ordinal(12, ref_date,
+                                          DateTimeResolution.DAY_OF_DECADE),
                          date(day=12, month=1, year=4560))
-        self.assertEqual(get_ordinal(21, ref_date,
-                                     DateTimeResolution.DAY_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(21, ref_date,
+                                          DateTimeResolution.DAY_OF_CENTURY),
                          date(day=21, month=1, year=4500))
-        self.assertEqual(get_ordinal(12, ref_date,
-                                     DateTimeResolution.DAY_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(12, ref_date,
+                                          DateTimeResolution.DAY_OF_MILLENNIUM),
                          date(day=12, month=1, year=4000))
 
     def test_N_week(self):
@@ -234,7 +234,7 @@ class TestOrdinals(unittest.TestCase):
 
         def _test_week(n, expected_date, anchor=ref_date,
                        res=DateTimeResolution.WEEK):
-            extracted = get_ordinal(n, anchor, res)
+            extracted = get_date_ordinal(n, anchor, res)
             self.assertEqual(extracted, expected_date)
             # NOTE: weeks start on sunday
             # TODO start on thursdays?
@@ -261,97 +261,97 @@ class TestOrdinals(unittest.TestCase):
 
     def test_N_month(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertEqual(get_ordinal(10, ref_date,
-                                     DateTimeResolution.MONTH),
+        self.assertEqual(get_date_ordinal(10, ref_date,
+                                          DateTimeResolution.MONTH),
                          date(day=1, month=10, year=1))
 
-        self.assertEqual(get_ordinal(11, ref_date,
-                                     DateTimeResolution.MONTH_OF_YEAR),
+        self.assertEqual(get_date_ordinal(11, ref_date,
+                                          DateTimeResolution.MONTH_OF_YEAR),
                          ref_date.replace(day=1, month=11))
 
-        self.assertEqual(get_ordinal(25, ref_date,
-                                     DateTimeResolution.MONTH_OF_DECADE),
+        self.assertEqual(get_date_ordinal(25, ref_date,
+                                          DateTimeResolution.MONTH_OF_DECADE),
                          date(day=1, month=1, year=4560) +
                          relativedelta(months=24))
-        self.assertEqual(get_ordinal(71, ref_date,
-                                     DateTimeResolution.MONTH_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(71, ref_date,
+                                          DateTimeResolution.MONTH_OF_CENTURY),
                          date(day=1, month=1, year=4500) +
                          relativedelta(months=70))
-        self.assertEqual(get_ordinal(109, ref_date,
-                                     DateTimeResolution.MONTH_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(109, ref_date,
+                                          DateTimeResolution.MONTH_OF_MILLENNIUM),
                          date(day=1, month=1, year=4000) +
                          relativedelta(months=108))
 
     def test_N_year(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertEqual(get_ordinal(1, ref_date,
-                                     DateTimeResolution.YEAR),
+        self.assertEqual(get_date_ordinal(1, ref_date,
+                                          DateTimeResolution.YEAR),
                          date(day=1, month=1, year=1))
 
-        self.assertEqual(get_ordinal(7, ref_date,
-                                     DateTimeResolution.YEAR_OF_DECADE),
+        self.assertEqual(get_date_ordinal(7, ref_date,
+                                          DateTimeResolution.YEAR_OF_DECADE),
                          date(day=1, month=1, year=4560) +
                          relativedelta(years=6))
-        self.assertEqual(get_ordinal(36, ref_date,
-                                     DateTimeResolution.YEAR_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(36, ref_date,
+                                          DateTimeResolution.YEAR_OF_CENTURY),
                          date(day=1, month=1, year=4500) +
                          relativedelta(years=35))
-        self.assertEqual(get_ordinal(156, ref_date,
-                                     DateTimeResolution.YEAR_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(156, ref_date,
+                                          DateTimeResolution.YEAR_OF_MILLENNIUM),
                          date(day=1, month=1, year=4000) +
                          relativedelta(years=155))
 
     def test_N_decade(self):
         ref_date = date(day=27, month=2, year=4567)
 
-        self.assertEqual(get_ordinal(8, ref_date,
-                                     DateTimeResolution.DECADE),
+        self.assertEqual(get_date_ordinal(8, ref_date,
+                                          DateTimeResolution.DECADE),
                          date(day=1, month=1, year=70))
 
-        self.assertEqual(get_ordinal(9, ref_date,
-                                     DateTimeResolution.DECADE_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(9, ref_date,
+                                          DateTimeResolution.DECADE_OF_CENTURY),
                          date(day=1, month=1, year=4500) +
                          relativedelta(years=80))
-        self.assertEqual(get_ordinal(18, ref_date,
-                                     DateTimeResolution.DECADE_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(18, ref_date,
+                                          DateTimeResolution.DECADE_OF_MILLENNIUM),
                          date(day=1, month=1, year=4000) +
                          relativedelta(years=170))
 
     def test_N_century(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertEqual(get_ordinal(21, ref_date,
-                                     DateTimeResolution.CENTURY),
+        self.assertEqual(get_date_ordinal(21, ref_date,
+                                          DateTimeResolution.CENTURY),
                          date(day=1, month=1, year=2000))
 
-        self.assertEqual(get_ordinal(10, ref_date,
-                                     DateTimeResolution.CENTURY_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(10, ref_date,
+                                          DateTimeResolution.CENTURY_OF_MILLENNIUM),
                          date(day=1, month=1, year=4000) +
                          relativedelta(years=900))
 
     def test_N_millennium(self):
-        self.assertEqual(get_ordinal(10,
-                                     resolution=DateTimeResolution.MILLENNIUM),
+        self.assertEqual(get_date_ordinal(10,
+                                          resolution=DateTimeResolution.MILLENNIUM),
                          date(day=1, month=1, year=9000))
 
     def test_last_day(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertRaises(OverflowError, get_ordinal, -1, ref_date,
+        self.assertRaises(OverflowError, get_date_ordinal, -1, ref_date,
                           DateTimeResolution.DAY)
 
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.DAY_OF_MONTH),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.DAY_OF_MONTH),
                          ref_date.replace(day=28))
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.DAY_OF_YEAR),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.DAY_OF_YEAR),
                          ref_date.replace(day=31, month=12))
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.DAY_OF_DECADE),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.DAY_OF_DECADE),
                          date(day=31, month=12, year=4569))
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.DAY_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.DAY_OF_CENTURY),
                          date(day=31, month=12, year=4599))
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.DAY_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.DAY_OF_MILLENNIUM),
                          date(day=31, month=12, year=4999))
 
     def test_last_week(self):
@@ -359,13 +359,13 @@ class TestOrdinals(unittest.TestCase):
 
         def _test_week(n, expected_date, anchor=ref_date,
                        res=DateTimeResolution.WEEK):
-            extracted = get_ordinal(n, anchor, res)
+            extracted = get_date_ordinal(n, anchor, res)
             self.assertEqual(extracted, expected_date)
             # NOTE: weeks start on sunday
             # TODO start on thursdays?
             self.assertEqual(extracted.weekday(), 0)
 
-        self.assertRaises(OverflowError, get_ordinal, -1, ref_date,
+        self.assertRaises(OverflowError, get_date_ordinal, -1, ref_date,
                           DateTimeResolution.WEEK)
 
         _test_week(-1, ref_date.replace(day=23), ref_date,
@@ -389,62 +389,62 @@ class TestOrdinals(unittest.TestCase):
 
     def test_last_month(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertRaises(OverflowError, get_ordinal, -1, ref_date,
+        self.assertRaises(OverflowError, get_date_ordinal, -1, ref_date,
                           DateTimeResolution.MONTH)
 
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.MONTH_OF_YEAR),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.MONTH_OF_YEAR),
                          ref_date.replace(day=1, month=12))
 
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.MONTH_OF_DECADE),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.MONTH_OF_DECADE),
                          date(day=1, month=12, year=4569))
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.MONTH_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.MONTH_OF_CENTURY),
                          date(day=1, month=12, year=4599))
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.MONTH_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.MONTH_OF_MILLENNIUM),
                          date(day=1, month=12, year=4999))
 
     def test_last_year(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertRaises(OverflowError, get_ordinal, -1, ref_date,
+        self.assertRaises(OverflowError, get_date_ordinal, -1, ref_date,
                           DateTimeResolution.YEAR)
 
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.YEAR_OF_DECADE),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.YEAR_OF_DECADE),
                          date(day=1, month=1, year=4569))
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.YEAR_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.YEAR_OF_CENTURY),
                          date(day=1, month=1, year=4599))
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.YEAR_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.YEAR_OF_MILLENNIUM),
                          date(day=1, month=1, year=4999))
 
     def test_last_decade(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertRaises(OverflowError, get_ordinal, -1, ref_date,
+        self.assertRaises(OverflowError, get_date_ordinal, -1, ref_date,
                           DateTimeResolution.DECADE)
 
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.DECADE_OF_CENTURY),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.DECADE_OF_CENTURY),
                          date(day=1, month=1, year=4590))
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.DECADE_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.DECADE_OF_MILLENNIUM),
                          date(day=1, month=1, year=4990))
 
     def test_last_century(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertRaises(OverflowError, get_ordinal, -1, ref_date,
+        self.assertRaises(OverflowError, get_date_ordinal, -1, ref_date,
                           DateTimeResolution.CENTURY)
 
-        self.assertEqual(get_ordinal(-1, ref_date,
-                                     DateTimeResolution.CENTURY_OF_MILLENNIUM),
+        self.assertEqual(get_date_ordinal(-1, ref_date,
+                                          DateTimeResolution.CENTURY_OF_MILLENNIUM),
                          date(day=1, month=1, year=4900))
 
     def test_last_millennium(self):
         ref_date = date(day=27, month=2, year=4567)
-        self.assertRaises(OverflowError, get_ordinal, -1, ref_date,
+        self.assertRaises(OverflowError, get_date_ordinal, -1, ref_date,
                           DateTimeResolution.MILLENNIUM)
 
 

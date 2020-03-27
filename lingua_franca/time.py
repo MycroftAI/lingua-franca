@@ -179,8 +179,8 @@ def get_millennium_range(ref_date):
     return start, end
 
 
-def get_ordinal(ordinal, ref_date=None,
-                resolution=DateTimeResolution.DAY_OF_MONTH):
+def get_date_ordinal(ordinal, ref_date=None,
+                     resolution=DateTimeResolution.DAY_OF_MONTH):
     ordinal = int(ordinal)
     ref_date = ref_date or now_local()
     if isinstance(ref_date, datetime):
