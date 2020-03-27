@@ -1,3 +1,5 @@
+_FUNCTION_NOT_IMPLEMENTED_WARNING = "Denna funktion har inte implementerats i 'sv'"
+
 _MONTHS_SV = ['januari', 'februari', 'mars', 'april', 'maj', 'juni',
               'juli', 'augusti', 'september', 'oktober', 'november',
               'december']

@@ -19,7 +19,7 @@ from lingua_franca.lang.common_data_it import _NUM_STRING_IT, \
     _FRACTION_STRING_IT, _LONG_SCALE_IT, _SHORT_SCALE_IT
 
 
-def nice_number_it(number, speech, denominators=range(1, 21)):
+def nice_number_it(number, speech=True, denominators=range(1, 21)):
     """ Italian helper for nice_number
 
     This function formats a float to human understandable functions. Like
@@ -76,7 +76,7 @@ def nice_number_it(number, speech, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_it(num, places=2, short_scale=False, scientific=False):
+def pronounce_number_it(number, places=2, short_scale=False, scientific=False):
     """
     Convert a number to it's spoken equivalent
     adapted to italian fron en version
@@ -92,6 +92,7 @@ def pronounce_number_it(num, places=2, short_scale=False, scientific=False):
     Returns:
         (str): The pronounced number
     """
+    num = number
     # gestione infinito
     if num == float("inf"):
         return "infinito"
@@ -339,30 +340,3 @@ def nice_time_it(dt, speech=True, use_24hour=False, use_ampm=False):
                 speak += " della mattina"
 
         return speak
-
-
-def pronounce_ordinal_it(number):
-    """
-    This function pronounces a number as an ordinal
-
-    1 -> first
-    2 -> second
-
-    Args:
-        number (int): the number to format
-    Returns:
-        (str): The pronounced number string.
-    """
-    raise NotImplementedError
-
-
-def nice_response_it(text):
-    raise NotImplementedError
-
-
-def nice_part_of_day_it(dt, speech=True):
-    raise NotImplementedError
-
-
-def nice_ordinal_it(text, speech=True):
-    raise NotImplementedError

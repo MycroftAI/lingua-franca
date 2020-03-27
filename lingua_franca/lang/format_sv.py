@@ -20,7 +20,7 @@ from lingua_franca.lang.common_data_sv import _EXTRA_SPACE_SV, \
 from math import floor
 
 
-def nice_number_sv(number, speech, denominators=range(1, 21)):
+def nice_number_sv(number, speech=True, denominators=range(1, 21)):
     """ Swedish helper for nice_number
 
     This function formats a float to human understandable functions. Like
@@ -64,7 +64,7 @@ def nice_number_sv(number, speech, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_sv(num, places=2, short_scale=True, scientific=False,
+def pronounce_number_sv(number, places=2, short_scale=True, scientific=False,
                         ordinals=False):
     """
     Convert a number to it's spoken equivalent
@@ -144,7 +144,8 @@ def pronounce_number_sv(num, places=2, short_scale=True, scientific=False,
             elif scale_level == 1:
                 result += 'ettusen' + _EXTRA_SPACE_SV
             else:
-                result += 'en ' + _NUM_POWERS_OF_TEN_SV[scale_level] + _EXTRA_SPACE_SV
+                result += 'en ' + \
+                    _NUM_POWERS_OF_TEN_SV[scale_level] + _EXTRA_SPACE_SV
         elif last_triplet > 1:
             result += pronounce_triplet_sv(last_triplet)
             if scale_level == 1:
@@ -159,18 +160,18 @@ def pronounce_number_sv(num, places=2, short_scale=True, scientific=False,
         return pronounce_whole_number_sv(num, scale_level) + result
 
     result = ""
-    if abs(num) >= 1000000000000000000000000:  # cannot do more than this
-        return str(num)
-    elif num == 0:
+    if abs(number) >= 1000000000000000000000000:  # cannot do more than this
+        return str(number)
+    elif number == 0:
         return str(_NUM_STRING_SV[0])
-    elif num < 0:
-        return "minus " + pronounce_number_sv(abs(num), places)
+    elif number < 0:
+        return "minus " + pronounce_number_sv(abs(number), places)
     else:
-        if num == int(num):
-            return pronounce_whole_number_sv(num)
+        if number == int(number):
+            return pronounce_whole_number_sv(number)
         else:
-            whole_number_part = floor(num)
-            fractional_part = num - whole_number_part
+            whole_number_part = floor(number)
+            fractional_part = number - whole_number_part
             result += pronounce_whole_number_sv(whole_number_part)
             if places > 0:
                 result += " komma"
@@ -336,13 +337,13 @@ def nice_time_sv(dt, speech=True, use_24hour=False, use_ampm=False):
 
 
 def nice_response_sv(text):
-    # check for months and call nice_ordinal_sv declension of ordinals
+    # check for months and call _nice_ordinal_sv declension of ordinals
     # replace "^" with "hoch" (to the power of)
     words = text.split()
 
     for idx, word in enumerate(words):
         if word.lower() in _MONTHS_SV:
-            text = nice_ordinal_sv(text)
+            text = _nice_ordinal_sv(text)
 
         if word == '^':
             wordNext = words[idx + 1] if idx + 1 < len(words) else ""
@@ -352,7 +353,7 @@ def nice_response_sv(text):
     return text
 
 
-def nice_ordinal_sv(text, speech=True):
+def _nice_ordinal_sv(text, speech=True):
     # check for months for declension of ordinals before months
     # depending on articles/prepositions
     normalized_text = text
@@ -373,7 +374,3 @@ def nice_ordinal_sv(text, speech=True):
                     words[idx] = word
             normalized_text = " ".join(words)
     return normalized_text
-
-
-def nice_part_of_day_sv(dt, speech=True):
-    raise NotImplementedError

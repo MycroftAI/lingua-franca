@@ -29,7 +29,7 @@ def _get_vocal_type_hu(word):
     return 0 if vowels_high == 0 else 1            # 0: type is low, 1: is high
 
 
-def nice_number_hu(number, speech, denominators=range(1, 21)):
+def nice_number_hu(number, speech=True, denominators=range(1, 21)):
     """ Hungarian helper for nice_number
 
     This function formats a float to human understandable functions. Like
@@ -139,7 +139,8 @@ def pronounce_number_hu(number, places=2, short_scale=True, scientific=False,
                 else:
                     result += "egy"
             elif scale_level == 1:
-                result += _EXTRA_SPACE_HU + _NUM_POWERS_OF_TEN[1] + _EXTRA_SPACE_HU
+                result += _EXTRA_SPACE_HU + \
+                    _NUM_POWERS_OF_TEN[1] + _EXTRA_SPACE_HU
             else:
                 result += "egy" + _NUM_POWERS_OF_TEN[scale_level]
         elif last_triplet > 1:
@@ -177,7 +178,7 @@ def pronounce_number_hu(number, places=2, short_scale=True, scientific=False,
             if places > 0:
                 result += " egész "
                 fraction = pronounce_whole_number_hu(
-                                        round(fractional_part * 10 ** places))
+                    round(fractional_part * 10 ** places))
                 result += fraction.replace(_NUM_STRING_HU[2], 'két')
                 fraction_suffixes = [
                     'tized', 'század', 'ezred', 'tízezred', 'százezred']
@@ -304,16 +305,3 @@ def nice_time_hu(dt, speech=True, use_24hour=False, use_ampm=False):
                 speak = "reggel " + speak  # 03:00 - 11:59 reggel/in t. morning
 
         return speak
-
-
-def nice_response_hu(text):
-    raise NotImplementedError
-
-
-def nice_part_of_day_hu(dt, speech=True):
-    raise NotImplementedError
-
-
-def nice_ordinal_hu(text, speech=True):
-    raise NotImplementedError
-

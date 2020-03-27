@@ -22,34 +22,6 @@ from lingua_franca.lang.common_data_fr import _ARTICLES_FR, _NUMBERS_FR, \
     _ORDINAL_ENDINGS_FR
 
 
-def extract_duration_fr(text):
-    """ Convert an english phrase into a number of seconds
-
-    Convert things like:
-        "10 minute"
-        "2 and a half hours"
-        "3 days 8 hours 10 minutes and 49 seconds"
-    into an int, representing the total number of seconds.
-
-    The words used in the duration will be consumed, and
-    the remainder returned.
-
-    As an example, "set a timer for 5 minutes" would return
-    (300, "set a timer for").
-
-    Args:
-        text (str): string containing a duration
-
-    Returns:
-        (timedelta, str):
-                    A tuple containing the duration and the remaining text
-                    not consumed in the parsing. The first value will
-                    be None if no duration is found. The text returned
-                    will have whitespace stripped from the ends.
-    """
-    raise NotImplementedError
-
-
 def _number_parse_fr(words, i):
     """ Parses a list of words to find a number
     Takes in a list of words (strings without whitespace) and
@@ -443,7 +415,7 @@ def extract_number_fr(text, short_scale=True, ordinals=False):
     return result or False
 
 
-def extract_datetime_fr(string, currentDate, default_time):
+def extract_datetime_fr(text, anchorDate=None, default_time=None):
     def clean_string(s):
         """
             cleans the input string of unneeded punctuation and capitalization
@@ -461,14 +433,14 @@ def extract_datetime_fr(string, currentDate, default_time):
 
     def date_found():
         return found or \
-               (
-                       datestr != "" or
-                       yearOffset != 0 or monthOffset != 0 or dayOffset or
-                       (isTime and (hrAbs or minAbs)) or
-                       hrOffset != 0 or minOffset != 0 or secOffset != 0
-               )
+            (
+                datestr != "" or
+                yearOffset != 0 or monthOffset != 0 or dayOffset or
+                (isTime and (hrAbs or minAbs)) or
+                hrOffset != 0 or minOffset != 0 or secOffset != 0
+            )
 
-    if string == "" or not currentDate:
+    if text == "" or not anchorDate:
         return None
 
     found = False
@@ -476,7 +448,7 @@ def extract_datetime_fr(string, currentDate, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    dateNow = currentDate
+    dateNow = anchorDate
     today = dateNow.strftime("%w")
     currentYear = dateNow.strftime("%Y")
     fromFlag = False
@@ -500,7 +472,7 @@ def extract_datetime_fr(string, currentDate, default_time):
                  'july', 'august', 'september', 'october', 'november',
                  'december']
 
-    words = clean_string(string)
+    words = clean_string(text)
 
     for idx, word in enumerate(words):
         if word == "":
@@ -772,8 +744,8 @@ def extract_datetime_fr(string, currentDate, default_time):
                         word.isdigit() and
                         wordNext in ["heures", "heure"] and word != "0" and
                         (
-                                int(word) < 100 or
-                                int(word) > 2400
+                            int(word) < 100 or
+                            int(word) > 2400
                         )):
                     # "dans 3 heures", "à 3 heures"
                     if wordPrev in words_in:
@@ -1001,25 +973,7 @@ def is_fractional_fr(input_str, short_scale=True):
     return False
 
 
-def is_ordinal_fr(input_str):
-    """
-    This function takes the given text and checks if it is an ordinal number.
-
-    Args:
-        input_str (str): the string to check if ordinal
-    Returns:
-        (bool) or (float): False if not an ordinal, otherwise the number
-        corresponding to the ordinal
-
-    ordinals for 1, 3, 7 and 8 are irregular
-
-    only works for ordinals corresponding to the numbers in da_numbers
-
-    """
-    raise NotImplementedError
-
-
-def normalize_fr(text, remove_articles):
+def normalize_fr(text, remove_articles=True):
     """ French string normalization """
     text = text.lower()
     words = text.split()  # this also removed extra spaces
@@ -1072,23 +1026,6 @@ def extract_numbers_fr(text, short_scale=True, ordinals=False):
     """
     return extract_numbers_generic(text, pronounce_number_fr, extract_number_fr,
                                    short_scale=short_scale, ordinals=ordinals)
-
-
-def get_gender_fr(word, context=""):
-    """ Guess the gender of a word
-
-    Some languages assign genders to specific words.  This method will attempt
-    to determine the gender, optionally using the provided context sentence.
-
-    Args:
-        word (str): The word to look up
-        context (str, optional): String containing word, for context
-
-    Returns:
-        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
-             or None if unknown/or unused in the given language.
-    """
-    raise NotImplementedError
 
 
 class FrenchNormalizer(Normalizer):

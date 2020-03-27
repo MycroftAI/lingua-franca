@@ -221,30 +221,3 @@ def nice_time_pt(dt, speech=True, use_24hour=False, use_ampm=False):
             elif hour != 0 and hour != 12:
                 speak += " da noite"
     return speak
-
-
-def pronounce_ordinal_pt(number):
-    """
-    This function pronounces a number as an ordinal
-
-    1 -> first
-    2 -> second
-
-    Args:
-        number (int): the number to format
-    Returns:
-        (str): The pronounced number string.
-    """
-    raise NotImplementedError
-
-
-def nice_response_pt(text):
-    raise NotImplementedError
-
-
-def nice_part_of_day_pt(dt, speech=True):
-    raise NotImplementedError
-
-
-def nice_ordinal_pt(text, speech=True):
-    raise NotImplementedError

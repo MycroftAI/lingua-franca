@@ -96,4 +96,3 @@ _FRACTION_STRING_FR = {
     19: 'dix-neuvième',
     20: 'vingtième'
 }
-

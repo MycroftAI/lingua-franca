@@ -18,7 +18,7 @@ from lingua_franca.lang.common_data_fr import _NUM_STRING_FR, \
     _FRACTION_STRING_FR
 
 
-def nice_number_fr(number, speech, denominators=range(1, 21)):
+def nice_number_fr(number, speech=True, denominators=range(1, 21)):
     """ French helper for nice_number
 
     This function formats a float to human understandable functions. Like
@@ -87,7 +87,7 @@ def nice_number_fr(number, speech, denominators=range(1, 21)):
     return strNumber
 
 
-def pronounce_number_fr(num, places=2):
+def pronounce_number_fr(number, places=2):
     """
     Convert a number to it's spoken equivalent
 
@@ -99,22 +99,22 @@ def pronounce_number_fr(num, places=2):
     Returns:
         (str): The pronounced number
     """
-    if abs(num) >= 100:
+    if abs(number) >= 100:
         # TODO: Support for numbers over 100
-        return str(num)
+        return str(number)
 
     result = ""
-    if num < 0:
+    if number < 0:
         result = "moins "
-    num = abs(num)
+    number = abs(number)
 
-    if num > 16:
-        tens = int(num-int(num) % 10)
-        ones = int(num-tens)
+    if number > 16:
+        tens = int(number-int(number) % 10)
+        ones = int(number-tens)
         if ones != 0:
-            if tens > 10 and tens <= 60 and int(num-tens) == 1:
+            if tens > 10 and tens <= 60 and int(number-tens) == 1:
                 result += _NUM_STRING_FR[tens] + "-et-" + _NUM_STRING_FR[ones]
-            elif num == 71:
+            elif number == 71:
                 result += "soixante-et-onze"
             elif tens == 70:
                 result += _NUM_STRING_FR[60] + "-"
@@ -131,19 +131,19 @@ def pronounce_number_fr(num, places=2):
             else:
                 result += _NUM_STRING_FR[tens] + "-" + _NUM_STRING_FR[ones]
         else:
-            if num == 80:
+            if number == 80:
                 result += "quatre-vingts"
             else:
                 result += _NUM_STRING_FR[tens]
     else:
-        result += _NUM_STRING_FR[int(num)]
+        result += _NUM_STRING_FR[int(number)]
 
     # Deal with decimal part
-    if not num == int(num) and places > 0:
-        if abs(num) < 1.0 and (result == "moins " or not result):
+    if not number == int(number) and places > 0:
+        if abs(number) < 1.0 and (result is "moins " or not result):
             result += "zéro"
         result += " virgule"
-        _num_str = str(num)
+        _num_str = str(number)
         _num_str = _num_str.split(".")[1][0:places]
         for char in _num_str:
             result += " " + _NUM_STRING_FR[int(char)]
@@ -249,30 +249,3 @@ def nice_time_fr(dt, speech=True, use_24hour=False, use_ampm=False):
                 speak += " du matin"
 
     return speak
-
-
-def pronounce_ordinal_fr(number):
-    """
-    This function pronounces a number as an ordinal
-
-    1 -> first
-    2 -> second
-
-    Args:
-        number (int): the number to format
-    Returns:
-        (str): The pronounced number string.
-    """
-    raise NotImplementedError
-
-
-def nice_response_fr(text):
-    raise NotImplementedError
-
-
-def nice_part_of_day_fr(dt, speech=True):
-    raise NotImplementedError
-
-
-def nice_ordinal_fr(text, speech=True):
-    raise NotImplementedError

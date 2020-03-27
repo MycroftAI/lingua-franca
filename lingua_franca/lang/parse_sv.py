@@ -124,7 +124,7 @@ def extract_number_sv(text, short_scale=True, ordinals=False):
     return val or False
 
 
-def extract_datetime_sv(string, currentDate, default_time):
+def extract_datetime_sv(text, anchorDate=None, default_time=None):
     def clean_string(s):
         """
             cleans the input string of unneeded punctuation and capitalization
@@ -155,7 +155,7 @@ def extract_datetime_sv(string, currentDate, default_time):
                 minAbs or secOffset != 0
             )
 
-    if string == "" or not currentDate:
+    if text == "" or not anchorDate:
         return None
 
     found = False
@@ -163,7 +163,7 @@ def extract_datetime_sv(string, currentDate, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    dateNow = currentDate
+    dateNow = anchorDate
     today = dateNow.strftime("%w")
     currentYear = dateNow.strftime("%Y")
     fromFlag = False
@@ -181,7 +181,7 @@ def extract_datetime_sv(string, currentDate, default_time):
     monthsShort = ['jan', 'feb', 'mar', 'apr', 'may', 'june', 'july', 'aug',
                    'sept', 'oct', 'nov', 'dec']
 
-    words = clean_string(string)
+    words = clean_string(text)
 
     for idx, word in enumerate(words):
         if word == "":
@@ -758,7 +758,7 @@ def is_fractional_sv(input_str, short_scale=True):
     return False
 
 
-def normalize_sv(text, remove_articles):
+def normalize_sv(text, remove_articles=True):
     """ English string normalization """
 
     words = text.split()  # this also removed extra spaces
@@ -777,86 +777,6 @@ def normalize_sv(text, remove_articles):
         normalized += " " + word
 
     return normalized[1:]  # strip the initial space
-
-
-def get_gender_sv(word, context=""):
-    """ Guess the gender of a word
-
-    Some languages assign genders to specific words.  This method will attempt
-    to determine the gender, optionally using the provided context sentence.
-
-    Args:
-        word (str): The word to look up
-        context (str, optional): String containing word, for context
-
-    Returns:
-        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
-             or None if unknown/or unused in the given language.
-    """
-    raise NotImplementedError
-
-
-def extract_numbers_sv(text, short_scale=True, ordinals=False):
-    """
-        Takes in a string and extracts a list of numbers.
-
-    Args:
-        text (str): the string to extract a number from
-        short_scale (bool): Use "short scale" or "long scale" for large
-            numbers -- over a million.  The default is short scale, which
-            is now common in most English speaking countries.
-            See https://en.wikipedia.org/wiki/Names_of_large_numbers
-        ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
-    Returns:
-        list: list of extracted numbers as floats, or empty list if none found
-    """
-    raise NotImplementedError
-
-
-def extract_duration_sv(text):
-    """ Convert an english phrase into a number of seconds
-
-    Convert things like:
-        "10 minute"
-        "2 and a half hours"
-        "3 days 8 hours 10 minutes and 49 seconds"
-    into an int, representing the total number of seconds.
-
-    The words used in the duration will be consumed, and
-    the remainder returned.
-
-    As an example, "set a timer for 5 minutes" would return
-    (300, "set a timer for").
-
-    Args:
-        text (str): string containing a duration
-
-    Returns:
-        (timedelta, str):
-                    A tuple containing the duration and the remaining text
-                    not consumed in the parsing. The first value will
-                    be None if no duration is found. The text returned
-                    will have whitespace stripped from the ends.
-    """
-    raise NotImplementedError
-
-
-def is_ordinal_sv(input_str):
-    """
-    This function takes the given text and checks if it is an ordinal number.
-
-    Args:
-        input_str (str): the string to check if ordinal
-    Returns:
-        (bool) or (float): False if not an ordinal, otherwise the number
-        corresponding to the ordinal
-
-    ordinals for 1, 3, 7 and 8 are irregular
-
-    only works for ordinals corresponding to the numbers in da_numbers
-
-    """
-    raise NotImplementedError
 
 
 class SwedishNormalizer(Normalizer):

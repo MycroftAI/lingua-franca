@@ -21,34 +21,6 @@ from lingua_franca.lang.common_data_da import _DA_NUMBERS
 from lingua_franca.lang.format_da import pronounce_number_da
 
 
-def extract_duration_da(text):
-    """ Convert an english phrase into a number of seconds
-
-    Convert things like:
-        "10 minute"
-        "2 and a half hours"
-        "3 days 8 hours 10 minutes and 49 seconds"
-    into an int, representing the total number of seconds.
-
-    The words used in the duration will be consumed, and
-    the remainder returned.
-
-    As an example, "set a timer for 5 minutes" would return
-    (300, "set a timer for").
-
-    Args:
-        text (str): string containing a duration
-
-    Returns:
-        (timedelta, str):
-                    A tuple containing the duration and the remaining text
-                    not consumed in the parsing. The first value will
-                    be None if no duration is found. The text returned
-                    will have whitespace stripped from the ends.
-    """
-    raise NotImplementedError
-
-
 def extract_number_da(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
@@ -135,7 +107,7 @@ def extract_number_da(text, short_scale=True, ordinals=False):
     return val or False
 
 
-def extract_datetime_da(string, currentDate, default_time):
+def extract_datetime_da(text, anchorDate=None, default_time=None):
     def clean_string(s):
         """
             cleans the input string of unneeded punctuation
@@ -169,7 +141,7 @@ def extract_datetime_da(string, currentDate, default_time):
                 minAbs or secOffset != 0
             )
 
-    if string == "" or not currentDate:
+    if text == "" or not anchorDate:
         return None
 
     found = False
@@ -177,7 +149,7 @@ def extract_datetime_da(string, currentDate, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    dateNow = currentDate
+    dateNow = anchorDate
     today = dateNow.strftime("%w")
     currentYear = dateNow.strftime("%Y")
     fromFlag = False
@@ -212,7 +184,7 @@ def extract_datetime_da(string, currentDate, default_time):
     validFollowups.append("forige")
     validFollowups.append("nu")
 
-    words = clean_string(string)
+    words = clean_string(text)
 
     for idx, word in enumerate(words):
         if word == "":
@@ -873,7 +845,7 @@ def is_ordinal_da(input_str):
     return False
 
 
-def normalize_da(text, remove_articles):
+def normalize_da(text, remove_articles=True):
     """ German string normalization """
 
     words = text.split()  # this also removed extra spaces
@@ -908,23 +880,6 @@ def extract_numbers_da(text, short_scale=True, ordinals=False):
     """
     return extract_numbers_generic(text, pronounce_number_da, extract_number_da,
                                    short_scale=short_scale, ordinals=ordinals)
-
-
-def get_gender_da(word, context=""):
-    """ Guess the gender of a word
-
-    Some languages assign genders to specific words.  This method will attempt
-    to determine the gender, optionally using the provided context sentence.
-
-    Args:
-        word (str): The word to look up
-        context (str, optional): String containing word, for context
-
-    Returns:
-        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
-             or None if unknown/or unused in the given language.
-    """
-    raise NotImplementedError
 
 
 class DanishNormalizer(Normalizer):

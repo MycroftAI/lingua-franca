@@ -20,7 +20,7 @@ from lingua_franca.lang.common_data_de import _EXTRA_SPACE_DE, \
 from math import floor
 
 
-def nice_number_de(number, speech, denominators=range(1, 21)):
+def nice_number_de(number, speech=True, denominators=range(1, 21)):
     """ German helper for nice_number
     This function formats a float to human understandable functions. Like
     4.5 becomes "4 einhalb" for speech and "4 1/2" for text
@@ -86,7 +86,7 @@ def pronounce_number_de(number, places=2, short_scale=True, scientific=False,
             hundreds = floor(num / 100)
             if hundreds > 0:
                 result += _NUM_STRING_DE[
-                              hundreds] + _EXTRA_SPACE_DE + 'hundert' + _EXTRA_SPACE_DE
+                    hundreds] + _EXTRA_SPACE_DE + 'hundert' + _EXTRA_SPACE_DE
                 num -= hundreds * 100
         if num == 0:
             result += ''  # do nothing
@@ -288,13 +288,13 @@ def nice_time_de(dt, speech=True, use_24hour=False, use_ampm=False):
 
 
 def nice_response_de(text):
-    # check for months and call nice_ordinal_de declension of ordinals
+    # check for months and call _nice_ordinal_de declension of ordinals
     # replace "^" with "hoch" (to the power of)
     words = text.split()
 
     for idx, word in enumerate(words):
         if word.lower() in _MONTHS_DE:
-            text = nice_ordinal_de(text)
+            text = _nice_ordinal_de(text)
 
         if word == '^':
             wordNext = words[idx + 1] if idx + 1 < len(words) else ""
@@ -304,7 +304,7 @@ def nice_response_de(text):
     return text
 
 
-def nice_ordinal_de(text, speech=True):
+def _nice_ordinal_de(text, speech=True):
     # check for months for declension of ordinals before months
     # depending on articles/prepositions
     normalized_text = text
@@ -325,7 +325,3 @@ def nice_ordinal_de(text, speech=True):
                     words[idx] = word
             normalized_text = " ".join(words)
     return normalized_text
-
-
-def nice_part_of_day_de(dt, speech=True):
-    raise NotImplementedError

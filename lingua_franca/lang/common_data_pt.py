@@ -1,3 +1,5 @@
+_FUNCTION_NOT_IMPLEMENTED_WARNING = "esta função não foi implementada em 'pt'"
+
 # Undefined articles ["um", "uma", "uns", "umas"] can not be supressed,
 # in PT, "um cavalo" means "a horse" or "one horse".
 

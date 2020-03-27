@@ -16,10 +16,21 @@
 import unittest
 import datetime
 
+from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.format import nice_number
 from lingua_franca.format import nice_time
 from lingua_franca.format import pronounce_number
 from lingua_franca.lang.format_hu import pronounce_ordinal_hu
+
+
+def setUpModule():
+    load_language('hu-hu')
+    set_default_lang('hu')
+
+
+def tearDownModule():
+    unload_language('hu')
+
 
 # fractions are not capitalized for now
 NUMBERS_FIXTURE_HU = {

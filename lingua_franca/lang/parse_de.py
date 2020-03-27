@@ -226,7 +226,7 @@ def extractnumber_de(text, short_scale=True, ordinals=False):
     return val or False
 
 
-def extract_datetime_de(string, currentDate, default_time):
+def extract_datetime_de(text, anchorDate=None, default_time=None):
     def clean_string(s):
         """
             cleans the input string of unneeded punctuation
@@ -260,7 +260,7 @@ def extract_datetime_de(string, currentDate, default_time):
                 minAbs or secOffset != 0
             )
 
-    if string == "" or not currentDate:
+    if text == "" or not anchorDate:
         return None
 
     found = False
@@ -268,7 +268,7 @@ def extract_datetime_de(string, currentDate, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    dateNow = currentDate
+    dateNow = anchorDate
     today = dateNow.strftime("%w")
     currentYear = dateNow.strftime("%Y")
     fromFlag = False
@@ -303,7 +303,7 @@ def extract_datetime_de(string, currentDate, default_time):
     validFollowups.append("letztem")
     validFollowups.append("jetzt")
 
-    words = clean_string(string)
+    words = clean_string(text)
 
     for idx, word in enumerate(words):
         if word == "":
@@ -971,7 +971,7 @@ def is_ordinal_de(input_str):
     return False
 
 
-def normalize_de(text, remove_articles):
+def normalize_de(text, remove_articles=True):
     """ German string normalization """
     # TODO return GermanNormalizer().normalize(text, remove_articles)
     words = text.split()  # this also removed extra spaces
@@ -1013,23 +1013,6 @@ def extract_numbers_de(text, short_scale=True, ordinals=False):
     """
     return extract_numbers_generic(text, pronounce_number_de, extract_number_de,
                                    short_scale=short_scale, ordinals=ordinals)
-
-
-def get_gender_de(word, context=""):
-    """ Guess the gender of a word
-
-    Some languages assign genders to specific words.  This method will attempt
-    to determine the gender, optionally using the provided context sentence.
-
-    Args:
-        word (str): The word to look up
-        context (str, optional): String containing word, for context
-
-    Returns:
-        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
-             or None if unknown/or unused in the given language.
-    """
-    raise NotImplementedError
 
 
 class GermanNormalizer(Normalizer):
