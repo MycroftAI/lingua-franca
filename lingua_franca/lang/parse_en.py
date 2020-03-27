@@ -3222,12 +3222,80 @@ def extract_date_en(date_str, ref_date,
                                 else:
                                     hemisphere = Hemisphere.NORTH
 
+            # bellow we parse standalone numbers, this is the major source
+            # of ambiguity, caution advised
+
+            # NOTE this is the place to check for requested
+            # DateTimeResolution, usually not requested by the user but
+            # rather used in recursion inside this very same method
+
+            # NOTE2: the checks for XX_literal above may also need to
+            # account for DateTimeResolution when parsing {Ordinal} {unit},
+            # bellow refers only to default/absolute units
+
             # parse {YYYY} before present
             if not date_found and is_numeric(word) and resolution == \
                     DateTimeResolution.BEFORE_PRESENT:
+                date_found = True
                 extracted_date = get_date_ordinal(
                     int(word), extracted_date,
                     DateTimeResolution.BEFORE_PRESENT_YEAR)
+            # parse {N} unix time
+            elif not date_found and is_numeric(word) and resolution == \
+                    DateTimeResolution.UNIX:
+                date_found = True
+                extracted_date = get_date_ordinal(
+                    int(word), extracted_date,
+                    DateTimeResolution.UNIX_SECOND)
+            # parse {N} julian days (since 1 January 4713 BC)
+            elif not date_found and is_numeric(word) and resolution == \
+                    DateTimeResolution.JULIAN:
+                date_found = True
+                extracted_date = get_date_ordinal(
+                    int(word), extracted_date,
+                    DateTimeResolution.JULIAN_DAY)
+            # parse {N} ratadie (days since 1/1/1)
+            elif not date_found and is_numeric(word) and resolution == \
+                    DateTimeResolution.RATADIE:
+                date_found = True
+                extracted_date = get_date_ordinal(
+                    int(word), extracted_date,
+                    DateTimeResolution.RATADIE_DAY)
+            # parse {YYYY} common era (years since 1/1/1)
+            elif not date_found and is_numeric(word) and resolution == \
+                    DateTimeResolution.CE:
+                date_found = True
+                extracted_date = get_date_ordinal(
+                    int(word), extracted_date,
+                    DateTimeResolution.CE_YEAR)
+            # parse {N} lilian days
+            elif not date_found and is_numeric(word) and resolution == \
+                    DateTimeResolution.LILIAN:
+                date_found = True
+                extracted_date = get_date_ordinal(
+                    int(word), extracted_date,
+                    DateTimeResolution.LILIAN_DAY)
+            # parse {YYYYY} holocene year
+            elif not date_found and is_numeric(word) and resolution == \
+                    DateTimeResolution.HOLOCENE:
+                date_found = True
+                extracted_date = get_date_ordinal(
+                    int(word), extracted_date,
+                    DateTimeResolution.HOLOCENE_YEAR)
+            # parse {YYYYY} After the Development of Agriculture (ADA)
+            elif not date_found and is_numeric(word) and resolution == \
+                    DateTimeResolution.ADA:
+                date_found = True
+                extracted_date = get_date_ordinal(
+                    int(word), extracted_date,
+                    DateTimeResolution.ADA_YEAR)
+            # parse {YYYYY} "Creation Era of Constantinople"/"Era of the World"
+            elif not date_found and is_numeric(word) and resolution == \
+                    DateTimeResolution.CEC:
+                date_found = True
+                extracted_date = get_date_ordinal(
+                    int(word), extracted_date,
+                    DateTimeResolution.CEC_YEAR)
             # parse {YYYY}
             # NOTE: assumes a full date has at least 3 digits
             elif greedy and is_numeric(word) and len(word) >= 3 \
@@ -3268,6 +3336,7 @@ def extract_date_en(date_str, ref_date,
             # parse {year} {era}
             # "1992 after christ"
             elif is_numeric(word) and wordNext in eras:
+                date_found = True
                 extracted_date = extracted_date.replace(year=int(word))
                 remainder_words[idx] = ""
             # parse "the {YYYY}s"
@@ -3290,7 +3359,6 @@ def extract_date_en(date_str, ref_date,
                 extracted_date = extracted_date.replace(year=_year)
                 remainder_words[idx] = ""
 
-    remainder = " ".join([w or "_" for w in remainder_words])
     remainder = " ".join([w or "_" for w in remainder_words])
     # print(date_str, "//", remainder)
 

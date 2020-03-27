@@ -602,6 +602,7 @@ class DateTimeResolution(Enum):
 
     # Special reference dates
     # number of days since 1 January 4713 BC, 12:00:00 (UTC).
+    JULIAN = 668
     JULIAN_MICROSECOND = 160
     JULIAN_MILLISECOND = 161
     JULIAN_SECOND = 162
@@ -668,6 +669,7 @@ class DateTimeResolution(Enum):
 
     # Unix time, number of seconds elapsed since 1 January 1970, 00:00:00 (
     # UTC).
+    UNIX = 667
     UNIX_MICROSECOND = 214
     UNIX_MILLISECOND = 215
     UNIX_SECOND = 216
@@ -690,6 +692,7 @@ class DateTimeResolution(Enum):
 
     # Lilian date, number of days elapsed since the beginning of
     # the Gregorian Calendar on 15 October 1582.
+    LILIAN = 669
     LILIAN_MICROSECOND = 232
     LILIAN_MILLISECOND = 233
     LILIAN_SECOND = 234
@@ -714,6 +717,7 @@ class DateTimeResolution(Enum):
     # 10,000 years to the currently dominant (AD/BC or CE/BCE) numbering scheme,
     # placing its first year near the beginning of the Holocene geological
     # epoch and the Neolithic Revolution
+    HOLOCENE = 700
     HOLOCENE_MICROSECOND = 250
     HOLOCENE_MILLISECOND = 251
     HOLOCENE_SECOND = 252
@@ -761,6 +765,7 @@ class DateTimeResolution(Enum):
 
     # After the Development of Agriculture (ADA) is a system for
     # counting years forward from 8000 BCE, making 2020 the year 10020 ADA
+    ADA = 701
     ADA_MICROSECOND = 286
     ADA_MILLISECOND = 287
     ADA_SECOND = 288
@@ -804,6 +809,7 @@ class DateTimeResolution(Enum):
 
     # "Creation Era of Constantinople" or "Era of the World"
     # September 1, 5509 BC
+    CEC = 702
     CEC_MICROSECOND = 322
     CEC_MILLISECOND = 323
     CEC_SECOND = 324
