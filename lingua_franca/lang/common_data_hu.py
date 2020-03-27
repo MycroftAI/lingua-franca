@@ -1,6 +1,6 @@
 _MONTHS_HU = ['január', 'február', 'március', 'április', 'május', 'június',
-          'július', 'augusztus', 'szeptember', 'október', 'november',
-          'december']
+              'július', 'augusztus', 'szeptember', 'október', 'november',
+              'december']
 
 _NUM_STRING_HU = {
     0: 'nulla',
@@ -69,9 +69,9 @@ _FRACTION_STRING_HU = {
 # Numbers below 2 thousand are written in one word in Hungarian
 # Numbers above 2 thousand are separated by hyphens
 # In some circumstances it may better to seperate individual words
-# Set _EXTRA_SPACE_DA=" " for separating numbers below 2 thousand (
+# Set _EXTRA_SPACE_HU=" " for separating numbers below 2 thousand (
 # orthographically incorrect)
-# Set _EXTRA_SPACE_DA="" for correct spelling, this is standard
+# Set _EXTRA_SPACE_HU="" for correct spelling, this is standard
 
-# _EXTRA_SPACE_DA = " "
+# _EXTRA_SPACE_HU = " "
 _EXTRA_SPACE_HU = ""

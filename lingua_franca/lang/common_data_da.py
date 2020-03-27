@@ -1,3 +1,5 @@
+_FUNCTION_NOT_IMPLEMENTED_WARNING = "Denne funktion er ikke implementeret i 'dk'."
+
 _DA_NUMBERS = {
     'nul': 0,
     'en': 1,
@@ -52,8 +54,8 @@ _DA_NUMBERS = {
 }
 
 _MONTHS_DA = ['januar', 'februar', 'märz', 'april', 'mai', 'juni',
-          'juli', 'august', 'september', 'oktober', 'november',
-          'dezember']
+              'juli', 'august', 'september', 'oktober', 'november',
+              'dezember']
 
 _NUM_STRING_DA = {
     0: 'nul',
@@ -120,7 +122,7 @@ _FRACTION_STRING_DA = {
     20: 'tyvendedel'
 }
 
-# Numbers below 1 million are written in one word in German, yielding very
+# Numbers below 1 million are written in one word in Danish, yielding very
 # long words
 # In some circumstances it may better to seperate individual words
 # Set _EXTRA_SPACE_DA=" " for separating numbers below 1 million (

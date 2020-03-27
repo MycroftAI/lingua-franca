@@ -136,7 +136,7 @@ class Normalizer:
         for idx, w in enumerate(words):
             if w in self.stopwords:
                 words[idx] = ""
-        #if words[-1] == '-':
+        # if words[-1] == '-':
         #    words = words[:-1]
         utterance = " ".join(words)
         # Remove trailing whitespaces from utterance along with orphaned

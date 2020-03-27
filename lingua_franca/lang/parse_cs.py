@@ -22,7 +22,7 @@ from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
 from lingua_franca.lang.common_data_cs import _NUM_STRING_CS, \
     _LONG_ORDINAL_CS, _LONG_SCALE_CS, _SHORT_SCALE_CS, _SHORT_ORDINAL_CS, \
     _FRACTION_STRING_CS, _MONTHS_CONVERSION, _MONTHS_CZECH, _TIME_UNITS_CONVERSION, \
-    _ORDINAL_BASE_CS  #_ARTICLES_CS
+    _ORDINAL_BASE_CS  # _ARTICLES_CS
 
 import re
 import json
@@ -178,7 +178,7 @@ def _extract_number_with_text_cs(tokens, short_scale=True,
     number, tokens = \
         _extract_number_with_text_cs_helper(tokens, short_scale,
                                             ordinals, fractional_numbers)
-    #while tokens and tokens[0].word in _ARTICLES_CS:
+    # while tokens and tokens[0].word in _ARTICLES_CS:
     #    tokens.pop(0)
     return ReplaceableNumber(number, tokens)
 
@@ -266,8 +266,8 @@ def _extract_decimal_with_text_cs(tokens, short_scale, ordinals):
     This function handles text such as '2 point 5'.
 
     Notes:
-        While this is a helper for extractnumber_en, it also depends on
-        extractnumber_en, to parse out the components of the decimal.
+        While this is a helper for extract_number_xx, it also depends on
+        extract_number_xx, to parse out the components of the decimal.
 
         This does not currently handle things like:
             number dot number number number
@@ -339,7 +339,7 @@ def _extract_whole_number_with_text_cs(tokens, short_scale, ordinals):
             continue
 
         word = token.word
-        #if word in _ARTICLES_CS or word in _NEGATIVES:
+        # if word in _ARTICLES_CS or word in _NEGATIVES:
         if word in word in _NEGATIVES:
             number_words.append(token)
             continue
@@ -347,21 +347,20 @@ def _extract_whole_number_with_text_cs(tokens, short_scale, ordinals):
         prev_word = tokens[idx - 1].word if idx > 0 else ""
         next_word = tokens[idx + 1].word if idx + 1 < len(tokens) else ""
 
-        #In czech we do no use suffix (1st,2nd,..) but use point instead (1.,2.,..)
+        # In czech we do no use suffix (1st,2nd,..) but use point instead (1.,2.,..)
         if is_numeric(word[:-1]) and \
                 (word.endswith(".")):
 
             # explicit ordinals, 1st, 2nd, 3rd, 4th.... Nth
             word = word[:-1]
 
-        
             # handle nth one
         #    if next_word == "one":
-                # would return 1 instead otherwise
+            # would return 1 instead otherwise
         #        tokens[idx + 1] = Token("", idx)
         #        next_word = ""
 
-        #Normalize Czech inflection of numbers(jedna,jeden,jedno,...)
+        # Normalize Czech inflection of numbers(jedna,jeden,jedno,...)
         if not ordinals:
             word = _text_cs_inflection_normalize(word, 1)
 
@@ -374,7 +373,7 @@ def _extract_whole_number_with_text_cs(tokens, short_scale, ordinals):
                 not isFractional_cs(word, short_scale=short_scale) and \
                 not look_for_fractions(word.split('/')):
             words_only = [token.word for token in number_words]
-            #if number_words and not all([w in _ARTICLES_CS |
+            # if number_words and not all([w in _ARTICLES_CS |
             #                             _NEGATIVES for w in words_only]):
             if number_words and not all([w in _NEGATIVES for w in words_only]):
                 break
@@ -385,8 +384,8 @@ def _extract_whole_number_with_text_cs(tokens, short_scale, ordinals):
                 and prev_word not in multiplies \
                 and prev_word not in _SUMS \
                 and not (ordinals and prev_word in string_num_ordinal) \
-                and prev_word not in _NEGATIVES: #\
-                #and prev_word not in _ARTICLES_CS:
+                and prev_word not in _NEGATIVES:  # \
+            # and prev_word not in _ARTICLES_CS:
             number_words = [token]
         elif prev_word in _SUMS and word in _SUMS:
             number_words = [token]
@@ -423,14 +422,13 @@ def _extract_whole_number_with_text_cs(tokens, short_scale, ordinals):
                                                              multiplies,
                                                              val < prev_val if prev_val else False]):
             val = prev_val + val
-        
-        # For Czech only: If Ordinal previous number will be also in ordinal number format 
+
+        # For Czech only: If Ordinal previous number will be also in ordinal number format
         # dvacátý první = twentieth first
         if (prev_word in string_num_ordinal and val and val < 10) or all([prev_word in
-                                                             multiplies,
-                                                             val < prev_val if prev_val else False]):
+                                                                          multiplies,
+                                                                          val < prev_val if prev_val else False]):
             val = prev_val + val
-
 
         # is the prev word a number and should we multiply it?
         # twenty hundred, six hundred
@@ -581,7 +579,7 @@ def _initialize_number_data(short_scale):
     return multiplies, string_num_ordinal_cs, string_num_scale_cs
 
 
-def extractnumber_cs(text, short_scale=True, ordinals=False):
+def extract_number_cs(text, short_scale=True, ordinals=False):
     """
     This function extracts a number from a text string,
     handles pronunciations in long scale and short scale
@@ -629,7 +627,7 @@ def extract_duration_cs(text):
     """
     if not text:
         return None
-    
+
     # Czech inflection for time: minuta,minuty,minut - safe to use minut as pattern
     # For day: den, dny, dnů - short patern not applicable, list all
 
@@ -660,7 +658,7 @@ def extract_duration_cs(text):
     return (duration, text)
 
 
-def extract_datetime_cs(string, dateNow, default_time):
+def extract_datetime_cs(text, anchorDate=None, default_time=None):
     """ Convert a human date reference into an exact datetime
 
     Convert things like
@@ -681,8 +679,8 @@ def extract_datetime_cs(string, dateNow, default_time):
     On Saturday, "next Monday" would be in 9 days.
 
     Args:
-        string (str): string containing date words
-        dateNow (datetime): A reference date/time for "tommorrow", etc
+        text (str): string containing date words
+        anchorDate (datetime): A reference date/time for "tommorrow", etc
         default_time (time): Time to set if no time was found in the string
 
     Returns:
@@ -696,50 +694,58 @@ def extract_datetime_cs(string, dateNow, default_time):
         # Normalize czech inflection
         s = s.lower().replace('?', '').replace('.', '').replace(',', '') \
             .replace("dvoje", "2").replace("dvojice", "2") \
-            .replace("dnes večer", "večer").replace("dnes v noci", "noci") #\
-            #.replace("tento večer", "večer")
-            #.replace(' the ', ' ').replace(' a ', ' ').replace(' an ', ' ') \
-            #.replace("o' clock", "o'clock").replace("o clock", "o'clock") \
-            #.replace("o ' clock", "o'clock").replace("o 'clock", "o'clock") \
-            #.replace("decades", "decade") \
-            #.replace("tisíciletí", "milénium")
-            #.replace("oclock", "o'clock")
+            .replace("dnes večer", "večer").replace("dnes v noci", "noci")  # \
+        # .replace("tento večer", "večer")
+        # .replace(' the ', ' ').replace(' a ', ' ').replace(' an ', ' ') \
+        # .replace("o' clock", "o'clock").replace("o clock", "o'clock") \
+        # .replace("o ' clock", "o'clock").replace("o 'clock", "o'clock") \
+        # .replace("decades", "decade") \
+        # .replace("tisíciletí", "milénium")
+        # .replace("oclock", "o'clock")
         wordList = s.split()
-       
+
         for idx, word in enumerate(wordList):
             #word = word.replace("'s", "")
             ##########
             # Czech Day Ordinals - we do not use 1st,2nd format
             #    instead we use full ordinal number names with specific format(suffix)
-            #   Example: třicátého prvního > 31 
+            #   Example: třicátého prvního > 31
             count_ordinals = 0
-            if word =="prvního": count_ordinals = 1   # These two have different format 
-            elif word =="třetího": count_ordinals = 3
+            if word == "prvního":
+                count_ordinals = 1   # These two have different format
+            elif word == "třetího":
+                count_ordinals = 3
             elif word.endswith("ého"):
                 tmp = word[:-3]
-                tmp +=("ý")
+                tmp += ("ý")
                 for nr, name in _ORDINAL_BASE_CS.items():
                     if name == tmp:
                         count_ordinals = nr
-            
+
             # If number is bigger than 19 chceck if next word is also ordinal
             #  and count them together
-            if count_ordinals > 19: 
-                if wordList[idx+1] =="prvního": count_ordinals += 1   # These two have different format 
-                elif wordList[idx+1] =="třetího": count_ordinals += 3
+            if count_ordinals > 19:
+                if wordList[idx+1] == "prvního":
+                    count_ordinals += 1   # These two have different format
+                elif wordList[idx+1] == "třetího":
+                    count_ordinals += 3
                 elif wordList[idx+1].endswith("ého"):
                     tmp = wordList[idx+1][:-3]
-                    tmp +=("ý")
+                    tmp += ("ý")
                     for nr, name in _ORDINAL_BASE_CS.items():
                         if name == tmp and nr < 10:
-                            if (count_ordinals + nr) <=31: #write only if sum makes acceptable count of days in month
+                            # write only if sum makes acceptable count of days in month
+                            if (count_ordinals + nr) <= 31:
                                 count_ordinals += nr
 
-            if count_ordinals >0: word = str(count_ordinals)  #Write normalized valu into word
-            if count_ordinals >20: wordList[idx+1] = "" # If counted number is grather than 20, clear next word so it is not used again
+            if count_ordinals > 0:
+                word = str(count_ordinals)  # Write normalized valu into word
+            if count_ordinals > 20:
+                # If counted number is grather than 20, clear next word so it is not used again
+                wordList[idx+1] = ""
             ##########
             # Remove inflection from czech months
-   
+
             wordList[idx] = word
 
         return wordList
@@ -754,7 +760,7 @@ def extract_datetime_cs(string, dateNow, default_time):
                 minAbs or secOffset != 0
             )
 
-    if string == "" or not dateNow:
+    if text == "" or not anchorDate:
         return None
 
     found = False
@@ -762,8 +768,8 @@ def extract_datetime_cs(string, dateNow, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    today = dateNow.strftime("%w")
-    currentYear = dateNow.strftime("%Y")
+    today = anchorDate.strftime("%w")
+    currentYear = anchorDate.strftime("%Y")
     fromFlag = False
     datestr = ""
     hasYear = False
@@ -772,45 +778,51 @@ def extract_datetime_cs(string, dateNow, default_time):
     timeQualifiersAM = ['ráno', 'dopoledne']
     timeQualifiersPM = ['odpoledne', 'večer', 'noc', 'noci']
     timeQualifiersList = set(timeQualifiersAM + timeQualifiersPM)
-    markers = ['na', 'v', 'do', 'na', 'tento', 'okolo', 'toto', 'během', 'za', 'této']
+    markers = ['na', 'v', 'do', 'na', 'tento',
+               'okolo', 'toto', 'během', 'za', 'této']
     days = ['pondělí', 'úterý', 'středa',
             'čtvrtek', 'pátek', 'sobota', 'neděle']
-    months =_MONTHS_CZECH
-    recur_markers = days + [d + 'ho' for d in days] + ['víkend', 'všední'] #Check this
+    months = _MONTHS_CZECH
+    recur_markers = days + [d + 'ho' for d in days] + \
+        ['víkend', 'všední']  # Check this
     monthsShort = ['led', 'úno', 'bře', 'dub', 'kvě', 'čvn', 'čvc', 'srp',
                    'zář', 'říj', 'lis', 'pro']
     year_multiples = ["desetiletí", "století", "tisíciletí"]
     day_multiples = ["týden", "měsíc", "rok"]
 
-    words = clean_string(string)
+    words = clean_string(text)
 
     for idx, word in enumerate(words):
         if word == "":
             continue
 
-        word=_text_cs_inflection_normalize(word,2)
-        wordPrevPrev = _text_cs_inflection_normalize(words[idx - 2],2) if idx > 1 else ""
-        wordPrev = _text_cs_inflection_normalize(words[idx - 1],2) if idx > 0 else ""
-        wordNext = _text_cs_inflection_normalize(words[idx + 1],2) if idx + 1 < len(words) else ""
-        wordNextNext = _text_cs_inflection_normalize(words[idx + 2],2) if idx + 2 < len(words) else ""
+        word = _text_cs_inflection_normalize(word, 2)
+        wordPrevPrev = _text_cs_inflection_normalize(
+            words[idx - 2], 2) if idx > 1 else ""
+        wordPrev = _text_cs_inflection_normalize(
+            words[idx - 1], 2) if idx > 0 else ""
+        wordNext = _text_cs_inflection_normalize(
+            words[idx + 1], 2) if idx + 1 < len(words) else ""
+        wordNextNext = _text_cs_inflection_normalize(
+            words[idx + 2], 2) if idx + 2 < len(words) else ""
 
         # this isn't in clean string because I don't want to save back to words
         #word = word.rstrip('s')
         start = idx
         used = 0
         # save timequalifier for later
-        #if word == "před" and dayOffset:
+        # if word == "před" and dayOffset:
         #    dayOffset = - dayOffset
         #    used += 1
         if word == "nyní" and not datestr:
             resultStr = " ".join(words[idx + 1:])
             resultStr = ' '.join(resultStr.split())
-            extractedDate = dateNow.replace(microsecond=0)
+            extractedDate = anchorDate.replace(microsecond=0)
             return [extractedDate, resultStr]
         elif wordNext in year_multiples:
             multiplier = None
             if is_numeric(word):
-                multiplier = extractnumber_cs(word)
+                multiplier = extract_number_cs(word)
             multiplier = multiplier or 1
             multiplier = int(multiplier)
             used += 2
@@ -876,10 +888,10 @@ def extract_datetime_cs(string, dateNow, default_time):
                 start -= 1
                 used = 2
                 if wordPrevPrev == "před":
-                    dayOffset= -dayOffset
-                    used +=1
-                    start -=1
-                
+                    dayOffset = -dayOffset
+                    used += 1
+                    start -= 1
+
         elif word == "týden" and not fromFlag and wordPrev:
             if wordPrev[0].isdigit():
                 dayOffset += int(wordPrev) * 7
@@ -945,7 +957,8 @@ def extract_datetime_cs(string, dateNow, default_time):
             except ValueError:
                 m = monthsShort.index(word)
             used += 1
-            datestr = _MONTHS_CONVERSION.get(m)  # Convert czech months to english
+            # Convert czech months to english
+            datestr = _MONTHS_CONVERSION.get(m)
             if wordPrev and (wordPrev[0].isdigit() or
                              (wordPrev == " " and wordPrevPrev[0].isdigit())):
                 if wordPrev == " " and wordPrevPrev[0].isdigit():
@@ -976,7 +989,7 @@ def extract_datetime_cs(string, dateNow, default_time):
             # if no date indicators found, it may not be the month of May
             # may "i/we" ...
             # "... may be"
-            #elif word == 'may' and wordNext in ['i', 'we', 'be']:
+            # elif word == 'may' and wordNext in ['i', 'we', 'be']:
             #    datestr = ""
 
         # parse 5 days from tomorrow, 10 weeks from next thursday,
@@ -1021,7 +1034,7 @@ def extract_datetime_cs(string, dateNow, default_time):
                     start -= 1
                 dayOffset += tmpOffset
         if used > 0:
-            if start - 1 > 0 and (words[start - 1] == "toto" or words[start - 1] == "této"or words[start - 1] == "tento"):
+            if start - 1 > 0 and (words[start - 1] == "toto" or words[start - 1] == "této" or words[start - 1] == "tento"):
                 start -= 1
                 used += 1
 
@@ -1045,11 +1058,15 @@ def extract_datetime_cs(string, dateNow, default_time):
         if word == "":
             continue
 
-        word=_text_cs_inflection_normalize(word,2)
-        wordPrevPrev = _text_cs_inflection_normalize(words[idx - 2],2) if idx > 1 else ""
-        wordPrev = _text_cs_inflection_normalize(words[idx - 1],2) if idx > 0 else ""
-        wordNext = _text_cs_inflection_normalize(words[idx + 1],2) if idx + 1 < len(words) else ""
-        wordNextNext = _text_cs_inflection_normalize(words[idx + 2],2) if idx + 2 < len(words) else ""
+        word = _text_cs_inflection_normalize(word, 2)
+        wordPrevPrev = _text_cs_inflection_normalize(
+            words[idx - 2], 2) if idx > 1 else ""
+        wordPrev = _text_cs_inflection_normalize(
+            words[idx - 1], 2) if idx > 0 else ""
+        wordNext = _text_cs_inflection_normalize(
+            words[idx + 1], 2) if idx + 1 < len(words) else ""
+        wordNextNext = _text_cs_inflection_normalize(
+            words[idx + 2], 2) if idx + 2 < len(words) else ""
 
         # parse noon, midnight, morning, afternoon, evening
         used = 0
@@ -1071,13 +1088,13 @@ def extract_datetime_cs(string, dateNow, default_time):
             if hrAbs is None:
                 hrAbs = 19
             used += 1
-            if (wordNext !="" and wordNext[0].isdigit() and ":" in wordNext):
+            if (wordNext != "" and wordNext[0].isdigit() and ":" in wordNext):
                 used -= 1
         elif word == "noci" or word == "noc":
             if hrAbs is None:
                 hrAbs = 22
             #used += 1
-            #if ((wordNext !='' and not wordNext[0].isdigit()) or wordNext =='') and \
+            # if ((wordNext !='' and not wordNext[0].isdigit()) or wordNext =='') and \
             #    ((wordNextNext !='' and not wordNextNext[0].isdigit())or wordNextNext =='')  :
             #    used += 1
             # used += 1 ## NOTE this breaks other tests, TODO refactor me!
@@ -1179,15 +1196,15 @@ def extract_datetime_cs(string, dateNow, default_time):
                         remainder = nextWord
                         used += 1
 
-                    #elif wordNext == "in" and wordNextNext == "the" and \
+                    # elif wordNext == "in" and wordNextNext == "the" and \
                     #        words[idx + 3] == "ráno":
                     #    remainder = "am"
                     #    used += 3
-                    #elif wordNext == "in" and wordNextNext == "the" and \
+                    # elif wordNext == "in" and wordNextNext == "the" and \
                     #        words[idx + 3] == "odpoledne":
                     #    remainder = "pm"
                     #    used += 3
-                    #elif wordNext == "in" and wordNextNext == "the" and \
+                    # elif wordNext == "in" and wordNextNext == "the" and \
                     #        words[idx + 3] == "večer":
                     #    remainder = "pm"
                     #    used += 3
@@ -1266,11 +1283,11 @@ def extract_datetime_cs(string, dateNow, default_time):
                     strHH = strNum
                     used = 1
                 else:
-                    if (int(strNum) > 100): #and  #Check this
-                            #(
-                            #    wordPrev == "o" or
-                            #    wordPrev == "oh"
-                            #)):
+                    if (int(strNum) > 100):  # and  #Check this
+                        # (
+                        #    wordPrev == "o" or
+                        #    wordPrev == "oh"
+                        # )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = str(int(strNum) // 100)
                         strMM = str(int(strNum) % 100)
@@ -1278,11 +1295,12 @@ def extract_datetime_cs(string, dateNow, default_time):
                         if wordNext == "hodin":
                             used += 1
                     elif (
-                            (wordNext == "hodin"  or
+                            (wordNext == "hodin" or
                              remainder == "hodin") and
-                            word[0] != '0' and 
-                            wordPrev == "za"#(wordPrev != "v" and wordPrev != "na")
-                             and
+                            word[0] != '0' and
+                            # (wordPrev != "v" and wordPrev != "na")
+                            wordPrev == "za"
+                        and
                             (
                                 int(strNum) < 100 or
                                 int(strNum) > 2400
@@ -1332,7 +1350,7 @@ def extract_datetime_cs(string, dateNow, default_time):
                             (
                                 (wordNext == "v" or wordNext == "na") and
                                 (
-                                        wordNextNext == timeQualifier
+                                    wordNextNext == timeQualifier
                                 )
                             ) or wordNext == 'večer' or
                             wordNextNext == 'večer'):
@@ -1342,11 +1360,12 @@ def extract_datetime_cs(string, dateNow, default_time):
                         if wordNext == "hodin":
                             used += 1
                         if (wordNext == "v" or wordNext == "na"
-                              or wordNextNext == "v" or wordNextNext == "na"):
-                            used += (1 if (wordNext == "v" or wordNext == "na") else 2)
+                                or wordNextNext == "v" or wordNextNext == "na"):
+                            used += (1 if (wordNext ==
+                                           "v" or wordNext == "na") else 2)
                             wordNextNextNext = words[idx + 3] \
                                 if idx + 3 < len(words) else ""
-                            
+
                             if (wordNextNext and
                                     (wordNextNext in timeQualifier or
                                      wordNextNextNext in timeQualifier)):
@@ -1358,7 +1377,7 @@ def extract_datetime_cs(string, dateNow, default_time):
                                         wordNextNextNext in timeQualifiersAM):
                                     remainder = "am"
                                     used += 1
-                        
+
                         if timeQualifier != "":
                             if timeQualifier in timeQualifiersPM:
                                 remainder = "pm"
@@ -1371,8 +1390,9 @@ def extract_datetime_cs(string, dateNow, default_time):
                                 # TODO: Unsure if this is 100% accurate
                                 used += 1
                                 military = True
-                        elif remainder == "hodin": remainder="" 
-                                
+                        elif remainder == "hodin":
+                            remainder = ""
+
                     else:
                         isTime = False
             HH = int(strHH) if strHH else 0
@@ -1380,15 +1400,15 @@ def extract_datetime_cs(string, dateNow, default_time):
             HH = HH + 12 if remainder == "pm" and HH < 12 else HH
             HH = HH - 12 if remainder == "am" and HH >= 12 else HH
             if (not military and
-                    remainder not in ['am', 'pm', 'hodin', 'minut', 'sekund'] and #
+                    remainder not in ['am', 'pm', 'hodin', 'minut', 'sekund'] and
                     ((not daySpecified) or 0 <= dayOffset < 1)):
 
                 # ambiguous time, detect whether they mean this evening or
                 # the next morning based on whether it has already passed
-                if dateNow.hour < HH or (dateNow.hour == HH and
-                                         dateNow.minute < MM):
+                if anchorDate.hour < HH or (anchorDate.hour == HH and
+                                            anchorDate.minute < MM):
                     pass  # No modification needed
-                elif dateNow.hour < HH + 12:
+                elif anchorDate.hour < HH + 12:
                     HH += 12
                 else:
                     # has passed, assume the next morning
@@ -1411,7 +1431,7 @@ def extract_datetime_cs(string, dateNow, default_time):
                     break
                 words[idx + i] = ""
 
-            #if wordPrev == "o" or wordPrev == "oh":
+            # if wordPrev == "o" or wordPrev == "oh":
             #    words[words.index(wordPrev)] = ""
 
             if wordPrev == "brzy":
@@ -1428,7 +1448,7 @@ def extract_datetime_cs(string, dateNow, default_time):
                     daySpecified = True
             if idx > 1 and wordPrevPrev in markers:
                 words[idx - 2] = ""
-                if wordPrevPrev == "toto"or wordPrev == "této":
+                if wordPrevPrev == "toto" or wordPrev == "této":
                     daySpecified = True
 
             idx += used - 1
@@ -1442,7 +1462,7 @@ def extract_datetime_cs(string, dateNow, default_time):
 
     # perform date manipulation
 
-    extractedDate = dateNow.replace(microsecond=0)
+    extractedDate = anchorDate.replace(microsecond=0)
     if datestr != "":
         # date included an explicit date, e.g. "june 5" or "june 2, 2017"
         try:
@@ -1495,7 +1515,7 @@ def extract_datetime_cs(string, dateNow, default_time):
         extractedDate = extractedDate + relativedelta(hours=hrAbs,
                                                       minutes=minAbs)
         if (hrAbs != 0 or minAbs != 0) and datestr == "":
-            if not daySpecified and dateNow > extractedDate:
+            if not daySpecified and anchorDate > extractedDate:
                 extractedDate = extractedDate + relativedelta(days=1)
     if hrOffset != 0:
         extractedDate = extractedDate + relativedelta(hours=hrOffset)
@@ -1512,6 +1532,7 @@ def extract_datetime_cs(string, dateNow, default_time):
     resultStr = ' '.join(resultStr.split())
     return [extractedDate, resultStr]
 
+
 def isFractional_cs(input_str, short_scale=True):
     """
     This function takes the given text and checks if it is a fraction.
@@ -1523,12 +1544,13 @@ def isFractional_cs(input_str, short_scale=True):
         (bool) or (float): False if not a fraction, otherwise the fraction
 
     """
-    if input_str.endswith('iny', -3):  #leading number is bigger than one ( one třetina, two třetiny)
-        input_str = input_str[:len(input_str) - 1] + "a"  # Normalize to format of one (třetiny > třetina)
+    if input_str.endswith('iny', -3):  # leading number is bigger than one ( one třetina, two třetiny)
+        # Normalize to format of one (třetiny > třetina)
+        input_str = input_str[:len(input_str) - 1] + "a"
 
-    fracts = {"celá": 1 }  #first four numbers have little different format
-    
-    for num in _FRACTION_STRING_CS:  #Numbers from 2 to 1 hundret, more is not usualy used in common speech
+    fracts = {"celá": 1}  # first four numbers have little different format
+
+    for num in _FRACTION_STRING_CS:  # Numbers from 2 to 1 hundret, more is not usualy used in common speech
         if num > 1:
             fracts[_FRACTION_STRING_CS[num]] = num
 
@@ -1557,13 +1579,14 @@ def extract_numbers_cs(text, short_scale=True, ordinals=False):
 
 
 class CzechNormalizer(Normalizer):
-    with open(resolve_resource_file("text/cs-cz/normalize.json"),encoding='utf8') as f:
+    with open(resolve_resource_file("text/cs-cz/normalize.json"), encoding='utf8') as f:
         _default_config = json.load(f)
 
 
-def normalize_cs(text, remove_articles):
+def normalize_cs(text, remove_articles=True):
     """ Czech string normalization """
     return CzechNormalizer().normalize(text, remove_articles)
+
 
 def _text_cs_inflection_normalize(word, arg):
     """
@@ -1571,7 +1594,7 @@ def _text_cs_inflection_normalize(word, arg):
 
     This try to normalize known inflection. This function is called
     from multiple places, each one is defined with arg.
-    
+
     Args:
         word [Word]
         arg [Int]
@@ -1580,66 +1603,104 @@ def _text_cs_inflection_normalize(word, arg):
         word [Word]
 
     """
-    if arg ==1: # _extract_whole_number_with_text_cs
-    #Number one (jedna)
-        if len(word)==5 and word.startswith("jed"):
+    if arg == 1:  # _extract_whole_number_with_text_cs
+        # Number one (jedna)
+        if len(word) == 5 and word.startswith("jed"):
             suffix = 'en', 'no', 'ny'
-            if word.endswith(suffix,3):
-                word="jedna"
+            if word.endswith(suffix, 3):
+                word = "jedna"
 
-        #Number two (dva)
+        # Number two (dva)
         elif word == "dvě":
             word = "dva"
 
-    elif arg == 2: # extract_datetime_cs  TODO: This is ugly
-        if word == "hodina": word = "hodin"
-        if word == "hodiny": word = "hodin"
-        if word == "hodinu": word = "hodin"
-        if word == "minuta": word = "minut"
-        if word == "minuty": word = "minut"
-        if word == "minutu": word = "minut"
-        if word == "minutu": word = "minut"
-        if word == "sekunda": word = "sekund"
-        if word == "sekundy": word = "sekund"
-        if word == "sekundu": word = "sekund"  
-        if word == "dní": word = "den" 
-        if word == "dnů": word = "den" 
-        if word == "dny": word = "den"
-        if word == "týdny": word = "týden"
-        if word == "týdnů": word = "týden"
-        if word == "měsíců": word = "měsíc"
-        if word == "měsíce": word = "měsíc"
-        if word == "měsíci": word = "měsíc"
-        if word == "roky": word = "rok"
-        if word == "roků": word = "rok"
-        if word == "let": word = "rok"
-        if word == "včerejšku": word = "včera"
-        if word == "zítřku": word = "zítra"
-        if word == "zítřejší": word = "zítra"
-        if word == "ranní": word = "ráno"
-        if word == "dopolední": word ="dopoledne"
-        if word == "polední": word ="poledne"
-        if word == "odpolední": word = "odpoledne"
-        if word == "večerní": word = "večer"
-        if word == "noční": word = "noc"
-        if word == "víkendech": word = "víkend"
-        if word == "víkendu": word = "víkend"
-        if word == "všedních": word = "všední"
-        if word == "všedním": word = "všední"
+    elif arg == 2:  # extract_datetime_cs  TODO: This is ugly
+        if word == "hodina":
+            word = "hodin"
+        if word == "hodiny":
+            word = "hodin"
+        if word == "hodinu":
+            word = "hodin"
+        if word == "minuta":
+            word = "minut"
+        if word == "minuty":
+            word = "minut"
+        if word == "minutu":
+            word = "minut"
+        if word == "minutu":
+            word = "minut"
+        if word == "sekunda":
+            word = "sekund"
+        if word == "sekundy":
+            word = "sekund"
+        if word == "sekundu":
+            word = "sekund"
+        if word == "dní":
+            word = "den"
+        if word == "dnů":
+            word = "den"
+        if word == "dny":
+            word = "den"
+        if word == "týdny":
+            word = "týden"
+        if word == "týdnů":
+            word = "týden"
+        if word == "měsíců":
+            word = "měsíc"
+        if word == "měsíce":
+            word = "měsíc"
+        if word == "měsíci":
+            word = "měsíc"
+        if word == "roky":
+            word = "rok"
+        if word == "roků":
+            word = "rok"
+        if word == "let":
+            word = "rok"
+        if word == "včerejšku":
+            word = "včera"
+        if word == "zítřku":
+            word = "zítra"
+        if word == "zítřejší":
+            word = "zítra"
+        if word == "ranní":
+            word = "ráno"
+        if word == "dopolední":
+            word = "dopoledne"
+        if word == "polední":
+            word = "poledne"
+        if word == "odpolední":
+            word = "odpoledne"
+        if word == "večerní":
+            word = "večer"
+        if word == "noční":
+            word = "noc"
+        if word == "víkendech":
+            word = "víkend"
+        if word == "víkendu":
+            word = "víkend"
+        if word == "všedních":
+            word = "všední"
+        if word == "všedním":
+            word = "všední"
 
-        #Months
-        if word == "únoru": word = "únor"
-        elif word == "červenci": word = "červenec"
-        elif word == "července": word = "červenec"
-        elif word == "listopadu": word = "listopad"
-        elif word == "prosinci": word = "prosinec"
+        # Months
+        if word == "únoru":
+            word = "únor"
+        elif word == "červenci":
+            word = "červenec"
+        elif word == "července":
+            word = "červenec"
+        elif word == "listopadu":
+            word = "listopad"
+        elif word == "prosinci":
+            word = "prosinec"
 
         elif word.endswith("nu") or word.endswith("na"):
-                    tmp = word[:-2] 
-                    tmp +=("en")
-                    for name in _MONTHS_CZECH:
-                        if name == tmp:
-                            word=name
-                            
+            tmp = word[:-2]
+            tmp += ("en")
+            for name in _MONTHS_CZECH:
+                if name == tmp:
+                    word = name
 
     return word

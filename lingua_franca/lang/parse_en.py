@@ -28,7 +28,7 @@ from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
 
 import re
 import json
-from lingua_franca import resolve_resource_file
+from lingua_franca.internal import resolve_resource_file
 
 
 def _convert_words_to_numbers_en(text, short_scale=True, ordinals=False):
@@ -362,7 +362,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
         # twenty two, fifty six
         if (prev_word in _SUMS_EN and val and val < 10) or all([prev_word in
                                                                 multiplies,
-                                                             val < prev_val if prev_val else False]):
+                                                                val < prev_val if prev_val else False]):
             val = prev_val + val
 
         # is the prev word a number and should we multiply it?
@@ -590,7 +590,7 @@ def extract_duration_en(text):
     return (duration, text)
 
 
-def extract_datetime_en(string, dateNow, default_time):
+def extract_datetime_en(text, anchorDate=None, default_time=None):
     """ Convert a human date reference into an exact datetime
 
     Convert things like
@@ -611,8 +611,8 @@ def extract_datetime_en(string, dateNow, default_time):
     On Saturday, "next Monday" would be in 9 days.
 
     Args:
-        string (str): string containing date words
-        dateNow (datetime): A reference date/time for "tommorrow", etc
+        text (str): string containing date words
+        anchorDate (datetime): A reference date/time for "tommorrow", etc
         default_time (time): Time to set if no time was found in the string
 
     Returns:
@@ -654,8 +654,9 @@ def extract_datetime_en(string, dateNow, default_time):
                 hrAbs or minOffset != 0 or
                 minAbs or secOffset != 0
             )
-
-    if string == "" or not dateNow:
+    if not anchorDate:
+        anchorDate = datetime.now()
+    if text == "":
         return None
 
     found = False
@@ -663,8 +664,8 @@ def extract_datetime_en(string, dateNow, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    today = dateNow.strftime("%w")
-    currentYear = dateNow.strftime("%Y")
+    today = anchorDate.strftime("%w")
+    currentYear = anchorDate.strftime("%Y")
     fromFlag = False
     datestr = ""
     hasYear = False
@@ -686,7 +687,7 @@ def extract_datetime_en(string, dateNow, default_time):
     year_multiples = ["decade", "century", "millennium"]
     day_multiples = ["weeks", "months", "years"]
 
-    words = clean_string(string)
+    words = clean_string(text)
 
     for idx, word in enumerate(words):
         if word == "":
@@ -707,7 +708,7 @@ def extract_datetime_en(string, dateNow, default_time):
         if word == "now" and not datestr:
             resultStr = " ".join(words[idx + 1:])
             resultStr = ' '.join(resultStr.split())
-            extractedDate = dateNow.replace(microsecond=0)
+            extractedDate = anchorDate.replace(microsecond=0)
             return [extractedDate, resultStr]
         elif wordNext in year_multiples:
             multiplier = None
@@ -1272,10 +1273,10 @@ def extract_datetime_en(string, dateNow, default_time):
 
                 # ambiguous time, detect whether they mean this evening or
                 # the next morning based on whether it has already passed
-                if dateNow.hour < HH or (dateNow.hour == HH and
-                                         dateNow.minute < MM):
+                if anchorDate.hour < HH or (anchorDate.hour == HH and
+                                            anchorDate.minute < MM):
                     pass  # No modification needed
-                elif dateNow.hour < HH + 12:
+                elif anchorDate.hour < HH + 12:
                     HH += 12
                 else:
                     # has passed, assume the next morning
@@ -1330,7 +1331,7 @@ def extract_datetime_en(string, dateNow, default_time):
 
     # perform date manipulation
 
-    extractedDate = dateNow.replace(microsecond=0)
+    extractedDate = anchorDate.replace(microsecond=0)
 
     if datestr != "":
         # date included an explicit date, e.g. "june 5" or "june 2, 2017"
@@ -1384,7 +1385,7 @@ def extract_datetime_en(string, dateNow, default_time):
         extractedDate = extractedDate + relativedelta(hours=hrAbs,
                                                       minutes=minAbs)
         if (hrAbs != 0 or minAbs != 0) and datestr == "":
-            if not daySpecified and dateNow > extractedDate:
+            if not daySpecified and anchorDate > extractedDate:
                 extractedDate = extractedDate + relativedelta(days=1)
     if hrOffset != 0:
         extractedDate = extractedDate + relativedelta(hours=hrOffset)
@@ -1455,6 +1456,6 @@ class EnglishNormalizer(Normalizer):
         _default_config = json.load(f)
 
 
-def normalize_en(text, remove_articles):
+def normalize_en(text, remove_articles=True):
     """ English string normalization """
     return EnglishNormalizer().normalize(text, remove_articles)

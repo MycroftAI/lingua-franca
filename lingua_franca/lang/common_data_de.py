@@ -57,8 +57,8 @@ _DE_NUMBERS = {
 }
 
 _MONTHS_DE = ['januar', 'februar', 'märz', 'april', 'mai', 'juni',
-          'juli', 'august', 'september', 'oktober', 'november',
-          'dezember']
+              'juli', 'august', 'september', 'oktober', 'november',
+              'dezember']
 
 _NUM_STRING_DE = {
     0: 'null',

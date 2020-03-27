@@ -20,7 +20,7 @@ from lingua_franca.lang.common_data_nl import _NUM_POWERS_OF_TEN, \
 from math import floor
 
 
-def nice_number_nl(number, speech, denominators=range(1, 21)):
+def nice_number_nl(number, speech=True, denominators=range(1, 21)):
     """ Dutch helper for nice_number
     This function formats a float to human understandable functions. Like
     4.5 becomes "4 einhalb" for speech and "4 1/2" for text
@@ -85,7 +85,7 @@ def pronounce_number_nl(number, places=2, short_scale=True, scientific=False,
             hundreds = floor(num / 100)
             if hundreds > 0:
                 result += _NUM_STRING_NL[
-                              hundreds] + _EXTRA_SPACE_NL + 'honderd' + _EXTRA_SPACE_NL
+                    hundreds] + _EXTRA_SPACE_NL + 'honderd' + _EXTRA_SPACE_NL
                 num -= hundreds * 100
         if num == 0:
             result += ''  # do nothing
@@ -302,13 +302,13 @@ def nice_part_of_day_nl(dt, speech=True):
 
 
 def nice_response_nl(text):
-    # check for months and call nice_ordinal_nl declension of ordinals
+    # check for months and call _nice_ordinal_nl declension of ordinals
     # replace "^" with "tot de macht" (to the power of)
     words = text.split()
 
     for idx, word in enumerate(words):
         if word.lower() in _MONTHS_NL:
-            text = nice_ordinal_nl(text)
+            text = _nice_ordinal_nl(text)
 
         if word == '^':
             wordNext = words[idx + 1] if idx + 1 < len(words) else ""
@@ -318,7 +318,7 @@ def nice_response_nl(text):
     return text
 
 
-def nice_ordinal_nl(text, speech=True):
+def _nice_ordinal_nl(text, speech=True):
     # check for months for declension of ordinals before months
     # depending on articles/prepositions
     normalized_text = text

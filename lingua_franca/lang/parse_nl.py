@@ -22,7 +22,7 @@ from .parse_common import is_numeric, look_for_fractions, Token, \
 from .common_data_nl import _SHORT_ORDINAL_STRING_NL, _ARTICLES_NL, \
     _DECIMAL_MARKER_NL, _FRACTION_MARKER_NL, _LONG_ORDINAL_STRING_NL,\
     _LONG_SCALE_NL, _MULTIPLIES_LONG_SCALE_NL, _MULTIPLIES_SHORT_SCALE_NL,\
-    _NEGATIVES_NL, _SHORT_SCALE_NL,_STRING_LONG_ORDINAL_NL, _STRING_NUM_NL, \
+    _NEGATIVES_NL, _SHORT_SCALE_NL, _STRING_LONG_ORDINAL_NL, _STRING_NUM_NL, \
     _STRING_SHORT_ORDINAL_NL, _SUMS_NL
 import re
 
@@ -488,7 +488,7 @@ def extract_duration_nl(text):
     return (duration, text)
 
 
-def extract_datetime_nl(string, dateNow, default_time):
+def extract_datetime_nl(text, anchorDate=None, default_time=None):
     """Convert a human date reference into an exact datetime
 
     Convert things like
@@ -509,7 +509,7 @@ def extract_datetime_nl(string, dateNow, default_time):
     On Saturday, "next Monday" would be in 9 days.
 
     Args:
-        string (str): string containing date words
+        text (str): string containing date words
         dateNow (datetime): A reference date/time for "tommorrow", etc
         default_time (time): Time to set if no time was found in the string
 
@@ -549,7 +549,7 @@ def extract_datetime_nl(string, dateNow, default_time):
                 minAbs or secOffset != 0
             )
 
-    if string == "" or not dateNow:
+    if text == "" or not anchorDate:
         return None
 
     found = False
@@ -557,8 +557,8 @@ def extract_datetime_nl(string, dateNow, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    today = dateNow.strftime("%w")
-    currentYear = dateNow.strftime("%Y")
+    today = anchorDate.strftime("%w")
+    currentYear = anchorDate.strftime("%Y")
     fromFlag = False
     datestr = ""
     hasYear = False
@@ -583,7 +583,7 @@ def extract_datetime_nl(string, dateNow, default_time):
     year_multiples = ["decennium", "eeuw", "millennium"]
     day_multiples = ["dagen", "weken", "maanden", "jaren"]
 
-    words = clean_string(string)
+    words = clean_string(text)
 
     for idx, word in enumerate(words):
         if word == "":
@@ -600,7 +600,7 @@ def extract_datetime_nl(string, dateNow, default_time):
         if word == "nu" and not datestr:
             resultStr = " ".join(words[idx + 1:])
             resultStr = ' '.join(resultStr.split())
-            extractedDate = dateNow.replace(microsecond=0)
+            extractedDate = anchorDate.replace(microsecond=0)
             return [extractedDate, resultStr]
         elif wordNext in year_multiples:
             multiplier = None
@@ -1130,10 +1130,10 @@ def extract_datetime_nl(string, dateNow, default_time):
                     ((not daySpecified) or dayOffset < 1)):
                 # ambiguous time, detect whether they mean this evening or
                 # the next morning based on whether it has already passed
-                if dateNow.hour < HH or (dateNow.hour == HH and
-                                         dateNow.minute < MM):
+                if anchorDate.hour < HH or (anchorDate.hour == HH and
+                                            anchorDate.minute < MM):
                     pass  # No modification needed
-                elif dateNow.hour < HH + 12:
+                elif anchorDate.hour < HH + 12:
                     HH += 12
                 else:
                     # has passed, assume the next morning
@@ -1185,7 +1185,7 @@ def extract_datetime_nl(string, dateNow, default_time):
 
     # perform date manipulation
 
-    extractedDate = dateNow.replace(microsecond=0)
+    extractedDate = anchorDate.replace(microsecond=0)
 
     if datestr != "":
         # date included an explicit date, e.g. "june 5" or "june 2, 2017"
@@ -1239,7 +1239,7 @@ def extract_datetime_nl(string, dateNow, default_time):
         extractedDate = extractedDate.replace(hour=hrAbs,
                                               minute=minAbs)
         if (hrAbs != 0 or minAbs != 0) and datestr == "":
-            if not daySpecified and dateNow > extractedDate:
+            if not daySpecified and anchorDate > extractedDate:
                 extractedDate = extractedDate + relativedelta(days=1)
     if hrOffset != 0:
         extractedDate = extractedDate + relativedelta(hours=hrOffset)
@@ -1299,7 +1299,7 @@ def extract_numbers_nl(text, short_scale=True, ordinals=False):
     return [float(result.value) for result in results]
 
 
-def normalize_nl(text, remove_articles):
+def normalize_nl(text, remove_articles=True):
     """Dutch string normalization."""
 
     words = text.split()  # this also removed extra spaces
@@ -1320,41 +1320,6 @@ def normalize_nl(text, remove_articles):
         normalized += " " + word
 
     return normalized[1:]  # strip the initial space
-
-
-def get_gender_nl(word, context=""):
-    """ Guess the gender of a word
-
-    Some languages assign genders to specific words.  This method will attempt
-    to determine the gender, optionally using the provided context sentence.
-
-    Args:
-        word (str): The word to look up
-        context (str, optional): String containing word, for context
-
-    Returns:
-        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
-             or None if unknown/or unused in the given language.
-    """
-    raise NotImplementedError
-
-
-def is_ordinal_nl(input_str):
-    """
-    This function takes the given text and checks if it is an ordinal number.
-
-    Args:
-        input_str (str): the string to check if ordinal
-    Returns:
-        (bool) or (float): False if not an ordinal, otherwise the number
-        corresponding to the ordinal
-
-    ordinals for 1, 3, 7 and 8 are irregular
-
-    only works for ordinals corresponding to the numbers in da_numbers
-
-    """
-    raise NotImplementedError
 
 
 class DutchNormalizer(Normalizer):

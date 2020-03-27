@@ -16,10 +16,20 @@
 import unittest
 from datetime import datetime, time, timedelta
 
+from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_duration
 from lingua_franca.parse import extract_number
 from lingua_franca.parse import normalize
+
+
+def setUpModule():
+    load_language("de-de")
+    set_default_lang("de")
+
+
+def tearDownModule():
+    unload_language("de")
 
 
 class TestNormalize(unittest.TestCase):

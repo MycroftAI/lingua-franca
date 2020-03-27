@@ -319,4 +319,3 @@ _SHORT_SCALE_IT = collections.OrderedDict([
     (1e2703, "nongentillion"),
     (1e3003, "millinillion")
 ])
-

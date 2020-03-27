@@ -16,11 +16,23 @@
 import unittest
 import datetime
 
-from lingua_franca.format import nice_number
-from lingua_franca.format import nice_time
-from lingua_franca.format import pronounce_number
-# from mycroft_parsers.lang.format_da import nice_response_da
-from lingua_franca.lang.format_da import pronounce_ordinal_da
+from lingua_franca import load_language, unload_language, set_default_lang
+from lingua_franca.format import nice_number, nice_time, nice_response, \
+    pronounce_number
+# from lingua_franca.format import nice_time
+# from lingua_franca.format import pronounce_number
+# # from mycroft_parsers.lang.format_da import nice_response
+from lingua_franca.lang.format_da import pronounce_ordinal_da  # internal to da
+
+
+def setUpModule():
+    load_language('da')
+    set_default_lang('da')
+
+
+def tearDownModule():
+    unload_language('da')
+
 
 # fractions are not capitalized for now
 NUMBERS_FIXTURE_da = {
@@ -58,13 +70,13 @@ NUMBERS_FIXTURE_da = {
 
 # class TestNiceResponse(unittest.TestCase):
 #    def test_replace_ordinal(self):
-#        self.assertEqual(nice_response_da("det er den 31. maj"),
+#        self.assertEqual(nice_response("det er den 31. maj"),
 #                                          "det er den enogtredifte maj")
-#        self.assertEqual(nice_response_da("Det begynder den 31. maj"),
+#        self.assertEqual(nice_response("Det begynder den 31. maj"),
 #                                          "Det begynder den enogtrefte maj")
-#        self.assertEqual(nice_response_da("den 31. mai"),
+#        self.assertEqual(nice_response("den 31. mai"),
 #                                         "den enogtrefte maj")
-#        self.assertEqual(nice_response_da("10 ^ 2"), "ti to")
+#        self.assertEqual(nice_response("10 ^ 2"), "ti to")
 
 
 class TestNiceNumberFormat(unittest.TestCase):

@@ -13,45 +13,48 @@
 # limitations under the License.
 #
 
-from os.path import join
-
-from lingua_franca.lang import get_full_lang_code, get_primary_lang_code
-
-from lingua_franca.lang.format_en import *
-from lingua_franca.lang.format_pt import *
-from lingua_franca.lang.format_it import *
-from lingua_franca.lang.format_sv import *
-from lingua_franca.lang.format_hu import *
-from lingua_franca.lang.format_es import *
-from lingua_franca.lang.format_de import *
-from lingua_franca.lang.format_fr import *
-from lingua_franca.lang.format_nl import *
-from lingua_franca.lang.format_da import *
-from lingua_franca.lang.format_cs import *
-
-from lingua_franca.bracket_expansion import SentenceTreeParser
-from lingua_franca import _log_unsupported_language
-
-from collections import namedtuple
+import datetime
 import json
 import os
-import datetime
 import re
+from collections import namedtuple
+from inspect import signature
+from warnings import warn
+from os.path import join
 
 
-def _translate_word(name, lang):
-    """ Helper to get word tranlations
+from lingua_franca.bracket_expansion import SentenceTreeParser
+from lingua_franca.internal import localized_function, \
+    populate_localized_function_dict, get_active_langs, \
+    get_full_lang_code, get_default_lang, get_default_loc, \
+    is_supported_full_lang, _raise_unsupported_language, \
+    UnsupportedLanguageError
+
+
+_REGISTERED_FUNCTIONS = ("nice_number",
+                         "nice_time",
+                         "pronounce_number",
+                         "nice_response")
+
+populate_localized_function_dict("format", langs=get_active_langs())
+
+
+def _translate_word(name, lang=None):
+    """ Helper to get word translations
 
     Args:
-        name (str): Word name. Returned as the default value if not translated.
+        name (str): Word name. Returned as the default value if not translated
         lang (str): Language code, e.g. "en-us"
 
     Returns:
         str: translated version of resource name
     """
-    from lingua_franca import resolve_resource_file
+    from lingua_franca.internal import resolve_resource_file
+    if not lang:
+        lang = get_default_loc()
 
-    lang_code = get_full_lang_code(lang)
+    lang_code = lang if is_supported_full_lang(lang) else \
+        get_full_lang_code(lang)
 
     filename = resolve_resource_file(join("text", lang_code, name+".word"))
     if filename:
@@ -235,6 +238,7 @@ date_time_format = DateTimeFormat(os.path.join(os.path.dirname(__file__),
                                                'res/text'))
 
 
+@localized_function(run_own_code_on=[UnsupportedLanguageError])
 def nice_number(number, lang=None, speech=True, denominators=None):
     """Format a float to human readable functions
 
@@ -248,39 +252,10 @@ def nice_number(number, lang=None, speech=True, denominators=None):
     Returns:
         (str): The formatted string.
     """
-    # Convert to spoken representation in appropriate language
-    lang_code = get_primary_lang_code(lang)
-    if lang_code == "en":
-        return nice_number_en(number, speech, denominators)
-    elif lang_code == "es":
-        return nice_number_es(number, speech, denominators)
-    elif lang_code == "pt":
-        return nice_number_pt(number, speech, denominators)
-    elif lang_code == "it":
-        return nice_number_it(number, speech, denominators)
-    elif lang_code == "fr":
-        return nice_number_fr(number, speech, denominators)
-    elif lang_code == "sv":
-        return nice_number_sv(number, speech, denominators)
-    elif lang_code == "de":
-        return nice_number_de(number, speech, denominators)
-    elif lang_code == "hu":
-        return nice_number_hu(number, speech, denominators)
-    elif lang_code == "nl":
-        return nice_number_nl(number, speech, denominators)
-    elif lang_code == "da":
-        return nice_number_da(number, speech, denominators)
-    elif lang_code == "cs":
-        return nice_number_cs(number, speech, denominators)
-
-    # Default to the raw number for unsupported languages,
-    # hopefully the STT engine will pronounce understandably.
-    # TODO: nice_number_XX for other languages
-    _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'sv', 'de', 'hu', 'nl', 'da', 'cs'])
     return str(number)
 
 
+@localized_function()
 def nice_time(dt, lang=None, speech=True, use_24hour=False,
               use_ampm=False):
     """
@@ -298,35 +273,9 @@ def nice_time(dt, lang=None, speech=True, use_24hour=False,
     Returns:
         (str): The formatted time string
     """
-    lang_code = get_primary_lang_code(lang)
-    if lang_code == "en":
-        return nice_time_en(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "es":
-        return nice_time_es(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "it":
-        return nice_time_it(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "fr":
-        return nice_time_fr(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "de":
-        return nice_time_de(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "hu":
-        return nice_time_hu(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "nl":
-        return nice_time_nl(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "da":
-        return nice_time_da(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "pt":
-        return nice_time_pt(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "sv":
-        return nice_time_sv(dt, speech, use_24hour, use_ampm)
-    elif lang_code == "cs":
-        return nice_time_cs(dt, speech, use_24hour, use_ampm)
-    # TODO: Other languages
-    _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'sv', 'de', 'hu', 'nl', 'da', 'cs'])
-    return str(dt)
 
 
+@localized_function()
 def pronounce_number(number, lang=None, places=2, short_scale=True,
                      scientific=False, ordinals=False):
     """
@@ -343,43 +292,6 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
     Returns:
         (str): The pronounced number
     """
-    lang_code = get_primary_lang_code(lang)
-    if lang_code == "en":
-        return pronounce_number_en(number, places=places,
-                                   short_scale=short_scale,
-                                   scientific=scientific,
-                                   ordinals=ordinals)
-    elif lang_code == "it":
-        return pronounce_number_it(number, places=places,
-                                   short_scale=short_scale,
-                                   scientific=scientific)
-    elif lang_code == "es":
-        return pronounce_number_es(number, places=places)
-    elif lang_code == "fr":
-        return pronounce_number_fr(number, places=places)
-    elif lang_code == "de":
-        return pronounce_number_de(number, places=places)
-    elif lang_code == "hu":
-        return pronounce_number_hu(number, places=places)
-    elif lang_code == "nl":
-        return pronounce_number_nl(number, places=places)
-    elif lang_code == "da":
-        return pronounce_number_da(number, places=places)
-    elif lang_code == "pt":
-        return pronounce_number_pt(number, places=places)
-    elif lang_code == "sv":
-        return pronounce_number_sv(number, places=places)
-    elif lang_code == "cs":
-        return pronounce_number_cs(number, places=places,
-                                   short_scale=short_scale,
-                                   scientific=scientific,
-                                   ordinals=ordinals)
-
-    # Default to just returning the numeric value
-    # TODO: Other languages
-    _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'sv', 'de', 'hu', 'nl', 'da', 'cs'])
-    return str(number)
 
 
 def nice_date(dt, lang=None, now=None):
@@ -469,7 +381,12 @@ def nice_duration(duration, lang=None, speech=True):
     Returns:
         str: timespan as a string
     """
-    if type(duration) is datetime.timedelta:
+    if not lang:
+        lang = get_default_loc()
+    if not is_supported_full_lang(lang):
+        lang = get_full_lang_code(lang)
+
+    if isinstance(duration, datetime.timedelta):
         duration = duration.total_seconds()
 
     # Do traditional rounding: 2.5->3, 3.5->4, plus this
@@ -594,44 +511,23 @@ def expand_options(parentheses_line: str) -> list:
     return [re.sub(r'\s+', ' ', ' '.join(i)).strip() for i in options]
 
 
+@localized_function()
 def nice_response(text, lang=None):
-    lang_code = get_primary_lang_code(lang)
-    if lang_code == "nl":
-        return nice_response_nl(text)
-    elif lang_code == "de":
-        return nice_response_de(text)
-    elif lang_code == "da":
-        return nice_response_da(text)
-    elif lang_code == "sv":
-        return nice_response_sv(text)
+    """
+    In some languages, sanitizes certain numeric input for TTS
 
-    # TODO: other languages
-    _log_unsupported_language(lang_code, ['nl', "de", "da", "sv"])
-    return text
+    Most of the time, this function will be called by any formatters
+    which might need it. It's exposed here just in case you've got a clever
+    use.
 
+    As of July 2020, this function sanitizes some dates and "x ^ y"-formatted
+    exponents in the following primary language codes:
+      da de nl sv
 
-def nice_ordinal(text, speech=True, lang=None):
-    lang_code = get_primary_lang_code(lang)
-    if lang_code == "nl":
-        return nice_ordinal_nl(text, speech)
-    elif lang_code == "de":
-        return nice_ordinal_de(text, speech)
-    elif lang_code == "da":
-        return nice_ordinal_da(text, speech)
-    elif lang_code == "sv":
-        return nice_ordinal_sv(text, speech)
+    Example:
+        assertEqual(nice_response_de("dies ist der 31. mai"),
+                         "dies ist der einunddreißigste mai")
 
-    # TODO: other languages
-    _log_unsupported_language(lang_code, ["nl", 'de', "da", "sv"])
-    return text
-
-
-def nice_part_of_day(dt, speech=True, lang=None):
-    lang_code = get_primary_lang_code(lang)
-    if lang_code == "nl":
-        return nice_part_of_day_nl(dt, speech)
-
-    # There is no good lang independent default
-    # TODO: other languages
-    _log_unsupported_language(lang_code, ['nl'])
-    raise NotImplementedError
+        assertEqual(nice_response_de("10 ^ 2"),
+                         "10 hoch 2")
+    """

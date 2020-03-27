@@ -16,6 +16,8 @@
 import unittest
 from datetime import datetime, timedelta
 
+from lingua_franca import load_language, unload_language, set_default_lang
+from lingua_franca.internal import FunctionNotLocalizedError
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_duration
 from lingua_franca.parse import extract_number, extract_numbers
@@ -23,6 +25,16 @@ from lingua_franca.parse import fuzzy_match
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import match_one
 from lingua_franca.parse import normalize
+
+
+def setUpModule():
+    # TODO spin off English tests
+    load_language('en')
+    set_default_lang('en')
+
+
+def tearDownModule():
+    unload_language('en')
 
 
 class TestFuzzyMatch(unittest.TestCase):
@@ -889,9 +901,10 @@ class TestNormalize(unittest.TestCase):
 
         self.assertEqual(normalize("whats 8 + 4"), "what is 8 + 4")
 
+    # TODO not localized; needed in english?
     def test_gender(self):
-        self.assertEqual(get_gender("person"),
-                         None)
+        self.assertRaises((AttributeError, FunctionNotLocalizedError),
+                          get_gender, "person", None)
 
 
 if __name__ == "__main__":

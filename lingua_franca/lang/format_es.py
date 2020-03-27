@@ -22,7 +22,7 @@ from lingua_franca.lang.common_data_es import _NUM_STRING_ES, \
     _FRACTION_STRING_ES
 
 
-def nice_number_es(number, speech, denominators=range(1, 21)):
+def nice_number_es(number, speech=True, denominators=range(1, 21)):
     """ Spanish helper for nice_number
 
     This function formats a float to human understandable functions. Like
@@ -91,7 +91,7 @@ def nice_number_es(number, speech, denominators=range(1, 21)):
     return strNumber
 
 
-def pronounce_number_es(num, places=2):
+def pronounce_number_es(number, places=2):
     """
     Convert a number to it's spoken equivalent
 
@@ -103,19 +103,19 @@ def pronounce_number_es(num, places=2):
     Returns:
         (str): The pronounced number
     """
-    if abs(num) >= 100:
+    if abs(number) >= 100:
         # TODO: Soporta a números por encima de 100
-        return str(num)
+        return str(number)
 
     result = ""
-    if num < 0:
+    if number < 0:
         result = "menos "
-    num = abs(num)
+    number = abs(number)
 
     # del 21 al 29 tienen una pronunciación especial
-    if 20 <= num <= 29:
-        tens = int(num-int(num) % 10)
-        ones = int(num - tens)
+    if 20 <= number <= 29:
+        tens = int(number-int(number) % 10)
+        ones = int(number - tens)
         result += _NUM_STRING_ES[tens]
         if ones > 0:
             result = result[:-1]
@@ -130,23 +130,23 @@ def pronounce_number_es(num, places=2):
                 result += "iséis"
             else:
                 result += "i" + _NUM_STRING_ES[ones]
-    elif num >= 30:  # de 30 en adelante
-        tens = int(num-int(num) % 10)
-        ones = int(num - tens)
+    elif number >= 30:  # de 30 en adelante
+        tens = int(number-int(number) % 10)
+        ones = int(number - tens)
         result += _NUM_STRING_ES[tens]
         if ones > 0:
             result += " y " + _NUM_STRING_ES[ones]
     else:
-        result += _NUM_STRING_ES[int(num)]
+        result += _NUM_STRING_ES[int(number)]
 
     # Deal with decimal part, in spanish is commonly used the comma
     # instead the dot. Decimal part can be written both with comma
     # and dot, but when pronounced, its pronounced "coma"
-    if not num == int(num) and places > 0:
-        if abs(num) < 1.0 and (result == "menos " or not result):
+    if not number == int(number) and places > 0:
+        if abs(number) < 1.0 and (result is "menos " or not result):
             result += "cero"
         result += " coma"
-        _num_str = str(num)
+        _num_str = str(number)
         _num_str = _num_str.split(".")[1][0:places]
         for char in _num_str:
             result += " " + _NUM_STRING_ES[int(char)]
@@ -267,30 +267,3 @@ def nice_time_es(dt, speech=True, use_24hour=False, use_ampm=False):
             else:
                 speak += " de la noche"
     return speak
-
-
-def pronounce_ordinal_es(number):
-    """
-    This function pronounces a number as an ordinal
-
-    1 -> first
-    2 -> second
-
-    Args:
-        number (int): the number to format
-    Returns:
-        (str): The pronounced number string.
-    """
-    raise NotImplementedError
-
-
-def nice_response_es(text):
-    raise NotImplementedError
-
-
-def nice_part_of_day_es(dt, speech=True):
-    raise NotImplementedError
-
-
-def nice_ordinal_es(text, speech=True):
-    raise NotImplementedError
