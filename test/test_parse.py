@@ -744,6 +744,17 @@ class TestNormalize(unittest.TestCase):
                                          " bingo ten nancy forty six test"
                                          " with decimal rounding", decimal_places=2),
                          [round(6.579, 2), 10, 46])
+        # test integer rounding, multiple decimals in string
+        self.assertEqual(extract_numbers(
+            "five hundred seventy point seven two and thirty one point eight"),
+            [570.72, 31.8])
+        self.assertEqual(extract_numbers(
+            "five hundred seventy point seven two and thirty one point eight",
+            decimal_places=0), [571, 32])
+        self.assertEqual(extract_numbers(
+            "five hundred seventy point seven two and thirty one point eight",
+            decimal_places=-1), [570, 31])
+
 
     def test_contractions(self):
         self.assertEqual(normalize("ain't"), "is not")

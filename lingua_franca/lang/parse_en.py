@@ -337,19 +337,21 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals, places=None):
                 return_value = float('0.' + "".join([str(
                     decimal.value) for decimal in numbers2]))
                 return_value = number.value + return_value
-                if places:
+                if places is not None:
                     if places == 0:
                         return_value = ceil(return_value)
                     elif places == -1:
                         return_value = floor(return_value)
-
+                    if places < 1:
+                        return_value = int(return_value)
                 return_tokens = number.tokens + partitions[1]
                 for n in numbers2:
                     return_tokens += n.tokens
                 if not places:
                     return return_value, return_tokens
 
-                return (round(return_value, places) if places else return_value), return_tokens
+                return (round(return_value, places) if places > 0
+                        else return_value), return_tokens
     return None, None
 
 
