@@ -119,7 +119,7 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None,
 
 
 def extract_number(text, short_scale=True, ordinals=False, lang=None,
-                   decimal_places=False):
+                   decimal_places=None):
     """Takes in a string and extracts a number.
 
     Args:
@@ -130,8 +130,13 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None,
             See https://en.wikipedia.org/wiki/Names_of_large_numbers
         ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
         lang (str): the BCP-47 code for the language to use, None uses default
-        decimal_places (int or False): rounds to # decimal places. Not yet implemented
-            in all languages. False performs no rounding. Uses builtin round()
+        decimal_places (int or None): Positive value will round to X places.
+                                      Val of 0 will round up to nearest int,
+                                        equivalent to `math.ceil(result)`
+                                      Val of -1 will round down to nearest int,
+                                        equivalent to `math.floor(result)`
+                                      Val of None will perform no rounding,
+                                      potentially returning a very long string.
     Returns:
         (int, float or False): The number extracted or False if the input
                                text contains no numbers

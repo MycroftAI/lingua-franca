@@ -14,16 +14,17 @@
 # limitations under the License.
 #
 from datetime import datetime, timedelta
-
 from dateutil.relativedelta import relativedelta
+from math import ceil, floor
+
+import json
+import re
 
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     invert_dict, ReplaceableNumber, partition_list, tokenize, Token, Normalizer
 from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
     _LONG_ORDINAL_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN
 
-import re
-import json
 from lingua_franca import resolve_resource_file
 from lingua_franca.time import now_local
 
@@ -77,14 +78,22 @@ _STRING_SHORT_ORDINAL_EN = invert_dict(_SHORT_ORDINAL_EN)
 _STRING_LONG_ORDINAL_EN = invert_dict(_LONG_ORDINAL_EN)
 
 
-def _convert_words_to_numbers_en(text, short_scale=True, ordinals=False, places=None):
+def _convert_words_to_numbers_en(text, short_scale=True, ordinals=False,
+                                    decimal_places=None):
     """
     Convert words in a string into their equivalent numbers.
     Args:
-        text str:
-        short_scale boolean: True if short scale numbers should be used.
-        ordinals boolean: True if ordinals (e.g. first, second, third) should
+        text (str):
+        short_scale (bool): True if short scale numbers should be used.
+        ordinals (bool): True if ordinals (e.g. first, second, third) should
                           be parsed to their number values (1, 2, 3...)
+        decimal_places (int or None): Positive value will round to X places.
+                                      Val of 0 will round up to nearest int,
+                                        equivalent to `math.ceil(result)`
+                                      Val of -1 will round down to nearest int,
+                                        equivalent to `math.floor(result)`
+                                      Val of None will perform no rounding,
+                                      potentially returning a very long string.
 
     Returns:
         str
@@ -95,7 +104,7 @@ def _convert_words_to_numbers_en(text, short_scale=True, ordinals=False, places=
     tokens = tokenize(text)
     numbers_to_replace = \
         _extract_numbers_with_text_en(
-            tokens, short_scale, ordinals, places=places)
+            tokens, short_scale, ordinals, places=decimal_places)
     numbers_to_replace.sort(key=lambda number: number.start_index)
 
     results = []
@@ -271,14 +280,16 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals, places=None):
         While this is a helper for extractnumber_en, it also depends on
         extractnumber_en, to parse out the components of the decimal.
 
-        This does not currently handle things like:
-            number dot number number number
-
     Args:
         tokens [Token]: The text to parse.
         short_scale boolean:
         ordinals boolean:
-        places [int]: Number of decimal places to return
+        places [int] or None: Number of decimal places to return
+                              None performs no rounding
+                              Positive int rounds to so many places
+                              0 value rounds up to nearest int
+                              -1 value rounds down to nearest int
+                              other values throw error
 
     Returns:
         (float, [Token])
@@ -301,6 +312,14 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals, places=None):
             if not numbers1 or not numbers2:
                 return None, None
 
+            # `numbers2` may have caught numbers which are part of the
+            # input string, but which are not part of *this* number.
+            # For example, for the input string:
+            # "a ratio of one point five to one"
+            # `numbers2` might read, `numbers2 == [5, 1]`
+            #
+            # truncate `numbers2` to contain only those tokens which were
+            # adjacent in the input string.
             idx = 1
             stop = False
             while idx < len(numbers2) and not stop:
@@ -312,23 +331,23 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals, places=None):
             numbers2 = numbers2[:idx]
 
             number = numbers1[-1]
-            # decimal = numbers2[0]
 
-            # TODO handle number dot number number number
+
             if "." not in str(numbers2[0].text):
                 return_value = float('0.' + "".join([str(
                     decimal.value) for decimal in numbers2]))
                 return_value = number.value + return_value
-                if return_value == int(return_value):
-                    return_value = int(return_value)
-
-                # out_part2 = partitions[2]
-                # for n in numbers2:
-                #     out_part2[n.index] = n.value
+                if places:
+                    if places == 0:
+                        return_value = ceil(return_value)
+                    elif places == -1:
+                        return_value = floor(return_value)
 
                 return_tokens = number.tokens + partitions[1]
                 for n in numbers2:
                     return_tokens += n.tokens
+                if not places:
+                    return return_value, return_tokens
 
                 return (round(return_value, places) if places else return_value), return_tokens
     return None, None
