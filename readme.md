@@ -10,7 +10,7 @@ Mycroft's multilingual text parsing and formatting library
 
 Lingua Franca (_noun_)<br>
 > a framework that is adopted as the common language between speakers with different native tongues</dr>
- 
+
 
 - [Lingua Franca](#lingua-franca)
   * [Formatting](#formatting)
@@ -21,6 +21,7 @@ Lingua Franca (_noun_)<br>
     + [Extract numbers](#extract-numbers)
     + [Extract durations](#extract-durations)
     + [Extract dates](#extract-dates)
+  * [Contributing to this project](#contributing-to-this-project)
 
 ## Formatting
 
@@ -199,3 +200,106 @@ testExtract("on the evening of june 5th 2017 remind me to call my mother",
             "2017-06-05 19:00:00", "remind me to call my mother")
 
 ```
+
+
+## Contributing to this project
+
+We welcome all contributions to Lingua Franca. To get started:
+
+### 0. Sign a Contributor Licensing Agreement
+To protect yourself, the project, and users of Mycroft technologies we require a Contributor Licensing Agreement (CLA) before accepting any code contribution. This agreement makes it crystal clear that along with your code you are offering a license to use it within the confines of this project. You retain ownership of the code, this is just a license.
+
+You will also be added to [our list of excellent human beings](https://github.com/MycroftAI/contributors)!
+
+Please visit https://mycroft.ai/cla to initiate this one-time signing.
+
+### 1. Setup a local copy of the project
+
+1. [Fork the project](https://help.github.com/articles/fork-a-repo/) to create your own copy.
+
+
+2. Clone the repository and change into that directory
+
+```bash
+git clone https://github.com/your-username/lingua-franca/
+cd lingua-franca
+```
+
+3. Setup a lightweight virtual environment (venv) for the project. This creates an isolated environment that can have it's own independent set of installed Python packages.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+  To exit the venv you can run `deactivate` or close the terminal window.
+
+4. Install the package and it's dependencies
+```bash
+python setup.py install
+```
+
+5. To check that everything is installed correctly, let's run the existing test-suite.
+```bash
+pytest
+```
+
+### 2. Writing tests
+We utilize a Test Driven Development (TDD) methodology so the first step is always to add tests for whatever you want to add or fix. If it's a bug, we must not have a test that covers that specific case so we want to add another test. If you are starting on a new language then you can take a look at the tests for other languages to get started.
+
+Tests are all located in `lingua_franca/test`.
+Each langauge should have two test files:
+- `test_format_lang.py`
+- `test_parse_lang.py`
+
+### 3. Run tests to confirm they fail
+Generally using TDD all tests should fail when they are first added. If the test is passing when you haven't yet fixed the bug or added the functionality then something must be wrong with the test or the test runner.
+```bash
+pytest
+```
+
+### 4. Write code
+Now we can add our new code. There are three main files for each language:
+- `common_data_lang.py`  
+  Common data that can be used across formatting and parsing such as dictionaries of number names.
+- `format_lang.py`  
+  All formatting functions for this language.
+- `parse_lang.py`  
+  All parsing functions for this language.
+
+Since we have already written our unit tests, we can run these regularly to see our progress.
+
+### 5. Document your code
+Document code using [Google-style docstrings](http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html). Our automated documentation tools expect that format. All functions and class methods that are expected to be called externally should include a docstring. (And those that aren't should be [prefixed with a single underscore](https://docs.python.org/3/tutorial/classes.html#private-variables).
+
+### 6. Try it in Mycroft
+Lingua Franca is installed by default when you install Mycroft-core but for development you generally have this repo cloned elsewhere on your computer. You can use your changes in Mycroft by installing it in the Mycroft virtual environment.
+
+If you added the Mycroft helper commands during setup you can just use:
+
+```bash
+mycroft-pip install /path/to/your/lingua-franca
+```
+
+Otherwise you need to activate that venv manually:
+
+```bash
+cd ~/mycroft-core
+source venv-activate.sh
+pip install /path/to/your/lingua-franca
+```
+
+Now when talking with Mycroft it will be using your development version of Lingua Franca.
+
+### 7. Commit changes
+Make commits in logical units and describe them properly. If addressing documented issue, use the issue identifier at the very beginning of each commit. For instance:
+```
+git commit -m "Issues-123 - Fix 'demain' date extraction in French"
+```
+
+### 8. Submit a PR
+Once your changes are ready for review, [create a pull request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request).
+
+Like commit messages the PR title and description should properly describe the changes you have made and any additional information that reviewers who do not speak your language might need to understand.
+
+### 9. Waiting for a review
+While you wait for a review of your contribution, why not take a moment to review some other pull requests. This is a great way to learn and help progress the queue of pull requests which means your contribution will be seen more quickly!
