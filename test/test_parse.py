@@ -750,10 +750,10 @@ class TestNormalize(unittest.TestCase):
             [570.72, 31.8])
         self.assertEqual(extract_numbers(
             "five hundred seventy point seven two and thirty one point eight",
-            decimal_places=0), [571, 32])
+            decimal_places=1), [570.7, 31.8])
         self.assertEqual(extract_numbers(
             "five hundred seventy point seven two and thirty one point eight",
-            decimal_places=-1), [570, 31])
+            decimal_places=0), [570, 31])
 
 
     def test_contractions(self):

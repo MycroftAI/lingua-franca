@@ -15,7 +15,6 @@
 #
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from math import ceil, floor
 
 import json
 import re
@@ -284,12 +283,9 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals, places=None):
         tokens [Token]: The text to parse.
         short_scale boolean:
         ordinals boolean:
-        places [int] or None: Number of decimal places to return
+        places [int] or None: Number of decimal places to return.
+                              0 truncates the decimal part
                               None performs no rounding
-                              Positive int rounds to so many places
-                              0 value rounds up to nearest int
-                              -1 value rounds down to nearest int
-                              other values throw error
 
     Returns:
         (float, [Token])
@@ -336,22 +332,19 @@ def _extract_decimal_with_text_en(tokens, short_scale, ordinals, places=None):
             if "." not in str(numbers2[0].text):
                 return_value = float('0.' + "".join([str(
                     decimal.value) for decimal in numbers2]))
-                return_value = number.value + return_value
-                if places is not None:
-                    if places == 0:
-                        return_value = ceil(return_value)
-                    elif places == -1:
-                        return_value = floor(return_value)
-                    if places < 1:
-                        return_value = int(return_value)
                 return_tokens = number.tokens + partitions[1]
                 for n in numbers2:
                     return_tokens += n.tokens
-                if not places:
-                    return return_value, return_tokens
+                if places is not None:
+                    if places > 0:
+                        return_value = number.value + return_value
+                    else:
+                        return_value = number.value
+                else:
+                    return return_value + number.value, return_tokens
 
                 return (round(return_value, places) if places > 0
-                        else return_value), return_tokens
+                        else str(return_value).split('.')[0]), return_tokens
     return None, None
 
 
