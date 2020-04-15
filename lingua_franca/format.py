@@ -22,6 +22,7 @@ from lingua_franca.lang.format_pt import *
 from lingua_franca.lang.format_it import *
 from lingua_franca.lang.format_sv import *
 from lingua_franca.lang.format_hu import *
+from lingua_franca.lang.format_cs import *
 
 from lingua_franca.lang.format_es import nice_number_es
 from lingua_franca.lang.format_es import nice_time_es
@@ -38,6 +39,9 @@ from lingua_franca.lang.format_nl import nice_number_nl
 from lingua_franca.lang.format_da import nice_number_da
 from lingua_franca.lang.format_da import nice_time_da
 from lingua_franca.lang.format_da import pronounce_number_da
+from lingua_franca.lang.format_cs import nice_number_cs
+from lingua_franca.lang.format_cs import nice_time_cs
+from lingua_franca.lang.format_cs import pronounce_number_cs
 
 from lingua_franca.bracket_expansion import SentenceTreeParser
 from lingua_franca import _log_unsupported_language
@@ -94,7 +98,7 @@ class DateTimeFormat:
             try:
                 # Attempt to load the language-specific formatting data
                 with open(self.config_path + '/' + lang + '/date_time.json',
-                          'r') as lang_config_file:
+                          'r', encoding='utf8') as lang_config_file:
                     self.lang_config[lang] = json.loads(
                         lang_config_file.read())
             except FileNotFoundError:
@@ -280,12 +284,14 @@ def nice_number(number, lang=None, speech=True, denominators=None):
         return nice_number_nl(number, speech, denominators)
     elif lang_code == "da":
         return nice_number_da(number, speech, denominators)
+    elif lang_code == "cs":
+        return nice_number_cs(number, speech, denominators)
 
     # Default to the raw number for unsupported languages,
     # hopefully the STT engine will pronounce understandably.
     # TODO: nice_number_XX for other languages
     _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'sv', 'de', 'hu', 'nl', 'da'])
+                                          'sv', 'de', 'hu', 'nl', 'da', 'cs'])
     return str(number)
 
 
@@ -327,9 +333,11 @@ def nice_time(dt, lang=None, speech=True, use_24hour=False,
         return nice_time_pt(dt, speech, use_24hour, use_ampm)
     elif lang_code == "sv":
         return nice_time_sv(dt, speech, use_24hour, use_ampm)
+    elif lang_code == "cs":
+        return nice_time_cs(dt, speech, use_24hour, use_ampm)
     # TODO: Other languages
     _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'sv', 'de', 'hu', 'nl', 'da'])
+                                          'sv', 'de', 'hu', 'nl', 'da','cs'])
     return str(dt)
 
 
@@ -375,11 +383,16 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
         return pronounce_number_pt(number, places=places)
     elif lang_code == "sv":
         return pronounce_number_sv(number, places=places)
+    elif lang_code == "cs":
+        return pronounce_number_cs(number, places=places,
+                                   short_scale=short_scale,
+                                   scientific=scientific,
+                                   ordinals=ordinals)
 
     # Default to just returning the numeric value
     # TODO: Other languages
     _log_unsupported_language(lang_code, ['en', 'es', 'pt', 'it', 'fr',
-                                          'sv', 'de', 'hu', 'nl', 'da'])
+                                          'sv', 'de', 'hu', 'nl', 'da','cs'])
     return str(number)
 
 
