@@ -290,7 +290,7 @@ def pronounce_number_en(num, places=2, short_scale=True, scientific=False,
         return pronounce_number_en(num, places, short_scale, scientific=True)
     # Deal with fractional part
     elif not num == int(num) and places > 0:
-        if abs(num) < 1.0 and (result is "minus " or not result):
+        if abs(num) < 1.0 and (result == "minus " or not result):
             result += "zero"
         result += " point"
         _num_str = str(num)
