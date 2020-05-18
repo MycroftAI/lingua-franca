@@ -13,15 +13,25 @@ Lingua Franca (_noun_)<br>
 
 
 - [Lingua Franca](#lingua-franca)
-  * [Formatting](#formatting)
-    + [Pronounce numbers](#pronounce-numbers)
-    + [Pronounce datetime objects](#pronounce-datetime-objects)
-    + [Pronounce durations](#pronounce-durations)
-  * [Parsing](#parsing)
-    + [Extract numbers](#extract-numbers)
-    + [Extract durations](#extract-durations)
-    + [Extract dates](#extract-dates)
-  * [Contributing to this project](#contributing-to-this-project)
+  - [Formatting](#formatting)
+    - [Pronounce numbers](#pronounce-numbers)
+    - [Pronounce datetime objects](#pronounce-datetime-objects)
+    - [Pronounce durations](#pronounce-durations)
+  - [Parsing](#parsing)
+    - [Extract numbers](#extract-numbers)
+    - [Extract durations](#extract-durations)
+    - [Extract dates](#extract-dates)
+  - [Contributing to this project](#contributing-to-this-project)
+    - [0. Sign a Contributor Licensing Agreement](#0-sign-a-contributor-licensing-agreement)
+    - [1. Setup a local copy of the project](#1-setup-a-local-copy-of-the-project)
+    - [2. Writing tests](#2-writing-tests)
+    - [3. Run tests to confirm they fail](#3-run-tests-to-confirm-they-fail)
+    - [4. Write code](#4-write-code)
+    - [5. Document your code](#5-document-your-code)
+    - [6. Try it in Mycroft](#6-try-it-in-mycroft)
+    - [7. Commit changes](#7-commit-changes)
+    - [8. Submit a PR](#8-submit-a-pr)
+    - [9. Waiting for a review](#9-waiting-for-a-review)
 
 ## Formatting
 
@@ -235,6 +245,9 @@ source .venv/bin/activate
 
 4. Install the package and it's dependencies
 ```bash
+python -m pip install .
+pip install pytest
+pip install wheel
 python setup.py install
 ```
 
