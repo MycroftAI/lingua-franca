@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic
@@ -80,6 +81,62 @@ de_numbers = {
 # TODO: short_scale and ordinals don't do anything here.
 # The parameters are present in the function signature for API compatibility
 # reasons.
+
+def extract_duration_de(text):
+    """
+    Convert an german phrase into a number of seconds
+    Convert things like:
+        "10 Minuten"
+        "3 Tage 8 Stunden 10 Minuten und 49 Sekunden"
+    into an int, representing the total number of seconds.
+    The words used in the duration will be consumed, and
+    the remainder returned.
+    As an example, "set a timer for 5 minutes" would return
+    (300, "set a timer for").
+    Args:
+        text (str): string containing a duration
+    Returns:
+        (timedelta, str):
+                    A tuple containing the duration and the remaining text
+                    not consumed in the parsing. The first value will
+                    be None if no duration is found. The text returned
+                    will have whitespace stripped from the ends.
+    """
+
+    if not text:
+        return None
+
+    text=text.lower()
+    # die time_unit values werden für timedelta() mit dem jeweiligen Wert überschrieben
+    time_units = {
+        'microseconds' : 'mikrosekunden',
+        'milliseconds' : 'millisekunden',
+        'seconds'      : 'sekunden',
+        'minutes'      : 'minuten',
+        'hours'        : 'stunden',
+        'days'         : 'tage',
+        'weeks'        : 'wochen'
+    }
+
+    #### Einzahl und Mehrzahl
+    pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}[ne]?"
+
+    #### Einstiegspunkt für Text-zu-Zahlen Konversion
+    #text = _convert_words_to_numbers_de(text)
+
+    for unit in time_units:
+        unit_de = time_units[unit]
+        unit_pattern = pattern.format(unit=unit_de[:-1])  # remove 'n'/'e' from unit
+        matches = re.findall(unit_pattern, text)
+        value = sum(map(float, matches))
+        time_units[unit] = value
+        text = re.sub(unit_pattern, '', text)
+
+    text = text.strip()
+    duration = timedelta(**time_units) if any(time_units.values()) else None
+    print(duration)
+
+    return (duration, text)
 
 
 def extractnumber_de(text, short_scale=True, ordinals=False):
