@@ -1305,7 +1305,7 @@ def extract_datetime_nl(string, dateNow, default_time):
             idx += used - 1
             found = True
     # check that we found a date
-    if not date_found:
+    if not date_found():
         return None
 
     if dayOffset is False:

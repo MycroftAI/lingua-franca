@@ -97,6 +97,10 @@ class TestNormalize(unittest.TestCase):
                                anchor, lang='sv-se', default_time=default)
         self.assertEqual(default, res[0].time())
 
+    def test_extractdatetime_no_time(self):
+        """Check that None is returned if no time is found in sentence."""
+        self.assertEqual(extract_datetime('Ingen tid', lang='sv-se'), None)
+
     def test_numbers(self):
         self.assertEqual(normalize("det här är ett ett två tre  test",
                                    lang='sv-se'),

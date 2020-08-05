@@ -146,6 +146,10 @@ class TestParsing(unittest.TestCase):
                                anchor, lang=LANG, default_time=default)
         self.assertEqual(default, res[0].time())
 
+    def test_extractdatetime_no_time(self):
+        """Check that None is returned if no time is found in sentence."""
+        self.assertEqual(extract_datetime('geen tijd', lang=LANG), None)
+
     def test_spaces(self):
         self.assertEqual(normalize("  dit   is  een    test", LANG),
                          "dit is 1 test")

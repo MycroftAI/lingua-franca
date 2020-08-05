@@ -71,7 +71,7 @@ class TestNormalize(unittest.TestCase):
 #        self.assertEqual(extract_number("tre fjerdedel kop", lang="da-dk"),
 #                         3.0 / 4.0)
 
-    def test_extractdatetime_de(self):
+    def test_extractdatetime_da(self):
         def extractWithFormat(text):
             date = datetime(2017, 6, 27, 0, 0)
             [extractedDate, leftover] = extract_datetime(text, date,
@@ -157,6 +157,10 @@ class TestNormalize(unittest.TestCase):
 #                    "2017-12-03 00:00:00", "")
 #        testExtract("lad os mødes klokken 8:00 om aftenen",
 #                    "2017-06-27 20:00:00", "lad os mødes")
+
+    def test_extractdatetime_no_time(self):
+        """Check that None is returned if no time is found in sentence."""
+        self.assertEqual(extract_datetime('ingen tid', lang='da-da'), None)
 
     def test_extractdatetime_default_da(self):
         default = time(9, 0, 0)
