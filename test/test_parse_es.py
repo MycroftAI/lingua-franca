@@ -202,16 +202,16 @@ class TestDatetime_es(unittest.TestCase):
             "ayer por la tarde", anchorDate=datetime(1998, 1, 1),
             lang='es')[0], datetime(1997, 12, 31, 15))
 
-        self.assertEqual(extract_datetime(
-            "qué año es", anchorDate=datetime(1998, 1, 1),
-            lang='es')[0], datetime(1998, 1, 1))
-
         self.assertEqual(extract_datetime("hoy 2 de la mañana", lang='es',
                                           anchorDate=datetime(1998, 1, 1))[0],
                          datetime(1998, 1, 1, 2))
         self.assertEqual(extract_datetime("hoy 2 de la tarde", lang='es',
                                           anchorDate=datetime(1998, 1, 1))[0],
                          datetime(1998, 1, 1, 14))
+
+    def test_extractdatetime_no_time(self):
+        """Check that None is returned if no time is found in sentence."""
+        self.assertEqual(extract_datetime('no hay tiempo', lang='es-es'), None)
 
     @unittest.skip("These phrases are not parsing correctly.")
     def test_extract_datetime_relative_failing(self):
