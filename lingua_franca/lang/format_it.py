@@ -384,7 +384,7 @@ def pronounce_number_it(num, places=2, short_scale=False, scientific=False):
 
     # Deal with fractional part
     if not num == int(num) and places > 0:
-        if abs(num) < 1.0 and (result is "meno " or not result):
+        if abs(num) < 1.0 and (result == "meno " or not result):
             result += "zero"
         result += " virgola"
         _num_str = str(num)
