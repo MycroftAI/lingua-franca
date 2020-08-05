@@ -71,7 +71,7 @@ class TestNormalize(unittest.TestCase):
 #        self.assertEqual(extract_number("tre fjerdedel kop", lang="da-dk"),
 #                         3.0 / 4.0)
 
-    def test_extractdatetime_de(self):
+    def test_extractdatetime_da(self):
         def extractWithFormat(text):
             date = datetime(2017, 6, 27, 0, 0)
             [extractedDate, leftover] = extract_datetime(text, date,
