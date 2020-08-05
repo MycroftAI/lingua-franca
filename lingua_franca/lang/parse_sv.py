@@ -653,7 +653,7 @@ def extract_datetime_sv(string, currentDate, default_time):
             found = True
 
     # check that we found a date
-    if not date_found:
+    if not date_found():
         return None
 
     if dayOffset is False:
