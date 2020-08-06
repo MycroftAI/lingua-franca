@@ -121,7 +121,7 @@ def extract_duration_de(text):
     #### Einzahl und Mehrzahl
     pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}[ne]?"
 
-    #### Einstiegspunkt für Text-zu-Zahlen Konversion
+    #### TODO Einstiegspunkt für Text-zu-Zahlen Konversion
     #text = _convert_words_to_numbers_de(text)
 
     for unit in time_units:
