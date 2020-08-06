@@ -202,7 +202,7 @@ def extract_duration(text, lang=None):
     if lang_code == "cs":
         return extract_duration_cs(text)
     if lang_code == "de":
-        return extract_duration_cs(text)
+        return extract_duration_de(text)
 
     # TODO: extract_duration for other languages
     _log_unsupported_language(lang_code, ['en','cs', 'de'])
