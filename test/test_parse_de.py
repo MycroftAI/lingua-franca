@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 import unittest
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 from lingua_franca.parse import extract_datetime
+from lingua_franca.parse import extract_duration
 from lingua_franca.parse import extract_number
 from lingua_franca.parse import normalize
 
@@ -167,25 +168,25 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(default, res[0].time())
 
     def test_extract_duration_de(self):
-        self.assertEqual(extract_duration("10 sekunden"),
+        self.assertEqual(extract_duration("10 sekunden", lang="de-de"),
                          (timedelta(seconds=10.0), ""))
-        self.assertEqual(extract_duration("5 minuten"),
+        self.assertEqual(extract_duration("5 minuten", lang="de-de"),
                          (timedelta(minutes=5), ""))
-        self.assertEqual(extract_duration("2 stunden"),
+        self.assertEqual(extract_duration("2 stunden", lang="de-de"),
                          (timedelta(hours=2), ""))
-        self.assertEqual(extract_duration("3 tage"),
+        self.assertEqual(extract_duration("3 tage", lang="de-de"),
                          (timedelta(days=3), ""))
-        self.assertEqual(extract_duration("25 wochen"),
+        self.assertEqual(extract_duration("25 wochen", lang="de-de"),
                          (timedelta(weeks=25), ""))
         # TODO no german text to number parsing yet
         #self.assertEqual(extract_duration("sieben stunden"),
         #                 (timedelta(hours=7), ""))
-        self.assertEqual(extract_duration("7.5 sekunden"),
+        self.assertEqual(extract_duration("7.5 sekunden", lang="de-de"),
                          (timedelta(seconds=7.5), ""))
         #self.assertEqual(extract_duration("eight and a half days thirty"
         #                                  " nine seconds"),
         #                 (timedelta(days=8.5, seconds=39), ""))
-        self.assertEqual(extract_duration("starte timer für 30 minuten"),
+        self.assertEqual(extract_duration("starte timer für 30 minuten", lang="de-de"),
                          (timedelta(minutes=30), "starte timer für"))
         #self.assertEqual(extract_duration("Four and a half minutes until"
         #                                  " sunset"),
@@ -193,17 +194,17 @@ class TestNormalize(unittest.TestCase):
         #self.assertEqual(extract_duration("Nineteen minutes past the hour"),
         #                 (timedelta(minutes=19), "past the hour"))
         self.assertEqual(extract_duration("weck mich in 3 wochen, "
-                                          " 497 tagen und"
-                                          " 391.6 sekunden"),
+                                          " 497 tage und"
+                                          " 391.6 sekunden", lang="de-de"),
                          (timedelta(weeks=3, days=497, seconds=391.6),
-                          "weck mich in , , und"))
+                          "weck mich in ,   und"))
         #self.assertEqual(extract_duration("The movie is one hour, fifty seven"
         #                                  " and a half minutes long"),
         #                 (timedelta(hours=1, minutes=57.5),
         #                     "the movie is ,  long"))
-        self.assertEqual(extract_duration("10-sekunden"),
+        self.assertEqual(extract_duration("10-sekunden", lang="de-de"),
                          (timedelta(seconds=10.0), ""))
-        self.assertEqual(extract_duration("5-minuten"),
+        self.assertEqual(extract_duration("5-minuten", lang="de-de"),
                          (timedelta(minutes=5), ""))
 
     def test_spaces(self):
