@@ -26,6 +26,7 @@ from lingua_franca.lang.parse_sv import *
 from lingua_franca.lang.parse_de import extractnumber_de
 from lingua_franca.lang.parse_de import extract_numbers_de
 from lingua_franca.lang.parse_de import extract_datetime_de
+from lingua_franca.lang.parse_de import extract_duration_de
 from lingua_franca.lang.parse_de import normalize_de
 from lingua_franca.lang.parse_fr import extractnumber_fr
 from lingua_franca.lang.parse_fr import extract_numbers_fr
@@ -200,9 +201,11 @@ def extract_duration(text, lang=None):
         return extract_duration_en(text)
     if lang_code == "cs":
         return extract_duration_cs(text)
+    if lang_code == "de":
+        return extract_duration_de(text)
 
     # TODO: extract_duration for other languages
-    _log_unsupported_language(lang_code, ['en','cs'])
+    _log_unsupported_language(lang_code, ['en','cs', 'de'])
     return None
 
 
