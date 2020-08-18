@@ -134,7 +134,6 @@ def extract_duration_de(text):
 
     text = text.strip()
     duration = timedelta(**time_units) if any(time_units.values()) else None
-    print(duration)
 
     return (duration, text)
 
