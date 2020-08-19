@@ -124,13 +124,14 @@ def extract_duration_de(text):
     #### TODO Einstiegspunkt für Text-zu-Zahlen Konversion
     #text = _convert_words_to_numbers_de(text)
 
-    for unit in time_units:
-        unit_de = time_units[unit]
+    for (unit_en, unit_de) in time_units.items():
         unit_pattern = pattern.format(unit=unit_de[:-1])  # remove 'n'/'e' from unit
-        matches = re.findall(unit_pattern, text)
-        value = sum(map(float, matches))
-        time_units[unit] = value
-        text = re.sub(unit_pattern, '', text)
+        time_units[unit_en] = 0
+
+        def repl(match):
+            time_units[unit_en] += float(match.group(1))
+            return ''
+        text = re.sub(unit_pattern, repl, text)
 
     text = text.strip()
     duration = timedelta(**time_units) if any(time_units.values()) else None

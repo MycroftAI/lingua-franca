@@ -633,31 +633,29 @@ def extract_duration_cs(text):
     # Czech inflection for time: minuta,minuty,minut - safe to use minut as pattern
     # For day: den, dny, dnů - short patern not applicable, list all
 
-    time_units_en = {
-        'microseconds': None,
-        'milliseconds': None,
-        'seconds': None,
-        'minutes': None,
-        'hours': None,
-        'days': None,
-        'weeks': None
-        }
+    time_units = {
+        'microseconds': 0,
+        'milliseconds': 0,
+        'seconds': 0,
+        'minutes': 0,
+        'hours': 0,
+        'days': 0,
+        'weeks': 0
+    }
 
     pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}[ay]?"
     text = _convert_words_to_numbers_cs(text)
 
-    for unit in _TIME_UNITS_CONVERSION:
-        unit_pattern = pattern.format(unit=unit)
-        matches = re.findall(unit_pattern, text)
-        value = sum(map(float, matches))
-        unit_en= _TIME_UNITS_CONVERSION.get(unit) # Find unit in english
-        # Check if is neccesary to write value - handle (days, weeks)
-        if time_units_en[unit_en] is None or time_units_en.get(unit_en) == 0:
-            time_units_en[unit_en] = value # Write value to english unit
-        text = re.sub(unit_pattern, '', text)
+    for (unit_cs, unit_en) in _TIME_UNITS_CONVERSION.items():
+        unit_pattern = pattern.format(unit=unit_cs)
+
+        def repl(match):
+            time_units[unit_en] += float(match.group(1))
+            return ''
+        text = re.sub(unit_pattern, repl, text)
 
     text = text.strip()
-    duration = timedelta(**time_units_en) if any(time_units_en.values()) else None
+    duration = timedelta(**time_units) if any(time_units.values()) else None
 
     return (duration, text)
 

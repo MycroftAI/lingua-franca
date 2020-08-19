@@ -610,24 +610,25 @@ def extract_duration_en(text):
         return None
 
     time_units = {
-        'microseconds': None,
-        'milliseconds': None,
-        'seconds': None,
-        'minutes': None,
-        'hours': None,
-        'days': None,
-        'weeks': None
+        'microseconds': 0,
+        'milliseconds': 0,
+        'seconds': 0,
+        'minutes': 0,
+        'hours': 0,
+        'days': 0,
+        'weeks': 0
     }
 
     pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}s?"
     text = _convert_words_to_numbers_en(text)
 
-    for unit in time_units:
-        unit_pattern = pattern.format(unit=unit[:-1])  # remove 's' from unit
-        matches = re.findall(unit_pattern, text)
-        value = sum(map(float, matches))
-        time_units[unit] = value
-        text = re.sub(unit_pattern, '', text)
+    for unit_en in time_units:
+        unit_pattern = pattern.format(unit=unit_en[:-1])   # remove 's' from unit
+
+        def repl(match):
+            time_units[unit_en] += float(match.group(1))
+            return ''
+        text = re.sub(unit_pattern, repl, text)
 
     text = text.strip()
     duration = timedelta(**time_units) if any(time_units.values()) else None
