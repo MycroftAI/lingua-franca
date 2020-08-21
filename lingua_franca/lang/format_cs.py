@@ -293,7 +293,7 @@ def pronounce_number_cs(num, places=2, short_scale=True, scientific=False,
         return pronounce_number_cs(num, places, short_scale, scientific=True)
     # Deal with fractional part
     elif not num == int(num) and places > 0:
-        if abs(num) < 1.0 and (result is "mínus " or not result):
+        if abs(num) < 1.0 and (result == "mínus " or not result):
             result += "nula"
         result += " tečka"
         _num_str = str(num)
