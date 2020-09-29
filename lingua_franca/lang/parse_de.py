@@ -43,7 +43,7 @@ de_numbers = {
     'dreizehn': 13,
     'vierzehn': 14,
     'fünfzehn': 15,
-    'sechszehn': 16,
+    'sechzehn': 16,
     'siebzehn': 17,
     'achtzehn': 18,
     'neunzehn': 19,
