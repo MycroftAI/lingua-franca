@@ -9,11 +9,11 @@
     "7": {"datetime_param": "1005, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "tausend fünf" },
     "8": {"datetime_param": "1012, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "tausend zwölf" },
     "9": {"datetime_param": "1046, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "tausend sechs und vierzig" },
-    "10": {"datetime_param": "1807, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "achzehn hundert sieben" },
+    "10": {"datetime_param": "1807, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "achtzehn hundert sieben" },
     "11": {"datetime_param": "1717, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "siebzehn hundert siebzehn" },
-    "12": {"datetime_param": "1988, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "neunzehn hundert acht und achzig"},
+    "12": {"datetime_param": "1988, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "neunzehn hundert acht und achtzig"},
     "13": {"datetime_param": "2009, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "zwei tausend neun"},
-    "14": {"datetime_param": "2018, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "zwei tausend achzehn"},
+    "14": {"datetime_param": "2018, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "zwei tausend achtzehn"},
     "15": {"datetime_param": "2021, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "zwei tausend ein und zwanzig"},
     "16": {"datetime_param": "2030, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "zwei tausend dreißig"},
     "17": {"datetime_param": "2100, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "zwei tausend ein hundert" },
@@ -27,14 +27,14 @@
   },
   "test_nice_date": {
     "1": {"datetime_param": "2017, 1, 31, 0, 2, 3", "now": "None", "assertEqual": "Dienstag, einunddreißigster Januar, zwei tausend siebzehn"},
-    "2": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2017, 1, 1, 0, 2, 3", "assertEqual": "Sonntag, vierter Februar, zwei tausend achzehn"},
+    "2": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2017, 1, 1, 0, 2, 3", "assertEqual": "Sonntag, vierter Februar, zwei tausend achtzehn"},
     "3": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 1, 1, 0, 2, 3", "assertEqual": "Sonntag, vierter Februar"},
     "4": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 1, 0, 2, 3", "assertEqual": "Sonntag, vierter"},
     "5": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 3, 0, 2, 3", "assertEqual": "morgen"},
     "6": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 4, 0, 2, 3", "assertEqual": "heute"},
     "7": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 5, 0, 2, 3", "assertEqual": "gestern"},
     "8": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 6, 0, 2, 3", "assertEqual": "Sonntag, vierter Februar"},
-    "9": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2019, 2, 6, 0, 2, 3", "assertEqual": "Sonntag, vierter Februar, zwei tausend achzehn"}
+    "9": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2019, 2, 6, 0, 2, 3", "assertEqual": "Sonntag, vierter Februar, zwei tausend achtzehn"}
   },
   "test_nice_date_time": {
     "1": {"datetime_param": "2017, 1, 31, 13, 22, 3", "now": "None", "use_24hour": "False", "use_ampm": "True", "assertEqual": "Dienstag, einunddreißigster Januar, zwei tausend siebzehn um ein Uhr zweiundzwanzig nachmittags"},
