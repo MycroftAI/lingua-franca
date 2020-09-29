@@ -74,7 +74,7 @@
     "15": "fünfzehnter",
     "16": "sechzehnter",
     "17": "siebzehnter",
-    "18": "achzehnter",
+    "18": "achtzehnter",
     "19": "neunzehnter",
     "20": "zwanzigster",
     "21": "einundzwanzigster",
@@ -85,7 +85,7 @@
     "26": "sechsundzwanzigster",
     "27": "siebenundzwanzigster",
     "28": "achtundzwanzigster",
-    "29": "neunundzwnzigster",
+    "29": "neunundzwanzigster",
     "30": "dreißigster",
     "31": "einunddreißigster"
   },
@@ -93,8 +93,8 @@
     "1": "Januar",
     "2": "Februar",
     "3": "März",
-    "4": "Aprill",
-    "5": "May",
+    "4": "April",
+    "5": "Mai",
     "6": "Juni",
     "7": "Juli",
     "8": "August",
@@ -122,7 +122,7 @@
     "15": "fünfzehn",
     "16": "sechzehn",
     "17": "siebzehn",
-    "18": "achzehn",
+    "18": "achtzehn",
     "19": "neunzehn",
     "20": "zwanzig",
     "30": "dreißig",
@@ -130,7 +130,7 @@
     "50": "fünfzig",
     "60": "sechzig",
     "70": "siebzig",
-    "80": "achzig",
+    "80": "achtzig",
     "90": "neunzig"
   }
 }
