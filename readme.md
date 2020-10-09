@@ -245,9 +245,9 @@ source .venv/bin/activate
 
 4. Install the package and it's dependencies
 ```bash
+pip install wheel
 python -m pip install .
 pip install pytest
-pip install wheel
 python setup.py install
 ```
 
