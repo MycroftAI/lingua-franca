@@ -3,7 +3,8 @@ import lingua_franca
 import lingua_franca.parse
 import lingua_franca.format
 
-from lingua_franca.internal import localized_function, _SUPPORTED_LANGUAGES
+from lingua_franca.internal import localized_function, _SUPPORTED_LANGUAGES, \
+    NoSuchModuleError
 
 
 def unload_all_languages():
@@ -32,7 +33,7 @@ class TestException(unittest.TestCase):
 
     def test_must_load_language(self):
         unload_all_languages()
-        self.assertRaises(ModuleNotFoundError,
+        self.assertRaises(NoSuchModuleError,
                           lingua_franca.parse.extract_number, 'one')
 
     def test_run_own_code_on(self):
@@ -49,9 +50,9 @@ class TestException(unittest.TestCase):
         self.assertEqual(lingua_franca.format.nice_number(123.45, lang='cz'),
                          "123.45")
         # It won't intercept other exceptions, though!
-        with self.assertRaises(ModuleNotFoundError):
+        with self.assertRaises(NoSuchModuleError):
             lingua_franca.format.nice_number(123.45)
-            # ModuleNotFoundError: No language module loaded.
+            # NoSuchModuleError: No language module loaded.
 
         with self.assertRaises(ValueError):
             @localized_function("not an error type")
@@ -85,7 +86,7 @@ class TestLanguageLoading(unittest.TestCase):
         self.assertFalse('es' in lingua_franca.get_active_langs())
 
         # Verify that unloaded languages can't be invoked explicitly
-        self.assertRaises(ModuleNotFoundError,
+        self.assertRaises(NoSuchModuleError,
                           lingua_franca.parse.extract_number,
                           'uno', lang='es')
         unload_all_languages()
