@@ -141,7 +141,7 @@ def extract_duration_de(text):
     return (duration, text)
 
 
-def extractnumber_de(text, short_scale=True, ordinals=False):
+def extract_number_de(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
