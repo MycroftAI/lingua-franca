@@ -35,6 +35,12 @@ _localized_functions = {}
 class UnsupportedLanguageError(NotImplementedError):
     pass
 
+# TODO this should descend from ModuleNotFoundError when we drop Py3.5
+
+
+class NoSuchModuleError(NotImplementedError):
+    pass
+
 
 class FunctionNotLocalizedError(NotImplementedError):
     pass
@@ -398,7 +404,7 @@ def localized_function(run_own_code_on=[type(None)]):
                         arg_in_lang_pos in _SUPPORTED_FULL_LOCALIZATIONS:
                     lang_code = args[lang_param_index]
             if not lang_code:
-                raise ModuleNotFoundError("No language module loaded.")
+                raise NoSuchModuleError("No language module loaded.")
 
             if lang_code not in _SUPPORTED_LANGUAGES:
                 try:
@@ -421,11 +427,11 @@ def localized_function(run_own_code_on=[type(None)]):
             # The nonsense above gets you from lingua_franca.parse
             # to lingua_franca.lang.parse_xx
             if _module_name not in _localized_functions.keys():
-                raise ModuleNotFoundError("Module lingua_franca." +
-                                          _module_name + " not recognized")
+                raise NoSuchModuleError("Module lingua_franca." +
+                                        _module_name + " not recognized")
             if lang_code not in _localized_functions[_module_name].keys():
-                raise ModuleNotFoundError(_module_name + " module of language '" +
-                                          lang_code + "' is not currently loaded.")
+                raise NoSuchModuleError(_module_name + " module of language '" +
+                                        lang_code + "' is not currently loaded.")
 
             func_name = func.__name__.split('.')[-1]
             # At some point in the past, both the module and the language
@@ -536,7 +542,7 @@ def populate_localized_function_dict(lf_module, langs=get_active_langs()):
         try:
             mod = import_module(".lang." + lf_module + "_" + primary_lang_code,
                                 "lingua_franca")
-        except ModuleNotFoundError:
+        except NoSuchModuleError:
             warn(Warning(bad_lang_code.format(primary_lang_code)))
             continue
 
