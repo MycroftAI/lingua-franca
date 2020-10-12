@@ -105,7 +105,7 @@ def pronounce_number_pt(number, places=2):
     # instead the dot. Decimal part can be written both with comma
     # and dot, but when pronounced, its pronounced "virgula"
     if not number == int(number) and places > 0:
-        if abs(number) < 1.0 and (result is "menos " or not result):
+        if abs(number) < 1.0 and (result == "menos " or not result):
             result += "zero"
         result += " vírgula"
         _num_str = str(number)
