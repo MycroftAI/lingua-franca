@@ -28,7 +28,7 @@ from lingua_franca.internal import localized_function, \
     populate_localized_function_dict, get_active_langs, \
     get_full_lang_code, get_default_lang, get_default_loc, \
     is_supported_full_lang, _raise_unsupported_language, \
-    UnsupportedLanguageError
+    UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning
 
 
 _REGISTERED_FUNCTIONS = ("nice_number",
@@ -382,9 +382,15 @@ def nice_duration(duration, lang=None, speech=True):
         str: timespan as a string
     """
     if not lang:
+        warn(NoneLangWarning)
         lang = get_default_loc()
     if not is_supported_full_lang(lang):
-        lang = get_full_lang_code(lang)
+        # TODO deprecated; delete when 'lang=None' and 'lang=invalid' are removed
+        try:
+            lang = get_full_lang_code(lang)
+        except UnsupportedLanguageError:
+            warn(InvalidLangWarning)
+            lang = get_default_loc()
 
     if isinstance(duration, datetime.timedelta):
         duration = duration.total_seconds()
