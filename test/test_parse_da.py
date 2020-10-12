@@ -170,7 +170,8 @@ class TestNormalize(unittest.TestCase):
 
     def test_extractdatetime_no_time(self):
         """Check that None is returned if no time is found in sentence."""
-        self.assertEqual(extract_datetime('ingen tid', lang='da-da'), None)
+        with self.assertWarns(UserWarning):
+            self.assertEqual(extract_datetime('ingen tid', lang='da-da'), None)
 
     def test_extractdatetime_default_da(self):
         default = time(9, 0, 0)

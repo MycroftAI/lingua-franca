@@ -143,7 +143,7 @@ def pronounce_number_es(number, places=2):
     # instead the dot. Decimal part can be written both with comma
     # and dot, but when pronounced, its pronounced "coma"
     if not number == int(number) and places > 0:
-        if abs(number) < 1.0 and (result is "menos " or not result):
+        if abs(number) < 1.0 and (result == "menos " or not result):
             result += "cero"
         result += " coma"
         _num_str = str(number)

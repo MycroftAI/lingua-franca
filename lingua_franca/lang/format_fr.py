@@ -140,7 +140,7 @@ def pronounce_number_fr(number, places=2):
 
     # Deal with decimal part
     if not number == int(number) and places > 0:
-        if abs(number) < 1.0 and (result is "moins " or not result):
+        if abs(number) < 1.0 and (result == "moins " or not result):
             result += "zéro"
         result += " virgule"
         _num_str = str(number)
