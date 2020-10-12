@@ -2,6 +2,7 @@ import os.path
 from functools import wraps
 from importlib import import_module
 from inspect import signature
+from sys import version
 from warnings import warn
 
 _SUPPORTED_LANGUAGES = ("cs", "da", "de", "en", "es", "fr", "hu",
@@ -31,6 +32,18 @@ __loaded_langs = []
 
 _localized_functions = {}
 
+# TODO the deprecation of 'lang=None' and 'lang=<invalid>' can refer to
+# commit 35efd0661a178e82f6745ad17e10e607c0d83472 for the "proper" state
+# of affairs, raising the errors below instead of deprecation warnings
+
+if version[:3] == '3.5':
+    warn(DeprecationWarning("Python 3.5 is EOL, and no longer supported. "
+                            "Lingua Franca supports it as a courtesy to "
+                            "a downstream project, which will drop it soon. "
+                            "Expect LF to stop working in 3.5 any day now. "
+                            "There will be no announcement. This is your "
+                            "only warning. Migrate your projects."))
+
 
 class UnsupportedLanguageError(NotImplementedError):
     pass
@@ -44,6 +57,17 @@ class NoSuchModuleError(NotImplementedError):
 
 class FunctionNotLocalizedError(NotImplementedError):
     pass
+
+
+NoneLangWarning = \
+    DeprecationWarning("Lingua Franca is dropping support"
+                       " for 'lang=None' as an explicit"
+                       " argument.")
+InvalidLangWarning = \
+    DeprecationWarning("Invalid language code detected. Falling back on "
+                       "default.\nThis behavior is deprecated. The 'lang' "
+                       "parameter is optional, and only accepts supported "
+                       "language codes, beginning with Lingua Franca 0.3.0")
 
 
 def _raise_unsupported_language(language):
@@ -116,6 +140,13 @@ def _refresh_function_dict():
         populate_localized_function_dict(mod, langs=__loaded_langs)
 
 
+def is_supported_lang(lang):
+    try:
+        return lang.lower() in _SUPPORTED_LANGUAGES
+    except AttributeError:
+        return False
+
+
 def is_supported_full_lang(lang):
     """
     Arguments:
@@ -124,7 +155,10 @@ def is_supported_full_lang(lang):
     Returns:
         bool - does Lingua Franca support this language code?
     """
-    return lang.lower() in _SUPPORTED_FULL_LOCALIZATIONS
+    try:
+        return lang.lower() in _SUPPORTED_FULL_LOCALIZATIONS
+    except AttributeError:
+        return False
 
 
 def load_language(lang):
@@ -256,8 +290,23 @@ def set_default_lang(lang_code):
     else:
         __active_lang_code = get_full_lang_code(__default_lang)
 
+# TODO remove this when invalid lang codes are removed (currently deprecated)
+
 
 def get_primary_lang_code(lang=None):
+    if not lang:
+        warn(NoneLangWarning)
+        lang = get_default_loc()
+    # if not (lang):
+    try:
+        lang = __get_primary_lang_code_deprecation_warning(lang)
+    except UnsupportedLanguageError:
+        warn(InvalidLangWarning)
+        lang = get_default_loc()
+    return lang
+
+
+def __get_primary_lang_code_deprecation_warning(lang=None):
     """ Get the primary language code
 
     Args:
@@ -293,8 +342,23 @@ def get_primary_lang_code(lang=None):
             raise(ValueError("Invalid input: " + lang))
     return lang_code.split("-")[0]
 
+# TODO remove this when invalid lang codes are removed (currently deprecated)
+
 
 def get_full_lang_code(lang=None):
+    if not lang:
+        warn(NoneLangWarning)
+        lang = get_default_loc()
+    if not is_supported_full_lang(lang):
+        try:
+            lang = __get_full_lang_code_deprecation_warning(lang)
+        except UnsupportedLanguageError:
+            warn(InvalidLangWarning)
+            lang = get_default_loc()
+    return lang
+
+
+def __get_full_lang_code_deprecation_warning(lang=None):
     """ Get the full language code
 
     Args:
@@ -365,6 +429,7 @@ def localized_function(run_own_code_on=[type(None)]):
         ValueError("@localized_function(run_own_code_on=<>) expected an "
                    "Error type, or a list of Error types. Instead, it "
                    "received this value:\n" + str(run_own_code_on))
+    # TODO deprecate these kwarg values 6-12 months after v0.3.0 releases
 
     def is_error_type(_type):
         if not callable(_type):
@@ -381,44 +446,76 @@ def localized_function(run_own_code_on=[type(None)]):
     if run_own_code_on != [None]:
         if not all((is_error_type(e) for e in run_own_code_on)):
             raise BadTypeError
-    # Begin wrapper
 
+    # Begin wrapper
     def localized_function_decorator(func):
         # Wrapper's logic
         def _call_localized_function(func, *args, **kwargs):
             func_signature = signature(func)
             func_params = list(func_signature.parameters)
             lang_param_index = func_params.index('lang')
+            full_lang_code = None
 
             # Momentarily assume we're not passing a lang code
             lang_code = get_default_lang()
+            if not lang_code:
+                raise NoSuchModuleError("No language module loaded.")
 
             # Check if we're passing a lang as a kwarg
             if 'lang' in kwargs.keys():
-                lang_code = kwargs['lang']
+                lang_param = kwargs['lang']
+                if lang_param == None:
+                    warn(NoneLangWarning)
+                    lang_code = get_default_lang()
+                else:
+                    lang_code = lang_param
 
             # Check if we're passing a lang as a positional arg
             elif lang_param_index < len(args):
-                arg_in_lang_pos = args[lang_param_index]
-                if arg_in_lang_pos in _SUPPORTED_LANGUAGES or \
-                        arg_in_lang_pos in _SUPPORTED_FULL_LOCALIZATIONS:
+                lang_param = args[lang_param_index]
+                if lang_param == None:
+                    warn(NoneLangWarning)
+                    lang_code = get_default_lang()
+                elif lang_param in _SUPPORTED_LANGUAGES or \
+                        lang_param in _SUPPORTED_FULL_LOCALIZATIONS:
                     lang_code = args[lang_param_index]
-            if not lang_code:
-                raise NoSuchModuleError("No language module loaded.")
+                args = args[:lang_param_index] + args[lang_param_index+1:]
 
             if lang_code not in _SUPPORTED_LANGUAGES:
                 try:
                     tmp = lang_code
+                    __use_tmp = True
                     lang_code = get_primary_lang_code(lang_code)
                 except ValueError:
-                    _raise_unsupported_language(lang_code)
+                    __error = \
+                        UnsupportedLanguageError("\nLanguage '{language}' is not yet "
+                                                 "supported by Lingua Franca. "
+                                                 "Supported language codes "
+                                                 "include the following:\n{supported}"
+                                                 .format(
+                                                     language=lang_code,
+                                                     supported=_SUPPORTED_FULL_LOCALIZATIONS))
+                    if UnsupportedLanguageError in run_own_code_on:
+                        raise __error
+                    else:
+                        warn(DeprecationWarning("The following warning will "
+                                                "become an exception in a future "
+                                                "version of Lingua Franca.".append(
+                                                    __error
+                                                )))
+                        # warn(__error)
+                        lang_code = get_default_lang()
+                        full_lang_code = get_full_lang_code()
+                        __use_tmp = False
+                    # _raise_unsupported_language(lang_code)
                 if lang_code not in _SUPPORTED_LANGUAGES:
                     _raise_unsupported_language(lang_code)
-                full_lang_code = tmp
+                if __use_tmp:
+                    full_lang_code = tmp
             else:
-                full_lang_code = get_full_lang_code(lang_code) if \
-                    lang_code != get_default_lang() \
-                    else get_full_lang_code()
+                full_lang_code = get_full_lang_code(lang_code)  # if \
+                # lang_code != get_default_lang() \
+                # else get_full_lang_code()
 
             # Here comes the ugly business.
             _module_name = func.__module__.split('.')[-1]
@@ -478,7 +575,7 @@ def localized_function(run_own_code_on=[type(None)]):
             return r_val
 
         # Actual wrapper
-        @ wraps(func)
+        @wraps(func)
         def call_localized_function(*args, **kwargs):
             if run_own_code_on != [type(None)]:
                 try:
