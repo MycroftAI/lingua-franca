@@ -6,11 +6,12 @@ from sys import version
 from warnings import warn
 
 _SUPPORTED_LANGUAGES = ("cs", "da", "de", "en", "es", "fr", "hu",
-                        "it", "nl", "pl", "pt", "sv")
+                        "it", "nl", "pl", "pt", "sl", "sv")
 
 _SUPPORTED_FULL_LOCALIZATIONS = ("cs-cz", "da-dk", "de-de", "en-au", "en-us",
                                  "es-es", "fr-fr", "hu-hu", "it-it", "nl-nl",
-                                 "pl-pl", "pt-pt", "ru-ru", "sv-se", "tr-tr")
+                                 "pl-pl", "pt-pt", "ru-ru", "sl-si",
+                                 "sv-se", "tr-tr")
 
 _DEFAULT_FULL_LANG_CODES = {'cs': 'cs-cz',
                             'da': 'da-dk',
@@ -24,6 +25,7 @@ _DEFAULT_FULL_LANG_CODES = {'cs': 'cs-cz',
                             'pl': 'pl-pl',
                             'pt': 'pt-pt',
                             'ru': 'ru-ru',
+                            'sl': 'sl-si',
                             'sv': 'sv-se',
                             'tr': 'tr-tr'}
 
