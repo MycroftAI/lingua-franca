@@ -29,6 +29,7 @@ from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
+from lingua_franca.format import nice_bytes
 
 NUMBERS_FIXTURE_EN = {
     1.435634: '1.436',
@@ -59,6 +60,91 @@ NUMBERS_FIXTURE_EN = {
     7.421: '7 and 8 nineteenths',
     0.05: 'a twentyith'
 }
+
+
+class TestNiceBytes(unittest.TestCase):
+
+    def test_nice_bytes_non_binary_speech(self):
+        self.assertEqual(nice_bytes(0, binary=False), "0.0 Bytes")
+        self.assertEqual(nice_bytes(1, binary=False), "1.0 Byte")
+        self.assertEqual(nice_bytes(1000, binary=False), "1.0 Kilobyte")
+        self.assertEqual(nice_bytes(2000000, binary=False), "2.0 Megabytes")
+        self.assertEqual(nice_bytes(2000000000, binary=False), "2.0 Gigabytes")
+        self.assertEqual(nice_bytes(2000000000000, binary=False), "2.0 Terabytes")
+        self.assertEqual(nice_bytes(2000000000000000, binary=False), "2.0 Petabytes")
+        self.assertEqual(nice_bytes(2000000000000000000, binary=False), "2.0 Exabytes")
+        self.assertEqual(nice_bytes(2000000000000000000000, binary=False), "2.0 Zettabytes")
+        self.assertEqual(nice_bytes(2000000000000000000000000, binary=False), "2.0 Yottabytes")
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
+        self.assertEqual(nice_bytes(2000000000000000000000000000, binary=False), "2000.0 Yottabytes")
+
+    def test_nice_bytes_non_binary(self):
+        self.assertEqual(nice_bytes(0, speech=False, binary=False), "0.0 B")
+        self.assertEqual(nice_bytes(1000, speech=False, binary=False), "1.0 KB")
+        self.assertEqual(nice_bytes(1024, speech=False, binary=False), "1.0 KB")
+        self.assertEqual(nice_bytes(2000000, speech=False, binary=False), "2.0 MB")
+        self.assertEqual(nice_bytes(2000000000, speech=False, binary=False), "2.0 GB")
+        self.assertEqual(nice_bytes(2000000000000, speech=False, binary=False), "2.0 TB")
+        self.assertEqual(nice_bytes(2000000000000000, speech=False, binary=False), "2.0 PB")
+        self.assertEqual(nice_bytes(2000000000000000000, speech=False, binary=False), "2.0 EB")
+        self.assertEqual(nice_bytes(2000000000000000000000, speech=False, binary=False), "2.0 ZB")
+        self.assertEqual(nice_bytes(2000000000000000000000000, speech=False, binary=False), "2.0 YB")
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
+        self.assertEqual(nice_bytes(2000000000000000000000000000, speech=False, binary=False), "2000.0 YB")
+
+    def test_nice_bytes_speech(self):
+        # https://en.wikipedia.org/wiki/Kibibyte
+        self.assertEqual(nice_bytes(0), "0.0 Bytes")
+        self.assertEqual(nice_bytes(1), "1.0 Byte")
+        self.assertEqual(nice_bytes(1000), "1000.0 Bytes")
+        self.assertEqual(nice_bytes(1024), "1.0 Kibibyte")
+        self.assertEqual(nice_bytes(2000000), "1.9 Mebibytes")
+        self.assertEqual(nice_bytes(2000000000), "1.9 Gibibytes")
+        self.assertEqual(nice_bytes(2000000000000), "1.8 Tebibytes")
+        self.assertEqual(nice_bytes(2000000000000000), "1.8 Pebibytes")
+        self.assertEqual(nice_bytes(2000000000000000000), "1.7 Exbibytes")
+        self.assertEqual(nice_bytes(2000000000000000000000), "1.7 Zebibytes")
+        self.assertEqual(nice_bytes(2000000000000000000000000), "1.7 Yobibytes")
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
+        self.assertEqual(nice_bytes(2000000000000000000000000000), "1654.4 Yobibytes")
+
+    def test_nice_bytes(self):
+        self.assertEqual(nice_bytes(0, speech=False), "0.0 B")
+        self.assertEqual(nice_bytes(1000, speech=False), "1000.0 B")
+        self.assertEqual(nice_bytes(1024, speech=False), "1.0 KiB")
+        self.assertEqual(nice_bytes(2000000, speech=False), "1.9 MiB")
+        self.assertEqual(nice_bytes(2000000000, speech=False), "1.9 GiB")
+        self.assertEqual(nice_bytes(2000000000000, speech=False), "1.8 TiB")
+        self.assertEqual(nice_bytes(2000000000000000, speech=False), "1.8 PiB")
+        self.assertEqual(nice_bytes(2000000000000000000, speech=False), "1.7 EiB")
+        self.assertEqual(nice_bytes(2000000000000000000000, speech=False), "1.7 ZiB")
+        self.assertEqual(nice_bytes(2000000000000000000000000, speech=False), "1.7 YiB")
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
+        self.assertEqual(nice_bytes(2000000000000000000000000000, speech=False), "1654.4 YiB")
+
+    def test_nice_bytes_gnu(self):
+        self.assertEqual(nice_bytes(1024, gnu=True), "1.0 Kilo")
+        self.assertEqual(nice_bytes(2000000, gnu=True), "1.9 Mega")
+        self.assertEqual(nice_bytes(2000000000, gnu=True), "1.9 Giga")
+        self.assertEqual(nice_bytes(2000000000000, gnu=True), "1.8 Tera")
+
+        self.assertEqual(nice_bytes(0, speech=False, gnu=True), "0.0 B")
+        self.assertEqual(nice_bytes(1000, speech=False, gnu=True), "1000.0 B")
+        self.assertEqual(nice_bytes(1024, speech=False, gnu=True), "1.0 K")
+        self.assertEqual(nice_bytes(2000000, speech=False, gnu=True), "1.9 M")
+        self.assertEqual(nice_bytes(2000000000, speech=False, gnu=True), "1.9 G")
+        self.assertEqual(nice_bytes(2000000000000, speech=False, gnu=True), "1.8 T")
+        self.assertEqual(nice_bytes(2000000000000000, speech=False, gnu=True), "1.8 P")
+        self.assertEqual(nice_bytes(2000000000000000000, speech=False, gnu=True), "1.7 E")
+        self.assertEqual(nice_bytes(2000000000000000000000, speech=False, gnu=True), "1.7 Z")
+        self.assertEqual(nice_bytes(2000000000000000000000000, speech=False, gnu=True), "1.7 Y")
+        # no more named prefixes after Y - https://en.wikipedia.org/wiki/Binary_prefix
+        self.assertEqual(nice_bytes(2000000000000000000000000000, speech=False, gnu=True), "1654.4 Y")
+
+        self.assertEqual(nice_bytes(2000000, gnu=True, binary=False), "2.0 Mega")
+        self.assertEqual(nice_bytes(2000000000, gnu=True, binary=False), "2.0 Giga")
+        self.assertEqual(nice_bytes(2000000, speech=False, gnu=True, binary=False), "2.0 M")
+        self.assertEqual(nice_bytes(2000000000, speech=False, gnu=True, binary=False), "2.0 G")
 
 
 class TestNiceNumberFormat(unittest.TestCase):
@@ -567,7 +653,7 @@ class TestNiceDateFormat(unittest.TestCase):
                 self.assertTrue(len(nice_year(dt, lang=lang)) > 0)
                 # Looking through the date sequence can be helpful
 
-#                print(nice_year(dt, lang=lang))
+    #                print(nice_year(dt, lang=lang))
 
     def test_nice_duration(self):
         self.assertEqual(nice_duration(1), "one second")
