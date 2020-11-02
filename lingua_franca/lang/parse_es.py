@@ -1023,8 +1023,7 @@ def extract_datetime_es(text, anchorDate=None, default_time=None):
         temp = temp.replace(tzinfo=None)
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
-            print(gettz(temp.tzname()))
-            print(extractedDate.tzname(), temp.tzname())
+
             if extractedDate < temp:
                 extractedDate = extractedDate.replace(year=int(currentYear),
                                                       month=int(

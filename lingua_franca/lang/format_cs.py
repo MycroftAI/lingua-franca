@@ -169,6 +169,7 @@ def pronounce_number_cs(number, places=2, short_scale=True, scientific=False,
         # exception used to catch any unforseen edge cases
         # will default back to normal subroutine
         except Exception as e:
+            # TODO this probably shouldn't go to stdout
             print('ERROR: Exception in pronounce_number_cs: {}' + repr(e))
 
     # check for a direct match
