@@ -15,14 +15,10 @@
 #
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from .parse_common import is_numeric, look_for_fractions
-
-# TODO: short_scale and ordinals don't do anything here.
-# The parameters are present in the function signature for API compatibility
-# reasons.
+from .parse_common import is_numeric, look_for_fractions, Normalizer
 
 
-def extractnumber_sv(text, short_scale=True, ordinals=False):
+def extract_number_sv(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -31,6 +27,9 @@ def extractnumber_sv(text, short_scale=True, ordinals=False):
     Returns:
         (int) or (float): The value of extracted number
     """
+    # TODO: short_scale and ordinals don't do anything here.
+    # The parameters are present in the function signature for API compatibility
+    # reasons.
     text = text.lower()
     aWords = text.split()
     and_pass = False
@@ -125,7 +124,7 @@ def extractnumber_sv(text, short_scale=True, ordinals=False):
     return val or False
 
 
-def extract_datetime_sv(string, currentDate, default_time):
+def extract_datetime_sv(text, anchorDate=None, default_time=None):
     def clean_string(s):
         """
             cleans the input string of unneeded punctuation and capitalization
@@ -156,7 +155,7 @@ def extract_datetime_sv(string, currentDate, default_time):
                 minAbs or secOffset != 0
             )
 
-    if string == "" or not currentDate:
+    if text == "" or not anchorDate:
         return None
 
     found = False
@@ -164,7 +163,7 @@ def extract_datetime_sv(string, currentDate, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    dateNow = currentDate
+    dateNow = anchorDate
     today = dateNow.strftime("%w")
     currentYear = dateNow.strftime("%Y")
     fromFlag = False
@@ -182,7 +181,7 @@ def extract_datetime_sv(string, currentDate, default_time):
     monthsShort = ['jan', 'feb', 'mar', 'apr', 'may', 'june', 'july', 'aug',
                    'sept', 'oct', 'nov', 'dec']
 
-    words = clean_string(string)
+    words = clean_string(text)
 
     for idx, word in enumerate(words):
         if word == "":
@@ -726,12 +725,13 @@ def extract_datetime_sv(string, currentDate, default_time):
     return [extractedDate, resultStr]
 
 
-def is_fractional_sv(input_str):
+def is_fractional_sv(input_str, short_scale=True):
     """
     This function takes the given text and checks if it is a fraction.
 
     Args:
         input_str (str): the string to check if fractional
+        short_scale (bool): use short scale if True, long scale if False
     Returns:
         (bool) or (float): False if not a fraction, otherwise the fraction
 
@@ -758,7 +758,7 @@ def is_fractional_sv(input_str):
     return False
 
 
-def normalize_sv(text, remove_articles):
+def normalize_sv(text, remove_articles=True):
     """ English string normalization """
 
     words = text.split()  # this also removed extra spaces
@@ -777,3 +777,7 @@ def normalize_sv(text, remove_articles):
         normalized += " " + word
 
     return normalized[1:]  # strip the initial space
+
+
+class SwedishNormalizer(Normalizer):
+    """ TODO implement language specific normalizer"""

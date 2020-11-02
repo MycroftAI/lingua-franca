@@ -13,8 +13,9 @@
 # limitations under the License.
 #
 
-__active_lang = "en-us"  # English is the default active language
-# TODO: Should this really be stored in the user config file?
+from warnings import warn
+from lingua_franca.internal import get_default_lang, \
+    set_default_lang, get_primary_lang_code as gplc, get_full_lang_code as gflc
 
 
 def get_active_lang():
@@ -23,7 +24,11 @@ def get_active_lang():
     Returns:
         str: A BCP-47 language code, e.g. ("en-us", or "pt-pt")
     """
-    return __active_lang
+    _getlang = "Direct imports from lingua_franca.lang"
+    " have been deprecated. Use"
+    " lingua_franca.get_default_lang()"
+    warn(_getlang, DeprecationWarning)
+    return get_default_lang()
 
 
 def set_active_lang(lang_code):
@@ -32,10 +37,11 @@ def set_active_lang(lang_code):
     Args:
         lang (str): BCP-47 language code, e.g. "en-us" or "es-mx"
     """
-    global __active_lang
-    if __active_lang != lang_code:
-        # TODO: Validate lang codes?
-        __active_lang = lang_code
+    _setlang = "Direct imports from lingua_franca.lang"
+    " have been deprecated. Use"
+    " lingua_franca.set_default_lang()"
+    warn(_setlang, DeprecationWarning)
+    set_default_lang(lang_code=lang_code)
 
 
 def get_primary_lang_code(lang=None):
@@ -47,12 +53,9 @@ def get_primary_lang_code(lang=None):
     Returns:
         str: A primary language family, such as "en", "de" or "pt"
     """
-    # split on the hyphen and only return the primary-language code
-    # NOTE: This is typically a two character code.  The standard allows
-    #       1, 2, 3 and 4 character codes.  In the future we can consider
-    #       mapping from the 3 to 2 character codes, for example.  But for
-    #       now we can just be careful in use.
-    return get_full_lang_code(lang).split("-")[0]
+    warn("Direct imports from lingua_franca.lang have been deprecated. Use"
+         " lingua_franca.get_primary_lang_code()", DeprecationWarning)
+    return gplc(lang=lang)
 
 
 def get_full_lang_code(lang=None):
@@ -64,7 +67,6 @@ def get_full_lang_code(lang=None):
     Returns:
         str: A full language code, such as "en-us" or "de-de"
     """
-    if not lang:
-        lang = __active_lang
-
-    return lang or "en-us"
+    warn("Direct imports from lingua_franca.lang have been deprecated. Use"
+         " lingua_franca.get_full_lang_code()", DeprecationWarning)
+    return gflc(lang=lang)

@@ -17,9 +17,15 @@ import json
 import unittest
 import datetime
 import ast
+import warnings
 import sys
 from pathlib import Path
 
+# TODO either write a getter for lingua_franca.internal._SUPPORTED_LANGUAGES,
+# or make it public somehow
+from lingua_franca import load_languages, unload_languages, set_default_lang, \
+    get_primary_lang_code, get_active_langs, get_supported_langs
+from lingua_franca.internal import UnsupportedLanguageError
 from lingua_franca.format import nice_number
 from lingua_franca.format import nice_time
 from lingua_franca.format import nice_date
@@ -29,6 +35,18 @@ from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
+
+
+def setUpModule():
+    load_languages(get_supported_langs())
+    # TODO spin English tests off into another file, like other languages, so we
+    # don't have to do this confusing thing in the "master" test_format.py
+    set_default_lang('en-us')
+
+
+def tearDownModule():
+    unload_languages(get_active_langs())
+
 
 NUMBERS_FIXTURE_EN = {
     1.435634: '1.436',
@@ -62,6 +80,12 @@ NUMBERS_FIXTURE_EN = {
 
 
 class TestNiceNumberFormat(unittest.TestCase):
+
+    tmp_var = None
+
+    def set_tmp_var(self, val):
+        self.tmp_var = val
+
     def test_convert_float_to_nice_number(self):
         for number, number_str in NUMBERS_FIXTURE_EN.items():
             self.assertEqual(nice_number(number), number_str,
@@ -92,9 +116,17 @@ class TestNiceNumberFormat(unittest.TestCase):
         """ An unknown / unhandled language should return the string
             representation of the input number.
         """
-        self.assertEqual(nice_number(5.5, lang='as-fd'), '5.5',
-                         'should format 5.5 as 5.5 not {}'.format(
-                             nice_number(5.5, lang='as-df')))
+        def bypass_warning():
+            self.assertEqual(
+                nice_number(5.5, lang='as-df'), '5.5',
+                'should format 5.5 '
+                'as 5.5 not {}'.format(
+                    nice_number(5.5, lang='as-df')))
+
+        # Should throw a warning. Would raise the same text as a
+        # NotImplementedError, but nice_number() bypasses and returns
+        # its input as a string
+        self.assertWarns(UserWarning, bypass_warning)
 
 
 class TestPronounceNumber(unittest.TestCase):
@@ -187,12 +219,12 @@ class TestPronounceNumber(unittest.TestCase):
                                         "power of negative one hundred "
                                         "and fifty")
         # value is platform dependent so better not use in tests?
-        #self.assertEqual(
+        # self.assertEqual(
         #    pronounce_number(sys.float_info.min), "two point two two times "
         #                                          "ten to the power of "
         #                                          "negative three hundred "
         #                                          "and eight")
-        #self.assertEqual(
+        # self.assertEqual(
         #    pronounce_number(sys.float_info.max), "one point seven nine "
         #                                          "times ten to the power of"
         #                                          " three hundred and eight")
@@ -354,6 +386,8 @@ class TestPronounceNumber(unittest.TestCase):
 
 # def nice_time(dt, lang="en-us", speech=True, use_24hour=False,
 #              use_ampm=False):
+
+
 class TestNiceDateFormat(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -508,12 +542,6 @@ class TestNiceDateFormat(unittest.TestCase):
                                  nice_date(dt, lang=lang, now=now))
                 i = i + 1
 
-        # test fall back to english
-        dt = datetime.datetime(2018, 2, 4, 0, 2, 3)
-        self.assertEqual(nice_date(
-            dt, lang='invalid', now=datetime.datetime(2018, 2, 4, 0, 2, 3)),
-            'today')
-
         # test all days in a year for all languages,
         # that some output is produced
         for lang in self.test_config:
@@ -522,7 +550,11 @@ class TestNiceDateFormat(unittest.TestCase):
                 self.assertTrue(len(nice_date(dt, lang=lang)) > 0)
 
     def test_nice_date_time(self):
+        # TODO: migrate these tests (in res files) to respect the new
+        # language loading features. Right now, some of them break if
+        # their languages are not default.
         for lang in self.test_config:
+            set_default_lang(lang)
             i = 1
             while (self.test_config[lang].get('test_nice_date_time') and
                    self.test_config[lang]['test_nice_date_time'].get(str(i))):
@@ -542,6 +574,7 @@ class TestNiceDateFormat(unittest.TestCase):
                         use_24hour=ast.literal_eval(p['use_24hour']),
                         use_ampm=ast.literal_eval(p['use_ampm'])))
                 i = i + 1
+        set_default_lang('en')
 
     def test_nice_year(self):
         for lang in self.test_config:

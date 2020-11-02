@@ -18,62 +18,11 @@ Format functions for castillian (es-es)
 
 """
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
-
-NUM_STRING_ES = {
-    0: 'cero',
-    1: 'uno',
-    2: 'dos',
-    3: 'tres',
-    4: 'cuatro',
-    5: 'cinco',
-    6: 'seis',
-    7: 'siete',
-    8: 'ocho',
-    9: 'nueve',
-    10: 'diez',
-    11: 'once',
-    12: 'doce',
-    13: 'trece',
-    14: 'catorce',
-    15: 'quince',
-    16: 'dieciséis',
-    17: 'diecisete',
-    18: 'dieciocho',
-    19: 'diecinueve',
-    20: 'veinte',
-    30: 'treinta',
-    40: 'cuarenta',
-    50: 'cincuenta',
-    60: 'sesenta',
-    70: 'setenta',
-    80: 'ochenta',
-    90: 'noventa'
-}
-
-FRACTION_STRING_ES = {
-    2: 'medio',
-    3: 'tercio',
-    4: 'cuarto',
-    5: 'quinto',
-    6: 'sexto',
-    7: 'séptimo',
-    8: 'octavo',
-    9: 'noveno',
-    10: 'décimo',
-    11: 'onceavo',
-    12: 'doceavo',
-    13: 'treceavo',
-    14: 'catorceavo',
-    15: 'quinceavo',
-    16: 'dieciseisavo',
-    17: 'diecisieteavo',
-    18: 'dieciochoavo',
-    19: 'diecinueveavo',
-    20: 'veinteavo'
-}
+from lingua_franca.lang.common_data_es import _NUM_STRING_ES, \
+    _FRACTION_STRING_ES
 
 
-def nice_number_es(number, speech, denominators=range(1, 21)):
+def nice_number_es(number, speech=True, denominators=range(1, 21)):
     """ Spanish helper for nice_number
 
     This function formats a float to human understandable functions. Like
@@ -113,7 +62,7 @@ def nice_number_es(number, speech, denominators=range(1, 21)):
             strNumber = str(whole)
             strNumber = strNumber.replace(".", ",")
             return strNumber
-        den_str = FRACTION_STRING_ES[den]
+        den_str = _FRACTION_STRING_ES[den]
         # if it is not an integer
         if whole == 0:
             # if there is no whole number
@@ -142,7 +91,7 @@ def nice_number_es(number, speech, denominators=range(1, 21)):
     return strNumber
 
 
-def pronounce_number_es(num, places=2):
+def pronounce_number_es(number, places=2):
     """
     Convert a number to it's spoken equivalent
 
@@ -154,20 +103,20 @@ def pronounce_number_es(num, places=2):
     Returns:
         (str): The pronounced number
     """
-    if abs(num) >= 100:
+    if abs(number) >= 100:
         # TODO: Soporta a números por encima de 100
-        return str(num)
+        return str(number)
 
     result = ""
-    if num < 0:
+    if number < 0:
         result = "menos "
-    num = abs(num)
+    number = abs(number)
 
     # del 21 al 29 tienen una pronunciación especial
-    if 20 <= num <= 29:
-        tens = int(num-int(num) % 10)
-        ones = int(num - tens)
-        result += NUM_STRING_ES[tens]
+    if 20 <= number <= 29:
+        tens = int(number-int(number) % 10)
+        ones = int(number - tens)
+        result += _NUM_STRING_ES[tens]
         if ones > 0:
             result = result[:-1]
             # a veinte le quitamos la "e" final para construir los
@@ -180,27 +129,27 @@ def pronounce_number_es(num, places=2):
             elif ones == 6:
                 result += "iséis"
             else:
-                result += "i" + NUM_STRING_ES[ones]
-    elif num >= 30:  # de 30 en adelante
-        tens = int(num-int(num) % 10)
-        ones = int(num - tens)
-        result += NUM_STRING_ES[tens]
+                result += "i" + _NUM_STRING_ES[ones]
+    elif number >= 30:  # de 30 en adelante
+        tens = int(number-int(number) % 10)
+        ones = int(number - tens)
+        result += _NUM_STRING_ES[tens]
         if ones > 0:
-            result += " y " + NUM_STRING_ES[ones]
+            result += " y " + _NUM_STRING_ES[ones]
     else:
-        result += NUM_STRING_ES[int(num)]
+        result += _NUM_STRING_ES[int(number)]
 
     # Deal with decimal part, in spanish is commonly used the comma
     # instead the dot. Decimal part can be written both with comma
     # and dot, but when pronounced, its pronounced "coma"
-    if not num == int(num) and places > 0:
-        if abs(num) < 1.0 and (result == "menos " or not result):
+    if not number == int(number) and places > 0:
+        if abs(number) < 1.0 and (result == "menos " or not result):
             result += "cero"
         result += " coma"
-        _num_str = str(num)
+        _num_str = str(number)
         _num_str = _num_str.split(".")[1][0:places]
         for char in _num_str:
-            result += " " + NUM_STRING_ES[int(char)]
+            result += " " + _NUM_STRING_ES[int(char)]
     return result
 
 

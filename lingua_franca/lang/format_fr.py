@@ -13,64 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-""" Format functions for french (fr)
-
-"""
-
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
-
-NUM_STRING_FR = {
-    0: 'zéro',
-    1: 'un',
-    2: 'deux',
-    3: 'trois',
-    4: 'quatre',
-    5: 'cinq',
-    6: 'six',
-    7: 'sept',
-    8: 'huit',
-    9: 'neuf',
-    10: 'dix',
-    11: 'onze',
-    12: 'douze',
-    13: 'treize',
-    14: 'quatorze',
-    15: 'quinze',
-    16: 'seize',
-    20: 'vingt',
-    30: 'trente',
-    40: 'quarante',
-    50: 'cinquante',
-    60: 'soixante',
-    70: 'soixante-dix',
-    80: 'quatre-vingt',
-    90: 'quatre-vingt-dix'
-}
-
-FRACTION_STRING_FR = {
-    2: 'demi',
-    3: 'tiers',
-    4: 'quart',
-    5: 'cinquième',
-    6: 'sixième',
-    7: 'septième',
-    8: 'huitième',
-    9: 'neuvième',
-    10: 'dixième',
-    11: 'onzième',
-    12: 'douzième',
-    13: 'treizième',
-    14: 'quatorzième',
-    15: 'quinzième',
-    16: 'seizième',
-    17: 'dix-septième',
-    18: 'dix-huitième',
-    19: 'dix-neuvième',
-    20: 'vingtième'
-}
+from lingua_franca.lang.common_data_fr import _NUM_STRING_FR, \
+    _FRACTION_STRING_FR
 
 
-def nice_number_fr(number, speech, denominators=range(1, 21)):
+def nice_number_fr(number, speech=True, denominators=range(1, 21)):
     """ French helper for nice_number
 
     This function formats a float to human understandable functions. Like
@@ -110,7 +58,7 @@ def nice_number_fr(number, speech, denominators=range(1, 21)):
             strNumber = str(whole)
             strNumber = strNumber.replace(".", ",")
             return strNumber
-        den_str = FRACTION_STRING_FR[den]
+        den_str = _FRACTION_STRING_FR[den]
         # if it is not an integer
         if whole == 0:
             # if there is no whole number
@@ -139,7 +87,7 @@ def nice_number_fr(number, speech, denominators=range(1, 21)):
     return strNumber
 
 
-def pronounce_number_fr(num, places=2):
+def pronounce_number_fr(number, places=2):
     """
     Convert a number to it's spoken equivalent
 
@@ -151,54 +99,54 @@ def pronounce_number_fr(num, places=2):
     Returns:
         (str): The pronounced number
     """
-    if abs(num) >= 100:
+    if abs(number) >= 100:
         # TODO: Support for numbers over 100
-        return str(num)
+        return str(number)
 
     result = ""
-    if num < 0:
+    if number < 0:
         result = "moins "
-    num = abs(num)
+    number = abs(number)
 
-    if num > 16:
-        tens = int(num-int(num) % 10)
-        ones = int(num-tens)
+    if number > 16:
+        tens = int(number-int(number) % 10)
+        ones = int(number-tens)
         if ones != 0:
-            if tens > 10 and tens <= 60 and int(num-tens) == 1:
-                result += NUM_STRING_FR[tens] + "-et-" + NUM_STRING_FR[ones]
-            elif num == 71:
+            if tens > 10 and tens <= 60 and int(number-tens) == 1:
+                result += _NUM_STRING_FR[tens] + "-et-" + _NUM_STRING_FR[ones]
+            elif number == 71:
                 result += "soixante-et-onze"
             elif tens == 70:
-                result += NUM_STRING_FR[60] + "-"
+                result += _NUM_STRING_FR[60] + "-"
                 if ones < 7:
-                    result += NUM_STRING_FR[10 + ones]
+                    result += _NUM_STRING_FR[10 + ones]
                 else:
-                    result += NUM_STRING_FR[10] + "-" + NUM_STRING_FR[ones]
+                    result += _NUM_STRING_FR[10] + "-" + _NUM_STRING_FR[ones]
             elif tens == 90:
-                result += NUM_STRING_FR[80] + "-"
+                result += _NUM_STRING_FR[80] + "-"
                 if ones < 7:
-                    result += NUM_STRING_FR[10 + ones]
+                    result += _NUM_STRING_FR[10 + ones]
                 else:
-                    result += NUM_STRING_FR[10] + "-" + NUM_STRING_FR[ones]
+                    result += _NUM_STRING_FR[10] + "-" + _NUM_STRING_FR[ones]
             else:
-                result += NUM_STRING_FR[tens] + "-" + NUM_STRING_FR[ones]
+                result += _NUM_STRING_FR[tens] + "-" + _NUM_STRING_FR[ones]
         else:
-            if num == 80:
+            if number == 80:
                 result += "quatre-vingts"
             else:
-                result += NUM_STRING_FR[tens]
+                result += _NUM_STRING_FR[tens]
     else:
-        result += NUM_STRING_FR[int(num)]
+        result += _NUM_STRING_FR[int(number)]
 
     # Deal with decimal part
-    if not num == int(num) and places > 0:
-        if abs(num) < 1.0 and (result == "moins " or not result):
+    if not number == int(number) and places > 0:
+        if abs(number) < 1.0 and (result == "moins " or not result):
             result += "zéro"
         result += " virgule"
-        _num_str = str(num)
+        _num_str = str(number)
         _num_str = _num_str.split(".")[1][0:places]
         for char in _num_str:
-            result += " " + NUM_STRING_FR[int(char)]
+            result += " " + _NUM_STRING_FR[int(char)]
     return result
 
 

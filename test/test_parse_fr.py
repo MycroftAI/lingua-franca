@@ -16,10 +16,21 @@
 import unittest
 from datetime import datetime, time
 
+from lingua_franca import load_language, unload_language, set_default_lang
+from lingua_franca.internal import FunctionNotLocalizedError
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number
 from lingua_franca.parse import normalize
+
+
+def setUpModule():
+    load_language('fr-fr')
+    set_default_lang('fr')
+
+
+def tearDownModule():
+    unload_language('fr')
 
 
 class TestNormalize_fr(unittest.TestCase):
@@ -392,9 +403,12 @@ class TestNormalize_fr(unittest.TestCase):
         self.assertEqual(normalize("le trentième anniversaire", lang="fr-fr"),
                          "30e anniversaire")
 
+    # TODO function not localized
     def test_gender_fr(self):
-        self.assertEqual(get_gender("personne", lang="fr-fr"),
-                         None)
+        #        self.assertEqual(get_gender("personne", lang="fr-fr"),
+        #                         None)
+        self.assertRaises(FunctionNotLocalizedError,
+                          get_gender, "personne", lang="fr-fr")
 
 
 if __name__ == "__main__":

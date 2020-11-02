@@ -13,72 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-""" Parse functions for french (fr)
-
-    Todo:
-        * extractnumber_fr: ordinal numbers ("cinquième")
-        * extractnumber_fr: numbers greater than 999 999 ("cinq millions")
-        * extract_datetime_fr: "quatrième lundi de janvier"
-        * get_gender_fr
-"""
-
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
-    extract_numbers_generic
+    extract_numbers_generic, Normalizer
 from lingua_franca.lang.format_fr import pronounce_number_fr
-
-# Undefined articles ["un", "une"] cannot be supressed,
-# in French, "un cheval" means "a horse" or "one horse".
-articles_fr = ["le", "la", "du", "de", "les", "des"]
-
-numbers_fr = {
-    "zéro": 0,
-    "un": 1,
-    "une": 1,
-    "deux": 2,
-    "trois": 3,
-    "quatre": 4,
-    "cinq": 5,
-    "six": 6,
-    "sept": 7,
-    "huit": 8,
-    "neuf": 9,
-    "dix": 10,
-    "onze": 11,
-    "douze": 12,
-    "treize": 13,
-    "quatorze": 14,
-    "quinze": 15,
-    "seize": 16,
-    "vingt": 20,
-    "trente": 30,
-    "quarante": 40,
-    "cinquante": 50,
-    "soixante": 60,
-    "soixante-dix": 70,
-    "septante": 70,
-    "quatre-vingt": 80,
-    "quatre-vingts": 80,
-    "octante": 80,
-    "huitante": 80,
-    "quatre-vingt-dix": 90,
-    "nonante": 90,
-    "cent": 100,
-    "cents": 100,
-    "mille": 1000,
-    "mil": 1000,
-    "millier": 1000,
-    "milliers": 1000,
-    "million": 1000000,
-    "millions": 1000000,
-    "milliard": 1000000000,
-    "milliards": 1000000000}
-
-ordinals_fr = ("er", "re", "ère", "nd", "nde" "ième", "ème", "e")
+from lingua_franca.lang.common_data_fr import _ARTICLES_FR, _NUMBERS_FR, \
+    _ORDINAL_ENDINGS_FR
 
 
-def number_parse_fr(words, i):
+def _number_parse_fr(words, i):
     """ Parses a list of words to find a number
     Takes in a list of words (strings without whitespace) and
     extracts a number that starts at the given index.
@@ -100,11 +44,11 @@ def number_parse_fr(words, i):
         return None
 
     def number_word_fr(i, mi, ma):
-        # Check if words[i] is a number in numbers_fr between mi and ma.
+        # Check if words[i] is a number in _NUMBERS_FR between mi and ma.
         # If it is return tuple with number, index of next word.
         # If it is not return None.
         if i < len(words):
-            val = numbers_fr.get(words[i])
+            val = _NUMBERS_FR.get(words[i])
             # Numbers [1-16,20,30,40,50,60,70,80,90,100,1000]
             if val is not None:
                 if val >= mi and val <= ma:
@@ -114,7 +58,7 @@ def number_parse_fr(words, i):
             # The number may be hyphenated (numbers [17-999])
             splitWord = words[i].split('-')
             if len(splitWord) > 1:
-                val1 = numbers_fr.get(splitWord[0])
+                val1 = _NUMBERS_FR.get(splitWord[0])
                 if val1:
                     i1 = 0
                     val2 = 0
@@ -136,22 +80,22 @@ def number_parse_fr(words, i):
                     if len(splitWord) > i1:
                         # For [21,31,41,51,61,71]
                         if len(splitWord) > i1 + 1 and splitWord[i1] == "et":
-                            val2 = numbers_fr.get(splitWord[i1 + 1])
+                            val2 = _NUMBERS_FR.get(splitWord[i1 + 1])
                             if val2 is not None:
                                 i1 += 2
                         # For [77-79],[97-99] e.g. "soixante-dix-sept"
                         elif splitWord[i1] == "dix" and \
                                 len(splitWord) > i1 + 1:
-                            val2 = numbers_fr.get(splitWord[i1 + 1])
+                            val2 = _NUMBERS_FR.get(splitWord[i1 + 1])
                             if val2 is not None:
                                 val2 += 10
                                 i1 += 2
                         else:
-                            val2 = numbers_fr.get(splitWord[i1])
+                            val2 = _NUMBERS_FR.get(splitWord[i1])
                             if val2 is not None:
                                 i1 += 1
                                 if len(splitWord) > i1:
-                                    val3 = numbers_fr.get(splitWord[i1])
+                                    val3 = _NUMBERS_FR.get(splitWord[i1])
                                     if val3 is not None:
                                         i1 += 1
 
@@ -276,7 +220,7 @@ def number_parse_fr(words, i):
     return number_1_999999_fr(i)
 
 
-def getOrdinal_fr(word):
+def _get_ordinal_fr(word):
     """ Get the ordinal number
     Takes in a word (string without whitespace) and
     extracts the ordinal number.
@@ -288,7 +232,7 @@ def getOrdinal_fr(word):
         Returns None if no ordinal number was found.
     """
     if word:
-        for ordinal in ordinals_fr:
+        for ordinal in _ORDINAL_ENDINGS_FR:
             if word[0].isdigit() and ordinal in word:
                 result = word.replace(ordinal, "")
                 if result.isdigit():
@@ -297,7 +241,7 @@ def getOrdinal_fr(word):
     return None
 
 
-def number_ordinal_fr(words, i):
+def _number_ordinal_fr(words, i):
     """ Find an ordinal number in a list of words
     Takes in a list of words (strings without whitespace) and
     extracts an ordinal number that starts at the given index.
@@ -313,7 +257,7 @@ def number_ordinal_fr(words, i):
     val1 = None
     strOrd = ""
     # it's already a digit, normalize to "1er" or "5e"
-    val1 = getOrdinal_fr(words[i])
+    val1 = _get_ordinal_fr(words[i])
     if val1 is not None:
         if val1 == 1:
             strOrd = "1er"
@@ -322,7 +266,7 @@ def number_ordinal_fr(words, i):
         return strOrd, i + 1
 
     # if it's a big number the beginning should be detected as a number
-    result = number_parse_fr(words, i)
+    result = _number_parse_fr(words, i)
     if result:
         val1, i = result
     else:
@@ -356,11 +300,11 @@ def number_ordinal_fr(words, i):
                 # "neuvième", "dix-neuvième"
                 elif word.endswith("neuv"):
                     word = word[:-1] + "f"
-                result = number_parse_fr([word], 0)
+                result = _number_parse_fr([word], 0)
                 if not result:
                     # "trentième", "douzième"
                     word = word + "e"
-                    result = number_parse_fr([word], 0)
+                    result = _number_parse_fr([word], 0)
                 if result:
                     val2, i = result
                 if val2 is not None:
@@ -370,16 +314,17 @@ def number_ordinal_fr(words, i):
 
     return None
 
-# TODO: short_scale and ordinals don't do anything here.
-# The parameters are present in the function signature for API compatibility
-# reasons.
-def extractnumber_fr(text, short_scale=True, ordinals=False):
+
+def extract_number_fr(text, short_scale=True, ordinals=False):
     """Takes in a string and extracts a number.
     Args:
         text (str): the string to extract a number from
     Returns:
         (str): The number extracted or the original text.
     """
+    # TODO: short_scale and ordinals don't do anything here.
+    # The parameters are present in the function signature for API compatibility
+    # reasons.
     # normalize text, keep articles for ordinals versus fractionals
     text = normalize_fr(text, False)
     # split words by whitespace
@@ -397,7 +342,7 @@ def extractnumber_fr(text, short_scale=True, ordinals=False):
         if count > 0:
             wordPrev = aWords[count - 1]
 
-        if word in articles_fr:
+        if word in _ARTICLES_FR:
             count += 1
             continue
         if word in ["et", "plus", "+"]:
@@ -412,17 +357,17 @@ def extractnumber_fr(text, short_scale=True, ordinals=False):
         elif is_numeric(word):
             val = float(word)
             count += 1
-        elif wordPrev in articles_fr and getOrdinal_fr(word):
-            val = getOrdinal_fr(word)
+        elif wordPrev in _ARTICLES_FR and _get_ordinal_fr(word):
+            val = _get_ordinal_fr(word)
             count += 1
         # is current word the denominator of a fraction?
-        elif isFractional_fr(word):
-            val = isFractional_fr(word)
+        elif is_fractional_fr(word):
+            val = is_fractional_fr(word)
             count += 1
 
         # is current word the numerator of a fraction?
         if val and wordNext:
-            valNext = isFractional_fr(wordNext)
+            valNext = is_fractional_fr(wordNext)
             if valNext:
                 val = float(val) * valNext
                 count += 1
@@ -470,7 +415,7 @@ def extractnumber_fr(text, short_scale=True, ordinals=False):
     return result or False
 
 
-def extract_datetime_fr(string, currentDate, default_time):
+def extract_datetime_fr(text, anchorDate=None, default_time=None):
     def clean_string(s):
         """
             cleans the input string of unneeded punctuation and capitalization
@@ -488,14 +433,14 @@ def extract_datetime_fr(string, currentDate, default_time):
 
     def date_found():
         return found or \
-               (
-                       datestr != "" or
-                       yearOffset != 0 or monthOffset != 0 or dayOffset or
-                       (isTime and (hrAbs or minAbs)) or
-                       hrOffset != 0 or minOffset != 0 or secOffset != 0
-               )
+            (
+                datestr != "" or
+                yearOffset != 0 or monthOffset != 0 or dayOffset or
+                (isTime and (hrAbs or minAbs)) or
+                hrOffset != 0 or minOffset != 0 or secOffset != 0
+            )
 
-    if string == "" or not currentDate:
+    if text == "" or not anchorDate:
         return None
 
     found = False
@@ -503,7 +448,7 @@ def extract_datetime_fr(string, currentDate, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    dateNow = currentDate
+    dateNow = anchorDate
     today = dateNow.strftime("%w")
     currentYear = dateNow.strftime("%Y")
     fromFlag = False
@@ -527,7 +472,7 @@ def extract_datetime_fr(string, currentDate, default_time):
                  'july', 'august', 'september', 'october', 'november',
                  'december']
 
-    words = clean_string(string)
+    words = clean_string(text)
 
     for idx, word in enumerate(words):
         if word == "":
@@ -564,8 +509,8 @@ def extract_datetime_fr(string, currentDate, default_time):
                 start -= 1
                 used = 2
             # "3e jour"
-            elif getOrdinal_fr(wordPrev) is not None:
-                dayOffset += getOrdinal_fr(wordPrev) - 1
+            elif _get_ordinal_fr(wordPrev) is not None:
+                dayOffset += _get_ordinal_fr(wordPrev) - 1
                 start -= 1
                 used = 2
         elif word in ["semaine", "semaines"] and not fromFlag:
@@ -755,7 +700,7 @@ def extract_datetime_fr(string, currentDate, default_time):
                 start -= 1
                 used += 1
         # parse 5:00 du matin, 12:00, etc
-        elif word[0].isdigit() and getOrdinal_fr(word) is None:
+        elif word[0].isdigit() and _get_ordinal_fr(word) is None:
             isTime = True
             if ":" in word or "h" in word or "min" in word:
                 # parse hours on short format
@@ -799,8 +744,8 @@ def extract_datetime_fr(string, currentDate, default_time):
                         word.isdigit() and
                         wordNext in ["heures", "heure"] and word != "0" and
                         (
-                                int(word) < 100 or
-                                int(word) > 2400
+                            int(word) < 100 or
+                            int(word) > 2400
                         )):
                     # "dans 3 heures", "à 3 heures"
                     if wordPrev in words_in:
@@ -995,11 +940,12 @@ def extract_datetime_fr(string, currentDate, default_time):
     return [extractedDate, resultStr]
 
 
-def isFractional_fr(input_str):
+def is_fractional_fr(input_str, short_scale=True):
     """
     This function takes the given text and checks if it is a fraction.
     Args:
         input_str (str): the string to check if fractional
+        short_scale (bool): use short scale if True, long scale if False
     Returns:
         (bool) or (float): False if not a fraction, otherwise the fraction
     """
@@ -1015,8 +961,8 @@ def isFractional_fr(input_str):
 
     if input_str in aFrac:
         return 1.0 / (aFrac.index(input_str) + 1)
-    if getOrdinal_fr(input_str):
-        return 1.0 / getOrdinal_fr(input_str)
+    if _get_ordinal_fr(input_str):
+        return 1.0 / _get_ordinal_fr(input_str)
     if input_str == "trentième":
         return 1.0 / 30
     if input_str == "centième":
@@ -1027,7 +973,7 @@ def isFractional_fr(input_str):
     return False
 
 
-def normalize_fr(text, remove_articles):
+def normalize_fr(text, remove_articles=True):
     """ French string normalization """
     text = text.lower()
     words = text.split()  # this also removed extra spaces
@@ -1035,7 +981,7 @@ def normalize_fr(text, remove_articles):
     i = 0
     while i < len(words):
         # remove articles
-        if remove_articles and words[i] in articles_fr:
+        if remove_articles and words[i] in _ARTICLES_FR:
             i += 1
             continue
         if remove_articles and words[i][:2] in ["l'", "d'"]:
@@ -1045,14 +991,14 @@ def normalize_fr(text, remove_articles):
             i += 1
             continue
         # Normalize ordinal numbers
-        if i > 0 and words[i - 1] in articles_fr:
-            result = number_ordinal_fr(words, i)
+        if i > 0 and words[i - 1] in _ARTICLES_FR:
+            result = _number_ordinal_fr(words, i)
             if result is not None:
                 val, i = result
                 normalized += " " + str(val)
                 continue
         # Convert numbers into digits
-        result = number_parse_fr(words, i)
+        result = _number_parse_fr(words, i)
         if result is not None:
             val, i = result
             normalized += " " + str(val)
@@ -1078,5 +1024,9 @@ def extract_numbers_fr(text, short_scale=True, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
-    return extract_numbers_generic(text, pronounce_number_fr, extractnumber_fr,
+    return extract_numbers_generic(text, pronounce_number_fr, extract_number_fr,
                                    short_scale=short_scale, ordinals=ordinals)
+
+
+class FrenchNormalizer(Normalizer):
+    """ TODO implement language specific normalizer"""

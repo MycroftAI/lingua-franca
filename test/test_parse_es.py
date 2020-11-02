@@ -16,9 +16,19 @@
 from datetime import datetime
 import unittest
 
+from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.parse import (normalize, extract_numbers, extract_number,
-                                 extract_datetime, extract_datetime_es,
-                                 isFractional_es)
+                                 extract_datetime)
+from lingua_franca.lang.parse_es import extract_datetime_es, is_fractional_es
+
+
+def setUpModule():
+    load_language('es-es')
+    set_default_lang('es')
+
+
+def tearDownModule():
+    unload_language('es')
 
 
 class TestNormalize(unittest.TestCase):
@@ -101,12 +111,12 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("dos punto cero dos", lang='es'), 2.02)
 
     def test_isFraction_es(self):
-        self.assertEqual(isFractional_es("vigésimo"), 1.0 / 20)
-        self.assertEqual(isFractional_es("vigésima"), 1.0 / 20)
-        self.assertEqual(isFractional_es("trigésimo"), 1.0 / 30)
-        self.assertEqual(isFractional_es("centésima"), 1.0 / 100)
-        self.assertEqual(isFractional_es("centésimo"), 1.0 / 100)
-        self.assertEqual(isFractional_es("milésima"), 1.0 / 1000)
+        self.assertEqual(is_fractional_es("vigésimo"), 1.0 / 20)
+        self.assertEqual(is_fractional_es("vigésima"), 1.0 / 20)
+        self.assertEqual(is_fractional_es("trigésimo"), 1.0 / 30)
+        self.assertEqual(is_fractional_es("centésima"), 1.0 / 100)
+        self.assertEqual(is_fractional_es("centésimo"), 1.0 / 100)
+        self.assertEqual(is_fractional_es("milésima"), 1.0 / 1000)
 
     @unittest.skip("unwritten logic")
     def test_comma_fraction_logic_es(self):

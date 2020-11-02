@@ -23,20 +23,22 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-from lingua_franca.lang.common_data_pt import _NUMBERS_PT, _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT, \
+from lingua_franca.lang.common_data_pt import _NUMBERS_PT, \
+    _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT, \
     _MALE_DETERMINANTS_PT, _MALE_ENDINGS_PT, _GENDERS_PT
-from lingua_franca import resolve_resource_file
+from lingua_franca.internal import resolve_resource_file
 from lingua_franca.lang.parse_common import Normalizer
 import json
 import re
 
 
-def isFractional_pt(input_str):
+def is_fractional_pt(input_str, short_scale=True):
     """
     This function takes the given text and checks if it is a fraction.
 
     Args:
-        text (str): the string to check if fractional
+        input_str (str): the string to check if fractional
+        short_scale (bool): use short scale if True, long scale if False
     Returns:
         (bool) or (float): False if not a fraction, otherwise the fraction
 
@@ -63,12 +65,8 @@ def isFractional_pt(input_str):
 
     return False
 
-# TODO: short_scale and ordinals don't do anything here.
-# The parameters are present in the function signature for API compatibility
-# reasons.
 
-
-def extractnumber_pt(text, short_scale=True, ordinals=False):
+def extract_number_pt(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -78,6 +76,9 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
         (int) or (float): The value of extracted number
 
     """
+    # TODO: short_scale and ordinals don't do anything here.
+    # The parameters are present in the function signature for API compatibility
+    # reasons.
     text = text.lower()
     aWords = text.split()
     count = 0
@@ -100,10 +101,10 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
             val = int(word)
         elif is_numeric(word):
             val = float(word)
-        elif isFractional_pt(word):
+        elif is_fractional_pt(word):
             if not result:
                 result = 1
-            result = result * isFractional_pt(word)
+            result = result * is_fractional_pt(word)
             count += 1
             continue
 
@@ -139,7 +140,7 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
             for word in newWords:
                 newText += word + " "
 
-            afterAndVal = extractnumber_pt(newText[:-1])
+            afterAndVal = extract_number_pt(newText[:-1])
             if afterAndVal:
                 if result < afterAndVal or result < 20:
                     while afterAndVal > 1:
@@ -159,7 +160,7 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
                 newText = ""
                 for word in newWords:
                     newText += word + " "
-                afterAndVal = extractnumber_pt(newText[:-1])
+                afterAndVal = extract_number_pt(newText[:-1])
                 if afterAndVal:
                     if result is None:
                         result = 0
@@ -178,7 +179,7 @@ def extractnumber_pt(text, short_scale=True, ordinals=False):
                     zeros += 1
                 else:
                     break
-            afterDotVal = str(extractnumber_pt(newText[:-1]))
+            afterDotVal = str(extract_number_pt(newText[:-1]))
             afterDotVal = zeros * "0" + afterDotVal
             result = float(str(result) + "." + afterDotVal)
             break
@@ -217,12 +218,12 @@ class PortugueseNormalizer(Normalizer):
         return tokens
 
 
-def normalize_pt(text, remove_articles):
+def normalize_pt(text, remove_articles=True):
     """ PT string normalization """
     return PortugueseNormalizer().normalize(text, remove_articles)
 
 
-def extract_datetime_pt(input_str, currentDate, default_time):
+def extract_datetime_pt(text, anchorDate=None, default_time=None):
     def clean_string(s):
         # cleans the input string of unneeded punctuation and capitalization
         # among other things
@@ -285,7 +286,7 @@ def extract_datetime_pt(input_str, currentDate, default_time):
                 minAbs or secOffset != 0
             )
 
-    if input_str == "" or not currentDate:
+    if text == "" or not anchorDate:
         return None
 
     found = False
@@ -293,7 +294,7 @@ def extract_datetime_pt(input_str, currentDate, default_time):
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    dateNow = currentDate
+    dateNow = anchorDate
     today = dateNow.strftime("%w")
     currentYear = dateNow.strftime("%Y")
     fromFlag = False
@@ -301,7 +302,7 @@ def extract_datetime_pt(input_str, currentDate, default_time):
     hasYear = False
     timeQualifier = ""
 
-    words = clean_string(input_str).split(" ")
+    words = clean_string(text).split(" ")
     timeQualifiersList = ['manha', 'tarde', 'noite']
     time_indicators = ["em", "as", "nas", "pelas", "volta", "depois", "estas",
                        "no", "dia", "hora"]
@@ -1002,11 +1003,11 @@ def extract_datetime_pt(input_str, currentDate, default_time):
 
     resultStr = " ".join(words)
     resultStr = ' '.join(resultStr.split())
-    resultStr = pt_pruning(resultStr)
+    resultStr = _pt_pruning(resultStr)
     return [extractedDate, resultStr]
 
 
-def pt_pruning(text, symbols=True, accents=True, agressive=True):
+def _pt_pruning(text, symbols=True, accents=True, agressive=True):
     # agressive pt word pruning
     words = ["a", "o", "os", "as", "de", "dos", "das",
              "lhe", "lhes", "me", "e", "no", "nas", "na", "nos", "em", "para",
@@ -1038,10 +1039,23 @@ def pt_pruning(text, symbols=True, accents=True, agressive=True):
     return text
 
 
-def get_gender_pt(word, text=""):
+def get_gender_pt(word, context=""):
+    """ Guess the gender of a word
+
+    Some languages assign genders to specific words.  This method will attempt
+    to determine the gender, optionally using the provided context sentence.
+
+    Args:
+        word (str): The word to look up
+        context (str, optional): String containing word, for context
+
+    Returns:
+        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
+             or None if unknown/or unused in the given language.
+    """
     # parse gender taking context into account
     word = word.lower()
-    words = text.lower().split(" ")
+    words = context.lower().split(" ")
     for idx, w in enumerate(words):
         if w == word and idx != 0:
             # in portuguese usually the previous word (a determinant)

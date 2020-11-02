@@ -16,7 +16,8 @@
 import unittest
 from datetime import datetime, timedelta
 
-from lingua_franca.lang import get_active_lang, set_active_lang
+from lingua_franca import get_default_lang, set_default_lang, \
+    load_language, unload_language
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_duration
 from lingua_franca.parse import extract_number, extract_numbers
@@ -24,6 +25,16 @@ from lingua_franca.parse import fuzzy_match
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import match_one
 from lingua_franca.parse import normalize
+
+
+def setUpModule():
+    load_language("cs-cz")
+    set_default_lang("cs")
+
+
+def tearDownModule():
+    unload_language("cs")
+
 
 class TestFuzzyMatch(unittest.TestCase):
     def test_matches(self):
@@ -48,12 +59,6 @@ class TestFuzzyMatch(unittest.TestCase):
 
 
 class TestNormalize(unittest.TestCase):
-    def setUp(self):
-        self.old_lang = get_active_lang()
-        set_active_lang("cs-cz")
-
-    def tearDown(self):
-        set_active_lang(self.old_lang)
 
     def test_extract_number(self):
         self.assertEqual(extract_number("tohle je první test",
@@ -65,7 +70,8 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("tohle je třetí test",
                                         ordinals=True), 3.0)
         self.assertEqual(extract_number("ten čtvrtý", ordinals=True), 4.0)
-        self.assertEqual(extract_number("ten třicátý šestý", ordinals=True), 36.0)
+        self.assertEqual(extract_number(
+            "ten třicátý šestý", ordinals=True), 36.0)
         self.assertEqual(extract_number("tohle je test číslo 4"), 4)
         self.assertEqual(extract_number("jedna třetina šálku"), 1.0 / 3.0)
         self.assertEqual(extract_number("tři šálky"), 3)
@@ -123,13 +129,13 @@ class TestNormalize(unittest.TestCase):
                                         ordinals=True), 1e09)
         print("tohle udělat později")
         #self.assertEqual(extract_number("tohle je billiontý test"), 1e-9)
-        
+
         self.assertEqual(extract_number("tohle je biliontý test",
                                         ordinals=True,
                                         short_scale=False), 1e12)
         print("tohle udělat později")
-        #self.assertEqual(extract_number("tohle je biliontý test",
-                                        #short_scale=False), 1e-12)
+        # self.assertEqual(extract_number("tohle je biliontý test",
+        # short_scale=False), 1e-12)
 
         # Verify non-power multiples of ten no longer discard
         # adjacent multipliers
@@ -239,29 +245,29 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 13:04:01", "")
         testExtract("za minutu",
                     "2017-06-27 13:05:00", "")
-        #testExtract("ve dvou minutách",
+        # testExtract("ve dvou minutách",
         #            "2017-06-27 13:06:00", "")
-        #testExtract("in a couple of minutes",
+        # testExtract("in a couple of minutes",
         #            "2017-06-27 13:06:00", "")
-        #testExtract("ve dvou hodinách",
+        # testExtract("ve dvou hodinách",
         #            "2017-06-27 15:04:00", "")
-        #testExtract("in a couple of hours",
+        # testExtract("in a couple of hours",
         #            "2017-06-27 15:04:00", "")
-        #testExtract("v dvoje týden",
+        # testExtract("v dvoje týden",
         #            "2017-07-11 00:00:00", "")
-        #testExtract("in a couple of weeks",
+        # testExtract("in a couple of weeks",
         #            "2017-07-11 00:00:00", "")
-        #testExtract("v dvoje měsíc",
+        # testExtract("v dvoje měsíc",
         #            "2017-08-27 00:00:00", "")
-        #testExtract("v dvoje rok",
+        # testExtract("v dvoje rok",
         #            "2019-06-27 00:00:00", "")
-        #testExtract("in a couple of months",
+        # testExtract("in a couple of months",
         #            "2017-08-27 00:00:00", "")
-        #testExtract("in a couple of years",
+        # testExtract("in a couple of years",
         #            "2019-06-27 00:00:00", "")
         testExtract("v desetiletí",
                     "2027-06-27 00:00:00", "")
-        #testExtract("in a couple of decades",
+        # testExtract("in a couple of decades",
         #            "2037-06-27 00:00:00", "")
         testExtract("další desetiletí",
                     "2027-06-27 00:00:00", "")
@@ -275,13 +281,13 @@ class TestNormalize(unittest.TestCase):
                     "2067-06-27 00:00:00", "")
         testExtract("v dvoje století",
                     "2217-06-27 00:00:00", "")
-        #testExtract("in a couple of centuries",
+        # testExtract("in a couple of centuries",
         #            "2217-06-27 00:00:00", "")
         testExtract("v 2 století",
                     "2217-06-27 00:00:00", "")
         testExtract("v dvoje tisíciletí",
                     "4017-06-27 00:00:00", "")
-        #testExtract("in a couple of millenniums",
+        # testExtract("in a couple of millenniums",
         #            "4017-06-27 00:00:00", "")
         testExtract("v hodina",
                     "2017-06-27 14:04:00", "")
@@ -316,7 +322,7 @@ class TestNormalize(unittest.TestCase):
         testExtract("připomeň mi abych zavolal mámě v 8 týden a 2 dny",
                     "2017-08-24 00:00:00", "připomeň mi abych zavolal mámě")
         testExtract("připomeň mi abych zavolal mámě v srpen 3",
-                    "2017-08-03 00:00:00", "připomeň mi abych zavolal mámě")###### přidat i třetího slovně
+                    "2017-08-03 00:00:00", "připomeň mi abych zavolal mámě")  # přidat i třetího slovně
         testExtract("připomeň mi zítra abych zavolal mámě v 7am",
                     "2017-06-28 07:00:00", "připomeň mi abych zavolal mámě")
         testExtract("připomeň mi zítra abych zavolal mámě v 10pm",
@@ -523,7 +529,7 @@ class TestNormalize(unittest.TestCase):
         # Below two tests, ensure that time is picked
         # even if no am/pm is specified
         # in case of weekdays/tonight
-       
+
         testExtract("nastav budík na 9 o víkendech",
                     "2017-06-27 21:00:00", "nastav budík víkendech")
         testExtract("na 8 dnes večer",
@@ -542,7 +548,7 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 23:30:00", "připomeň mi hru")
         testExtract("nastav budík v 7:30 o výkendech",
                     "2017-06-27 19:30:00", "nastav budík o výkendech")
-        
+
         #  "# days <from X/after X>"
         testExtract("mé narozeniny jsou 2 dny od dnes",
                     "2017-06-29 00:00:00", "mé narozeniny jsou")
@@ -606,7 +612,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(
             extract_datetime('nakrmit ryby v 10 hodin', večer)[0],
             datetime(2017, 6, 27, 22, 0, 0))
-    
+
     """
     In Czech is May and may have different format
     def test_extract_date_with_may_I_cs(self):
@@ -645,8 +651,8 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 11:01:02", "sejdeme se")
         testExtract("sejdeme se za 2 hodiny",
                     "2017-06-27 12:01:02", "sejdeme se")
-        print("TODO") # Need better normaliting procedure for czech inflexion
-        #testExtract("sejdeme se za 2hodiny",
+        print("TODO")  # Need better normaliting procedure for czech inflexion
+        # testExtract("sejdeme se za 2hodiny",
         #            "2017-06-27 12:01:02", "sejdeme se")
         testExtract("sejdeme se za 1 minutu",
                     "2017-06-27 10:02:02", "sejdeme se")
@@ -731,6 +737,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_numbers("tohle je sedm osm devět a"
                                          " půl test"),
                          [7.0, 8.0, 9.5])
+
 
 if __name__ == "__main__":
     unittest.main()

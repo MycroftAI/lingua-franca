@@ -262,7 +262,7 @@ _LONG_ORDINAL_CS = {
 }
 _LONG_ORDINAL_CS.update(_ORDINAL_BASE_CS)
 
-#Months
+# Months
 
 _MONTHS_CONVERSION = {
     0: "january",
@@ -280,10 +280,10 @@ _MONTHS_CONVERSION = {
 }
 
 _MONTHS_CZECH = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen',
-              'červenec', 'srpen', 'září', 'říjen', 'listopad',
-              'prosinec']
+                 'červenec', 'srpen', 'září', 'říjen', 'listopad',
+                 'prosinec']
 
-#Time
+# Time
 _TIME_UNITS_CONVERSION = {
     'mikrosekund': 'microseconds',
     'milisekund': 'milliseconds',
@@ -298,7 +298,7 @@ _TIME_UNITS_CONVERSION = {
     'dny': 'days',  # 2-4 days
     'dnů': 'days',  # 5+ days
     'dní': 'days',  # 5+ days - different inflection
-    'dne': 'days',  # a half day 
+    'dne': 'days',  # a half day
     'týden': 'weeks',
     'týdny': 'weeks',
     'týdnů': 'weeks'

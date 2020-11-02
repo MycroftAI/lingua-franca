@@ -3,8 +3,8 @@
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
 #
+# You may obtain a copy of the License at
 #    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
@@ -13,37 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from difflib import SequenceMatcher
+from warnings import warn
 from lingua_franca.time import now_local
-from lingua_franca.lang import get_primary_lang_code
+from lingua_franca.internal import populate_localized_function_dict, \
+    get_active_langs, get_full_lang_code, get_primary_lang_code, \
+    get_default_lang, localized_function, _raise_unsupported_language
 
-from lingua_franca.lang.parse_en import *
-from lingua_franca.lang.parse_pt import *
-from lingua_franca.lang.parse_es import *
-from lingua_franca.lang.parse_it import *
-from lingua_franca.lang.parse_sv import *
+_REGISTERED_FUNCTIONS = ("extract_numbers",
+                         "extract_number",
+                         "extract_duration",
+                         "extract_datetime",
+                         "normalize",
+                         "get_gender",
+                         "is_fractional",
+                         "is_ordinal")
 
-from lingua_franca.lang.parse_de import extractnumber_de
-from lingua_franca.lang.parse_de import extract_numbers_de
-from lingua_franca.lang.parse_de import extract_datetime_de
-from lingua_franca.lang.parse_de import extract_duration_de
-from lingua_franca.lang.parse_de import normalize_de
-from lingua_franca.lang.parse_fr import extractnumber_fr
-from lingua_franca.lang.parse_fr import extract_numbers_fr
-from lingua_franca.lang.parse_fr import extract_datetime_fr
-from lingua_franca.lang.parse_fr import normalize_fr
-from lingua_franca.lang.parse_da import extractnumber_da
-from lingua_franca.lang.parse_da import extract_numbers_da
-from lingua_franca.lang.parse_da import extract_datetime_da
-from lingua_franca.lang.parse_da import normalize_da
-from lingua_franca.lang.parse_nl import normalize_nl, extractnumber_nl, extract_datetime_nl
-from lingua_franca.lang.parse_cs import extractnumber_cs
-from lingua_franca.lang.parse_cs import extract_datetime_cs
-from lingua_franca.lang.parse_cs import extract_numbers_cs
-from lingua_franca.lang.parse_cs import normalize_cs
-from lingua_franca.lang.parse_cs import extract_duration_cs
-
-from lingua_franca import _log_unsupported_language
+populate_localized_function_dict("parse", langs=get_active_langs())
 
 
 def fuzzy_match(x, against):
@@ -84,6 +71,7 @@ def match_one(query, choices):
         return best
 
 
+@localized_function()
 def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
     """
         Takes in a string and extracts a list of numbers.
@@ -99,27 +87,9 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
     Returns:
         list: list of extracted numbers as floats, or empty list if none found
     """
-    lang_code = get_primary_lang_code(lang)
-    if lang_code == "en":
-        return extract_numbers_en(text, short_scale, ordinals)
-    elif lang_code == "de":
-        return extract_numbers_de(text, short_scale, ordinals)
-    elif lang_code == "fr":
-        return extract_numbers_fr(text, short_scale, ordinals)
-    elif lang_code == "it":
-        return extract_numbers_it(text, short_scale, ordinals)
-    elif lang_code == "da":
-        return extract_numbers_da(text, short_scale, ordinals)
-    elif lang_code == "es":
-        return extract_numbers_es(text, short_scale, ordinals)
-    elif lang_code == "cs":
-        return extract_numbers_cs(text, short_scale, ordinals)
-    # TODO: extractnumbers_xx for other languages
-    _log_unsupported_language(lang_code,
-                              ['en', 'it', 'fr', 'de', 'da','cs'])
-    return []
 
 
+@localized_function()
 def extract_number(text, short_scale=True, ordinals=False, lang=None):
     """Takes in a string and extracts a number.
 
@@ -135,40 +105,9 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
         (int, float or False): The number extracted or False if the input
                                text contains no numbers
     """
-    lang_code = get_primary_lang_code(lang)
-    if lang_code == "en":
-        return extractnumber_en(text, short_scale=short_scale,
-                                ordinals=ordinals)
-    elif lang_code == "es":
-        return extractnumber_es(text)
-    elif lang_code == "pt":
-        return extractnumber_pt(text)
-    elif lang_code == "it":
-        return extractnumber_it(text, short_scale=short_scale,
-                                ordinals=ordinals)
-    elif lang_code == "fr":
-        return extractnumber_fr(text)
-    elif lang_code == "sv":
-        return extractnumber_sv(text)
-    elif lang_code == "de":
-        return extractnumber_de(text)
-    elif lang_code == "da":
-        return extractnumber_da(text)
-    elif lang_code == "es":
-        return extract_numbers_es(text, short_scale, ordinals)
-    elif lang_code == "nl":
-        return extractnumber_nl(text, short_scale=short_scale,
-                                ordinals=ordinals)
-    elif lang_code == "cs":
-        return extractnumber_cs(text, short_scale=short_scale,
-                                ordinals=ordinals)
-    # TODO: extractnumber_xx for other languages
-    _log_unsupported_language(lang_code,
-                              ['en', 'es', 'pt', 'it', 'fr',
-                               'sv', 'de', 'da', 'nl','cs'])
-    return text
 
 
+@localized_function()
 def extract_duration(text, lang=None):
     """ Convert an english phrase into a number of seconds
 
@@ -195,20 +134,9 @@ def extract_duration(text, lang=None):
                     be None if no duration is found. The text returned
                     will have whitespace stripped from the ends.
     """
-    lang_code = get_primary_lang_code(lang)
-
-    if lang_code == "en":
-        return extract_duration_en(text)
-    if lang_code == "cs":
-        return extract_duration_cs(text)
-    if lang_code == "de":
-        return extract_duration_de(text)
-
-    # TODO: extract_duration for other languages
-    _log_unsupported_language(lang_code, ['en','cs', 'de'])
-    return None
 
 
+@localized_function()
 def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
     """
     Extracts date and time information from a sentence.  Parses many of the
@@ -261,38 +189,8 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
         None
     """
 
-    lang_code = get_primary_lang_code(lang)
 
-    if not anchorDate:
-        anchorDate = now_local()
-
-    if lang_code == "en":
-        return extract_datetime_en(text, anchorDate, default_time)
-    elif lang_code == "es":
-        return extract_datetime_es(text, anchorDate, default_time)
-    elif lang_code == "pt":
-        return extract_datetime_pt(text, anchorDate, default_time)
-    elif lang_code == "it":
-        return extract_datetime_it(text, anchorDate, default_time)
-    elif lang_code == "fr":
-        return extract_datetime_fr(text, anchorDate, default_time)
-    elif lang_code == "sv":
-        return extract_datetime_sv(text, anchorDate, default_time)
-    elif lang_code == "de":
-        return extract_datetime_de(text, anchorDate, default_time)
-    elif lang_code == "da":
-        return extract_datetime_da(text, anchorDate, default_time)
-    elif lang_code == "nl":
-        return extract_datetime_nl(text, anchorDate, default_time)
-    elif lang_code == "cs":
-        return extract_datetime_cs(text, anchorDate, default_time)
-
-    # TODO: extract_datetime for other languages
-    _log_unsupported_language(lang_code,
-                              ['en', 'es', 'pt', 'it', 'fr', 'sv', 'de', 'da','cs'])
-    return text
-
-
+@localized_function()
 def normalize(text, lang=None, remove_articles=True):
     """Prepare a string for parsing
 
@@ -309,35 +207,8 @@ def normalize(text, lang=None, remove_articles=True):
         (str): The normalized string.
     """
 
-    lang_code = get_primary_lang_code(lang)
 
-    if lang_code == "en":
-        return normalize_en(text, remove_articles)
-    elif lang_code == "es":
-        return normalize_es(text, remove_articles)
-    elif lang_code == "pt":
-        return normalize_pt(text, remove_articles)
-    elif lang_code == "it":
-        return normalize_it(text, remove_articles)
-    elif lang_code == "fr":
-        return normalize_fr(text, remove_articles)
-    elif lang_code == "sv":
-        return normalize_sv(text, remove_articles)
-    elif lang_code == "de":
-        return normalize_de(text, remove_articles)
-    elif lang_code == "da":
-        return normalize_da(text, remove_articles)
-    elif lang_code == "nl":
-        return normalize_nl(text, remove_articles)
-    elif lang_code == "cs":
-        return normalize_cs(text, remove_articles)
-    # TODO: Normalization for other languages
-    _log_unsupported_language(lang_code,
-                              ['en', 'es', 'pt', 'it', 'fr',
-                               'sv', 'de', 'da', 'nl','cs'])
-    return text
-
-
+@localized_function()
 def get_gender(word, context="", lang=None):
     """ Guess the gender of a word
 
@@ -354,14 +225,34 @@ def get_gender(word, context="", lang=None):
              or None if unknown/or unused in the given language.
     """
 
-    lang_code = get_primary_lang_code(lang)
 
-    if lang_code in ["pt", "es"]:
-        # spanish follows same rules
-        return get_gender_pt(word, context)
-    elif lang_code == "it":
-        return get_gender_it(word, context)
-    # TODO: get_gender_xx for other languages
-    _log_unsupported_language(lang_code,
-                              ['pt', 'it', 'es'])
-    return None
+@localized_function()
+def is_fractional(input_str, short_scale=True, lang=None):
+    """
+    This function takes the given text and checks if it is a fraction.
+    Used by most of the number exractors.
+
+    Will return False on phrases that *contain* a fraction. Only detects
+    exact matches. To pull a fraction from a string, see extract_number()
+
+    Args:
+        input_str (str): the string to check if fractional
+        short_scale (bool): use short scale if True, long scale if False
+        lang (str): the BCP-47 code for the language to use, None uses default
+    Returns:
+        (bool) or (float): False if not a fraction, otherwise the fraction
+    """
+
+
+@localized_function()
+def is_ordinal(input_str, lang=None):
+    """
+    This function takes the given text and checks if it is an ordinal number.
+
+    Args:
+        input_str (str): the string to check if ordinal
+        lang (str): the BCP-47 code for the language to use, None uses default
+    Returns:
+        (bool) or (float): False if not an ordinal, otherwise the number
+        corresponding to the ordinal
+    """

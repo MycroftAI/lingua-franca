@@ -16,13 +16,22 @@
 import unittest
 import datetime
 
-from lingua_franca.lang import get_active_lang, set_active_lang
+from lingua_franca import get_default_lang, set_default_lang, load_language, \
+    unload_language
 from lingua_franca.format import nice_number
 from lingua_franca.format import nice_time
 from lingua_franca.format import pronounce_number
 from lingua_franca.lang.format_de import nice_response_de
 from lingua_franca.lang.format_de import pronounce_ordinal_de
 from lingua_franca.format import join_list
+
+
+def setUpModule():
+    load_language('de-de')
+
+
+def tearDownModule():
+    unload_language('de-de')
 
 
 # fractions are not capitalized for now
@@ -73,11 +82,11 @@ class TestNiceResponse(unittest.TestCase):
 
 class TestNiceNumberFormat(unittest.TestCase):
     def setUp(self):
-        self.old_lang = get_active_lang()
-        set_active_lang("de-de")
+        self.old_lang = get_default_lang()
+        set_default_lang("de-de")
 
     def tearDown(self):
-        set_active_lang(self.old_lang)
+        set_default_lang(self.old_lang)
 
     def test_convert_float_to_nice_number(self):
         for number, number_str in NUMBERS_FIXTURE_DE.items():
@@ -128,11 +137,11 @@ class TestPronounceOrdinal(unittest.TestCase):
 # def pronounce_number(number, lang="de-de", places=2):
 class TestPronounceNumber(unittest.TestCase):
     def setUp(self):
-        self.old_lang = get_active_lang()
-        set_active_lang("de-de")
+        self.old_lang = get_default_lang()
+        set_default_lang("de-de")
 
     def tearDown(self):
-        set_active_lang(self.old_lang)
+        set_default_lang(self.old_lang)
 
     def test_convert_int_de(self):
         self.assertEqual(pronounce_number(123456789123456789),
@@ -202,11 +211,11 @@ class TestPronounceNumber(unittest.TestCase):
 #              use_ampm=False):
 class TestNiceDateFormat_de(unittest.TestCase):
     def setUp(self):
-        self.old_lang = get_active_lang()
-        set_active_lang("de-de")
+        self.old_lang = get_default_lang()
+        set_default_lang("de-de")
 
     def tearDown(self):
-        set_active_lang(self.old_lang)
+        set_default_lang(self.old_lang)
 
     def test_convert_times_de(self):
         dt = datetime.datetime(2017, 1, 31,
@@ -387,11 +396,11 @@ class TestNiceDateFormat_de(unittest.TestCase):
 
 class TestJoinList_de(unittest.TestCase):
     def setUp(self):
-        self.old_lang = get_active_lang()
-        set_active_lang("de-de")
+        self.old_lang = get_default_lang()
+        set_default_lang("de-de")
 
     def tearDown(self):
-        set_active_lang(self.old_lang)
+        set_default_lang(self.old_lang)
 
     def test_join_list_de(self):
         self.assertEqual(join_list(['Hallo', 'Auf wieder Sehen'], 'and'),
