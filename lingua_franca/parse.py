@@ -172,19 +172,19 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
 
         >>> extract_datetime(
         ... "What is the weather like the day after tomorrow?",
-        ... datetime(2017, 06, 30, 00, 00)
+        ... datetime(2017, 6, 30, 00, 00)
         ... )
         [datetime.datetime(2017, 7, 2, 0, 0), 'what is weather like']
 
         >>> extract_datetime(
         ... "Set up an appointment 2 weeks from Sunday at 5 pm",
-        ... datetime(2016, 02, 19, 00, 00)
+        ... datetime(2016, 2, 19, 00, 00)
         ... )
         [datetime.datetime(2016, 3, 6, 17, 0), 'set up appointment']
 
         >>> extract_datetime(
         ... "Set up an appointment",
-        ... datetime(2016, 02, 19, 00, 00)
+        ... datetime(2016, 2, 19, 00, 00)
         ... )
         None
     """
