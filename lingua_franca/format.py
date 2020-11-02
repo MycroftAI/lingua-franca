@@ -28,13 +28,15 @@ from lingua_franca.internal import localized_function, \
     populate_localized_function_dict, get_active_langs, \
     get_full_lang_code, get_default_lang, get_default_loc, \
     is_supported_full_lang, _raise_unsupported_language, \
-    UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning
+    UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning, \
+    FunctionNotLocalizedError
 
 
 _REGISTERED_FUNCTIONS = ("nice_number",
                          "nice_time",
                          "pronounce_number",
-                         "nice_response")
+                         "nice_response",
+                         "nice_duration")
 
 populate_localized_function_dict("format", langs=get_active_langs())
 
@@ -367,6 +369,7 @@ def nice_year(dt, lang=None, bc=False):
     return date_time_format.year_format(dt, full_code, bc)
 
 
+@localized_function(run_own_code_on=[FunctionNotLocalizedError])
 def nice_duration(duration, lang=None, speech=True):
     """ Convert duration in seconds to a nice spoken timespan
 
