@@ -53,7 +53,7 @@ def _translate_word(name, lang=''):
     """
     from lingua_franca.internal import resolve_resource_file
     if not lang:
-        if lang == None:
+        if lang is None:
             warn(NoneLangWarning)
         lang = get_default_loc()
 
@@ -387,7 +387,7 @@ def nice_duration(duration, lang='', speech=True):
         str: timespan as a string
     """
     if not lang:
-        if lang == None:
+        if lang is None:
             warn(NoneLangWarning)
         lang = get_default_loc()
     if not is_supported_full_lang(lang):
