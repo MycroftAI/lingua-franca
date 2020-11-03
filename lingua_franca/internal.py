@@ -37,9 +37,8 @@ _localized_functions = {}
 # commit 35efd0661a178e82f6745ad17e10e607c0d83472 for the "proper" state
 # of affairs, raising the errors below instead of deprecation warnings
 
-# For ease of development, in order to be able to type `if not lang:`
-# the default parameter to all functions should be changed back from
-# lang='' to lang=None when the deprecation is complete
+# Once the deprecation is complete, functions which have had their default
+# parameter changed from lang=None to lang='' should be switched back
 
 if version[:3] == '3.5':
     warn(DeprecationWarning("Python 3.5 is EOL, and no longer supported. "
@@ -300,7 +299,7 @@ def set_default_lang(lang_code):
 
 def get_primary_lang_code(lang=''):
     if not lang:
-        if lang == None:
+        if lang is None:
             warn(NoneLangWarning)
         lang = get_default_loc()
     # if not (lang):
@@ -353,7 +352,7 @@ def __get_primary_lang_code_deprecation_warning(lang=''):
 
 def get_full_lang_code(lang=''):
     if not lang:
-        if lang == None:
+        if lang is None:
             warn(NoneLangWarning)
         lang = get_default_loc()
     if not is_supported_full_lang(lang):
@@ -507,22 +506,17 @@ def localized_function(run_own_code_on=[type(None)]):
                     else:
                         warn(DeprecationWarning("The following warning will "
                                                 "become an exception in a future "
-                                                "version of Lingua Franca.".append(
-                                                    __error
-                                                )))
-                        # warn(__error)
+                                                "version of Lingua Franca." +
+                                                str(__error)))
                         lang_code = get_default_lang()
                         full_lang_code = get_full_lang_code()
                         __use_tmp = False
-                    # _raise_unsupported_language(lang_code)
                 if lang_code not in _SUPPORTED_LANGUAGES:
                     _raise_unsupported_language(lang_code)
                 if __use_tmp:
                     full_lang_code = tmp
             else:
-                full_lang_code = get_full_lang_code(lang_code)  # if \
-                # lang_code != get_default_lang() \
-                # else get_full_lang_code()
+                full_lang_code = get_full_lang_code(lang_code)
 
             # Here comes the ugly business.
             _module_name = func.__module__.split('.')[-1]
