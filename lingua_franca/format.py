@@ -35,6 +35,7 @@ from lingua_franca.internal import localized_function, \
 _REGISTERED_FUNCTIONS = ("nice_number",
                          "nice_time",
                          "pronounce_number",
+                         "pronounce_digits",
                          "nice_response",
                          "nice_duration")
 
@@ -293,6 +294,26 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
         ordinals (bool): pronounce in ordinal form "first" instead of "one"
     Returns:
         (str): The pronounced number
+    """
+
+
+@localized_function()
+def pronounce_digits(number, lang=None, places=2, all_digits=False):
+    """
+    Pronounce a number's digits, either colloquially or in full
+
+    In English, the colloquial way is usually to read two digits at a time,
+    treating each pair as a single number.
+
+    Examples:
+        >>> pronounce_number(127, all_digits=False)
+        'one twenty seven'
+        >>> pronounce_number(127, all_digits=True)
+        'one two seven'
+
+    Args:
+        number (int|float)
+        all_digits (bool): read every digit, rather than two digits at a time
     """
 
 
