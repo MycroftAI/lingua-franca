@@ -1,0 +1,4 @@
+include LICENSE
+include readme.md
+include requirements.txt 
+recursive-include lingua_franca/res *
