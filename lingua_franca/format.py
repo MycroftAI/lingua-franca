@@ -41,7 +41,7 @@ _REGISTERED_FUNCTIONS = ("nice_number",
 populate_localized_function_dict("format", langs=get_active_langs())
 
 
-def _translate_word(name, lang=None):
+def _translate_word(name, lang=''):
     """ Helper to get word translations
 
     Args:
@@ -53,6 +53,8 @@ def _translate_word(name, lang=None):
     """
     from lingua_franca.internal import resolve_resource_file
     if not lang:
+        if lang is None:
+            warn(NoneLangWarning)
         lang = get_default_loc()
 
     lang_code = lang if is_supported_full_lang(lang) else \
@@ -241,7 +243,7 @@ date_time_format = DateTimeFormat(os.path.join(os.path.dirname(__file__),
 
 
 @localized_function(run_own_code_on=[UnsupportedLanguageError])
-def nice_number(number, lang=None, speech=True, denominators=None):
+def nice_number(number, lang='', speech=True, denominators=None):
     """Format a float to human readable functions
 
     This function formats a float to human understandable functions. Like
@@ -258,7 +260,7 @@ def nice_number(number, lang=None, speech=True, denominators=None):
 
 
 @localized_function()
-def nice_time(dt, lang=None, speech=True, use_24hour=False,
+def nice_time(dt, lang='', speech=True, use_24hour=False,
               use_ampm=False):
     """
     Format a time to a comfortable human format
@@ -278,7 +280,7 @@ def nice_time(dt, lang=None, speech=True, use_24hour=False,
 
 
 @localized_function()
-def pronounce_number(number, lang=None, places=2, short_scale=True,
+def pronounce_number(number, lang='', places=2, short_scale=True,
                      scientific=False, ordinals=False):
     """
     Convert a number to it's spoken equivalent
@@ -296,7 +298,7 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
     """
 
 
-def nice_date(dt, lang=None, now=None):
+def nice_date(dt, lang='', now=None):
     """
     Format a datetime to a pronounceable date
 
@@ -318,7 +320,7 @@ def nice_date(dt, lang=None, now=None):
     return date_time_format.date_format(dt, full_code, now)
 
 
-def nice_date_time(dt, lang=None, now=None, use_24hour=False,
+def nice_date_time(dt, lang='', now=None, use_24hour=False,
                    use_ampm=False):
     """
         Format a datetime to a pronounceable date and time
@@ -347,7 +349,7 @@ def nice_date_time(dt, lang=None, now=None, use_24hour=False,
                                              use_ampm)
 
 
-def nice_year(dt, lang=None, bc=False):
+def nice_year(dt, lang='', bc=False):
     """
         Format a datetime to a pronounceable year
 
@@ -370,7 +372,7 @@ def nice_year(dt, lang=None, bc=False):
 
 
 @localized_function(run_own_code_on=[FunctionNotLocalizedError])
-def nice_duration(duration, lang=None, speech=True):
+def nice_duration(duration, lang='', speech=True):
     """ Convert duration in seconds to a nice spoken timespan
 
     Examples:
@@ -385,7 +387,8 @@ def nice_duration(duration, lang=None, speech=True):
         str: timespan as a string
     """
     if not lang:
-        warn(NoneLangWarning)
+        if lang is None:
+            warn(NoneLangWarning)
         lang = get_default_loc()
     if not is_supported_full_lang(lang):
         # TODO deprecated; delete when 'lang=None' and 'lang=invalid' are removed
@@ -458,7 +461,7 @@ def nice_duration(duration, lang=None, speech=True):
     return out
 
 
-def join_list(items, connector, sep=None, lang=None):
+def join_list(items, connector, sep=None, lang=''):
     """ Join a list into a phrase using the given connector word
 
     Examples:
@@ -521,7 +524,7 @@ def expand_options(parentheses_line: str) -> list:
 
 
 @localized_function()
-def nice_response(text, lang=None):
+def nice_response(text, lang=''):
     """
     In some languages, sanitizes certain numeric input for TTS
 

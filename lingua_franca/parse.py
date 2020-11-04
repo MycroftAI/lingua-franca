@@ -72,7 +72,7 @@ def match_one(query, choices):
 
 
 @localized_function()
-def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
+def extract_numbers(text, short_scale=True, ordinals=False, lang=''):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -90,7 +90,7 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=None):
 
 
 @localized_function()
-def extract_number(text, short_scale=True, ordinals=False, lang=None):
+def extract_number(text, short_scale=True, ordinals=False, lang=''):
     """Takes in a string and extracts a number.
 
     Args:
@@ -108,7 +108,7 @@ def extract_number(text, short_scale=True, ordinals=False, lang=None):
 
 
 @localized_function()
-def extract_duration(text, lang=None):
+def extract_duration(text, lang=''):
     """ Convert an english phrase into a number of seconds
 
     Convert things like:
@@ -137,7 +137,7 @@ def extract_duration(text, lang=None):
 
 
 @localized_function()
-def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
+def extract_datetime(text, anchorDate=None, lang='', default_time=None):
     """
     Extracts date and time information from a sentence.  Parses many of the
     common ways that humans express dates and times, including relative dates
@@ -191,7 +191,7 @@ def extract_datetime(text, anchorDate=None, lang=None, default_time=None):
 
 
 @localized_function()
-def normalize(text, lang=None, remove_articles=True):
+def normalize(text, lang='', remove_articles=True):
     """Prepare a string for parsing
 
     This function prepares the given text for parsing by making
@@ -209,7 +209,7 @@ def normalize(text, lang=None, remove_articles=True):
 
 
 @localized_function()
-def get_gender(word, context="", lang=None):
+def get_gender(word, context="", lang=''):
     """ Guess the gender of a word
 
     Some languages assign genders to specific words.  This method will attempt
@@ -227,7 +227,7 @@ def get_gender(word, context="", lang=None):
 
 
 @localized_function()
-def is_fractional(input_str, short_scale=True, lang=None):
+def is_fractional(input_str, short_scale=True, lang=''):
     """
     This function takes the given text and checks if it is a fraction.
     Used by most of the number exractors.
@@ -245,7 +245,7 @@ def is_fractional(input_str, short_scale=True, lang=None):
 
 
 @localized_function()
-def is_ordinal(input_str, lang=None):
+def is_ordinal(input_str, lang=''):
     """
     This function takes the given text and checks if it is an ordinal number.
 

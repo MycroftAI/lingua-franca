@@ -37,6 +37,9 @@ _localized_functions = {}
 # commit 35efd0661a178e82f6745ad17e10e607c0d83472 for the "proper" state
 # of affairs, raising the errors below instead of deprecation warnings
 
+# Once the deprecation is complete, functions which have had their default
+# parameter changed from lang=None to lang='' should be switched back
+
 if version[:3] == '3.5':
     warn(DeprecationWarning("Python 3.5 is EOL, and no longer supported. "
                             "Lingua Franca supports it as a courtesy to "
@@ -294,9 +297,10 @@ def set_default_lang(lang_code):
 # TODO remove this when invalid lang codes are removed (currently deprecated)
 
 
-def get_primary_lang_code(lang=None):
+def get_primary_lang_code(lang=''):
     if not lang:
-        warn(NoneLangWarning)
+        if lang is None:
+            warn(NoneLangWarning)
         lang = get_default_loc()
     # if not (lang):
     try:
@@ -307,7 +311,7 @@ def get_primary_lang_code(lang=None):
     return lang
 
 
-def __get_primary_lang_code_deprecation_warning(lang=None):
+def __get_primary_lang_code_deprecation_warning(lang=''):
     """ Get the primary language code
 
     Args:
@@ -346,9 +350,10 @@ def __get_primary_lang_code_deprecation_warning(lang=None):
 # TODO remove this when invalid lang codes are removed (currently deprecated)
 
 
-def get_full_lang_code(lang=None):
+def get_full_lang_code(lang=''):
     if not lang:
-        warn(NoneLangWarning)
+        if lang is None:
+            warn(NoneLangWarning)
         lang = get_default_loc()
     if not is_supported_full_lang(lang):
         try:
@@ -359,7 +364,7 @@ def get_full_lang_code(lang=None):
     return lang
 
 
-def __get_full_lang_code_deprecation_warning(lang=None):
+def __get_full_lang_code_deprecation_warning(lang=''):
     """ Get the full language code
 
     Args:
@@ -408,7 +413,7 @@ def localized_function(run_own_code_on=[type(None)]):
     By contrast, here's the decorator above format.nice_number, with the param:
 
         @localized_function(run_own_code_on=[UnsupportedLanguageError])
-        def nice_number(number, lang=None, speech=True, denominators=None):
+        def nice_number(number, lang='', speech=True, denominators=None):
 
     Here, nice_number() itself will be executed in the event that the localizer
     raises an UnsupportedLanguageError.
@@ -501,22 +506,17 @@ def localized_function(run_own_code_on=[type(None)]):
                     else:
                         warn(DeprecationWarning("The following warning will "
                                                 "become an exception in a future "
-                                                "version of Lingua Franca.".append(
-                                                    __error
-                                                )))
-                        # warn(__error)
+                                                "version of Lingua Franca." +
+                                                str(__error)))
                         lang_code = get_default_lang()
                         full_lang_code = get_full_lang_code()
                         __use_tmp = False
-                    # _raise_unsupported_language(lang_code)
                 if lang_code not in _SUPPORTED_LANGUAGES:
                     _raise_unsupported_language(lang_code)
                 if __use_tmp:
                     full_lang_code = tmp
             else:
-                full_lang_code = get_full_lang_code(lang_code)  # if \
-                # lang_code != get_default_lang() \
-                # else get_full_lang_code()
+                full_lang_code = get_full_lang_code(lang_code)
 
             # Here comes the ugly business.
             _module_name = func.__module__.split('.')[-1]
