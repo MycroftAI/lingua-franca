@@ -90,7 +90,7 @@ class TestNiceNumberFormat(unittest.TestCase):
         self.assertEqual(nice_number(5.5, lang="nl-nl",
                                      denominators=[1, 2, 3]), '5 en één half',
                          'should format 5.5 as 5 en één half not {}'.format(
-                             nice_number(5.5, denominators=[1, 2, 3])))
+                             nice_number(5.5, lang="nl-nl", denominators=[1, 2, 3])))
         self.assertEqual(nice_number(2.333, lang="nl-nl", denominators=[1, 2]),
                          '2,333',
                          'should format 2,333 as 2,333 not {}'.format(
