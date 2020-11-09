@@ -461,28 +461,39 @@ def extract_duration_nl(text):
         return None
 
     time_units = {
-        'microseconden': None,
-        'milliseconden': None,
-        'seconden': None,
-        'minuten': None,
-        'uren': None,
-        'dagen': None,
-        'weken': None
+        'microseconds': 0,
+        'milliseconds': 0,
+        'seconds': 0,
+        'minutes': 0,
+        'hours': 0,
+        'days': 0,
+        'weeks': 0
     }
 
-    pattern = r"(?P<value>\d+(?:\.?\d+)?)\s+{unit}s?"
+    nl_translations = {
+        'microseconds': ["microsecond", "microseconde", "microseconden", "microsecondje", "microsecondjes"],
+        'milliseconds': ["millisecond", "milliseconde", "milliseconden", "millisecondje", "millisecondjes"],
+        'seconds': ["second", "seconde", "seconden", "secondje", "secondjes"],
+        'minutes': ["minuut", "minuten", "minuutje", "minuutjes"],
+        'hours': ["uur", "uren", "uurtje", "uurtjes"],
+        'days': ["dag", "dagen", "dagje", "dagjes"],
+        'weeks': ["week", "weken", "weekje", "weekjes"]
+    }
+
+    pattern = r"(?P<value>\d+(?:\.?\d+)?)\s+{unit}"
     text = _convert_words_to_numbers_nl(text)
 
     for unit in time_units:
-        unit_pattern = pattern.format(unit=unit[:-1])  # remove 's' from unit
-        matches = re.findall(unit_pattern, text)
-        value = sum(map(float, matches))
-        time_units[unit] = value
-        text = re.sub(unit_pattern, '', text)
+        unit_nl_words = nl_translations[unit]
+        unit_nl_words.sort(key=len, reverse=True)
+        for unit_nl in unit_nl_words:
+            unit_pattern = pattern.format(unit=unit_nl)
+            matches = re.findall(unit_pattern, text)
+            value = sum(map(float, matches))
+            time_units[unit] = time_units[unit] + value
+            text = re.sub(unit_pattern, '', text)
 
     text = text.strip()
-    # TODO unit arguments need to be in english
-    # translation was done wrong, exception thrown here
     duration = timedelta(**time_units) if any(time_units.values()) else None
 
     return (duration, text)
