@@ -15,10 +15,10 @@
 # limitations under the License.
 #
 import unittest
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 from lingua_franca import load_language, set_default_lang, unload_language
-from lingua_franca.parse import extract_datetime, extract_number, normalize
+from lingua_franca.parse import extract_datetime, extract_number, normalize, extract_duration
 
 
 LANG = "nl-nl"
@@ -192,6 +192,26 @@ class TestParsing(unittest.TestCase):
         self.assertEqual(
             normalize("dit is achttien negentien twintig", LANG),
             "dit is 18 19 20")
+
+    def test_extract_duration_nl(self):
+        self.assertEqual(extract_duration("een minuut", LANG),
+                         (timedelta(seconds=60), ""))
+        self.assertEqual(extract_duration("10 minuten", LANG),
+                         (timedelta(seconds=600), ""))
+        self.assertEqual(extract_duration("een uur en 2 minuten", LANG),
+                         (timedelta(seconds=3720), "en"))
+        self.assertEqual(extract_duration("een dag", LANG),
+                         (timedelta(days=1), ""))
+        self.assertEqual(extract_duration("twee dag", LANG),
+                         (timedelta(days=2), ""))
+        self.assertEqual(extract_duration("vijf minuten na het uur", LANG),
+                         (timedelta(seconds=300), "na het uur"))
+        self.assertEqual(extract_duration("zet een timer voor 1 uur", LANG),
+                         (timedelta(seconds=3600), "zet 1 timer voor"))
+        self.assertEqual(extract_duration("een treinrit van 2 uur, 17 minuten en zestien seconden", LANG),
+                         (timedelta(seconds=8236), "1 treinrit van ,  en"))
+        self.assertEqual(extract_duration("een uurtje", LANG),
+                         (timedelta(seconds=3600), ""))
 
 
 if __name__ == "__main__":
