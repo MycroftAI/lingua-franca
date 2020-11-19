@@ -43,6 +43,7 @@ _NUMBERS_CA = {
     "segon": 2,
     "segona": 2,
     "tercer": 3,
+    "tercera": 3,
     "dos": 2,
     "dues": 2,
     "tres": 3,
@@ -90,7 +91,8 @@ _NUMBERS_CA = {
     "nou-cents": 900,
     "nou-centes": 900,
     "mil": 1000,
-    "milió": 1000000}
+    "milió": 1000000
+}
 
 _FRACTION_STRING_CA = {
     2: 'mig',
@@ -146,4 +148,50 @@ _NUM_STRING_CA = {
     70: 'setanta',
     80: 'vuitanta',
     90: 'noranta'
+}
+
+_TEENS_CA = {
+    "vint": 20,
+    "trenta": 30,
+    "quaranta": 40,
+    "cinquanta": 50,
+    "seixanta": 60,
+    "setanta": 70,
+    "vuitanta": 80,
+    "huitanta": 80,
+    "noranta": 90
+}
+
+_AFTER_TEENS_CA = {
+    "u": 1,
+    "un": 1,
+    "dos": 2,
+    "dues": 2,
+    "tres": 3,
+    "quatre": 4,
+    "cinc": 5,
+    "sis": 6,
+    "set": 7,
+    "vuit": 8,
+    "huit": 8,
+    "nou": 9
+}
+
+_BEFORE_HUNDREDS_CA = {
+    "dos": 2,
+    "dues": 2,
+    "tres": 3,
+    "quatre": 4,
+    "cinc": 5,
+    "sis": 6,
+    "set": 7,
+    "vuit": 8,
+    "huit": 8,
+    "nou": 9,
+}
+
+_HUNDREDS_CA = {
+    "cent": 100,
+    "cents": 100,
+    "centes": 100
 }

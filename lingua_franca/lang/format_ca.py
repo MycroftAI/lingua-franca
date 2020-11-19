@@ -193,9 +193,9 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False):
                 speak += " en punt"
             #TODO: review day-periods
             if use_ampm:
-                if dt.hour >= 0 and dt.hour < 4:
+                if dt.hour == 0:
                     speak += " de la nit"
-                elif dt.hour >= 4 and dt.hour < 6:
+                elif dt.hour >= 1 and dt.hour < 6:
                     speak += " de la matinada"
                 elif dt.hour >= 6 and dt.hour < 12:
                     speak += " del matí"

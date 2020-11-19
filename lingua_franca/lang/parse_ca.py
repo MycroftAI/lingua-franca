@@ -25,7 +25,8 @@ from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_ca import _NUMBERS_CA, \
     _FEMALE_DETERMINANTS_CA, _FEMALE_ENDINGS_CA, \
-    _MALE_DETERMINANTS_CA, _MALE_ENDINGS_CA, _GENDERS_CA
+    _MALE_DETERMINANTS_CA, _MALE_ENDINGS_CA, _GENDERS_CA, \
+    _TEENS_CA, _AFTER_TEENS_CA, _HUNDREDS_CA, _BEFORE_HUNDREDS_CA
 from lingua_franca.internal import resolve_resource_file
 from lingua_franca.lang.parse_common import Normalizer
 import json
@@ -120,6 +121,18 @@ def extract_number_ca(text, short_scale=True, ordinals=False):
         # is current word a number?
         if word in _NUMBERS_CA:
             val = _NUMBERS_CA[word]
+        elif '-' in word:
+            wordparts = word.split('-')
+            # trenta-cinc > 35
+            if len(wordparts) == 2 and (wordparts[0] in _TEENS_CA and wordparts[1] in _AFTER_TEENS_CA):
+                val = _TEENS_CA[wordparts[0]] + _AFTER_TEENS_CA[wordparts[1]]
+            # vint-i-dues > 22
+            elif len(wordparts) == 3 and wordparts[1] == 'i' and (wordparts[0] in _TEENS_CA and wordparts[2] in _AFTER_TEENS_CA):
+                val = _TEENS_CA[wordparts[0]]+_AFTER_TEENS_CA[wordparts[2]]
+            # quatre-centes > 400
+            elif len(wordparts) == 2 and (wordparts[0] in _BEFORE_HUNDREDS_CA and wordparts[1] in _HUNDREDS_CA):
+                val = _BEFORE_HUNDREDS_CA[wordparts[0]]*100
+
         elif word.isdigit():  # doesn't work with decimals
             val = int(word)
         elif is_numeric(word):
@@ -191,7 +204,7 @@ def extract_number_ca(text, short_scale=True, ordinals=False):
                     result += afterAndVal
                     break
 
-        decimals = ["punt", "coma", "amb", ".", ","]
+        decimals = ["coma", "amb", "punt", ".", ","]
         if next_word in decimals:
             zeros = 0
             newWords = aWords[count + 2:]
@@ -232,9 +245,9 @@ class CatalanNormalizer(Normalizer):
         utterance = re.sub(r"([0-9]+)([\%])", r"\1 \2", utterance)
         # Split things like #1
         utterance = re.sub(r"(\#)([0-9]+\b)", r"\1 \2", utterance)
-        # Split things like amo-te
-        utterance = re.sub(r"([a-zA-Z]+)(-)([a-zA-Z]+\b)", r"\1 \3",
-                           utterance)
+        # Don't split things like amo-te
+        #utterance = re.sub(r"([a-zA-Z]+)(-)([a-zA-Z]+\b)", r"\1 \3",
+        #                   utterance)
         tokens = utterance.split()
         if tokens[-1] == '-':
             tokens = tokens[:-1]
@@ -252,10 +265,10 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
         # cleans the input string of unneeded punctuation and capitalization
         # among other things
         symbols = [".", ",", ";", "?", "!", "º", "ª"]
-        hyphens = ["-", "_"]
+        hyphens = ["'", "_"]
         noise_words = ["el", "l", "els", "la", "las",
                        "d", "de", "del", "dels", "al", "als"]
-
+        s = s + " "
         for word in symbols:
             s = s.replace(word, "")
 
@@ -267,8 +280,10 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
 
         s = s.lower()
 
+            
+
         # handle synonims, plurals and equivalents, "tomorrow early" = "tomorrow morning"
-        synonims = {"matí": ["matins", "matinada", "aviat"],
+        synonims = {"matí": ["matins", "dematí", "matinada", "aviat"],
                     "tarda": ["tardes", "horabaixa", "vespre", "vespres"],
                     "nit": ["nits", "capvespre"],
                     "tots": ["cada"],
@@ -285,10 +300,14 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
                     "mes": ["mesos"],
                     "cada mes": ["mensual", "mensuals", "mensualment"],
                     "any": ["anys"],
-                    "cada any": ["anual", "anuals", "anualment"]}
+                    "cada any": ["anual", "anuals", "anualment"],
+                    "abans ahir": ["abans-d ahir"]
+                    }
         for syn in synonims:
             for word in synonims[syn]:
                 s = s.replace(" " + word + " ", " " + syn + " ")
+        if s[-1] == " ":
+            s = s[:-1]
         return s
 
     def date_found():
@@ -319,7 +338,7 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
 
     words = clean_string(text).split(" ")
     timeQualifiersList = ['matí', 'tarda', 'nit']
-    time_indicators = ["em", "as", "nas", "cap a", "volta", "després", "estas",
+    time_indicators = ["em", "a", "a les", "cap a", "vora", "després", "estas",
                        "no", "dia", "hora"]
     days = ['dilluns', 'dimarts', 'dimecres',
             'dijous', 'divendres', 'dissabte', 'diumenge']
@@ -1031,7 +1050,7 @@ def _ca_pruning(text, symbols=True, accents=False, agressive=True):
         symbols = [".", ",", ";", ":", "!", "?", "¡", "¿"]
         for symbol in symbols:
             text = text.replace(symbol, "")
-        text = text.replace("'", " ").replace("-", " ").replace("_", " ")
+        text = text.replace("'", " ").replace("_", " ")
     # accents=False
     if accents:
         accents = {"a": ["á", "à", "ã", "â"],

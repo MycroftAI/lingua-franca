@@ -92,18 +92,27 @@ class TestNormalize(unittest.TestCase):
                                         lang="ca"), 7.008)
         self.assertEqual(extract_number("vint trenta ens", lang="ca"),
                          20.0 / 30.0)
-        #FIXME: sis-cents > sis cents
-        #self.assertEqual(extract_number("sis coma sis-cents seixanta",
-        #                                lang="ca"), 6.66)
-        #self.assertEqual(extract_number("sis-cents seixanta-sis",
-        #                                lang="ca"), 666)
-        #
-        #self.assertEqual(extract_number("sis-cents punt zero sis",
-        #                                lang="ca"), 600.06)
-        #self.assertEqual(extract_number("sis-cents coma zero zero sis",
-        #                                lang="ca"), 600.006)
-        #self.assertEqual(extract_number("tres-cents coma zero zero tres",
-        #                                lang="ca"), 300.0003)
+        self.assertEqual(extract_number("dos", lang="ca"), 2)
+        self.assertEqual(extract_number("dues", lang="ca"), 2)
+        self.assertEqual(extract_number("tres", lang="ca"), 3)
+        self.assertEqual(extract_number("quatre", lang="ca"), 4)
+        self.assertEqual(extract_number("deu", lang="ca"), 10)
+        self.assertEqual(extract_number("trenta-cinc", lang="ca"), 35)
+        self.assertEqual(extract_number("seixanta-sis", lang="ca"), 66)
+        self.assertEqual(extract_number("vint-i-dues", lang="ca"), 22)
+        self.assertEqual(extract_number("vint-i-dos", lang="ca"), 22)
+        self.assertEqual(extract_number("quatre-centes", lang="ca"), 400)
+        self.assertEqual(extract_number("cinc-cents", lang="ca"), 500)
+        self.assertEqual(extract_number("sis coma sis-cents seixanta",
+                                        lang="ca"), 6.66)
+        self.assertEqual(extract_number("sis-cents seixanta-sis",
+                                        lang="ca"), 666)
+        self.assertEqual(extract_number("sis-cents punt zero sis",
+                                        lang="ca"), 600.06)
+        self.assertEqual(extract_number("sis-cents coma zero zero sis",
+                                        lang="ca"), 600.006)
+        self.assertEqual(extract_number("tres-cents coma zero zero tres",
+                                        lang="ca"), 300.003)
 
     def test_agressive_pruning_ca(self):
         self.assertEqual(normalize("una paraula", lang="ca"),
@@ -112,16 +121,14 @@ class TestNormalize(unittest.TestCase):
                          "1 mot")
         self.assertEqual(normalize("aquesta paraula u", lang="ca"),
                          "paraula 1")
-        #FIXME: hauria de retornar "home va pegar"
         self.assertEqual(normalize("l'home el va pegar", lang="ca"),
                          "l'home va pegar")
         self.assertEqual(normalize("qui va equivocar-se aquell dia", lang="ca"),
-                         "qui va equivocar se dia")
+                         "qui va equivocar-se dia")
 
     def test_spaces_ca(self):
         self.assertEqual(normalize("  això   és  el    test", lang="ca"),
                          "això és test")
-       #FIXME: hauria de donar "això és intent" 
         self.assertEqual(normalize("  això   és  l'intent", lang="ca"),
                          "això és l'intent")
         self.assertEqual(normalize("  això   són les    proves  ", lang="ca"),
@@ -138,11 +145,11 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(
             normalize("prova zero deu onze dotze tretze", lang="ca"),
             "prova 0 10 11 12 13")
-        #FIXME: sis-cents > sis cents
+        #FIXME: seixanta-sis > 66
         #self.assertEqual(
-        #    normalize("prova mil sis-cents i seixanta-sis", lang="ca",
+        #    normalize("prova 1000 600 seixanta-sis", lang="ca",
         #              remove_articles=False),
-        #    "prova 1000 600 60 6")
+        #    "prova 1000 600 66")
         self.assertEqual(
             normalize("test set i mig", lang="ca",
                       remove_articles=False),
@@ -181,9 +188,11 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-26 00:00:00", "dia")
         testExtract("quin dia fou abans ahir",
                     "2017-06-25 00:00:00", "dia")
-        testExtract("quin dia fou abans ahir",
+        testExtract("quin dia fou abans d'ahir",
                     "2017-06-25 00:00:00", "dia")
-        testExtract("quin dia fou abans abans ahir",
+        testExtract("quin dia fou abans-d'ahir",
+                    "2017-06-25 00:00:00", "dia")
+        testExtract("quin dia fou abans d'abans d'ahir",
                     "2017-06-24 00:00:00", "dia")
         #FIXME
         #testExtract("fer el sopar en 5 dies",
@@ -197,7 +206,7 @@ class TestNormalize(unittest.TestCase):
         #testExtract("truca'm per a quedar d'aqui a 8 setmanes i 2 dies",
         #            "2017-08-24 00:00:00", "truca quedar")
         testExtract("Toca black-metal 2 dies després de divendres",
-                    "2017-07-02 00:00:00", "toca black metal")
+                    "2017-07-02 00:00:00", "toca black-metal")
         testExtract("Toca satanic black metal 2 dies per a aquest divendres",
                     "2017-07-02 00:00:00", "toca satanic black metal")
         #testExtract("Toca super black metal 2 dies a partir d'aquest divendres",
@@ -240,7 +249,7 @@ class TestNormalize(unittest.TestCase):
         #testExtract("quin temps farà 1 dia després de demà",
         #            "2017-06-29 00:00:00", "quin temps")
         testExtract("quin temps farà a les 0700 hores",
-                    "2017-06-27 07:00:00", "temps farà hores")
+                    "2017-06-27 07:00:00", "temps farà")
         testExtract("quin temps farà demà a les 7 en punt",
                     "2017-06-28 07:00:00", "temps farà")
         #testExtract("quin temps farà demà a les 2 de la tarda",
