@@ -5,14 +5,16 @@ from inspect import signature
 from sys import version
 from warnings import warn
 
-_SUPPORTED_LANGUAGES = ("cs", "da", "de", "en", "es", "fr", "hu",
+_SUPPORTED_LANGUAGES = ("ca", "cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sv")
 
-_SUPPORTED_FULL_LOCALIZATIONS = ("cs-cz", "da-dk", "de-de", "en-au", "en-us",
-                                 "es-es", "fr-fr", "hu-hu", "it-it", "nl-nl",
-                                 "pl-pl", "pt-pt", "ru-ru", "sv-se", "tr-tr")
+_SUPPORTED_FULL_LOCALIZATIONS = ("ca-es", "cs-cz", "da-dk", "de-de", "en-au",
+                                 "en-us", "es-es", "fr-fr", "hu-hu", "it-it",
+                                 "nl-nl", "pl-pl", "pt-pt", "ru-ru", "sv-se",
+                                 "tr-tr")
 
-_DEFAULT_FULL_LANG_CODES = {'cs': 'cs-cz',
+_DEFAULT_FULL_LANG_CODES = {'ca': 'ca-es',
+                            'cs': 'cs-cz',
                             'da': 'da-dk',
                             'de': 'de-de',
                             'en': 'en-us',
