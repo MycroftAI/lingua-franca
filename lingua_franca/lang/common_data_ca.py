@@ -1,6 +1,6 @@
 _FUNCTION_NOT_IMPLEMENTED_WARNING = "aquesta funció encara no s'ha implementat en 'ca'"
 
-# Undefined articles ["un", "una", "uns", "umas"] can not be supressed,
+# Undefined articles ["un", "una", "uns", "unes"] can not be supressed,
 # in CA, "un cavall" means "a horse" or "one horse".
 
 _ARTICLES_CA = ["el", "la", "l", "lo", "els", "les", "los"]
@@ -8,13 +8,13 @@ _ARTICLES_CA = ["el", "la", "l", "lo", "els", "les", "los"]
 # word rules for gender
 _FEMALE_ENDINGS_CA = ["a", "esa", "essa", "esses", "eses", "ena", "enes",
                       "ques", "asi", "esi", "isi", "osi", "ut", "at",
-                      "eta", "etes", "tja", "tges"]
+                      "eta", "etes", "tja", "tges", "ica", "iques",
+                      "ada", "ades"]
 _MALE_ENDINGS_CA = ["o", "os", "ll", "lls", "ig", "igs", "itjos", "rs",
-                    "et", "ets", "ès", "ns"]
+                    "et", "ets", "ès", "ns", "ic", "ics", "at", "ats"]
 
 # special cases, word lookup for words not covered by above rule
 _GENDERS_CA = {
-    "mullers": "f",
     "dones": "f",
     "home": "m",
     "pell": "f",
@@ -22,13 +22,13 @@ _GENDERS_CA = {
 }
 
 # context rules for gender
-_MALE_DETERMINANTS_CA = ["el", "els", "l", "lo", "aquest", "aquests",
+_MALE_DETERMINANTS_CA = ["el", "els", "l", "lo", "es", "aquest", "aquests",
                          "aquell", "aquells", "aqueix", "aqueixos",
-                         "algun", "alguns", "este", "estos",
+                         "algun", "alguns", "este", "estos", "altre",
                          "mon", "mos", "mons", "meus", "meus"]
-_FEMALE_DETERMINANTS_CA = ["la", "les", "aquesta", "aquestes",
+_FEMALE_DETERMINANTS_CA = ["la", "les", "sa", "ses", "aquesta", "aquestes",
                            "aquella", "aquelles", "aqueixa", "aqueixes",
-                           "alguna", "algunes", "esta", "estes",
+                           "alguna", "algunes", "esta", "estes", "altra",
                            "ma", "mes", "meva", "meua", "meves"]
 
 _NUMBERS_CA = {
@@ -150,7 +150,7 @@ _NUM_STRING_CA = {
     90: 'noranta'
 }
 
-_TEENS_CA = {
+_TENS_CA = {
     "vint": 20,
     "trenta": 30,
     "quaranta": 40,
@@ -162,7 +162,7 @@ _TEENS_CA = {
     "noranta": 90
 }
 
-_AFTER_TEENS_CA = {
+_AFTER_TENS_CA = {
     "u": 1,
     "un": 1,
     "dos": 2,

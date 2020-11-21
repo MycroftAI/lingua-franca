@@ -26,7 +26,7 @@ from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_ca import _NUMBERS_CA, \
     _FEMALE_DETERMINANTS_CA, _FEMALE_ENDINGS_CA, \
     _MALE_DETERMINANTS_CA, _MALE_ENDINGS_CA, _GENDERS_CA, \
-    _TEENS_CA, _AFTER_TEENS_CA, _HUNDREDS_CA, _BEFORE_HUNDREDS_CA
+    _TENS_CA, _AFTER_TENS_CA, _HUNDREDS_CA, _BEFORE_HUNDREDS_CA
 from lingua_franca.internal import resolve_resource_file
 from lingua_franca.lang.parse_common import Normalizer
 import json
@@ -124,11 +124,11 @@ def extract_number_ca(text, short_scale=True, ordinals=False):
         elif '-' in word:
             wordparts = word.split('-')
             # trenta-cinc > 35
-            if len(wordparts) == 2 and (wordparts[0] in _TEENS_CA and wordparts[1] in _AFTER_TEENS_CA):
-                val = _TEENS_CA[wordparts[0]] + _AFTER_TEENS_CA[wordparts[1]]
+            if len(wordparts) == 2 and (wordparts[0] in _TENS_CA and wordparts[1] in _AFTER_TENS_CA):
+                val = _TENS_CA[wordparts[0]] + _AFTER_TENS_CA[wordparts[1]]
             # vint-i-dues > 22
-            elif len(wordparts) == 3 and wordparts[1] == 'i' and (wordparts[0] in _TEENS_CA and wordparts[2] in _AFTER_TEENS_CA):
-                val = _TEENS_CA[wordparts[0]]+_AFTER_TEENS_CA[wordparts[2]]
+            elif len(wordparts) == 3 and wordparts[1] == 'i' and (wordparts[0] in _TENS_CA and wordparts[2] in _AFTER_TENS_CA):
+                val = _TENS_CA[wordparts[0]]+_AFTER_TENS_CA[wordparts[2]]
             # quatre-centes > 400
             elif len(wordparts) == 2 and (wordparts[0] in _BEFORE_HUNDREDS_CA and wordparts[1] in _HUNDREDS_CA):
                 val = _BEFORE_HUNDREDS_CA[wordparts[0]]*100
@@ -266,9 +266,13 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
         # among other things
         symbols = [".", ",", ";", "?", "!", "º", "ª"]
         hyphens = ["'", "_"]
-        noise_words = ["el", "l", "els", "la", "las",
-                       "d", "de", "del", "dels", "al", "als"]
+        noise_words = ["el", "l", "els", "la", "les", "es", "sa", "ses",
+                       "d", "de", "del", "dels"]
+        # add final space
         s = s + " "
+
+        s = s.lower()
+
         for word in symbols:
             s = s.replace(word, "")
 
@@ -277,37 +281,50 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
 
         for word in noise_words:
             s = s.replace(" " + word + " ", " ")
-
-        s = s.lower()
-
             
 
-        # handle synonims, plurals and equivalents, "tomorrow early" = "tomorrow morning"
-        synonims = {"matí": ["matins", "dematí", "matinada", "aviat"],
-                    "tarda": ["tardes", "horabaixa", "vespre", "vespres"],
-                    "nit": ["nits", "capvespre"],
-                    "tots": ["cada"],
-                    "entre": ["de", "de la", "des de", "de"],
+        # handle synonims, plurals and equivalents, "demà ben d'hora" = "demà de matí"
+        synonims = {"abans": ["abans-d"],
+                    "vinent": ["que vé", "que ve", "que bé", "que be"],
+                    "migdia": ["mig dia"],
+                    "mitjanit": ["mitja nit"],
+                    "matinada": ["matinades", "ben hora ben hora"],
+                    "matí": ["matins", "dematí", "dematins", "ben hora"],
+                    "tarda": ["tardes", "vesprada", "vesprades", "vespraes"],
+                    "nit": ["nits", "vespre", "vespres", "horabaixa", "capvespre"],
+                    "demà": ["endemà"],
+                    "diàriament": ["diària", "diàries", "cada dia", "tots dies"],
+                    "setmanalment": ["setmanal", "setmanals", "cada setmana", "totes setmanes"],
+                    "quinzenalment": ["quinzenal", "quinzenals", "cada quinzena", "totes quinzenes"],
+                    "mensualment": ["mensual", "mensuals", "cada mes", "tots mesos"],
+                    "anualment": ["anual", "anuals", "cada any", "tots anys"],
+                    "demàpassat": ["demà-passat", "demà passat", "passat demà", "despús-demà", "despús demà"],
+                    "demàpassatpassat": ["demàpassat passat", "passat demàpassat",
+                                         "demàpassat no altre", "demàpassat altre"],
+                    "abansahir": ["abans ahir", "despús ahir", "despús-ahir"],
+                    "abansabansahir": ["abans abansahir", "abansahir no altre", "abansahir altre",
+                                             "abansahir no altre", "abansahir altre"],
                     "segon": ["segons"],
                     "minut": ["minuts"],
+                    "quart": ["quarts"],
                     "hora": ["hores"],
                     "dia": ["dies"],
-                    "cada dia": ["diària", "diàries", "diàriament"],
                     "setmana": ["setmanes"],
-                    "cada setmana": ["setmanal", "setmanals", "setmanalment"],
                     "quinzena": ["quinzenes"],
-                    "cada quinzena": ["quinzenal", "quinzenals", "quinzenalment"],
                     "mes": ["mesos"],
-                    "cada mes": ["mensual", "mensuals", "mensualment"],
                     "any": ["anys"],
-                    "cada any": ["anual", "anuals", "anualment"],
-                    "abans ahir": ["abans-d ahir"]
+                    "tocat": ["tocats"],
+                    "a": ["al", "als"]
                     }
         for syn in synonims:
             for word in synonims[syn]:
                 s = s.replace(" " + word + " ", " " + syn + " ")
+
+        # remove final space
         if s[-1] == " ":
             s = s[:-1]
+
+
         return s
 
     def date_found():
@@ -348,12 +365,12 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
     monthsShort = ['gen', 'feb', 'març', 'abr', 'maig', 'juny', 'jul', 'ag',
                    'set', 'oct', 'nov', 'des']
     nexts = ["pròxim", "pròxima", "vinent"]
-    suffix_nexts = ["següent"]
-    lasts = ["últim", "última", "darrer", "darrera"]
+    suffix_nexts = ["següent", "després"]
+    lasts = ["últim", "última", "darrer", "darrera", "passat", "passada"]
     suffix_lasts = ["passada", "passat", "anterior", "abans"]
     nxts = ["passat", "després", "segueix", "seguit", "seguida", "següent", "pròxim", "pròxima"]
     prevs = ["abans", "prèvia", "previamente", "anterior"]
-    froms = ["partir", "dins", "per", "a", "al",
+    froms = ["partir", "dins", "des", "a",
              "després", "pròxima", "pròxim", "del", "de"]
     thises = ["aquest", "aquesta", "aqueix", "aqueixa", "este", "esta"]
     froms += thises
@@ -378,33 +395,25 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
             dayOffset = 0
             used += 1
         elif word == "demà" and not fromFlag:
-            dayOffset = 1
+            dayOffset += 1
             used += 1
         elif word == "ahir" and not fromFlag:
             dayOffset -= 1
             used += 1
         # "before yesterday" and "before before yesterday"
-        elif (word == "abansdahir" or
-              (word == "abans" and wordNext == "ahir")) and not fromFlag:
+        elif (word == "abansahir") and not fromFlag:
             dayOffset -= 2
             used += 1
-            if wordNext == "ahir":
-                used += 1
-        elif word == "abans" and wordNext == "abans" and wordNextNext == \
-                "ahir" and not fromFlag:
-            dayOffset -= 3
-            used += 3
-        elif word == "abansdabansdahir" and not fromFlag:
+        elif word == "abansabansahir" and not fromFlag:
             dayOffset -= 3
             used += 1
-        # day after tomorrow
-        elif word == "demà" and wordNext == "passat" and not fromFlag:
+        # day after tomorrow and after after tomorrow
+        elif word == "demàpassat" and not fromFlag:
             dayOffset += 2
-            used = 2
-        # day before yesterday
-        elif word == "abans" and wordNext == "ahir" and not fromFlag:
-            dayOffset -= 2
-            used = 2
+            used = 1
+        elif word == "demàpassatpassat" and not fromFlag:
+            dayOffset += 3
+            used = 1
         # parse 5 days, 10 weeks, last week, next week, week after
         elif word == "dia":
             if wordNext == "després" or wordNext == "abans":
@@ -597,7 +606,9 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
         validFollowups.append("avui")
         validFollowups.append("demà")
         validFollowups.append("ahir")
-        validFollowups.append("abansdahir")
+        validFollowups.append("abansahir")
+        validFollowups.append("abansabansahir")
+        validFollowups.append("demàpassat")
         validFollowups.append("ara")
         validFollowups.append("ja")
         validFollowups.append("abans")
@@ -609,22 +620,19 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
                     word == "passat" or word == "abans" or word == "em"):
                 used = 2
                 fromFlag = True
-            if wordNext == "demà" and word != "passat":
+            if wordNext == "demà":
                 dayOffset += 1
             elif wordNext == "ahir":
                 dayOffset -= 1
-            elif wordNext == "abansdahir":
+            elif wordNext == "abansahir":
                 dayOffset -= 2
-            elif wordNext == "abans" and wordNextNext == "ahir":
-                dayOffset -= 2
-            elif (wordNext == "abans" and wordNextNext == "abans" and
-                  wordNextNextNext == "ahir"):
+            elif wordNext == "abansabansahir":
                 dayOffset -= 3
             elif wordNext in days:
                 d = days.index(wordNext)
                 tmpOffset = (d + 1) - int(today)
                 used = 2
-                if wordNextNext == "feira":
+                if wordNextNext == "dia":
                     used += 1
                 if tmpOffset < 0:
                     tmpOffset += 7
@@ -686,12 +694,12 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
         wordNextNextNext = words[idx + 3] if idx + 3 < len(words) else ""
         # parse noon, midnight, morning, afternoon, evening
         used = 0
-        if word == "mig" and wordNext == "dia":
+        if word == "migdia":
             hrAbs = 12
-            used += 2
-        elif word == "mija" and wordNext == "nit":
+            used += 1
+        elif word == "mijanit":
             hrAbs = 0
-            used += 2
+            used += 1
         elif word == "matí":
             if not hrAbs:
                 hrAbs = 8
@@ -708,7 +716,7 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
             if not hrAbs:
                 hrAbs = 10
             used += 2
-        elif word == "final" and wordNext == "tarda":
+        elif word == "vespre" or (word == "final" and wordNext == "tarda"):
             if not hrAbs:
                 hrAbs = 19
             used += 2
@@ -716,10 +724,10 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
             if not hrAbs:
                 hrAbs = 11
             used += 2
-        elif word == "tantas" and wordNext == "manha":
+        elif word == "matinada":
             if not hrAbs:
                 hrAbs = 4
-            used += 2
+            used += 1
         elif word == "nit":
             if not hrAbs:
                 hrAbs = 22
@@ -782,7 +790,7 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
                     elif wordNext == "matí":
                         remainder = "am"
                         used += 1
-                    elif wordNext == "tarda":
+                    elif (wordNext == "tarda" or wordNext == "vespre"):
                         remainder = "pm"
                         used += 1
                     elif wordNext == "nit":
@@ -794,7 +802,7 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
                     elif wordNext in thises and wordNextNext == "matí":
                         remainder = "am"
                         used = 2
-                    elif wordNext in thises and wordNextNext == "tarda":
+                    elif wordNext in thises and (wordNextNext == "tarda" or wordNextNext == "vespre"):
                         remainder = "pm"
                         used = 2
                     elif wordNext in thises and wordNextNext == "nit":
@@ -842,13 +850,14 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
                 else:
                     if (wordNext == "pm" or
                             wordNext == "p.m." or
-                            wordNext == "tarde"):
+                            wordNext == "tarda" or
+                            wordNext == "vespre"):
                         strHH = strNum
                         remainder = "pm"
                         used = 1
                     elif (wordNext == "am" or
                           wordNext == "a.m." or
-                          wordNext == "manha"):
+                          wordNext == "matí"):
                         strHH = strNum
                         remainder = "am"
                         used = 1
@@ -906,7 +915,7 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
                         strMM = 00
                         if wordNext == "en" and wordNextNext == "punt":
                             used += 2
-                            if wordNextNextNext == "tarda":
+                            if (wordNextNextNext == "tarda" or wordNextNextNext == "vespre"):
                                 remainder = "pm"
                                 used += 1
                             elif wordNextNextNext == "matí":
@@ -1042,10 +1051,10 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
 
 def _ca_pruning(text, symbols=True, accents=False, agressive=True):
     # agressive ca word pruning
-    words = ["la", "el", "els", "les", "de", "dels",
-             "ell", "ells", "me", "és", "som", "al", "a", "dins", "nosaltres", "per",
+    words = ["l", "la", "el", "els", "les", "de", "dels",
+             "ell", "ells", "me", "és", "som", "al", "a", "dins", "per",
              "aquest", "aquesta", "això", "aixina", "en", "aquell", "aquella",
-             "va", "fou", "quin", "quina"]
+             "va", "vam", "vaig", "quin", "quina"]
     if symbols:
         symbols = [".", ",", ";", ":", "!", "?", "¡", "¿"]
         for symbol in symbols:
@@ -1108,7 +1117,7 @@ def get_gender_ca(word, context=""):
     singular = word.rstrip("s")
     if singular in _GENDERS_CA:
         return _GENDERS_CA[singular]
-    # in Catalan the last vowel usually defines the gender of a word
+    # in Catalan the last vowel usually dosn't defines the gender of a word
     # the gender of the determinant takes precedence over this rule
     for end_str in _FEMALE_ENDINGS_CA:
         if word.endswith(end_str):

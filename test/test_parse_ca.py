@@ -184,59 +184,66 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 00:00:00", "dia")
         testExtract("quin dia és demà",
                     "2017-06-28 00:00:00", "dia")
-        testExtract("quin dia fou ahir",
-                    "2017-06-26 00:00:00", "dia")
-        testExtract("quin dia fou abans ahir",
-                    "2017-06-25 00:00:00", "dia")
-        testExtract("quin dia fou abans d'ahir",
-                    "2017-06-25 00:00:00", "dia")
-        testExtract("quin dia fou abans-d'ahir",
-                    "2017-06-25 00:00:00", "dia")
-        testExtract("quin dia fou abans d'abans d'ahir",
-                    "2017-06-24 00:00:00", "dia")
-        #FIXME
-        #testExtract("fer el sopar en 5 dies",
-        #            "2017-07-02 00:00:00", "fer el sopar")
-        #testExtract("quin temps farà demà?",
-        #            "2017-06-29 00:00:00", "quin temps")
+        testExtract("quin dia va ser ahir",
+                    "2017-06-26 00:00:00", "dia ser")
+        testExtract("quin dia va ser abans ahir",
+                    "2017-06-25 00:00:00", "dia ser")
+        testExtract("quin dia va ser abans d'ahir",
+                    "2017-06-25 00:00:00", "dia ser")
+        testExtract("quin dia va ser abans-d'ahir",
+                    "2017-06-25 00:00:00", "dia ser")
+        testExtract("quin dia va ser abans d'abans d'ahir",
+                    "2017-06-24 00:00:00", "dia ser")
+        testExtract("fer el sopar d'aquí 5 dies",
+                    "2017-07-02 00:00:00", "fer sopar aquí")
+        testExtract("fer el sopar en 5 dies",
+                    "2017-07-02 00:00:00", "fer sopar")
+        testExtract("quin temps farà demà?",
+                    "2017-06-28 00:00:00", "temps farà")
+        testExtract("quin temps farà demà-passat?",
+                    "2017-06-29 00:00:00", "temps farà")
+        testExtract("quin temps farà despús-demà?",
+                    "2017-06-29 00:00:00", "temps farà")
+        testExtract("quin temps farà despús demà?",
+                    "2017-06-29 00:00:00", "temps farà")
         testExtract("truca a la mare les 10:45 pm",
                     "2017-06-27 22:45:00", "truca mare")
         testExtract("quin temps fa el divendres de matí",
                     "2017-06-30 08:00:00", "temps fa")
-        #testExtract("truca'm per a quedar d'aqui a 8 setmanes i 2 dies",
-        #            "2017-08-24 00:00:00", "truca quedar")
+        testExtract("truca'm per a quedar d'aquí a 8 setmanes i 2 dies",
+                    "2017-08-24 00:00:00", "truca m quedar aquí i")
         testExtract("Toca black-metal 2 dies després de divendres",
                     "2017-07-02 00:00:00", "toca black-metal")
         testExtract("Toca satanic black metal 2 dies per a aquest divendres",
                     "2017-07-02 00:00:00", "toca satanic black metal")
-        #testExtract("Toca super black metal 2 dies a partir d'aquest divendres",
-        #            "2017-07-02 00:00:00", "toca super black metal")
+        testExtract("Toca super black metal 2 dies a partir d'aquest divendres",
+                    "2017-07-02 00:00:00", "toca super black metal")
         testExtract("Começa la invasió a les 3:45 pm de dijous",
                     "2017-06-29 15:45:00", "começa invasió")
         testExtract("dilluns, compra formatge",
                     "2017-07-03 00:00:00", "compra formatge")
-        #testExtract("Envia felicitacions d'aquí a 5 anys",
-        #            "2022-06-27 00:00:00", "Envia felicitacions")
-        #testExtract("Envia felicitacions en 5 anys",
-        #            "2022-06-27 00:00:00", "Envia felicitacions")
+        testExtract("Envia felicitacions d'aquí a 5 anys",
+                    "2022-06-27 00:00:00", "envia felicitacions aquí")
+        testExtract("Envia felicitacions en 5 anys",
+                    "2022-06-27 00:00:00", "envia felicitacions")
         testExtract("Truca per Skype a la mare pròxim dijous a les 12:45 pm",
                     "2017-06-29 12:45:00", "truca skype mare")
         testExtract("quin temps fa aquest divendres?",
                     "2017-06-30 00:00:00", "temps fa")
         testExtract("quin temps fa aquest divendres per la tarda?",
                     "2017-06-30 15:00:00", "temps fa")
-        #testExtract("quin temps fa aquest divendres de matinada?",
-        #            "2017-06-30 04:00:00", "temps fa")
-        #testExtract("quin temps fa aquest divendres a mitja nit?",
-        #            "2017-06-30 00:00:00", "temps fa")
-        #testExtract("quin temps fa aquest divendres al migdia?",
-        #            "2017-06-30 12:00:00", "temps fa")
+        testExtract("quin temps farà aquest divendres de matinada?",
+                    "2017-06-30 04:00:00", "temps farà")
+        testExtract("quin temps fa aquest divendres a mitja nit?",
+                    "2017-06-30 00:00:00", "temps fa mitjanit")
+        testExtract("quin temps fa aquest divendres al migdia?",
+                    "2017-06-30 12:00:00", "temps fa")
         testExtract("quin temps fa aquest divendres al final de tarda?",
                     "2017-06-30 19:00:00", "temps fa")
         testExtract("quin temps fa aquest divendres a mig matí?",
                     "2017-06-30 10:00:00", "temps fa")
-        #testExtract("recorda de trucar a la mare el dia 3 d'agost",
-        #            "2017-08-03 00:00:00", "recorda trucar mare")
+        testExtract("recorda de trucar a la mare el dia 3 d'agost",
+                    "2017-08-03 00:00:00", "recorda trucar mare")
 
         testExtract("compra ganivets el 13 de maig",
                     "2018-05-13 00:00:00", "compra ganivets")
@@ -246,26 +253,26 @@ class TestNormalize(unittest.TestCase):
                     "2018-05-13 00:00:00", "compra espelmes")
         testExtract("beure cervesa el 13 de maig",
                     "2018-05-13 00:00:00", "beure cervesa")
-        #testExtract("quin temps farà 1 dia després de demà",
-        #            "2017-06-29 00:00:00", "quin temps")
+        testExtract("quin temps farà 1 dia després de demà",
+                    "2017-06-29 00:00:00", "temps farà")
         testExtract("quin temps farà a les 0700 hores",
                     "2017-06-27 07:00:00", "temps farà")
         testExtract("quin temps farà demà a les 7 en punt",
                     "2017-06-28 07:00:00", "temps farà")
-        #testExtract("quin temps farà demà a les 2 de la tarda",
-        #            "2017-06-28 14:00:00", "quin temps")
+        testExtract("quin temps farà demà a les 2 de la tarda",
+                    "2017-06-28 14:00:00", "temps farà")
         testExtract("quin temps farà demà a les 2",
                     "2017-06-28 02:00:00", "temps farà")
-        #testExtract("quin temps farà a les 2 de la tarda de divendres vinent",
-        #            "2017-06-30 14:00:00", "temps farà vinent")
-        #testExtract("recorda'm de despertar en 4 anys",
-        #            "2021-06-27 00:00:00", "recorda despertar")
-        #testExtract("recorda'm de despertar en 4 anys i 4 dies",
-        #            "2021-07-01 00:00:00", "recorda despertar")
+        testExtract("quin temps farà a les 2 de la tarda de divendres vinent",
+                    "2017-06-30 14:00:00", "temps farà vinent")
+        testExtract("recorda'm de despertar en 4 anys",
+                    "2021-06-27 00:00:00", "recorda m despertar")
+        testExtract("recorda'm de despertar en 4 anys i 4 dies",
+                    "2021-07-01 00:00:00", "recorda m despertar i")
         #testExtract("dorm 3 dies després de demà",
         #            "2017-07-02 00:00:00", "dorm")
-        #testExtract("concerta cita d'aquí a 2 setmanes i 6 dies després de dissabte",
-        #            "2017-07-21 00:00:00", "concerta cita")
+        testExtract("concerta cita d'aquí a 2 setmanes i 6 dies després de dissabte",
+                    "2017-07-21 00:00:00", "concerta cita aquí i")
         testExtract("comença la festa a les 8 en punt de la nit de dijous",
                     "2017-06-29 20:00:00", "comença festa")
 
