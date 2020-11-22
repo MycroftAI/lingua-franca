@@ -459,8 +459,9 @@ def localized_function(run_own_code_on=[type(None)]):
     def localized_function_decorator(func):
         # Wrapper's logic
         def _call_localized_function(func, *args, **kwargs):
+            lang_code = None
             load_langs_on_demand = config.load_langs_on_demand
-            unload_language_afterward = True
+            unload_language_afterward = False
             func_signature = signature(func)
             func_params = list(func_signature.parameters)
             lang_param_index = func_params.index('lang')
