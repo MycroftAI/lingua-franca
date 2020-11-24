@@ -5,7 +5,7 @@ from inspect import signature
 from sys import version
 from warnings import warn
 
-from . import config
+from lingua_franca import config
 
 _SUPPORTED_LANGUAGES = ("cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sv")
