@@ -190,6 +190,22 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False), "tretze i dos")
 
+        # Traditional
+        dt = datetime.datetime(2017, 1, 31, 12, 15, 0)
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False,
+                                   spoken_quarters=False,
+                                   traditional=False),
+                         "dotze i quinze")
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False,
+                                   spoken_quarters=True,
+                                   traditional=False),
+                         "dotze i quart")
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False, traditional=True),
+                         "un quart d'una")
+
     def test_midnight(self):
         dt = datetime.datetime(2017, 1, 31,
                                0, 2, 3)
