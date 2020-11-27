@@ -118,7 +118,8 @@ def pronounce_number_ca(number, places=2):
     return result
 
 
-def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
+                 spoken_quarters=False, traditional=False):
     """
     Format a time to a comfortable human format
      For example, generate 'cinc trenta' for speech or '5:30' for
@@ -149,7 +150,10 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False):
 
     # Generate a speakable version of the time
     speak = ""
-    if use_24hour:
+    if traditional:
+        # TODO https://en.wikipedia.org/wiki/Catalan_time_system
+        raise NotImplementedError
+    elif use_24hour:
         # simply speak the number
         if dt.hour == 1:
             speak += "una"
@@ -163,8 +167,12 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False):
             speak += pronounce_number_ca(dt.hour)
 
         if dt.minute > 0:
-            speak += " i " + pronounce_number_ca(dt.minute)
-
+            if spoken_quarters and dt.minute % 15 == 0:
+                # TODO {hour} i quinze vs {hour} i quart
+                # 15/30/45 needs handling
+                speak += " i quart"
+            else:
+                speak += " i " + pronounce_number_ca(dt.minute)
     else:
         # speak number and add daytime identifier
         # (equivalent to "in the morning")
@@ -186,7 +194,13 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False):
                 speak = pronounce_number_ca(dt.hour - 12)
 
             if dt.minute != 0:
-                speak += " i " + pronounce_number_ca(dt.minute)
+                if spoken_quarters and dt.minute%15 == 0:
+                    # TODO {hour} i quinze vs {hour} i quart
+                    # 15/30/45 needs handling
+                    speak += " i quart"
+                else:
+                    speak += " i " + pronounce_number_ca(dt.minute)
+
             # exact time
             if dt.minute == 0 and not use_ampm:
                 # 3:00
