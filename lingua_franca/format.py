@@ -261,7 +261,7 @@ def nice_number(number, lang='', speech=True, denominators=None):
 
 @localized_function()
 def nice_time(dt, lang='', speech=True, use_24hour=False,
-              use_ampm=False):
+              use_ampm=False, spoken_quarters=False, traditional=False):
     """
     Format a time to a comfortable human format
 
@@ -274,6 +274,11 @@ def nice_time(dt, lang='', speech=True, use_24hour=False,
         speech (bool): format for speech (default/True) or display (False)
         use_24hour (bool): output in 24-hour/military or 12-hour format
         use_ampm (bool): include the am/pm for 12-hour format
+        spoken_quarters (bool): speak "a quarter past eleven" vs
+                               "eleven fifteen", or "eleven and a half" vs
+                               "eleven thirty"
+        traditional (bool): use alternative time system exclusive to this
+                            language
     Returns:
         (str): The formatted time string
     """
