@@ -140,9 +140,9 @@ class TestNiceDateFormat(unittest.TestCase):
                          nice_time(dt, "ca-es", True, False, False))
 
         self.assertEqual(nice_time(dt, lang="ca"),
-                         "una i vint-i-dos")
+                         "la una i vint-i-dos")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
-                         "una i vint-i-dos de la tarda")
+                         "la una i vint-i-dos de la tarda")
         self.assertEqual(nice_time(dt, lang="ca", speech=False), "1:22")
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
                                    use_ampm=True), "1:22 PM")
@@ -151,16 +151,16 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
                                    use_24hour=True, use_ampm=True), "13:22")
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=True), "tretze i vint-i-dos")
+                                   use_ampm=True), "les tretze i vint-i-dos")
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False), "tretze i vint-i-dos")
+                                   use_ampm=False), "les tretze i vint-i-dos")
 
         dt = datetime.datetime(2017, 1, 31,
                                13, 0, 3)
         self.assertEqual(nice_time(dt, lang="ca"),
-                         "una en punt")
+                         "la una en punt")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
-                         "una de la tarda")
+                         "la una en punt de la tarda")
         self.assertEqual(nice_time(dt, lang="ca", speech=False),
                          "1:00")
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
@@ -170,13 +170,13 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
                                    use_24hour=True, use_ampm=True), "13:00")
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=True), "tretze")
+                                   use_ampm=True), "les tretze")
         dt = datetime.datetime(2017, 1, 31,
                                13, 2, 3)
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True),
-                         "tretze i dos")
+                         "les tretze i dos")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
-                         "una i dos de la tarda")
+                         "la una i dos de la tarda")
         self.assertEqual(nice_time(dt, lang="ca", speech=False),
                          "1:02")
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
@@ -186,35 +186,57 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
                                    use_24hour=True, use_ampm=True), "13:02")
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=True), "tretze i dos")
+                                   use_ampm=True), "les tretze i dos")
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False), "tretze i dos")
+                                   use_ampm=False), "les tretze i dos")
 
-        # Traditional
+
         dt = datetime.datetime(2017, 1, 31, 12, 15, 0)
+        # Default Watch system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False),
+                         "les dotze i quinze")
+        # Spanish-like time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False,
-                                   spoken_quarters=False,
-                                   traditional=False),
-                         "dotze i quinze")
+                                   variant="spanish-like"),
+                         "les dotze i quart")
+        # Catalan Bell time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False,
-                                   spoken_quarters=True,
-                                   traditional=False),
-                         "dotze i quart")
+                                   use_ampm=False, variant="bell"),
+                         "un quart d'una de la tarda")
+        # Catalan Full Bell time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False, traditional=True),
-                         "un quart d'una")
+                                   use_ampm=False, variant="bell"),
+                         "un quart d'una de la tarda")
+
+        dt = datetime.datetime(2017, 1, 31, 00, 14, 0)
+        # Default Watch system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False),
+                         "les zero i catorze")
+        # Spanish-like time system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False, variant = "spanish-like"),
+                         "les dotze i catorze")
+        # Catalan Bell time system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False, variant = "bell"),
+                         "les dotze i catorze minuts de la nit")
+        # Catalan Full Bell time system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False, variant = "full-bell"),
+                         "un quart d'una de la matinada")
 
     def test_midnight(self):
         dt = datetime.datetime(2017, 1, 31,
                                0, 2, 3)
         self.assertEqual(nice_time(dt, lang="ca"),
-                         "dotze i dos")
+                         "les dotze i dos")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
-                         "dotze i dos de la nit")
+                         "les dotze i dos de la nit")
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True),
-                         "zero i dos")
+                         "les zero i dos")
         self.assertEqual(nice_time(dt, lang="ca", speech=False),
                          "12:02")
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
@@ -225,17 +247,17 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_24hour=True,
                                    use_ampm=True), "00:02")
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=True), "zero i dos")
+                                   use_ampm=True), "les zero i dos")
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False), "zero i dos")
+                                   use_ampm=False), "les zero i dos")
 
     def test_midday(self):
         dt = datetime.datetime(2017, 1, 31,
                                12, 15, 9)
         self.assertEqual(nice_time(dt, lang="ca-es"),
-                         "dotze i quinze")
+                         "les dotze i quinze")
         self.assertEqual(nice_time(dt, lang="ca-es", use_ampm=True),
-                         "dotze i quinze del migdia")
+                         "les dotze i quinze del migdia")
         self.assertEqual(nice_time(dt, lang="ca-es", speech=False),
                          "12:15")
         self.assertEqual(nice_time(dt, lang="ca-es", speech=False,
@@ -249,20 +271,20 @@ class TestNiceDateFormat(unittest.TestCase):
                          "12:15")
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=True,
                                    use_ampm=True),
-                         "dotze i quinze")
+                         "les dotze i quinze")
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=True,
                                    use_ampm=False),
-                         "dotze i quinze")
+                         "les dotze i quinze")
 
     def test_minutes_to_hour(self):
         # "twenty minutes to midnight"
         dt = datetime.datetime(2017, 1, 31,
                                19, 40, 49)
         self.assertEqual(nice_time(dt, lang="ca-es"),
-                         "set i quaranta")
+                         "les set i quaranta")
         #FIXME
         self.assertEqual(nice_time(dt, lang="ca-es", use_ampm=True),
-                         "set i quaranta del vespre")
+                         "les set i quaranta del vespre")
         self.assertEqual(nice_time(dt, lang="ca-es", speech=False),
                          "7:40")
         self.assertEqual(nice_time(dt, lang="ca-es", speech=False,
@@ -276,53 +298,53 @@ class TestNiceDateFormat(unittest.TestCase):
                          "19:40")
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=True,
                                    use_ampm=True),
-                         "dinou i quaranta")
+                         "les dinou i quaranta")
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=True,
                                    use_ampm=False),
-                         "dinou i quaranta")
+                         "les dinou i quaranta")
 
     def test_minutes_past_hour(self):
         # "quarter past ten"
         dt = datetime.datetime(2017, 1, 31,
                                1, 15, 00)
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=True),
-                         "una i quinze")
+                         "la una i quinze")
         self.assertEqual(nice_time(dt, lang="ca-es"),
-                         "una i quinze")
+                         "la una i quinze")
 
         dt = datetime.datetime(2017, 1, 31,
                                1, 35, 00)
         self.assertEqual(nice_time(dt, lang="ca-es"),
-                         "una i trenta-cinc")
+                         "la una i trenta-cinc")
 
         dt = datetime.datetime(2017, 1, 31,
                                1, 45, 00)
         self.assertEqual(nice_time(dt, lang="ca-es"),
-                         "una i quaranta-cinc")
+                         "la una i quaranta-cinc")
 
         dt = datetime.datetime(2017, 1, 31,
                                4, 50, 00)
         self.assertEqual(nice_time(dt, lang="ca-es"),
-                         "quatre i cinquanta")
+                         "les quatre i cinquanta")
 
         dt = datetime.datetime(2017, 1, 31,
                                5, 55, 00)
         self.assertEqual(nice_time(dt, lang="ca-es"),
-                         "cinc i cinquanta-cinc")
+                         "les cinc i cinquanta-cinc")
 
         dt = datetime.datetime(2017, 1, 31,
                                5, 30, 00)
         self.assertEqual(nice_time(dt, lang="ca-es", use_ampm=True),
-                         "cinc i trenta de la matinada")
+                         "les cinc i trenta de la matinada")
 
         dt = datetime.datetime(2017, 1, 31,
                                23, 15, 9)
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=True,
                                    use_ampm=True),
-                         "vint-i-tres i quinze")
+                         "les vint-i-tres i quinze")
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=False,
                                    use_ampm=True),
-                         "onze i quinze de la nit")
+                         "les onze i quinze de la nit")
 
 
 if __name__ == "__main__":
