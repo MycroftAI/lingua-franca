@@ -341,6 +341,37 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_ampm=True),
                          "les onze i quinze de la nit")
 
+    def test_variant_strings(self):
+        dt = datetime.datetime(2017, 1, 31, 12, 15, 0)
+        # Default variant
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False, variant="default"),
+                         "les dotze i quinze")
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False),
+                         "les dotze i quinze")
+
+        dt = datetime.datetime(2017, 1, 31, 00, 14, 0)
+        # Spanish-like time system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False,
+                                   variant="spanish"),
+                         "les dotze i catorze")
+        # Catalan Bell time system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False, variant="bell"),
+                         "les dotze i catorze minuts de la nit")
+
+        # Catalan Full Bell time system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False,
+                                   variant="full_bell"),
+                         "un quart d'una de la matinada")
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False,
+                                   variant="traditional"),
+                         "un quart d'una de la matinada")
+
 
 if __name__ == "__main__":
     unittest.main()

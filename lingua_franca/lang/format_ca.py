@@ -17,6 +17,7 @@
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_ca import _FRACTION_STRING_CA, \
     _NUM_STRING_CA
+from lingua_franca.internal import lookup_variant
 from enum import IntEnum
 
 
@@ -126,6 +127,13 @@ def pronounce_number_ca(number, places=2):
     return result
 
 
+@lookup_variant({
+    "default": TimeVariantCA.DEFAULT,
+    "traditional": TimeVariantCA.FULL_BELL,
+    "bell": TimeVariantCA.BELL,
+    "full_bell": TimeVariantCA.FULL_BELL,
+    "spanish": TimeVariantCA.SPANISH_LIKE
+})
 def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
                  variant=None):
     """
