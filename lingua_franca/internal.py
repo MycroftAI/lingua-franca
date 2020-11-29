@@ -5,6 +5,8 @@ from inspect import signature
 from sys import version
 from warnings import warn
 
+from lingua_franca import config
+
 _SUPPORTED_LANGUAGES = ("cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sl", "sv")
 
@@ -459,15 +461,13 @@ def localized_function(run_own_code_on=[type(None)]):
     def localized_function_decorator(func):
         # Wrapper's logic
         def _call_localized_function(func, *args, **kwargs):
+            lang_code = None
+            load_langs_on_demand = config.load_langs_on_demand
+            unload_language_afterward = False
             func_signature = signature(func)
             func_params = list(func_signature.parameters)
             lang_param_index = func_params.index('lang')
             full_lang_code = None
-
-            # Momentarily assume we're not passing a lang code
-            lang_code = get_default_lang()
-            if not lang_code:
-                raise NoSuchModuleError("No language module loaded.")
 
             # Check if we're passing a lang as a kwarg
             if 'lang' in kwargs.keys():
@@ -488,6 +488,15 @@ def localized_function(run_own_code_on=[type(None)]):
                         lang_param in _SUPPORTED_FULL_LOCALIZATIONS:
                     lang_code = args[lang_param_index]
                 args = args[:lang_param_index] + args[lang_param_index+1:]
+
+            # Turns out, we aren't passing a lang code at all
+            lang_code = lang_code or get_default_lang()
+            if not lang_code:
+                if load_langs_on_demand:
+                    raise NoSuchModuleError("No language module loaded "
+                                            "and none specified.")
+                else:
+                    raise NoSuchModuleError("No language module loaded.")
 
             if lang_code not in _SUPPORTED_LANGUAGES:
                 try:
@@ -530,9 +539,14 @@ def localized_function(run_own_code_on=[type(None)]):
                 raise NoSuchModuleError("Module lingua_franca." +
                                         _module_name + " not recognized")
             if lang_code not in _localized_functions[_module_name].keys():
-                raise NoSuchModuleError(_module_name + " module of language '" +
-                                        lang_code + "' is not currently loaded.")
-
+                if load_langs_on_demand:
+                    load_language(lang_code)
+                    unload_language_afterward = True
+                else:
+                    raise NoSuchModuleError(_module_name +
+                                            " module of language '" +
+                                            lang_code +
+                                            "' is not currently loaded.")
             func_name = func.__name__.split('.')[-1]
             # At some point in the past, both the module and the language
             # were imported/loaded, respectively.
@@ -575,6 +589,8 @@ def localized_function(run_own_code_on=[type(None)]):
             # Unload all the stuff we just assembled and imported
             del localized_func
             del _module
+            if unload_language_afterward:
+                unload_language(lang_code)
             return r_val
 
         # Actual wrapper
