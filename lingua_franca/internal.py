@@ -724,14 +724,12 @@ def lookup_variant(mappings, key="variant"):
     Example usage:
 
         @lookup_variant({
-            "ca_default": TimeVariantCA.DEFAULT,
-            "ca_traditional": TimeVariantCA.FULL_BELL,
-            "ca_bell": TimeVariantCA.BELL,
-            "ca_full_bell": TimeVariantCA.FULL_BELL,
-            "ca_spanish": TimeVariantCA.SPANISH_LIKE
+            "default": TimeVariant.DEFAULT,
+            "traditional": TimeVariant.TRADITIONAL
         })
-        def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
+        def nice_time_XX(dt, speech=True, use_24hour=False, use_ampm=False,
                          variant=None):
+            variant = variant or TimeVariant.DEFAULT
             (...)
 
     """
