@@ -372,6 +372,11 @@ class TestNiceDateFormat(unittest.TestCase):
                                    variant="traditional"),
                          "un quart d'una de la matinada")
 
+        # error
+        with self.assertRaises(ValueError):
+            nice_time(dt, lang="ca", variant="invalid")
+            nice_time(dt, lang="ca", variant="bad_VARIANT")
+
 
 if __name__ == "__main__":
     unittest.main()

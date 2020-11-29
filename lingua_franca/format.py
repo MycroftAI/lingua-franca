@@ -273,7 +273,8 @@ def nice_time(dt, lang='', speech=True, use_24hour=False,
         speech (bool): format for speech (default/True) or display (False)
         use_24hour (bool): output in 24-hour/military or 12-hour format
         use_ampm (bool): include the am/pm for 12-hour format
-        variant (IntEnum): use alternative time system
+        variant (string): alternative time system to be used, string must
+                          match language specific mappings
     Returns:
         (str): The formatted time string
     """
