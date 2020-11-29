@@ -277,7 +277,6 @@ class TestNiceDateFormat(unittest.TestCase):
                                19, 40, 49)
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          "les set i quaranta")
-        # FIXME
         self.assertEqual(nice_time(dt, lang="ca-es", use_ampm=True),
                          "les set i quaranta del vespre")
         self.assertEqual(nice_time(dt, lang="ca-es", speech=False),

@@ -145,11 +145,22 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(
             normalize("prova zero deu onze dotze tretze", lang="ca"),
             "prova 0 10 11 12 13")
-        #FIXME: seixanta-sis > 66
+        #TODO: seixanta-sis > 66
         #self.assertEqual(
         #    normalize("prova 1000 600 seixanta-sis", lang="ca",
         #              remove_articles=False),
         #    "prova 1000 600 66")
+        #TODO: mil dotze > 1012
+        #self.assertEqual(
+        #    normalize("prova mil dotze", lang="ca",
+        #              remove_articles=False),
+        #    "prova 1012")
+        #TODO: dues-centes vint-i-quatre > 224
+        #self.assertEqual(
+        #    normalize("prova dues-centes vint-i-quatre", lang="ca",
+        #              remove_articles=False),
+        #    "prova 224")
+
         self.assertEqual(
             normalize("test set i mig", lang="ca",
                       remove_articles=False),
