@@ -731,3 +731,46 @@ def resolve_resource_file(res_name, data_dir=None):
         return filename
 
     return None  # Resource cannot be resolved
+
+
+def lookup_variant(mappings, key="variant"):
+    """function decorator
+    maps strings to Enums expected by language specific functions
+    mappings can be used to translate values read from configuration files
+
+    Example usage:
+
+        @lookup_variant({
+            "default": TimeVariant.DEFAULT,
+            "traditional": TimeVariant.TRADITIONAL
+        })
+        def nice_time_XX(dt, speech=True, use_24hour=False, use_ampm=False,
+                         variant=None):
+            variant = variant or TimeVariant.DEFAULT
+            (...)
+
+    """
+    if not isinstance(mappings, dict):
+        raise ValueError
+
+    # Begin wrapper
+    def lang_variant_function_decorator(func):
+
+        @wraps(func)
+        def call_function(*args, **kwargs):
+            if key in kwargs and isinstance(kwargs[key], str):
+                if kwargs[key] in mappings:
+                    kwargs[key] = mappings[kwargs[key]]
+                else:
+                    raise ValueError("Unknown variant, mapping does not "
+                                     "exist for {v}".format(v=key))
+            return func(*args, **kwargs)
+
+        return call_function
+
+    try:
+        return lang_variant_function_decorator
+    except NotImplementedError as e:
+        warn(str(e))
+        return
+

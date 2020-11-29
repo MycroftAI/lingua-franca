@@ -20,6 +20,7 @@ import datetime
 from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.format import nice_time
 from lingua_franca.format import pronounce_number
+from lingua_franca.lang.format_ca import TimeVariantCA
 
 
 def setUpModule():
@@ -139,8 +140,7 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          nice_time(dt, "ca-es", True, False, False))
 
-        self.assertEqual(nice_time(dt, lang="ca"),
-                         "la una i vint-i-dos")
+        self.assertEqual(nice_time(dt, lang="ca"), "la una i vint-i-dos")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
                          "la una i vint-i-dos de la tarda")
         self.assertEqual(nice_time(dt, lang="ca", speech=False), "1:22")
@@ -155,14 +155,11 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False), "les tretze i vint-i-dos")
 
-        dt = datetime.datetime(2017, 1, 31,
-                               13, 0, 3)
-        self.assertEqual(nice_time(dt, lang="ca"),
-                         "la una en punt")
+        dt = datetime.datetime(2017, 1, 31, 13, 0, 3)
+        self.assertEqual(nice_time(dt, lang="ca"), "la una en punt")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
                          "la una en punt de la tarda")
-        self.assertEqual(nice_time(dt, lang="ca", speech=False),
-                         "1:00")
+        self.assertEqual(nice_time(dt, lang="ca", speech=False), "1:00")
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
                                    use_ampm=True), "1:00 PM")
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
@@ -171,14 +168,13 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_24hour=True, use_ampm=True), "13:00")
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=True), "les tretze")
-        dt = datetime.datetime(2017, 1, 31,
-                               13, 2, 3)
+
+        dt = datetime.datetime(2017, 1, 31,  13, 2, 3)
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True),
                          "les tretze i dos")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
                          "la una i dos de la tarda")
-        self.assertEqual(nice_time(dt, lang="ca", speech=False),
-                         "1:02")
+        self.assertEqual(nice_time(dt, lang="ca", speech=False), "1:02")
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
                                    use_ampm=True), "1:02 PM")
         self.assertEqual(nice_time(dt, lang="ca", speech=False,
@@ -190,42 +186,41 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False), "les tretze i dos")
 
-
         dt = datetime.datetime(2017, 1, 31, 12, 15, 0)
         # Default Watch system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False),
-                         "les dotze i quinze")
+                                   use_ampm=False), "les dotze i quinze")
         # Spanish-like time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False,
-                                   variant="spanish-like"),
+                                   variant=TimeVariantCA.SPANISH_LIKE),
                          "les dotze i quart")
         # Catalan Bell time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False, variant="bell"),
+                                   use_ampm=False, variant=TimeVariantCA.BELL),
                          "un quart d'una de la tarda")
         # Catalan Full Bell time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False, variant="bell"),
+                                   use_ampm=False, variant=TimeVariantCA.BELL),
                          "un quart d'una de la tarda")
 
         dt = datetime.datetime(2017, 1, 31, 00, 14, 0)
         # Default Watch system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False),
-                         "les zero i catorze")
+                                   use_ampm=False), "les zero i catorze")
         # Spanish-like time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False, variant = "spanish-like"),
+                                   use_ampm=False,
+                                   variant=TimeVariantCA.SPANISH_LIKE),
                          "les dotze i catorze")
         # Catalan Bell time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False, variant = "bell"),
+                                   use_ampm=False, variant=TimeVariantCA.BELL),
                          "les dotze i catorze minuts de la nit")
         # Catalan Full Bell time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
-                                   use_ampm=False, variant = "full-bell"),
+                                   use_ampm=False,
+                                   variant=TimeVariantCA.FULL_BELL),
                          "un quart d'una de la matinada")
 
     def test_midnight(self):
@@ -282,7 +277,7 @@ class TestNiceDateFormat(unittest.TestCase):
                                19, 40, 49)
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          "les set i quaranta")
-        #FIXME
+        # FIXME
         self.assertEqual(nice_time(dt, lang="ca-es", use_ampm=True),
                          "les set i quaranta del vespre")
         self.assertEqual(nice_time(dt, lang="ca-es", speech=False),
@@ -345,6 +340,43 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=False,
                                    use_ampm=True),
                          "les onze i quinze de la nit")
+
+    def test_variant_strings(self):
+        dt = datetime.datetime(2017, 1, 31, 12, 15, 0)
+        # Default variant
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False, variant="default"),
+                         "les dotze i quinze")
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False),
+                         "les dotze i quinze")
+
+        dt = datetime.datetime(2017, 1, 31, 00, 14, 0)
+        # Spanish-like time system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False,
+                                   variant="spanish"),
+                         "les dotze i catorze")
+        # Catalan Bell time system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False, variant="bell"),
+                         "les dotze i catorze minuts de la nit")
+
+        # Catalan Full Bell time system
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False,
+                                   variant="full_bell"),
+                         "un quart d'una de la matinada")
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False,
+                                   variant="traditional"),
+                         "un quart d'una de la matinada")
+
+        # error
+        with self.assertRaises(ValueError):
+            nice_time(dt, lang="ca", variant="invalid")
+            nice_time(dt, lang="ca", variant="bad_VARIANT")
+            nice_time(dt, lang="ca", variant="")
 
 
 if __name__ == "__main__":

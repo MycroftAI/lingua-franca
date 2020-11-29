@@ -17,6 +17,15 @@
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_ca import _FRACTION_STRING_CA, \
     _NUM_STRING_CA
+from lingua_franca.internal import lookup_variant
+from enum import IntEnum
+
+
+class TimeVariantCA(IntEnum):
+    DEFAULT = 0
+    BELL = 1
+    FULL_BELL = 2
+    SPANISH_LIKE = 3
 
 
 def nice_number_ca(number, speech, denominators=range(1, 21)):
@@ -118,8 +127,15 @@ def pronounce_number_ca(number, places=2):
     return result
 
 
+@lookup_variant({
+    "default": TimeVariantCA.DEFAULT,
+    "traditional": TimeVariantCA.FULL_BELL,
+    "bell": TimeVariantCA.BELL,
+    "full_bell": TimeVariantCA.FULL_BELL,
+    "spanish": TimeVariantCA.SPANISH_LIKE
+})
 def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
-                 variant=False):
+                 variant=None):
     """
     Format a time to a comfortable human format
      For example, generate 'cinc trenta' for speech or '5:30' for
@@ -132,6 +148,8 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
     Returns:
         (str): The formatted time string
     """
+    variant = variant or TimeVariantCA.DEFAULT
+
     if use_24hour:
         # e.g. "03:01" or "14:22"
         string = dt.strftime("%H:%M")
@@ -150,12 +168,12 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
 
     # Generate a speakable version of the time
     speak = ""
-    if variant == "bell":
+    if variant == TimeVariantCA.BELL:
         # Bell Catalan Time System
         # https://en.wikipedia.org/wiki/Catalan_time_system
 
-        if dt.minute <7:
-            next_hour == False
+        if dt.minute < 7:
+            next_hour = False
         elif dt.minute == 7 or dt.minute == 8:
             speak += "mig quart"
             next_hour = True
@@ -166,49 +184,55 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
             next_hour = True
         elif dt.minute == 16:
             speak += "un quart i un minut"
-            next_hour = True 
+            next_hour = True
         elif dt.minute < 21:
-            speak += "un quart i " + pronounce_number_ca(dt.minute-15) + " minuts"
-            next_hour = True 
+            speak += "un quart i " + pronounce_number_ca(
+                dt.minute - 15) + " minuts"
+            next_hour = True
         elif dt.minute == 22 or dt.minute == 23:
             speak += "un quart i mig"
             next_hour = True
         elif dt.minute < 30:
-            speak += "un quart i " + pronounce_number_ca(dt.minute-15) + " minuts"
+            speak += "un quart i " + pronounce_number_ca(
+                dt.minute - 15) + " minuts"
             next_hour = True
         elif dt.minute == 30:
-            speak +="dos quarts"
+            speak += "dos quarts"
             next_hour = True
         elif dt.minute == 31:
             speak += "dos quarts i un minut"
-            next_hour = True 
+            next_hour = True
         elif dt.minute < 37:
-            speak += "dos quarts i " + pronounce_number_ca(dt.minute-30) + " minuts"
-            next_hour = True 
+            speak += "dos quarts i " + pronounce_number_ca(
+                dt.minute - 30) + " minuts"
+            next_hour = True
         elif dt.minute == 37 or dt.minute == 38:
             speak += "dos quarts i mig"
             next_hour = True
         elif dt.minute < 45:
-            speak += "dos quarts i " + pronounce_number_ca(dt.minute-30) + " minuts"
-            next_hour = True 
+            speak += "dos quarts i " + pronounce_number_ca(
+                dt.minute - 30) + " minuts"
+            next_hour = True
         elif dt.minute == 45:
-            speak +="tres quarts"
+            speak += "tres quarts"
             next_hour = True
         elif dt.minute == 46:
-            speak +="tres quarts i un minut"
+            speak += "tres quarts i un minut"
             next_hour = True
         elif dt.minute < 52:
-            speak += "tres quarts i " + pronounce_number_ca(dt.minute-45) + " minuts"
+            speak += "tres quarts i " + pronounce_number_ca(
+                dt.minute - 45) + " minuts"
             next_hour = True
         elif dt.minute == 52 or dt.minute == 53:
             speak += "tres quarts i mig"
             next_hour = True
         elif dt.minute > 53:
-            speak += "tres quarts i " + pronounce_number_ca(dt.minute-45) + " minuts"
+            speak += "tres quarts i " + pronounce_number_ca(
+                dt.minute - 45) + " minuts"
             next_hour = True
 
         if next_hour == True:
-            next_hour = (dt.hour + 1)%12
+            next_hour = (dt.hour + 1) % 12
             if next_hour == 0:
                 speak += " de dotze"
                 if dt.hour == 11:
@@ -248,20 +272,20 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
                 elif dt.hour >= 18 and dt.hour < 20:
                     speak += " del vespre"
                 elif dt.hour >= 21 and dt.hour <= 23:
-                    speak += " de la nit" 
+                    speak += " de la nit"
 
 
         else:
-            hour = dt.hour%12
+            hour = dt.hour % 12
             if hour == 0:
-               speak += "les dotze"
+                speak += "les dotze"
             elif hour == 1:
-               speak += "la una"
+                speak += "la una"
             elif hour == 2:
-               speak += "les dues"
+                speak += "les dues"
             else:
-               speak += "les " + pronounce_number_ca(hour)
-  
+                speak += "les " + pronounce_number_ca(hour)
+
             if dt.minute == 0:
                 speak += " en punt"
             elif dt.minute == 1:
@@ -282,21 +306,21 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
             elif dt.hour >= 19 and dt.hour < 21:
                 speak += " del vespre"
             elif dt.hour >= 21 and dt.hour <= 23:
-                speak += " de la nit" 
+                speak += " de la nit"
 
-    elif variant == "full-bell":
+    elif variant == TimeVariantCA.FULL_BELL:
         # Full Bell Catalan Time System
         # https://en.wikipedia.org/wiki/Catalan_time_system
 
-        if dt.minute <2:
+        if dt.minute < 2:
             # en punt
-            next_hour == False
-        if dt.minute <5:
+            next_hour = False
+        if dt.minute < 5:
             # tocades
-            next_hour == False
-        elif dt.minute <7:
+            next_hour = False
+        elif dt.minute < 7:
             # ben tocades
-            next_hour == False
+            next_hour = False
         elif dt.minute < 9:
             # mig quart
             speak += "mig quart"
@@ -367,7 +391,7 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
             next_hour = False
 
         if next_hour == True:
-            next_hour = (dt.hour + 1)%12
+            next_hour = (dt.hour + 1) % 12
             if next_hour == 0:
                 speak += " de dotze"
                 if dt.hour == 11:
@@ -407,24 +431,24 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
                 elif dt.hour >= 18 and dt.hour < 20:
                     speak += " del vespre"
                 elif dt.hour >= 21 and dt.hour <= 23:
-                    speak += " de la nit" 
+                    speak += " de la nit"
 
         else:
-            hour = dt.hour%12
+            hour = dt.hour % 12
             if dt.minute == 59:
-                hour = (hour+1)%12
+                hour = (hour + 1) % 12
             if hour == 0:
-               speak += "les dotze"
+                speak += "les dotze"
             elif hour == 1:
-               speak += "la una"
+                speak += "la una"
             elif hour == 2:
-               speak += "les dues"
+                speak += "les dues"
             else:
-               speak += "les " + pronounce_number_ca(hour)
-  
+                speak += "les " + pronounce_number_ca(hour)
+
             if dt.minute == 0:
                 speak += " en punt"
-            elif dt.minute >1 and dt.minute < 5:
+            elif dt.minute > 1 and dt.minute < 5:
                 if hour == 1:
                     speak += " tocada"
                 else:
@@ -466,9 +490,9 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
                 else:
                     speak += " del vespre"
             elif dt.hour <= 23:
-                speak += " de la nit" 
+                speak += " de la nit"
 
-    elif variant == "spanish-like":
+    elif variant == TimeVariantCA.SPANISH_LIKE:
         # Prepare for "tres menys quart" ??
         if dt.minute == 35:
             minute = -25
@@ -496,7 +520,7 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
         elif hour < 13:
             speak = "les " + pronounce_number_ca(hour)
         else:
-            speak = "les " + pronounce_number_ca(hour-12)
+            speak = "les " + pronounce_number_ca(hour - 12)
 
         if minute != 0:
             # les hores especials
@@ -511,8 +535,6 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
                     speak += " i " + pronounce_number_ca(minute)
                 else:  # si son las set menys vint, no posem la "i"
                     speak += " " + pronounce_number_ca(minute)
-
-
 
     # Default Watch Time Sytem
     else:
@@ -555,8 +577,7 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
             else:
                 speak += " i " + pronounce_number_ca(dt.minute)
 
-
-            #TODO: review day-periods
+            # TODO: review day-periods
             if use_ampm:
                 if dt.hour == 0:
                     speak += " de la nit"
