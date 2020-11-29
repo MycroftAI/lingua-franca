@@ -376,6 +376,7 @@ class TestNiceDateFormat(unittest.TestCase):
         with self.assertRaises(ValueError):
             nice_time(dt, lang="ca", variant="invalid")
             nice_time(dt, lang="ca", variant="bad_VARIANT")
+            nice_time(dt, lang="ca", variant="")
 
 
 if __name__ == "__main__":
