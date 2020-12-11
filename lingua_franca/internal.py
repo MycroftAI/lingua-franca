@@ -7,15 +7,16 @@ from warnings import warn
 
 from lingua_franca import config
 
-_SUPPORTED_LANGUAGES = ("cs", "da", "de", "en", "es", "fr", "hu",
+_SUPPORTED_LANGUAGES = ("ca", "cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sl", "sv")
 
-_SUPPORTED_FULL_LOCALIZATIONS = ("cs-cz", "da-dk", "de-de", "en-au", "en-us",
-                                 "es-es", "fr-fr", "hu-hu", "it-it", "nl-nl",
-                                 "pl-pl", "pt-pt", "ru-ru", "sl-si",
-                                 "sv-se", "tr-tr")
+_SUPPORTED_FULL_LOCALIZATIONS = ("ca-es", "cs-cz", "da-dk", "de-de",
+                                 "en-au", "en-us", "es-es", "fr-fr",
+                                 "hu-hu", "it-it", "nl-nl", "pl-pl",
+                                 "pt-pt", "ru-ru", "sl-si", "sv-se", "tr-tr")
 
-_DEFAULT_FULL_LANG_CODES = {'cs': 'cs-cz',
+_DEFAULT_FULL_LANG_CODES = {'ca': 'ca-es',
+                            'cs': 'cs-cz',
                             'da': 'da-dk',
                             'de': 'de-de',
                             'en': 'en-us',
@@ -730,3 +731,46 @@ def resolve_resource_file(res_name, data_dir=None):
         return filename
 
     return None  # Resource cannot be resolved
+
+
+def lookup_variant(mappings, key="variant"):
+    """function decorator
+    maps strings to Enums expected by language specific functions
+    mappings can be used to translate values read from configuration files
+
+    Example usage:
+
+        @lookup_variant({
+            "default": TimeVariant.DEFAULT,
+            "traditional": TimeVariant.TRADITIONAL
+        })
+        def nice_time_XX(dt, speech=True, use_24hour=False, use_ampm=False,
+                         variant=None):
+            variant = variant or TimeVariant.DEFAULT
+            (...)
+
+    """
+    if not isinstance(mappings, dict):
+        raise ValueError
+
+    # Begin wrapper
+    def lang_variant_function_decorator(func):
+
+        @wraps(func)
+        def call_function(*args, **kwargs):
+            if key in kwargs and isinstance(kwargs[key], str):
+                if kwargs[key] in mappings:
+                    kwargs[key] = mappings[kwargs[key]]
+                else:
+                    raise ValueError("Unknown variant, mapping does not "
+                                     "exist for {v}".format(v=key))
+            return func(*args, **kwargs)
+
+        return call_function
+
+    try:
+        return lang_variant_function_decorator
+    except NotImplementedError as e:
+        warn(str(e))
+        return
+
