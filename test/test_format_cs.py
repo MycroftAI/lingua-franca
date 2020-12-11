@@ -370,7 +370,7 @@ class TestNiceDateFormat(unittest.TestCase):
             if (sub_dir / 'date_time_test.json').exists():
                 print("Načítám test pro " +
                       str(sub_dir / 'date_time_test.json'))
-                with (sub_dir / 'date_time_test.json').open() as f:
+                with (sub_dir / 'date_time_test.json').open(encoding='utf8') as f:
                     cls.test_config[sub_dir.parts[-1]] = json.loads(f.read())
 
     def test_convert_times(self):

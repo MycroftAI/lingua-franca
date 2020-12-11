@@ -199,7 +199,7 @@ def extract_number_pt(text, short_scale=True, ordinals=False):
 
 
 class PortugueseNormalizer(Normalizer):
-    with open(resolve_resource_file("text/pt-pt/normalize.json")) as f:
+    with open(resolve_resource_file("text/pt-pt/normalize.json"), encoding="utf8") as f:
         _default_config = json.load(f)
 
     @staticmethod

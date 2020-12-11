@@ -35,7 +35,9 @@ _REGISTERED_FUNCTIONS = ("nice_number",
                          "nice_time",
                          "pronounce_number",
                          "nice_response",
-                         "nice_duration")
+                         "nice_duration",
+                         "get_plural_category",
+                         "get_plural_form")
 
 populate_localized_function_dict("format", langs=get_active_langs())
 
@@ -96,7 +98,7 @@ class DateTimeFormat:
             except FileNotFoundError:
                 # Fallback to English formatting
                 with open(self.config_path + '/en-us/date_time.json',
-                          'r') as lang_config_file:
+                          'r', encoding='utf8') as lang_config_file:
                     self.lang_config[lang] = json.loads(
                         lang_config_file.read())
 
@@ -543,4 +545,54 @@ def nice_response(text, lang=''):
 
         assertEqual(nice_response_de("10 ^ 2"),
                          "10 hoch 2")
+    """
+
+
+@localized_function(run_own_code_on=[FunctionNotLocalizedError])
+def get_plural_category(amount, type="cardinal", lang=""):
+    """
+    Get plural category for the specified amount. Category can be one of
+    the categories specified by Unicode CLDR Plural Rules.
+
+    For more details:
+    http://cldr.unicode.org/index/cldr-spec/plural-rules
+    https://unicode-org.github.io/cldr-staging/charts/37/supplemental/language_plural_rules.html
+
+    Args:
+        amount(int or float or pair or list): The amount that is used to
+            determine the category. If type is range, it must contain
+            the start and end numbers.
+        type(str): Either cardinal (default), ordinal or range.
+        lang(str): The BCP-47 code for the language to use, None for default.
+    Returns:
+        (str): The plural category. Either zero, one, two, few, many or other.
+    """
+
+    if type == "cardinal":
+        warn(RuntimeWarning("Pluralization has not been implemented in the specified language. Falling back to "
+                            "basic singular and plural for compatibility with built-in functions."))
+
+        if amount == 1:
+            return "one"
+        else:
+            return "other"
+
+    else:
+        raise FunctionNotLocalizedError("This function has not been implemented in the specified language.")
+
+
+@localized_function()
+def get_plural_form(word, amount, type="cardinal", lang=""):
+    """
+    Get plural form of the specified word for the specified amount.
+
+    Args:
+        word(str): Word to be pluralized.
+        amount(int or float or pair or list): The amount that is used to
+            determine the category. If type is range, it must contain
+            the start and end numbers.
+        type(str): Either cardinal (default), ordinal or range.
+        lang(str): The BCP-47 code for the language to use, None for default.
+    Returns:
+        (str): Pluralized word.
     """

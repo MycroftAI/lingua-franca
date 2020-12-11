@@ -1470,7 +1470,7 @@ def extract_numbers_en(text, short_scale=True, ordinals=False):
 
 
 class EnglishNormalizer(Normalizer):
-    with open(resolve_resource_file("text/en-us/normalize.json")) as f:
+    with open(resolve_resource_file("text/en-us/normalize.json"), encoding="utf8") as f:
         _default_config = json.load(f)
 
     def numbers_to_digits(self, utterance):
