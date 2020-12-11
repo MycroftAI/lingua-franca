@@ -45,22 +45,8 @@ _localized_functions = {}
 # Once the deprecation is complete, functions which have had their default
 # parameter changed from lang=None to lang='' should be switched back
 
-if version[:3] == '3.5':
-    warn(DeprecationWarning("Python 3.5 is EOL, and no longer supported. "
-                            "Lingua Franca supports it as a courtesy to "
-                            "a downstream project, which will drop it soon. "
-                            "Expect LF to stop working in 3.5 any day now. "
-                            "There will be no announcement. This is your "
-                            "only warning. Migrate your projects."))
-
 
 class UnsupportedLanguageError(NotImplementedError):
-    pass
-
-# TODO this should descend from ModuleNotFoundError when we drop Py3.5
-
-
-class NoSuchModuleError(NotImplementedError):
     pass
 
 
@@ -494,10 +480,10 @@ def localized_function(run_own_code_on=[type(None)]):
             lang_code = lang_code or get_default_lang()
             if not lang_code:
                 if load_langs_on_demand:
-                    raise NoSuchModuleError("No language module loaded "
-                                            "and none specified.")
+                    raise ModuleNotFoundError("No language module loaded "
+                                              "and none specified.")
                 else:
-                    raise NoSuchModuleError("No language module loaded.")
+                    raise ModuleNotFoundError("No language module loaded.")
 
             if lang_code not in _SUPPORTED_LANGUAGES:
                 try:
@@ -537,17 +523,17 @@ def localized_function(run_own_code_on=[type(None)]):
             # The nonsense above gets you from lingua_franca.parse
             # to lingua_franca.lang.parse_xx
             if _module_name not in _localized_functions.keys():
-                raise NoSuchModuleError("Module lingua_franca." +
-                                        _module_name + " not recognized")
+                raise ModuleNotFoundError("Module lingua_franca." +
+                                          _module_name + " not recognized")
             if lang_code not in _localized_functions[_module_name].keys():
                 if load_langs_on_demand:
                     load_language(lang_code)
                     unload_language_afterward = True
                 else:
-                    raise NoSuchModuleError(_module_name +
-                                            " module of language '" +
-                                            lang_code +
-                                            "' is not currently loaded.")
+                    raise ModuleNotFoundError(_module_name +
+                                              " module of language '" +
+                                              lang_code +
+                                              "' is not currently loaded.")
             func_name = func.__name__.split('.')[-1]
             # At some point in the past, both the module and the language
             # were imported/loaded, respectively.
@@ -659,7 +645,7 @@ def populate_localized_function_dict(lf_module, langs=get_active_langs()):
         try:
             mod = import_module(".lang." + lf_module + "_" + primary_lang_code,
                                 "lingua_franca")
-        except NoSuchModuleError:
+        except ModuleNotFoundError:
             warn(Warning(bad_lang_code.format(primary_lang_code)))
             continue
 
@@ -773,4 +759,3 @@ def lookup_variant(mappings, key="variant"):
     except NotImplementedError as e:
         warn(str(e))
         return
-

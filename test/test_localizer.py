@@ -6,13 +6,7 @@ import lingua_franca
 import lingua_franca.parse
 import lingua_franca.format
 
-from lingua_franca.internal import localized_function, _SUPPORTED_LANGUAGES, \
-    NoSuchModuleError
-
-if version[:3] == '3.5':
-    raise unittest.SkipTest("Lingua Franca is dropping support for Python 3.5"
-                            " in the near future. These tests act weird in"
-                            " 3.5, but the contents are known to work.")
+from lingua_franca.internal import localized_function, _SUPPORTED_LANGUAGES
 
 
 def unload_all_languages():
@@ -20,7 +14,6 @@ def unload_all_languages():
         your test util to run them in order. Sadly, spamming this function
         is easier and probably less onerous for most devs.
     """
-    # lingua_franca.unload_languages(lingua_franca.get_active_langs())
     lingua_franca._set_active_langs([])
 
 
@@ -41,7 +34,7 @@ class TestException(unittest.TestCase):
 
     def test_must_load_language(self):
         unload_all_languages()
-        self.assertRaises(NoSuchModuleError,
+        self.assertRaises(ModuleNotFoundError,
                           lingua_franca.parse.extract_number, 'one')
 
     def test_run_own_code_on(self):
@@ -58,10 +51,10 @@ class TestException(unittest.TestCase):
         self.assertEqual(lingua_franca.format.nice_number(123.45, speech=False, lang='cz'),
                          "123.45")
         # It won't intercept other exceptions, though!
-        with self.assertRaises(NoSuchModuleError):
+        with self.assertRaises(ModuleNotFoundError):
             unload_all_languages()
             lingua_franca.format.nice_number(123.45)
-            # NoSuchModuleError: No language module loaded.
+            # ModuleNotFoundError: No language module loaded.
 
         with self.assertRaises(ValueError):
             @localized_function("not an error type")
@@ -118,7 +111,7 @@ class TestLanguageLoading(unittest.TestCase):
         # English should still be loaded, but not Spanish
         self.assertEqual(lingua_franca.parse.extract_number("one", lang="en"),
                          1)
-        with self.assertRaises(NoSuchModuleError):
+        with self.assertRaises(ModuleNotFoundError):
             lingua_franca.parse.extract_number("uno", lang="es")
         unload_all_languages()
 
@@ -135,7 +128,7 @@ class TestLanguageLoading(unittest.TestCase):
         self.assertFalse('es' in lingua_franca.get_active_langs())
 
         # Verify that unloaded languages can't be invoked explicitly
-        self.assertRaises(NoSuchModuleError,
+        self.assertRaises(ModuleNotFoundError,
                           lingua_franca.parse.extract_number,
                           'uno', lang='es')
         unload_all_languages()
