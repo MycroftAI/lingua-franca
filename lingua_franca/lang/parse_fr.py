@@ -45,7 +45,7 @@ def extract_duration_fr(text):
     if not text:
         return None
 
-    text = text.lower()
+    text = normalize_fr(text)
 
     time_units = {
         'microseconds': 'microsecondes',
@@ -57,10 +57,7 @@ def extract_duration_fr(text):
         'weeks': 'semaines'
     }
 
-    pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}[es]?"
-
-    # TODO words to number conversion
-    #text = _convert_words_to_numbers_fr(text)
+    pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}[s]?(\s+|,|$)"
 
     for (unit_en, unit_fr) in time_units.items():
         unit_pattern = pattern.format(unit=unit_fr[:-1])  # remove 's' from unit

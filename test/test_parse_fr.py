@@ -342,27 +342,29 @@ class TestNormalize_fr(unittest.TestCase):
         self.assertEqual(extract_duration("25 semaines", lang="fr-fr"),
                          (timedelta(weeks=25), ""))
         # No conversion for work to number yet for fr
-        #self.assertEqual(extract_duration("sept heures"),
-        #                 (timedelta(hours=7), ""))
+        self.assertEqual(extract_duration("sept heures"),
+                         (timedelta(hours=7), ""))
         self.assertEqual(extract_duration("7.5 secondes", lang="fr-fr"),
                          (timedelta(seconds=7.5), ""))
-        #self.assertEqual(extract_duration("huit jours et demi et trente neuf secondes"),
-        #                 (timedelta(days=8.5, seconds=39), ""))
+        self.assertEqual(extract_duration("5 jours et vingt-neuf secondes"),
+                         (timedelta(days=5, seconds=29), "et"))
+        # Fraction not yet implemented
+        #self.assertEqual(extract_duration("huit jours et demi et trente-neuf secondes"),
+        #                 (timedelta(days=8.5, seconds=39), "et "))
         self.assertEqual(extract_duration("démarre un minuteur pour 30 minutes", lang="fr-fr"),
-                         (timedelta(minutes=30), "démarre un minuteur pour"))
+                         (timedelta(minutes=30), "démarre 1 minuteur pour"))
         #self.assertEqual(extract_duration("Quatre minutes et demi avant le coucher du soleil"),
         #                 (timedelta(minutes=4.5), "avant le coucher du soleil"))
-        #self.assertEqual(extract_duration("Une heure dix-neuf minutes"),
-        #                 (timedelta(hours=1, minutes=19), ""))
+        self.assertEqual(extract_duration("Une heure dix-neuf minutes"),
+                         (timedelta(hours=1, minutes=19), ""))
         self.assertEqual(extract_duration("réveille moi dans 3 semaines, "
                                           " 497 jours et"
                                           " 391.6 secondes", lang="fr-fr"),
                          (timedelta(weeks=3, days=497, seconds=391.6),
-                          "réveille moi dans ,   et"))
-        #self.assertEqual(extract_duration("Le film dure une heure, cinquante sept minutes"
-        #                                  " et demi"),
-        #                 (timedelta(hours=1, minutes=57.5),
-        #                     "le film dure ,"))
+                          "réveille moi dans  et"))
+        self.assertEqual(extract_duration("Le film dure une heure, cinquante-sept minutes"),
+                         (timedelta(hours=1, minutes=57),
+                             "film dure"))
         self.assertEqual(extract_duration("10-secondes", lang="fr-fr"),
                          (timedelta(seconds=10.0), ""))
         self.assertEqual(extract_duration("5-minutes", lang="fr-fr"),
