@@ -1,0 +1,32 @@
+{
+  "day": {
+    "one": "dan",
+    "two": "dneva",
+    "few": "dnevi",
+    "other": "dni"
+  },
+  "hour": {
+    "one": "ura",
+    "two": "uri",
+    "few": "ure",
+    "other": "ur"
+  },
+  "minute": {
+    "one": "minuta",
+    "two": "minuti",
+    "few": "minute",
+    "other": "minut"
+  },
+  "second": {
+    "one": "sekunda",
+    "two": "sekundi",
+    "few": "sekunde",
+    "other": "sekund"
+  },
+  "and": {
+    "one": "in"
+  },
+  "or": {
+    "one": "ali"
+  }
+}

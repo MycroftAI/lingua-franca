@@ -530,13 +530,10 @@ class TestNiceDateFormat(unittest.TestCase):
 #                print(nice_year(dt, lang=lang))
 
     def test_nice_duration(self):
-        # TODO implement better plural support for nice_duration
-        # Correct results are in comments
-
         self.assertEqual(nice_duration(1), "ena sekunda")
-        self.assertEqual(nice_duration(2), "dve sekund")  # dve sekundi
-        self.assertEqual(nice_duration(3), "tri sekund")  # tri sekunde
-        self.assertEqual(nice_duration(4), "štiri sekund")  # štiri sekunde
+        self.assertEqual(nice_duration(2), "dve sekundi")
+        self.assertEqual(nice_duration(3), "tri sekunde")
+        self.assertEqual(nice_duration(4), "štiri sekunde")
         self.assertEqual(nice_duration(5), "pet sekund")
         self.assertEqual(nice_duration(6), "šest sekund")
 

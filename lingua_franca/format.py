@@ -18,18 +18,15 @@ import json
 import os
 import re
 from collections import namedtuple
-from warnings import warn
 from os.path import join
-
+from warnings import warn
 
 from lingua_franca.bracket_expansion import SentenceTreeParser
 from lingua_franca.internal import localized_function, \
     populate_localized_function_dict, get_active_langs, \
-    get_full_lang_code, get_default_lang, get_default_loc, \
-    is_supported_full_lang, _raise_unsupported_language, \
-    UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning, \
+    get_full_lang_code, get_default_loc, \
+    is_supported_full_lang, UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning, \
     FunctionNotLocalizedError
-
 
 _REGISTERED_FUNCTIONS = ("nice_number",
                          "nice_time",
@@ -42,8 +39,41 @@ _REGISTERED_FUNCTIONS = ("nice_number",
 populate_localized_function_dict("format", langs=get_active_langs())
 
 
-def _translate_word(name, lang=''):
+def _translate_word(name, amount=1, lang=''):
     """ Helper to get word translations
+
+    Args:
+        name (str): Word name. Returned as the default value if not translated
+        amount (int): Amount of that word. Used for pluralization
+        lang (str): Language code, e.g. "en-us"
+
+    Returns:
+        str: translated version of resource name
+    """
+    from lingua_franca.internal import resolve_resource_file
+    if not lang:
+        if lang is None:
+            warn(NoneLangWarning)
+        lang = get_default_loc()
+
+    lang_code = lang if is_supported_full_lang(lang) else get_full_lang_code(lang)
+    filename = resolve_resource_file(join("text", lang_code, "translations.json"))
+
+    if filename:
+        try:
+            with open(filename, 'r', encoding='utf8') as file:
+                translations = json.load(file)
+                return translations[name][get_plural_category(amount, lang=lang)]
+        except Exception:
+            pass
+    return _translate_word_legacy(name + ('s' if amount > 1 else ''), lang)  # fallback to legacy translation
+
+
+def _translate_word_legacy(name, lang=''):
+    """ Legacy helper to get word translations.
+
+    Do not use this function directly. Remove it once
+    all languages are migrated to the new format.
 
     Args:
         name (str): Word name. Returned as the default value if not translated
@@ -418,35 +448,23 @@ def nice_duration(duration, lang='', speech=True):
         out = ""
         if days > 0:
             out += pronounce_number(days, lang) + " "
-            if days == 1:
-                out += _translate_word("day", lang)
-            else:
-                out += _translate_word("days", lang)
+            out += _translate_word("day", amount=days, lang=lang)
             out += " "
         if hours > 0:
             if out:
                 out += " "
             out += pronounce_number(hours, lang) + " "
-            if hours == 1:
-                out += _translate_word("hour", lang)
-            else:
-                out += _translate_word("hours", lang)
+            out += _translate_word("hour", amount=hours, lang=lang)
         if minutes > 0:
             if out:
                 out += " "
             out += pronounce_number(minutes, lang) + " "
-            if minutes == 1:
-                out += _translate_word("minute", lang)
-            else:
-                out += _translate_word("minutes", lang)
+            out += _translate_word("minute", amount=minutes, lang=lang)
         if seconds > 0:
             if out:
                 out += " "
             out += pronounce_number(seconds, lang) + " "
-            if seconds == 1:
-                out += _translate_word("second", lang)
-            else:
-                out += _translate_word("seconds", lang)
+            out += _translate_word("second", amount=seconds, lang=lang)
     else:
         # M:SS, MM:SS, H:MM:SS, Dd H:MM:SS format
         out = ""
@@ -489,7 +507,7 @@ def join_list(items, connector, sep=None, lang=''):
     else:
         sep += " "
     return (sep.join(str(item) for item in items[:-1]) +
-            " " + _translate_word(connector, lang) +
+            " " + _translate_word(connector, lang=lang) +
             " " + items[-1])
 
 
