@@ -32,6 +32,7 @@ Lingua Franca (_noun_)<br>
     - [7. Commit changes](#7-commit-changes)
     - [8. Submit a PR](#8-submit-a-pr)
     - [9. Waiting for a review](#9-waiting-for-a-review)
+  - [Credits](#credits)
 
 ## Formatting
 
@@ -392,3 +393,15 @@ Like commit messages, the PR title and description should properly describe the 
 ### 10. Waiting for a review
 
 While you wait for a review of your contribution, why not take a moment to review some other pull requests? This is a great way to learn and help progress the queue of pull requests, which means your contribution will be seen more quickly!
+
+## Credits
+
+Though it is now a standalone package, Lingua Franca's codebase was a spinoff from Mycroft-core. In addition to those represented in Lingua Franca's git log, a great many people contributed to this code before the spinoff.  
+
+Although all are listed in MycroftAI's [List of Excellent People](https://github.com/MycroftAI/contributors), it seems proper to acknowledge the specific individuals who helped write *this* package, since they are no longer represented in `git log`.  
+
+To the best of the maintainers' knowledge, all of the "lost" contributors are listed in `pre-spinoff-credits.md`. Names are listed as they appeared in `git log`, or as they are known to the Mycroft community.  
+
+Those who've contributed since the spinoff are, of course, in Lingua Franca's `git log` and the GitHub "Contributors" pane. All contributors are on the List of Excellent People, regardless of when they contributed.  
+
+If you contributed to the original code, and your name is missing from `pre-spinoff-credits.md`, please inform a maintainer or file an issue, so we can give credit where credit is due!
