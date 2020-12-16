@@ -287,11 +287,11 @@ _DECIMAL_MARKER_EN = {"point", "dot"}
 
 _STRING_NUM_EN = invert_dict(_NUM_STRING_EN)
 _STRING_NUM_EN.update(_generate_plurals_en(_STRING_NUM_EN))
-_STRING_NUM_EN.update({
-    "half": 0.5,
-    "halves": 0.5,
-    "couple": 2
-})
 
+_SPOKEN_EXTRA_NUM_EN = {
+            "half": 0.5,
+            "halves": 0.5,
+            "couple": 2
+        }
 _STRING_SHORT_ORDINAL_EN = invert_dict(_SHORT_ORDINAL_EN)
 _STRING_LONG_ORDINAL_EN = invert_dict(_LONG_ORDINAL_EN)

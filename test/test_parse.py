@@ -71,20 +71,149 @@ class TestNormalize(unittest.TestCase):
                                    remove_articles=False),
                          "this is an extra test")
 
-    def test_extract_number(self):
+    def test_extract_number_priority(self):
+        # sanity check
+        self.assertEqual(extract_number("third", ordinals=True), 3)
+        self.assertEqual(extract_number("sixth", ordinals=True), 6)
+
+        # TODO a suite of tests needs to be written depending on outcome of
+        #  https://github.com/MycroftAI/lingua-franca/issues/152
+        # the tests bellow are flagged as problematic, some of those ARE BROKEN
+        # for now this is considered undefined behaviour!!!
+
+        # NOTE this test is returning the first number, which seems to be
+        # the consensus regarding correct behaviour
+        self.assertEqual(extract_number("Twenty two and Three Fifths",
+                                        ordinals=True), 22)
+
+        # TODO these should return the 1st number, not the last, ordinals
+        #  seem messed up, the rest of the codebase is returning first
+        #  number most likely tests bellow are bugs, i repeat, tests bellow
+        #  are testing FOR THE "WRONG" VALUE
+        self.assertEqual(extract_number("sixth third", ordinals=True), 3)
+        self.assertEqual(extract_number("third sixth", ordinals=True), 6)
+
+    def test_extract_number_ambiguous(self):
+        # test explicit ordinals
+        self.assertEqual(extract_number("this is the 1st",
+                                        ordinals=True), 1)
+        self.assertEqual(extract_number("this is the 2nd",
+                                        ordinals=False), 2)
+        self.assertEqual(extract_number("this is the 3rd",
+                                        ordinals=None), 3)
+        self.assertEqual(extract_number("this is the 4th",
+                                        ordinals=None), 4)
+        self.assertEqual(extract_number(
+            "this is the 7th test", ordinals=True), 7)
+        self.assertEqual(extract_number(
+            "this is the 7th test", ordinals=False), 7)
+        self.assertTrue(extract_number("this is the nth test") is False)
+        self.assertEqual(extract_number("this is the 1st test"), 1)
+        self.assertEqual(extract_number("this is the 2nd test"), 2)
+        self.assertEqual(extract_number("this is the 3rd test"), 3)
+        self.assertEqual(extract_number("this is the 31st test"), 31)
+        self.assertEqual(extract_number("this is the 32nd test"), 32)
+        self.assertEqual(extract_number("this is the 33rd test"), 33)
+        self.assertEqual(extract_number("this is the 34th test"), 34)
+
+        # test non ambiguous ordinals
         self.assertEqual(extract_number("this is the first test",
                                         ordinals=True), 1)
-        self.assertEqual(extract_number("this is 2 test"), 2)
+        self.assertEqual(extract_number("this is the first test",
+                                        ordinals=False), False)
+        self.assertEqual(extract_number("this is the first test",
+                                        ordinals=None), False)
+
+        # test ambiguous ordinal/time unit
         self.assertEqual(extract_number("this is second test",
                                         ordinals=True), 2)
-        self.assertEqual(extract_number("this is the third test"), 1.0 / 3.0)
+        self.assertEqual(extract_number("this is second test",
+                                        ordinals=False), False)
+        self.assertEqual(extract_number("remind me in a second",
+                                        ordinals=True), 2)
+        self.assertEqual(extract_number("remind me in a second",
+                                        ordinals=False), False)
+        self.assertEqual(extract_number("remind me in a second",
+                                        ordinals=None), False)
+
+        # test ambiguous ordinal/fractional
         self.assertEqual(extract_number("this is the third test",
                                         ordinals=True), 3.0)
+        self.assertEqual(extract_number("this is the third test",
+                                        ordinals=False), 1.0 / 3.0)
+        self.assertEqual(extract_number("this is the third test",
+                                        ordinals=None), False)
+
+        self.assertEqual(extract_number("one third of a cup",
+                                        ordinals=False), 1.0 / 3.0)
+        self.assertEqual(extract_number("one third of a cup",
+                                        ordinals=True), 3)
+        self.assertEqual(extract_number("one third of a cup",
+                                        ordinals=None), 1)
+
+        # test plurals
+        # NOTE plurals are never considered ordinals, but also not
+        # considered explicit fractions
+        self.assertEqual(extract_number("2 fifths",
+                                        ordinals=True), 2)
+        self.assertEqual(extract_number("2 fifth",
+                                        ordinals=True), 5)
+        self.assertEqual(extract_number("2 fifths",
+                                        ordinals=False), 2/5)
+        self.assertEqual(extract_number("2 fifths",
+                                        ordinals=None), 2)
+
+        self.assertEqual(extract_number("Twenty two and Three Fifths"), 22.6)
+
+        # test multiple ambiguous
+        self.assertEqual(extract_number("sixth third", ordinals=None), False)
+        self.assertEqual(extract_number("thirty second", ordinals=False), 30)
+        self.assertEqual(extract_number("thirty second", ordinals=None), 30)
+        self.assertEqual(extract_number("thirty second", ordinals=True), 32)
+        # TODO this test is imperfect, further discussion needed
+        # "Sixth third" would probably refer to "the sixth instance of a third"
+        # I dunno what should be returned here, don't think it should be cumulative.
+        self.assertEqual(extract_number("sixth third", ordinals=False),
+                         1 / 6 / 3)
+
+        # test big numbers / short vs long scale
+        self.assertEqual(extract_number("this is the billionth test",
+                                        ordinals=True), 1e09)
+        self.assertEqual(extract_number("this is the billionth test",
+                                        ordinals=None), False)
+
+        self.assertEqual(extract_number("this is the billionth test",
+                                        ordinals=False), 1e-9)
+        self.assertEqual(extract_number("this is the billionth test",
+                                        ordinals=True,
+                                        short_scale=False), 1e12)
+        self.assertEqual(extract_number("this is the billionth test",
+                                        ordinals=None,
+                                        short_scale=False), False)
+        self.assertEqual(extract_number("this is the billionth test",
+                                        short_scale=False), 1e-12)
+
+        # test the Nth one
         self.assertEqual(extract_number("the fourth one", ordinals=True), 4.0)
         self.assertEqual(extract_number("the thirty sixth one",
                                         ordinals=True), 36.0)
+        self.assertEqual(extract_number(
+            "you are the second one", ordinals=False), 1)
+        self.assertEqual(extract_number(
+            "you are the second one", ordinals=True), 2)
+        self.assertEqual(extract_number("you are the 1st one",
+                                        ordinals=None), 1)
+        self.assertEqual(extract_number("you are the 2nd one",
+                                        ordinals=None), 2)
+        self.assertEqual(extract_number("you are the 3rd one",
+                                        ordinals=None), 3)
+        self.assertEqual(extract_number("you are the 8th one",
+                                        ordinals=None), 8)
+
+    def test_extract_number(self):
+
+        self.assertEqual(extract_number("this is 2 test"), 2)
         self.assertEqual(extract_number("this is test number 4"), 4)
-        self.assertEqual(extract_number("one third of a cup"), 1.0 / 3.0)
         self.assertEqual(extract_number("three cups"), 3)
         self.assertEqual(extract_number("1/3 cups"), 1.0 / 3.0)
         self.assertEqual(extract_number("quarter cup"), 0.25)
@@ -106,7 +235,6 @@ class TestNormalize(unittest.TestCase):
             "twenty Two with Two capital letters"), 22)
         self.assertEqual(extract_number(
             "twenty Two with mixed capital letters"), 22)
-        self.assertEqual(extract_number("Twenty two and Three Fifths"), 22.6)
         self.assertEqual(extract_number("two hundred"), 200)
         self.assertEqual(extract_number("nine thousand"), 9000)
         self.assertEqual(extract_number("six hundred sixty six"), 666)
@@ -128,20 +256,6 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("minus 2"), -2)
         self.assertEqual(extract_number("negative seventy"), -70)
         self.assertEqual(extract_number("thousand million"), 1000000000)
-        self.assertEqual(extract_number("sixth third"),
-                         1 / 6 / 3)
-        self.assertEqual(extract_number("sixth third", ordinals=True),
-                         3)
-        self.assertEqual(extract_number("thirty second"), 30)
-        self.assertEqual(extract_number("thirty second", ordinals=True), 32)
-        self.assertEqual(extract_number("this is the billionth test",
-                                        ordinals=True), 1e09)
-        self.assertEqual(extract_number("this is the billionth test"), 1e-9)
-        self.assertEqual(extract_number("this is the billionth test",
-                                        ordinals=True,
-                                        short_scale=False), 1e12)
-        self.assertEqual(extract_number("this is the billionth test",
-                                        short_scale=False), 1e-12)
 
         # Verify non-power multiples of ten no longer discard
         # adjacent multipliers
@@ -179,28 +293,6 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("a couple of beers"), 2)
         self.assertEqual(extract_number("a couple hundred beers"), 200)
         self.assertEqual(extract_number("a couple thousand beers"), 2000)
-
-        self.assertEqual(extract_number(
-            "this is the 7th test", ordinals=True), 7)
-        self.assertEqual(extract_number(
-            "this is the 7th test", ordinals=False), 7)
-        self.assertTrue(extract_number("this is the nth test") is False)
-        self.assertEqual(extract_number("this is the 1st test"), 1)
-        self.assertEqual(extract_number("this is the 2nd test"), 2)
-        self.assertEqual(extract_number("this is the 3rd test"), 3)
-        self.assertEqual(extract_number("this is the 31st test"), 31)
-        self.assertEqual(extract_number("this is the 32nd test"), 32)
-        self.assertEqual(extract_number("this is the 33rd test"), 33)
-        self.assertEqual(extract_number("this is the 34th test"), 34)
-
-        self.assertEqual(extract_number(
-            "you are the second one", ordinals=False), 1)
-        self.assertEqual(extract_number(
-            "you are the second one", ordinals=True), 2)
-        self.assertEqual(extract_number("you are the 1st one"), 1)
-        self.assertEqual(extract_number("you are the 2nd one"), 2)
-        self.assertEqual(extract_number("you are the 3rd one"), 3)
-        self.assertEqual(extract_number("you are the 8th one"), 8)
         self.assertEqual(extract_number("totally 100%"), 100)
 
     def test_extract_duration_en(self):
@@ -221,26 +313,51 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_duration("eight and a half days thirty"
                                           " nine seconds"),
                          (timedelta(days=8.5, seconds=39), ""))
-        self.assertEqual(extract_duration("Set a timer for 30 minutes"),
-                         (timedelta(minutes=30), "set a timer for"))
-        self.assertEqual(extract_duration("Four and a half minutes until"
-                                          " sunset"),
-                         (timedelta(minutes=4.5), "until sunset"))
-        self.assertEqual(extract_duration("Nineteen minutes past the hour"),
-                         (timedelta(minutes=19), "past the hour"))
         self.assertEqual(extract_duration("wake me up in three weeks, four"
                                           " hundred ninety seven days, and"
                                           " three hundred 91.6 seconds"),
                          (timedelta(weeks=3, days=497, seconds=391.6),
                           "wake me up in , , and"))
-        self.assertEqual(extract_duration("The movie is one hour, fifty seven"
-                                          " and a half minutes long"),
-                         (timedelta(hours=1, minutes=57.5),
-                             "the movie is ,  long"))
         self.assertEqual(extract_duration("10-seconds"),
                          (timedelta(seconds=10.0), ""))
         self.assertEqual(extract_duration("5-minutes"),
                          (timedelta(minutes=5), ""))
+
+    def test_extract_duration_case_en(self):
+        self.assertEqual(extract_duration("Set a timer for 30 minutes"),
+                         (timedelta(minutes=30), "Set a timer for"))
+        self.assertEqual(extract_duration("The movie is one hour, fifty seven"
+                                          " and a half minutes long"),
+                         (timedelta(hours=1, minutes=57.5),
+                             "The movie is ,  long"))
+        self.assertEqual(extract_duration("Four and a Half minutes until"
+                                          " sunset"),
+                         (timedelta(minutes=4.5), "until sunset"))
+        self.assertEqual(extract_duration("Nineteen minutes past THE hour"),
+                         (timedelta(minutes=19), "past THE hour"))
+
+    def test_extractdatetime_fractions_en(self):
+        def extractWithFormat(text):
+            date = datetime(2017, 6, 27, 13, 4)  # Tue June 27, 2017 @ 1:04pm
+            [extractedDate, leftover] = extract_datetime(text, date)
+            extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
+            return [extractedDate, leftover]
+
+        def testExtract(text, expected_date, expected_leftover):
+            res = extractWithFormat(normalize(text))
+            self.assertEqual(res[0], expected_date, "for=" + text)
+            self.assertEqual(res[1], expected_leftover, "for=" + text)
+
+        testExtract("Set the ambush for half an hour",
+                    "2017-06-27 13:34:00", "set ambush")
+        testExtract("remind me to call mom in half an hour",
+                    "2017-06-27 13:34:00", "remind me to call mom")
+        testExtract("remind me to call mom in a half hour",
+                    "2017-06-27 13:34:00", "remind me to call mom")
+        testExtract("remind me to call mom in a quarter hour",
+                    "2017-06-27 13:19:00", "remind me to call mom")
+        testExtract("remind me to call mom in a quarter of an hour",
+                    "2017-06-27 13:19:00", "remind me to call mom")
 
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
@@ -314,8 +431,6 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 13:04:02", "")
         testExtract("Set the ambush in 1 minute",
                     "2017-06-27 13:05:00", "set ambush")
-        testExtract("Set the ambush for half an hour",
-                    "2017-06-27 13:34:00", "set ambush")
         testExtract("Set the ambush for 5 days from today",
                     "2017-07-02 00:00:00", "set ambush")
         testExtract("day after tomorrow",
@@ -389,14 +504,6 @@ class TestNormalize(unittest.TestCase):
         testExtract("remind me to call mom in 15 minutes",
                     "2017-06-27 13:19:00", "remind me to call mom")
         testExtract("remind me to call mom in fifteen minutes",
-                    "2017-06-27 13:19:00", "remind me to call mom")
-        testExtract("remind me to call mom in half an hour",
-                    "2017-06-27 13:34:00", "remind me to call mom")
-        testExtract("remind me to call mom in a half hour",
-                    "2017-06-27 13:34:00", "remind me to call mom")
-        testExtract("remind me to call mom in a quarter hour",
-                    "2017-06-27 13:19:00", "remind me to call mom")
-        testExtract("remind me to call mom in a quarter of an hour",
                     "2017-06-27 13:19:00", "remind me to call mom")
         testExtract("remind me to call mom at 10am 2 days after this saturday",
                     "2017-07-03 10:00:00", "remind me to call mom")
@@ -671,6 +778,59 @@ class TestNormalize(unittest.TestCase):
         testExtract("lets meet in 5seconds",
                     "2017-06-27 10:01:07", "lets meet")
 
+    def test_normalize_numbers(self):
+        self.assertEqual(normalize("remind me to do something at two to two"),
+                         "remind me to do something at 2 to 2")
+        self.assertEqual(normalize('what time will it be in two minutes'),
+                         'what time will it be in 2 minutes')
+        self.assertEqual(normalize('What time will it be in twenty two minutes'),
+                         'What time will it be in 22 minutes')
+        self.assertEqual(normalize("remind me to do something at twenty to two"),
+                         "remind me to do something at 20 to 2")
+
+        # TODO imperfect test, maybe should return 'my favorite numbers are 20 2',
+        #  let is pass for now since this is likely a STT issue if ever
+        #  encountered in the wild and is somewhat ambiguous, if this was
+        #  spoken by a human the result is what we expect, if in written form
+        #  it is ambiguous but could mean separate numbers
+        self.assertEqual(normalize('my favorite numbers are twenty 2'),
+                         'my favorite numbers are 22')
+        # TODO imperfect test, same as above, fixing would impact
+        #  extract_numbers quite a bit and require a non trivial ammount of
+        #  refactoring
+        self.assertEqual(normalize('my favorite numbers are 20 2'),
+                         'my favorite numbers are 22')
+
+        # test ordinals
+        self.assertEqual(normalize('this is the first'),
+                         'this is first')
+        self.assertEqual(normalize('this is the first second'),
+                         'this is first second')
+        self.assertEqual(normalize('this is the first second and third'),
+                         'this is first second and third')
+
+        # test fractions
+        self.assertEqual(normalize('whole hour'),
+                         'whole hour')
+        self.assertEqual(normalize('quarter hour'),
+                         'quarter hour')
+        self.assertEqual(normalize('halve hour'),
+                         'halve hour')
+        self.assertEqual(normalize('half hour'),
+                         'half hour')
+
+    def test_extract_date_with_number_words(self):
+        now = datetime(2019, 7, 4, 8, 1, 2)
+        self.assertEqual(
+            extract_datetime('What time will it be in 2 minutes', now)[0],
+            datetime(2019, 7, 4, 8, 3, 2))
+        self.assertEqual(
+            extract_datetime('What time will it be in two minutes', now)[0],
+            datetime(2019, 7, 4, 8, 3, 2))
+        self.assertEqual(
+            extract_datetime('What time will it be in two hundred minutes', now)[0],
+            datetime(2019, 7, 4, 11, 21, 2))
+
     def test_spaces(self):
         self.assertEqual(normalize("  this   is  a    test"),
                          "this is test")
@@ -697,11 +857,11 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(normalize("that's eighteen nineteen twenty"),
                          "that is 18 19 20")
         self.assertEqual(normalize("that's one nineteen twenty two"),
-                         "that is 1 19 20 2")
+                         "that is 1 19 22")
         self.assertEqual(normalize("that's one hundred"),
-                         "that is 1 hundred")
+                         "that is 100")
         self.assertEqual(normalize("that's one two twenty two"),
-                         "that is 1 2 20 2")
+                         "that is 1 2 22")
         self.assertEqual(normalize("that's one and a half"),
                          "that is 1 and half")
         self.assertEqual(normalize("that's one and a half and five six"),

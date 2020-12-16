@@ -24,7 +24,7 @@ from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
     _NEGATIVES_EN, _SUMS_EN, _MULTIPLIES_LONG_SCALE_EN, \
     _MULTIPLIES_SHORT_SCALE_EN, _FRACTION_MARKER_EN, _DECIMAL_MARKER_EN, \
     _STRING_NUM_EN, _STRING_SHORT_ORDINAL_EN, _STRING_LONG_ORDINAL_EN, \
-    _FRACTION_STRING_EN, _generate_plurals_en
+    _FRACTION_STRING_EN, _generate_plurals_en, _SPOKEN_EXTRA_NUM_EN
 
 import re
 import json
@@ -45,7 +45,6 @@ def _convert_words_to_numbers_en(text, short_scale=True, ordinals=False):
         The original text, with numbers subbed in where appropriate.
 
     """
-    text = text.lower()
     tokens = tokenize(text)
     numbers_to_replace = \
         _extract_numbers_with_text_en(tokens, short_scale, ordinals)
@@ -274,7 +273,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
 
     """
     multiplies, string_num_ordinal, string_num_scale = \
-        _initialize_number_data_en(short_scale)
+        _initialize_number_data_en(short_scale, speech=ordinals is not None)
 
     number_words = []  # type: [Token]
     val = False
@@ -287,16 +286,17 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
             next_val = None
             continue
 
-        word = token.word
+        word = token.word.lower()
         if word in _ARTICLES_EN or word in _NEGATIVES_EN:
             number_words.append(token)
             continue
 
-        prev_word = tokens[idx - 1].word if idx > 0 else ""
-        next_word = tokens[idx + 1].word if idx + 1 < len(tokens) else ""
+        prev_word = tokens[idx - 1].word.lower() if idx > 0 else ""
+        next_word = tokens[idx + 1].word.lower() if idx + 1 < len(tokens) else ""
 
         if is_numeric(word[:-2]) and \
-                (word.endswith("st") or word.endswith("nd") or word.endswith("rd") or word.endswith("th")):
+                (word.endswith("st") or word.endswith("nd") or
+                 word.endswith("rd") or word.endswith("th")):
 
             # explicit ordinals, 1st, 2nd, 3rd, 4th.... Nth
             word = word[:-2]
@@ -307,6 +307,8 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 tokens[idx + 1] = Token("", idx)
                 next_word = ""
 
+        # TODO replaces the wall of "and" and "or" with all() or any() as
+        #  appropriate, the whole codebase should be checked for this pattern
         if word not in string_num_scale and \
                 word not in _STRING_NUM_EN and \
                 word not in _SUMS_EN and \
@@ -316,7 +318,8 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 not is_fractional_en(word, short_scale=short_scale) and \
                 not look_for_fractions(word.split('/')):
             words_only = [token.word for token in number_words]
-            if number_words and not all([w in _ARTICLES_EN |
+
+            if number_words and not all([w.lower() in _ARTICLES_EN |
                                          _NEGATIVES_EN for w in words_only]):
                 break
             else:
@@ -329,8 +332,13 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 and prev_word not in _NEGATIVES_EN \
                 and prev_word not in _ARTICLES_EN:
             number_words = [token]
+
         elif prev_word in _SUMS_EN and word in _SUMS_EN:
             number_words = [token]
+        elif ordinals is None and \
+                (word in string_num_ordinal or word in _SPOKEN_EXTRA_NUM_EN):
+            # flagged to ignore this token
+            continue
         else:
             number_words.append(token)
 
@@ -374,12 +382,15 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
 
         # is this a spoken fraction?
         # half cup
-        if val is False:
-            val = is_fractional_en(word, short_scale=short_scale)
+        if val is False and \
+                not (ordinals is None and word in string_num_ordinal):
+            val = is_fractional_en(word, short_scale=short_scale,
+                                   spoken=ordinals is not None)
+
             current_val = val
 
         # 2 fifths
-        if not ordinals:
+        if ordinals is False:
             next_val = is_fractional_en(next_word, short_scale=short_scale)
             if next_val:
                 if not val:
@@ -400,7 +411,7 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
                 current_val = val
 
         else:
-            if all([
+            if current_val and all([
                 prev_word in _SUMS_EN,
                 word not in _SUMS_EN,
                     word not in multiplies,
@@ -470,8 +481,8 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
 
                 time_to_sum = True
                 for other_token in tokens[idx+1:]:
-                    if other_token.word in multiplies:
-                        if string_num_scale[other_token.word] >= current_val:
+                    if other_token.word.lower() in multiplies:
+                        if string_num_scale[other_token.word.lower()] >= current_val:
                             time_to_sum = False
                         else:
                             continue
@@ -488,14 +499,15 @@ def _extract_whole_number_with_text_en(tokens, short_scale, ordinals):
     return val, number_words
 
 
-def _initialize_number_data_en(short_scale):
+def _initialize_number_data_en(short_scale, speech=True):
     """
     Generate dictionaries of words to numbers, based on scale.
 
     This is a helper function for _extract_whole_number.
 
     Args:
-        short_scale boolean:
+        short_scale (bool):
+        speech (bool): consider extra words (_SPOKEN_EXTRA_NUM_EN) to be numbers
 
     Returns:
         (set(str), dict(str, number), dict(str, number))
@@ -511,6 +523,9 @@ def _initialize_number_data_en(short_scale):
     string_num_scale_en = _SHORT_SCALE_EN if short_scale else _LONG_SCALE_EN
     string_num_scale_en = invert_dict(string_num_scale_en)
     string_num_scale_en.update(_generate_plurals_en(string_num_scale_en))
+
+    if speech:
+        string_num_scale_en.update(_SPOKEN_EXTRA_NUM_EN)
     return multiplies, string_num_ordinal_en, string_num_scale_en
 
 
@@ -622,6 +637,8 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
     """
 
     def clean_string(s):
+        # normalize and lowercase utt  (replaces words with numbers)
+        s = _convert_words_to_numbers_en(s, ordinals=None)
         # clean unneeded punctuation and capitalization among other things.
         s = s.lower().replace('?', '').replace('.', '').replace(',', '') \
             .replace(' the ', ' ').replace(' a ', ' ').replace(' an ', ' ') \
@@ -1403,13 +1420,14 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
     return [extractedDate, resultStr]
 
 
-def is_fractional_en(input_str, short_scale=True):
+def is_fractional_en(input_str, short_scale=True, spoken=True):
     """
     This function takes the given text and checks if it is a fraction.
 
     Args:
         input_str (str): the string to check if fractional
         short_scale (bool): use short scale if True, long scale if False
+        spoken (bool): consider "half", "quarter", "whole" a fraction
     Returns:
         (bool) or (float): False if not a fraction, otherwise the fraction
 
@@ -1427,7 +1445,7 @@ def is_fractional_en(input_str, short_scale=True):
             if num > 2:
                 fracts[_LONG_ORDINAL_EN[num]] = num
 
-    if input_str.lower() in fracts:
+    if input_str.lower() in fracts and spoken:
         return 1.0 / fracts[input_str.lower()]
     return False
 
@@ -1454,6 +1472,9 @@ def extract_numbers_en(text, short_scale=True, ordinals=False):
 class EnglishNormalizer(Normalizer):
     with open(resolve_resource_file("text/en-us/normalize.json")) as f:
         _default_config = json.load(f)
+
+    def numbers_to_digits(self, utterance):
+        return _convert_words_to_numbers_en(utterance, ordinals=None)
 
 
 def normalize_en(text, remove_articles=True):
