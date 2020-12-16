@@ -18,7 +18,7 @@
     │  ├─ text/
     │  │  ├─ <lang-code>/
     │  │  │  ├─ date_time.json
-    │  │  │  ├─ common words
+    │  │  │  ├─ translations.json
 
 ----
 
