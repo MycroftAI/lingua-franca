@@ -18,7 +18,7 @@
     │  ├─ text/
     │  │  ├─ <lang-code>/
     │  │  │  ├─ date_time.json
-    │  │  │  ├─ translations.json
+    │  │  │  ├─ pluralizations.json
 
 ----
 

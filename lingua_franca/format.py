@@ -57,7 +57,7 @@ def _translate_word(name, amount=1, lang=''):
         lang = get_default_loc()
 
     lang_code = lang if is_supported_full_lang(lang) else get_full_lang_code(lang)
-    filename = resolve_resource_file(join("text", lang_code, "translations.json"))
+    filename = resolve_resource_file(join("text", lang_code, "pluralizations.json"))
 
     if filename:
         try:
