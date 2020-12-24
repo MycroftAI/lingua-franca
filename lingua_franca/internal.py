@@ -8,12 +8,13 @@ from warnings import warn
 from lingua_franca import config
 
 _SUPPORTED_LANGUAGES = ("ca", "cs", "da", "de", "en", "es", "fr", "hu",
-                        "it", "nl", "pl", "pt", "sl", "sv")
+                        "it", "nl", "pl", "pt", "sl", "sv", "fa")
 
 _SUPPORTED_FULL_LOCALIZATIONS = ("ca-es", "cs-cz", "da-dk", "de-de",
                                  "en-au", "en-us", "es-es", "fr-fr",
                                  "hu-hu", "it-it", "nl-nl", "pl-pl",
-                                 "pt-pt", "ru-ru", "sl-si", "sv-se", "tr-tr")
+                                 "fa-ir", "pt-pt", "ru-ru", "sl-si",
+                                 "sv-se", "tr-tr")
 
 _DEFAULT_FULL_LANG_CODES = {'ca': 'ca-es',
                             'cs': 'cs-cz',
