@@ -181,6 +181,31 @@ class TestPronounceNumber(unittest.TestCase):
                          "ottocento novantaseimila seicento trentanove"
                          " milioni, seicento trentunomila, ottocento"
                          " novantatre")
+        self.assertEqual(pronounce_number(1000000000, lang="it"),
+                         "Un miliardo")
+        self.assertEqual(pronounce_number(1000000001, lang="it"),
+                         "Un miliardo, uno")
+        self.assertEqual(pronounce_number(1000000050, lang="it"),
+                         "Un miliardo, cinquanta")
+        self.assertEqual(pronounce_number(1000123456, lang="it"),
+                         "Un miliardo, cento ventri tre mila, "
+                         "quattrocento cinquanta sei")
+        self.assertEqual(pronounce_number(1234567890, lang="it"),
+                         "Un miliardo, due cento trenta quattro milioni, "
+                         "cinquecento sessanta sette mila, ottocento novanta")
+        self.assertEqual(pronounce_number(1000000000000, lang="it"),
+                         "Un bilione")
+        self.assertEqual(pronounce_number(1000000000001, lang="it"),
+                         "Un bilione, uno")
+        self.assertEqual(pronounce_number(1000000500001, lang="it"),
+                         "Un bilione, cinquecento mila, uno")
+        self.assertEqual(pronounce_number(1000000000000000, lang="it"),
+                         "Un biliardo")
+        self.assertEqual(pronounce_number(1000000000000050, lang="it"),
+                         "Un biliardo, cinquanta")
+        self.assertEqual(pronounce_number(1000000000123456, lang="it"),
+                         "Un biliardo, cento venti tre mila, quattrocento "
+                         "cinquanta sei")
 
     def test_convert_scientific_notation(self):
         """
