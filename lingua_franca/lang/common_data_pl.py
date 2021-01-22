@@ -355,27 +355,6 @@ _MONTHS_TO_EN = {
     'grudnia': 'December',
 }
 
-# https://odmiana.net/ 
-# Terms of service state clearly (22.09.2020):
-# Definicje:
-# (...)
-# Użytkownik - osoba fizyczna.
-# (...)
-# Ogólne warunki:
-# (...)
-# Portal przeznaczony jest dla wszystkich Użytkowników Internetu.
-# Dostęp do portalu a także korzystanie z niego jest całkowicie bezpłatne dla wszystkich Użytkowników.
-# Which means:
-# Definitions:
-# (...)
-# User - person.
-# (...)
-# General terms:
-# (...)
-# This site is intended for all Internet Users.
-# Accessing the site and using it is completely free of charge for all Users.
-
-# 
 _DAYS_TO_EN = {
     'poniedziałek': 0,
     'poniedziałkach': 0,
