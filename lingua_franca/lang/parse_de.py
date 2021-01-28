@@ -20,7 +20,6 @@ from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic, Normalizer
 from lingua_franca.lang.common_data_de import _DE_NUMBERS
 from lingua_franca.lang.format_de import pronounce_number_de
-from mycroft.util.time import default_timezone
 
 # TODO: short_scale and ordinals don't do anything here.
 # The parameters are present in the function signature for API compatibility
@@ -787,7 +786,7 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
         for idx, en_month in enumerate(en_monthsShort):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
-        temp = datetime.strptime(datestr, "%B %d").replace(tzinfo=default_timezone())
+        temp = datetime.strptime(datestr, "%B %d").replace(tzinfo=extractedDate.tzinfo)
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:
