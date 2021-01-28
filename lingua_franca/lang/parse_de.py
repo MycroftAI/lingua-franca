@@ -20,64 +20,7 @@ from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic, Normalizer
 from lingua_franca.lang.common_data_de import _DE_NUMBERS
 from lingua_franca.lang.format_de import pronounce_number_de
-
-de_numbers = {
-    'null': 0,
-    'ein': 1,
-    'eins': 1,
-    'eine': 1,
-    'einer': 1,
-    'einem': 1,
-    'einen': 1,
-    'eines': 1,
-    'zwei': 2,
-    'drei': 3,
-    'vier': 4,
-    'fünf': 5,
-    'sechs': 6,
-    'sieben': 7,
-    'acht': 8,
-    'neun': 9,
-    'zehn': 10,
-    'elf': 11,
-    'zwölf': 12,
-    'dreizehn': 13,
-    'vierzehn': 14,
-    'fünfzehn': 15,
-    'sechzehn': 16,
-    'siebzehn': 17,
-    'achtzehn': 18,
-    'neunzehn': 19,
-    'zwanzig': 20,
-    'einundzwanzig': 21,
-    'zweiundzwanzig': 22,
-    'dreiundzwanzig': 23,
-    'vierundzwanzig': 24,
-    'fünfundzwanzig': 25,
-    'sechsundzwanzig': 26,
-    'siebenundzwanzig': 27,
-    'achtundzwanzig': 28,
-    'neunundzwanzig': 29,
-    'dreißig': 30,
-    'einunddreißig': 31,
-    'vierzig': 40,
-    'fünfzig': 50,
-    'sechzig': 60,
-    'siebzig': 70,
-    'achtzig': 80,
-    'neunzig': 90,
-    'hundert': 100,
-    'zweihundert': 200,
-    'dreihundert': 300,
-    'vierhundert': 400,
-    'fünfhundert': 500,
-    'sechshundert': 600,
-    'siebenhundert': 700,
-    'achthundert': 800,
-    'neunhundert': 900,
-    'tausend': 1000,
-    'million': 1000000
-}
+from mycroft.util.time import default_timezone
 
 # TODO: short_scale and ordinals don't do anything here.
 # The parameters are present in the function signature for API compatibility
@@ -405,7 +348,8 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                 dayOffset -= 7
                 used += 1
                 start -= 1
-                # parse 15 of July, June 20th, Feb 18, 19 of February
+
+        # parse 15 Mai, Mai der 20ste, Dez 18
         elif word in months or word in monthsShort and not fromFlag:
             try:
                 m = months.index(word)
@@ -413,10 +357,13 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                 m = monthsShort.index(word)
             used += 1
             datestr = months[m]
+            #commonly spoken : 15(.=gets replaced) Mai <Year>/<time>
             if wordPrev and (wordPrev[0].isdigit() or
-                             (wordPrev == "of" and wordPrevPrev[0].isdigit())):
-                if wordPrev == "of" and wordPrevPrev[0].isdigit():
-                    datestr += " " + words[idx - 2]
+                             (((wordNext == "der") or (wordNext == "den")) and
+                             wordNextNext[0].isdigit())):
+                #Mai der fünfte(5)
+                if ((wordNext == "der") or (wordNext == "den")) and wordNextNext[0].isdigit():
+                    datestr += " " + words[idx + 2]
                     used += 1
                     start -= 1
                 else:
@@ -424,12 +371,20 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                 start -= 1
                 used += 1
                 if wordNext and wordNext[0].isdigit():
-                    datestr += " " + wordNext
-                    used += 1
-                    hasYear = True
-                else:
-                    hasYear = False
-
+                    #normally the time comes in as ##:## and therefor
+                    #would break int(wordnext)
+                    if ':' in wordNext:
+                        tmp_word = wordNext.split(':')
+                        wordNext = tmp_word[0]
+                    #determine if wordnext is year data; eg 3 Januar 10:10 uhr
+                    #10:10 / 10 would be seen as such, leaving us with no time data
+                    if int(wordNext) > 2000:
+                        datestr += " " + wordNext
+                        used += 1
+                        hasYear = True
+                    else:
+                        hasYear = False
+            # Mai <Year>
             elif wordNext and wordNext[0].isdigit():
                 datestr += " " + wordNext
                 used += 1
@@ -439,9 +394,9 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                     hasYear = True
                 else:
                     hasYear = False
+
         # parse 5 days from tomorrow, 10 weeks from next thursday,
         # 2 months from July
-
         if (
                 word == "von" or word == "nach" or word == "ab") and wordNext \
                 in validFollowups:
@@ -832,7 +787,7 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
         for idx, en_month in enumerate(en_monthsShort):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
-        temp = datetime.strptime(datestr, "%B %d")
+        temp = datetime.strptime(datestr, "%B %d").replace(tzinfo=default_timezone())
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:
