@@ -378,7 +378,7 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                         wordNext = tmp_word[0]
                     #determine if wordnext is year data; eg 3 Januar 10:10 uhr
                     #10:10 / 10 would be seen as such, leaving us with no time data
-                    if int(wordNext) > 2000:
+                    if int(wordNext) > 60:
                         datestr += " " + wordNext
                         used += 1
                         hasYear = True
