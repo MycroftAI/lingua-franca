@@ -369,7 +369,7 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                     datestr += " " + wordPrev
                 start -= 1
                 used += 1
-                if wordnext and wordnext[0].isdigit() and not ":" in wordnext:
+                if wordNext and wordNext[0].isdigit() and not ":" in wordNext:
                     datestr += " " + wordNext
                     used += 1
                     hasYear = True                         
@@ -379,7 +379,7 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
             elif wordNext and wordNext[0].isdigit():
                 datestr += " " + wordNext
                 used += 1
-                if wordNextNext and wordNextNext[0].isdigit() and not ":" in wordnext:
+                if wordNextNext and wordNextNext[0].isdigit() and not ":" in wordNextNext:
                     datestr += " " + wordNextNext
                     used += 1
                     hasYear = True
