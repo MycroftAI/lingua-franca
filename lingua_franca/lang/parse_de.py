@@ -369,25 +369,17 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                     datestr += " " + wordPrev
                 start -= 1
                 used += 1
-                if wordNext and wordNext[0].isdigit():
-                    #normally the time comes in as ##:## and therefor
-                    #would break int(wordnext)
-                    if ':' in wordNext:
-                        tmp_word = wordNext.split(':')
-                        wordNext = tmp_word[0]
-                    #determine if wordnext is year data; eg 3 Januar 10:10 uhr
-                    #10:10 / 10 would be seen as such, leaving us with no time data
-                    if int(wordNext) > 60:
-                        datestr += " " + wordNext
-                        used += 1
-                        hasYear = True
-                    else:
-                        hasYear = False
-            # Mai <Year>
+                if wordnext and wordnext[0].isdigit() and not ":" in wordnext:
+                    datestr += " " + wordNext
+                    used += 1
+                    hasYear = True                         
+                else:
+                    hasYear = False
+            # Mai <day> <Year>
             elif wordNext and wordNext[0].isdigit():
                 datestr += " " + wordNext
                 used += 1
-                if wordNextNext and wordNextNext[0].isdigit():
+                if wordNextNext and wordNextNext[0].isdigit() and not ":" in wordnext:
                     datestr += " " + wordNextNext
                     used += 1
                     hasYear = True
@@ -785,8 +777,13 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(months[idx], en_month)
         for idx, en_month in enumerate(en_monthsShort):
             datestr = datestr.replace(monthsShort[idx], en_month)
-
-        temp = datetime.strptime(datestr, "%B %d").replace(tzinfo=extractedDate.tzinfo)
+        
+        try:
+            temp = datetime.strptime(datestr, "%B %d").replace(tzinfo=extractedDate.tzinfo)
+        except ValueError:
+            # Try again, allowing the year
+            temp = datetime.strptime(datestr, "%B %d %Y").replace(tzinfo=extractedDate.tzinfo)
+            
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:
