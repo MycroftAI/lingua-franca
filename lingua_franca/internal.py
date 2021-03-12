@@ -379,7 +379,7 @@ def __get_full_lang_code_deprecation_warning(lang=''):
         raise UnsupportedLanguageError(lang)
 
 
-def localized_function(run_own_code_on=[type(None)]):
+class localized_function():
     """
     Decorator which finds localized functions, and calls them, from signatures
     defined in the top-level modules. See lingua_franca.format or .parse for
@@ -410,7 +410,7 @@ def localized_function(run_own_code_on=[type(None)]):
     raises an UnsupportedLanguageError.
 
     Arguments:
-        run_own_code_on(list(type), optional)
+        self.run_own_code_on(list(type), optional)
             A list of Error types (ValueError, NotImplementedError, etc)
             which, if they are raised, will trigger the wrapped function's
             own code.
@@ -421,31 +421,45 @@ def localized_function(run_own_code_on=[type(None)]):
 
 
     """
-    # Make sure everything in run_own_code_on is an Error or None
-    BadTypeError = \
-        ValueError("@localized_function(run_own_code_on=<>) expected an "
-                   "Error type, or a list of Error types. Instead, it "
-                   "received this value:\n" + str(run_own_code_on))
     # TODO deprecate these kwarg values 6-12 months after v0.3.0 releases
 
-    def is_error_type(_type):
+    def is_error_type(self, _type):
         if not callable(_type):
             return False
         _instance = _type()
         rval = isinstance(_instance, BaseException) if _instance else True
         del _instance
         return rval
-    if not isinstance(run_own_code_on, list):
-        try:
-            run_own_code_on = list(run_own_code_on)
-        except TypeError:
-            raise BadTypeError
-    if run_own_code_on != [None]:
-        if not all((is_error_type(e) for e in run_own_code_on)):
-            raise BadTypeError
 
+    def __init__(self, run_own_code_on=[type(None)]):
+        # Make sure everything in self.run_own_code_on is an Error or None
+        BadTypeError = \
+            ValueError("@localized_function(run_own_code_on=<>) expected an "
+                       "Error type, or a list of Error types. Instead, it "
+                       "received this value:\n" + str(run_own_code_on))
+
+        if not isinstance(run_own_code_on, list):
+            try:
+                self.run_own_code_on = list(run_own_code_on)
+            except TypeError:
+                raise BadTypeError
+        else:
+            self.run_own_code_on = run_own_code_on
+        if self.run_own_code_on != [None]:
+            if not all((self.is_error_type(e) for e in self.run_own_code_on)):
+                raise BadTypeError
+
+    def __call__(self, func, *args, **kwargs):
+        try:
+            return self.localized_function_decorator(func, *args, **kwargs)
+        except NotImplementedError as e:
+            warn(str(e))
+            return
     # Begin wrapper
-    def localized_function_decorator(func):
+
+    def localized_function_decorator(self, func, *args, **kwargs):
+        run_own_code_on = self.run_own_code_on
+
         # Wrapper's logic
         def _call_localized_function(func, *args, **kwargs):
             lang_code = None
@@ -499,7 +513,7 @@ def localized_function(run_own_code_on=[type(None)]):
                                                  .format(
                                                      language=lang_code,
                                                      supported=_SUPPORTED_FULL_LOCALIZATIONS))
-                    if UnsupportedLanguageError in run_own_code_on:
+                    if UnsupportedLanguageError in self.run_own_code_on:
                         raise __error
                     else:
                         warn(DeprecationWarning("The following warning will "
@@ -586,19 +600,14 @@ def localized_function(run_own_code_on=[type(None)]):
             if run_own_code_on != [type(None)]:
                 try:
                     return _call_localized_function(func, *args, **kwargs)
-                except Exception as e:  # Intercept, check for run_own_code_on
-                    if any((isinstance(e, error) for error in run_own_code_on)):
+                except Exception as e:  # Intercept, check for self.run_own_code_on
+                    if any((isinstance(e, error) for error in self.run_own_code_on)):
                         return func(*args, **kwargs)
                     else:
                         raise e
             else:  # don't intercept any exceptions
                 return _call_localized_function(func, *args, **kwargs)
         return call_localized_function
-    try:
-        return localized_function_decorator
-    except NotImplementedError as e:
-        warn(str(e))
-        return
 
 
 def populate_localized_function_dict(lf_module, langs=get_active_langs()):
