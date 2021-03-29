@@ -19,9 +19,9 @@
     TODO: numbers greater than 999999
     TODO: date time ca
 """
-
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from lingua_franca.time import now_local
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_ca import _NUMBERS_CA, \
     _FEMALE_DETERMINANTS_CA, _FEMALE_ENDINGS_CA, \
@@ -337,9 +337,10 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
                 minAbs or secOffset != 0
             )
 
-    if text == "" or not anchorDate:
+    if text == "":
         return None
 
+    anchorDate = anchorDate or now_local()
     found = False
     daySpecified = False
     dayOffset = False
@@ -995,6 +996,9 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
+        if extractedDate.tzinfo:
+            temp = temp.replace(tzinfo=extractedDate.tzinfo)
+
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:

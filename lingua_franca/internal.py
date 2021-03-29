@@ -2,10 +2,12 @@ import os.path
 from functools import wraps
 from importlib import import_module
 from inspect import signature
-from sys import version
-from warnings import warn
 
+from warnings import warn
+from datetime import datetime
 from lingua_franca import config
+from lingua_franca.time import to_local
+
 
 _SUPPORTED_LANGUAGES = ("ca", "cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sl", "sv", "fa")
@@ -457,6 +459,15 @@ def localized_function(run_own_code_on=[type(None)]):
             func_params = list(func_signature.parameters)
             lang_param_index = func_params.index('lang')
             full_lang_code = None
+
+            # Check if we need to add timezone awareness to any datetime object
+            if config.inject_timezones:
+                for key, value in kwargs.items():
+                    if isinstance(value, datetime) and value.tzinfo is None:
+                        kwargs[key] = to_local(value)
+                for idx, value in enumerate(args):
+                    if isinstance(value, datetime) and value.tzinfo is None:
+                        args = args[:idx] + (to_local(value),) + args[idx + 1:]
 
             # Check if we're passing a lang as a kwarg
             if 'lang' in kwargs.keys():

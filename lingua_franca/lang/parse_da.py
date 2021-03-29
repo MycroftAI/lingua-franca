@@ -19,6 +19,7 @@ from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic, Normalizer
 from lingua_franca.lang.common_data_da import _DA_NUMBERS
 from lingua_franca.lang.format_da import pronounce_number_da
+from lingua_franca.time import now_local
 
 
 def extract_number_da(text, short_scale=True, ordinals=False):
@@ -141,9 +142,10 @@ def extract_datetime_da(text, anchorDate=None, default_time=None):
                 minAbs or secOffset != 0
             )
 
-    if text == "" or not anchorDate:
+    if text == "":
         return None
 
+    anchorDate = anchorDate or now_local()
     found = False
     daySpecified = False
     dayOffset = False
@@ -707,6 +709,9 @@ def extract_datetime_da(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
+        if extractedDate.tzinfo:
+            temp = temp.replace(tzinfo=extractedDate.tzinfo)
+
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:

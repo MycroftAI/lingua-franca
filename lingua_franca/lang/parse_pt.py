@@ -28,6 +28,7 @@ from lingua_franca.lang.common_data_pt import _NUMBERS_PT, \
     _MALE_DETERMINANTS_PT, _MALE_ENDINGS_PT, _GENDERS_PT
 from lingua_franca.internal import resolve_resource_file
 from lingua_franca.lang.parse_common import Normalizer
+from lingua_franca.time import now_local
 import json
 import re
 
@@ -286,9 +287,10 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                 minAbs or secOffset != 0
             )
 
-    if text == "" or not anchorDate:
+    if text == "":
         return None
 
+    anchorDate = anchorDate or now_local()
     found = False
     daySpecified = False
     dayOffset = False
@@ -953,6 +955,9 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
+        if extractedDate.tzinfo:
+            temp = temp.replace(tzinfo=extractedDate.tzinfo)
+
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:

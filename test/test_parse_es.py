@@ -20,6 +20,7 @@ from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.parse import (normalize, extract_numbers, extract_number,
                                  extract_datetime)
 from lingua_franca.lang.parse_es import extract_datetime_es, is_fractional_es
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -132,36 +133,36 @@ class TestDatetime_es(unittest.TestCase):
         _now = datetime.now()
         relative_year = _now.year if (_now.month == 1 and _now.day < 11) else \
             (_now.year + 1)
-        self.assertEqual(extract_datetime_es("11 ene")[0],
+        self.assertEqual(extract_datetime_es("11 ene", anchorDate=_now)[0],
                          datetime(relative_year, 1, 11))
 
         # test months
         self.assertEqual(extract_datetime(
             "11 ene", lang='es', anchorDate=datetime(1998, 1, 1))[0],
-            datetime(1998, 1, 11))
+            datetime(1998, 1, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 feb", lang='es', anchorDate=datetime(1998, 2, 1))[0],
-            datetime(1998, 2, 11))
+            datetime(1998, 2, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 mar", lang='es', anchorDate=datetime(1998, 3, 1))[0],
-            datetime(1998, 3, 11))
+            datetime(1998, 3, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 abr", lang='es', anchorDate=datetime(1998, 4, 1))[0],
-            datetime(1998, 4, 11))
+            datetime(1998, 4, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 may", lang='es', anchorDate=datetime(1998, 5, 1))[0],
-            datetime(1998, 5, 11))
+            datetime(1998, 5, 11, tzinfo=default_timezone()))
         # there is an issue with the months of june through september (below)
         # hay un problema con las meses junio hasta septiembre (lea abajo)
         self.assertEqual(extract_datetime(
             "11 oct", lang='es', anchorDate=datetime(1998, 10, 1))[0],
-            datetime(1998, 10, 11))
+            datetime(1998, 10, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 nov", lang='es', anchorDate=datetime(1998, 11, 1))[0],
-            datetime(1998, 11, 11))
+            datetime(1998, 11, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 dic", lang='es', anchorDate=datetime(1998, 12, 1))[0],
-            datetime(1998, 12, 11))
+            datetime(1998, 12, 11, tzinfo=default_timezone()))
 
         self.assertEqual(extract_datetime("", lang='es'), None)
 
@@ -174,50 +175,51 @@ class TestDatetime_es(unittest.TestCase):
     def test_bugged_output_wastebasket(self):
         self.assertEqual(extract_datetime(
             "11 jun", lang='es', anchorDate=datetime(1998, 6, 1))[0],
-            datetime(1998, 6, 11))
+            datetime(1998, 6, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 junio", lang='es', anchorDate=datetime(1998, 6, 1))[0],
-            datetime(1998, 6, 11))
+            datetime(1998, 6, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 jul", lang='es', anchorDate=datetime(1998, 7, 1))[0],
-            datetime(1998, 7, 11))
+            datetime(1998, 7, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 ago", lang='es', anchorDate=datetime(1998, 8, 1))[0],
-            datetime(1998, 8, 11))
+            datetime(1998, 8, 11, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "11 sep", lang='es', anchorDate=datetime(1998, 9, 1))[0],
-            datetime(1998, 9, 11))
+            datetime(1998, 9, 11, tzinfo=default_timezone()))
 
         # It's also failing on years
         self.assertEqual(extract_datetime(
-            "11 ago 1998", lang='es')[0], datetime(1998, 8, 11))
+            "11 ago 1998", lang='es')[0],
+                         datetime(1998, 8, 11, tzinfo=default_timezone()))
 
     def test_extract_datetime_relative(self):
         self.assertEqual(extract_datetime(
             "esta noche", anchorDate=datetime(1998, 1, 1),
-            lang='es'), [datetime(1998, 1, 1, 21, 0, 0), 'esta'])
+            lang='es'), [datetime(1998, 1, 1, 21, 0, 0, tzinfo=default_timezone()), 'esta'])
         self.assertEqual(extract_datetime(
             "ayer noche", anchorDate=datetime(1998, 1, 1),
-            lang='es')[0], datetime(1997, 12, 31, 21))
+            lang='es')[0], datetime(1997, 12, 31, 21, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "el noche anteayer", anchorDate=datetime(1998, 1, 1),
-            lang='es')[0], datetime(1997, 12, 30, 21))
+            lang='es')[0], datetime(1997, 12, 30, 21, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "el noche ante ante ayer", anchorDate=datetime(1998, 1, 1),
-            lang='es')[0], datetime(1997, 12, 29, 21))
+            lang='es')[0], datetime(1997, 12, 29, 21, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "mañana por la mañana", anchorDate=datetime(1998, 1, 1),
-            lang='es')[0], datetime(1998, 1, 2, 8))
+            lang='es')[0], datetime(1998, 1, 2, 8, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime(
             "ayer por la tarde", anchorDate=datetime(1998, 1, 1),
-            lang='es')[0], datetime(1997, 12, 31, 15))
+            lang='es')[0], datetime(1997, 12, 31, 15, tzinfo=default_timezone()))
 
         self.assertEqual(extract_datetime("hoy 2 de la mañana", lang='es',
                                           anchorDate=datetime(1998, 1, 1))[0],
-                         datetime(1998, 1, 1, 2))
+                         datetime(1998, 1, 1, 2, tzinfo=default_timezone()))
         self.assertEqual(extract_datetime("hoy 2 de la tarde", lang='es',
                                           anchorDate=datetime(1998, 1, 1))[0],
-                         datetime(1998, 1, 1, 14))
+                         datetime(1998, 1, 1, 14, tzinfo=default_timezone()))
 
     def test_extractdatetime_no_time(self):
         """Check that None is returned if no time is found in sentence."""

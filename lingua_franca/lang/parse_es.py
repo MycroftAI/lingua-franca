@@ -15,7 +15,8 @@
 #
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from dateutil.tz import gettz
+
+from lingua_franca.time import now_local
 from lingua_franca.lang.format_es import pronounce_number_es
 from lingua_franca.lang.parse_common import *
 from lingua_franca.lang.common_data_es import _ARTICLES_ES, _STRING_NUM_ES
@@ -367,7 +368,7 @@ def extract_datetime_es(text, anchorDate=None, default_time=None):
     if text == "":
         return None
     if anchorDate is None:
-        anchorDate = datetime.now()
+        anchorDate = now_local()
 
     found = False
     daySpecified = False
@@ -1020,17 +1021,18 @@ def extract_datetime_es(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
-        temp = temp.replace(tzinfo=None)
+        if extractedDate.tzinfo:
+            temp = temp.replace(tzinfo=extractedDate.tzinfo)
+        # temp = to_local(temp)
+
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
 
             if extractedDate < temp:
-                extractedDate = extractedDate.replace(year=int(currentYear),
-                                                      month=int(
-                                                          temp.strftime(
-                                                              "%m")),
-                                                      day=int(temp.strftime(
-                                                          "%d")))
+                extractedDate = extractedDate.replace(
+                    year=int(currentYear),
+                    month=int(temp.strftime("%m")),
+                    day=int(temp.strftime("%d")))
             else:
                 extractedDate = extractedDate.replace(
                     year=int(currentYear) + 1,

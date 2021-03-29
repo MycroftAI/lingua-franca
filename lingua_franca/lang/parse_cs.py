@@ -760,9 +760,10 @@ def extract_datetime_cs(text, anchorDate=None, default_time=None):
                 minAbs or secOffset != 0
             )
 
-    if text == "" or not anchorDate:
+    if text == "":
         return None
 
+    anchorDate = anchorDate or now_local()
     found = False
     daySpecified = False
     dayOffset = False
