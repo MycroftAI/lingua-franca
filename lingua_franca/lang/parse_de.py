@@ -85,7 +85,7 @@ def extract_duration_de(text):
     return (duration, text)
 
 
-def extractnumber_de(text, short_scale=True, ordinals=False):
+def extract_number_de(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -933,7 +933,7 @@ def extract_numbers_de(text, short_scale=True, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
-    return extract_numbers_generic(text, pronounce_number_de, extractnumber_de,
+    return extract_numbers_generic(text, pronounce_number_de, extract_number_de,
                                    short_scale=short_scale, ordinals=ordinals)
 
 class GermanNormalizer(Normalizer):
