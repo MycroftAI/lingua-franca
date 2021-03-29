@@ -92,3 +92,17 @@ def to_local(dt):
     else:
         return dt.replace(tzinfo=gettz("UTC")).astimezone(tz)
 
+
+def to_system(dt):
+    """Convert a datetime to the system's local timezone
+
+    Arguments:
+        dt (datetime): A datetime (if no timezone, assumed to be UTC)
+    Returns:
+        (datetime): time converted to the operation system's timezone
+    """
+    tz = tzlocal()
+    if dt.tzinfo:
+        return dt.astimezone(tz)
+    else:
+        return dt.replace(tzinfo=gettz("UTC")).astimezone(tz)
