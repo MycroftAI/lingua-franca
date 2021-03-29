@@ -132,7 +132,7 @@ class TestDatetime_es(unittest.TestCase):
         _now = datetime.now()
         relative_year = _now.year if (_now.month == 1 and _now.day < 11) else \
             (_now.year + 1)
-        self.assertEqual(extract_datetime_es("11 ene")[0],
+        self.assertEqual(extract_datetime_es("11 ene", anchorDate=_now)[0],
                          datetime(relative_year, 1, 11))
 
         # test months

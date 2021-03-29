@@ -713,7 +713,7 @@ def extract_datetime_pl(string, dateNow=None, default_time=None):
     if string == "":
         return None
 
-    dateNow = now_local()
+    dateNow = dateNow or now_local()
     found = False
     daySpecified = False
     dayOffset = False
