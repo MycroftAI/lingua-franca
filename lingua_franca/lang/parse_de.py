@@ -777,13 +777,8 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(months[idx], en_month)
         for idx, en_month in enumerate(en_monthsShort):
             datestr = datestr.replace(monthsShort[idx], en_month)
-        
-        try:
-            temp = datetime.strptime(datestr, "%B %d").replace(tzinfo=extractedDate.tzinfo)
-        except ValueError:
-            # Try again, allowing the year
-            temp = datetime.strptime(datestr, "%B %d %Y").replace(tzinfo=extractedDate.tzinfo)
-            
+
+        temp = datetime.strptime(datestr, "%B %d")
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:
