@@ -374,7 +374,7 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                 if wordNext and wordNext[0].isdigit() and not ":" in wordNext:
                     datestr += " " + wordNext
                     used += 1
-                    hasYear = True                         
+                    hasYear = True
                 else:
                     hasYear = False
             # Mai <day> <Year>
@@ -940,5 +940,5 @@ class GermanNormalizer(Normalizer):
     with open(resolve_resource_file("text/de-de/normalize.json")) as f:
         _default_config = json.load(f)
 
-def normalize_de(text, remove_articles):
+def normalize_de(text, remove_articles=True):
     return GermanNormalizer().normalize(text, remove_articles)
