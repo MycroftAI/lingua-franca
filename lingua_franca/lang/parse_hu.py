@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime, timedelta
+from lingua_franca.time import now_local
 from lingua_franca.lang.parse_common import Normalizer
 
 

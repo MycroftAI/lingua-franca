@@ -21,6 +21,7 @@
 import collections
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from lingua_franca.time import now_local
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic, Normalizer
 from lingua_franca.lang.format_it import _LONG_SCALE_IT, _SHORT_SCALE_IT, \
@@ -493,9 +494,9 @@ def extract_datetime_it(text, anchorDate=None, default_time=None):
                 month_offset != 0 or day_offset is True or hr_offset != 0 or
                 hr_abs or min_offset != 0 or min_abs or sec_offset != 0)
 
-    if text == '' or not anchorDate:
+    if text == '':
         return None
-
+    anchorDate = anchorDate or now_local()
     found = False
     day_specified = False
     day_offset = False

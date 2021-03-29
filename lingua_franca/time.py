@@ -17,16 +17,26 @@ from datetime import datetime
 from dateutil.tz import gettz, tzlocal
 
 
+__default_tz = None
+
+
+def set_default_tz(tz):
+    global __default_tz
+    # TODO tz validation/conversion from string
+    __default_tz = tz
+
+
 def default_timezone():
     """ Get the default timezone
 
-    default system value
+    either a value set by downstream user with
+    lingua_franca.internal.set_default_tz
+    or default system value
 
     Returns:
         (datetime.tzinfo): Definition of the default timezone
     """
-    # Just go with system default timezone
-    return tzlocal()
+    return __default_tz or tzlocal()
 
 
 def now_utc():
@@ -80,3 +90,4 @@ def to_local(dt):
         return dt.astimezone(tz)
     else:
         return dt.replace(tzinfo=gettz("UTC")).astimezone(tz)
+

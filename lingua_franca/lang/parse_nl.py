@@ -24,6 +24,7 @@ from .common_data_nl import _SHORT_ORDINAL_STRING_NL, _ARTICLES_NL, \
     _LONG_SCALE_NL, _MULTIPLIES_LONG_SCALE_NL, _MULTIPLIES_SHORT_SCALE_NL,\
     _NEGATIVES_NL, _SHORT_SCALE_NL, _STRING_LONG_ORDINAL_NL, _STRING_NUM_NL, \
     _STRING_SHORT_ORDINAL_NL, _SUMS_NL
+from lingua_franca.time import now_local
 import re
 
 
@@ -560,9 +561,10 @@ def extract_datetime_nl(text, anchorDate=None, default_time=None):
                 minAbs or secOffset != 0
             )
 
-    if text == "" or not anchorDate:
+    if text == "":
         return None
 
+    anchorDate = anchorDate or now_local()
     found = False
     daySpecified = False
     dayOffset = False
