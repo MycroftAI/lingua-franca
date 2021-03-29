@@ -24,10 +24,7 @@
     "vorm": "vor dem",
     "zum": "zu dem"
   },
-  "word_replacements": {
-    "m", "meter",
-    "km", "kilometer"
-  },
+  "word_replacements": {},
   "number_replacements": {
     "null": "0",
     "one": "1",
