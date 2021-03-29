@@ -14,12 +14,14 @@
 # limitations under the License.
 #
 import re
+import json
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic, Normalizer
 from lingua_franca.lang.common_data_de import _DE_NUMBERS
 from lingua_franca.lang.format_de import pronounce_number_de
+from lingua_franca.internal import resolve_resource_file
 
 de_numbers = {
     'null': 0,
@@ -141,7 +143,7 @@ def extract_duration_de(text):
     return (duration, text)
 
 
-def extract_number_de(text, short_scale=True, ordinals=False):
+def extractnumber_de(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -485,7 +487,6 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
             daySpecified = True
 
     # parse time
-    timeStr = ""
     hrOffset = 0
     minOffset = 0
     secOffset = 0
@@ -816,10 +817,8 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
     # perform date manipulation
 
     extractedDate = dateNow
-    extractedDate = extractedDate.replace(microsecond=0,
-                                          second=0,
-                                          minute=0,
-                                          hour=0)
+    extractedDate = extractedDate.replace(microsecond=0)
+
     if datestr != "":
         en_months = ['january', 'february', 'march', 'april', 'may', 'june',
                      'july', 'august', 'september', 'october', 'november',
@@ -833,6 +832,7 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
+        extractedDate = extractedDate.replace(hour=0, minute=0, second=0)
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:
@@ -853,11 +853,10 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                 month=int(temp.strftime("%m")),
                 day=int(temp.strftime("%d")))
 
-    if timeStr != "":
-        temp = datetime(timeStr)
-        extractedDate = extractedDate.replace(hour=temp.strftime("%H"),
-                                              minute=temp.strftime("%M"),
-                                              second=temp.strftime("%S"))
+    else:
+        # ignore the current HH:MM:SS if relative using days or greater
+        if hrOffset == 0 and minOffset == 0 and secOffset == 0:
+            extractedDate = extractedDate.replace(hour=0, minute=0, second=0)
 
     if yearOffset != 0:
         extractedDate = extractedDate + relativedelta(years=yearOffset)
@@ -866,17 +865,21 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
     if dayOffset != 0:
         extractedDate = extractedDate + relativedelta(days=dayOffset)
 
-    if hrAbs is None and minAbs is None and default_time:
-        hrAbs = default_time.hour
-        minAbs = default_time.minute
-
     if hrAbs != -1 and minAbs != -1:
+        # If no time was supplied in the string set the time to default
+        # time if it's available
+        if hrAbs is None and minAbs is None and default_time is not None:
+            hrAbs, minAbs = default_time.hour, default_time.minute
+        else:
+            hrAbs = hrAbs or 0
+            minAbs = minAbs or 0
 
-        extractedDate = extractedDate + relativedelta(hours=hrAbs or 0,
-                                                      minutes=minAbs or 0)
-        if (hrAbs or minAbs) and datestr == "":
-            if not daySpecified and dateNow > extractedDate:
+        extractedDate = extractedDate + relativedelta(hours=hrAbs,
+                                                      minutes=minAbs)
+        if (hrAbs != 0 or minAbs != 0) and datestr == "":
+            if not daySpecified and anchorDate > extractedDate:
                 extractedDate = extractedDate + relativedelta(days=1)
+
     if hrOffset != 0:
         extractedDate = extractedDate + relativedelta(hours=hrOffset)
     if minOffset != 0:
@@ -970,33 +973,6 @@ def is_ordinal_de(input_str):
 
     return False
 
-
-def normalize_de(text, remove_articles=True):
-    """ German string normalization """
-    # TODO return GermanNormalizer().normalize(text, remove_articles)
-    words = text.split()  # this also removed extra spaces
-    normalized = ""
-    for word in words:
-        if remove_articles and word in ["der", "die", "das", "des", "den",
-                                        "dem"]:
-            continue
-
-        # Expand common contractions, e.g. "isn't" -> "is not"
-        contraction = ["net", "nett"]
-        if word in contraction:
-            expansion = ["nicht", "nicht"]
-            word = expansion[contraction.index(word)]
-
-        # Convert numbers into digits, e.g. "two" -> "2"
-
-        if word in _DE_NUMBERS:
-            word = str(_DE_NUMBERS[word])
-
-        normalized += " " + word
-
-    return normalized[1:]  # strip the initial space
-
-
 def extract_numbers_de(text, short_scale=True, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
@@ -1011,9 +987,12 @@ def extract_numbers_de(text, short_scale=True, ordinals=False):
     Returns:
         list: list of extracted numbers as floats
     """
-    return extract_numbers_generic(text, pronounce_number_de, extract_number_de,
+    return extract_numbers_generic(text, pronounce_number_de, extractnumber_de,
                                    short_scale=short_scale, ordinals=ordinals)
 
-
 class GermanNormalizer(Normalizer):
-    """ TODO implement language specific normalizer"""
+    with open(resolve_resource_file("text/de-de/normalize.json")) as f:
+        _default_config = json.load(f)
+
+def normalize_de(text, remove_articles):
+    return GermanNormalizer().normalize(text, remove_articles)
