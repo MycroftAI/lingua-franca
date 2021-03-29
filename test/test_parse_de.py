@@ -102,6 +102,8 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-29 00:00:00", "wie ist das wetter")
         testExtract("erinnere mich um 10:45 abends",
                     "2017-06-27 22:45:00", "erinnere mich")
+        testExtract("erinnere mich an arzttermin freitag 10:45 uhr",
+                    "2017-06-30 10:45:00", "erinnere mich an arzttermin uhr")
         testExtract("was ist das Wetter am freitag morgen",
                     "2017-06-30 08:00:00", "was ist das wetter")
         testExtract("wie ist das wetter morgen",
