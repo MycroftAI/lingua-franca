@@ -19,7 +19,7 @@
     TODO: numbers greater than 999999
     TODO: date time ca
 """
-
+from dateutil.tz import gettz
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.time import now_local
@@ -997,6 +997,9 @@ def extract_datetime_ca(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
+        if extractedDate.tzinfo:
+            temp = temp.replace(tzinfo=gettz("UTC"))
+            temp = temp.astimezone(extractedDate.tzinfo)
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from dateutil.tz import gettz
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
@@ -709,6 +710,10 @@ def extract_datetime_da(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
+        if extractedDate.tzinfo:
+            temp = temp.replace(tzinfo=gettz("UTC"))
+            temp = temp.astimezone(extractedDate.tzinfo)
+
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:

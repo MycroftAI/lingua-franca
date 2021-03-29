@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import re
+from dateutil.tz import gettz
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
@@ -942,6 +943,9 @@ def extract_datetime_fr(text, anchorDate=None, default_time=None):
     if datestr != "":
         if not hasYear:
             temp = datetime.strptime(datestr, "%B %d")
+            if extractedDate.tzinfo:
+                temp = temp.replace(tzinfo=gettz("UTC"))
+                temp = temp.astimezone(extractedDate.tzinfo)
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:
                 extractedDate = extractedDate.replace(year=int(currentYear),

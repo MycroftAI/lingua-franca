@@ -17,7 +17,7 @@ from datetime import datetime
 from dateutil.tz import gettz
 from dateutil.relativedelta import relativedelta
 
-from lingua_franca.time import now_local, to_local
+from lingua_franca.time import now_local
 from lingua_franca.lang.format_es import pronounce_number_es
 from lingua_franca.lang.parse_common import *
 from lingua_franca.lang.common_data_es import _ARTICLES_ES, _STRING_NUM_ES
