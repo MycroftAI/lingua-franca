@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 
 from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.internal import FunctionNotLocalizedError
-from lingua_franca.time import to_local, default_timezone
+from lingua_franca.time import default_timezone
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_duration
 from lingua_franca.parse import extract_number, extract_numbers
