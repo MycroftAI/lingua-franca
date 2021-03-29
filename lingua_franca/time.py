@@ -22,7 +22,8 @@ __default_tz = None
 
 def set_default_tz(tz):
     global __default_tz
-    # TODO tz validation/conversion from string
+    if isinstance(tz, str):
+        tz = gettz(tz)
     __default_tz = tz
 
 
