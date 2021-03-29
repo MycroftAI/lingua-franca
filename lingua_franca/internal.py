@@ -461,7 +461,7 @@ def localized_function(run_own_code_on=[type(None)]):
             # Check if we need to add timezone awareness to any datetime object
             if config.inject_timezones:
                 for k, v in kwargs.items():
-                    if isinstance(v, datetime):
+                    if isinstance(v, datetime) and v.tzinfo is None:
                         kwargs[k] = to_local(v)
                 for idx, v in enumerate(args):
                     if isinstance(v, datetime) and v.tzinfo is None:

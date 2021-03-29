@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from datetime import datetime
-from dateutil.tz import gettz
 from dateutil.relativedelta import relativedelta
 
 from lingua_franca.time import now_local
@@ -1023,8 +1022,7 @@ def extract_datetime_es(text, anchorDate=None, default_time=None):
 
         temp = datetime.strptime(datestr, "%B %d")
         if extractedDate.tzinfo:
-            temp = temp.replace(tzinfo=gettz("UTC"))
-            temp = temp.astimezone(extractedDate.tzinfo)
+            temp = temp.replace(tzinfo=extractedDate.tzinfo)
         # temp = to_local(temp)
 
         if not hasYear:
