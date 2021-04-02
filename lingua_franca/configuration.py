@@ -52,15 +52,21 @@ class Config(dict):
             # full_loc = lang if lang in get_supported_locs() else \
             #     get_full_lang_code(lang)
             # self[lang][full_loc] = LangConfig(lang)
-            load_lang(lang)
+            self.load_lang(lang)
     
     def load_lang(self, lang):
-        if all((lang not in self.keys(), lang not in get_supported_locs())):
-            self[lang] = {}
-            self[lang]['universal'] = LangConfig(lang)
-            full_loc = lang if lang in get_supported_locs() else \
-                get_full_lang_code(lang)
-            self[lang][full_loc] = LangConfig(lang)
+        if lang not in get_supported_locs():
+        # if all((lang not in self.keys(), lang not in get_supported_locs())):
+            if lang not in self.keys():
+                self[lang] = {}
+                self[lang]['universal'] = LangConfig(lang)
+
+            full_loc = get_full_lang_code(lang)
+        else:
+            full_loc = lang
+            lang = get_primary_lang_code(lang)
+        
+        self[lang][full_loc] = LangConfig(full_loc)
 
 
     def _find_setting(self, setting=None, lang=None):
@@ -86,8 +92,12 @@ class Config(dict):
                 possible_locs.append((lang, get_full_lang_code(lang)))
 
             if lang in get_supported_locs():
-                possible_locs.append((get_primary_lang_code(lang), 'universal'))
-                possible_locs.append((get_primary_lang_code(lang), lang))
+                primary_lang_code = get_primary_lang_code(lang)
+                possible_locs.append((primary_lang_code, 'universal'))
+                possible_locs.append((primary_lang_code, get_default_loc(primary_lang_code)))
+                possible_locs.append((primary_lang_code, lang))
+                
+
 
             for place in possible_locs:
                 if setting in self[place[0]][place[1]]:
@@ -104,6 +114,7 @@ class Config(dict):
 
         try:
             setting_location = self._find_setting(setting, lang)
+
             if setting_location == 'global':
                 return self['global'][setting]
             return self[setting_location[0]][setting_location[1]][setting]

@@ -29,10 +29,11 @@ _DEFAULT_FULL_LANG_CODES = {'ca': 'ca-es',
                             'sl': 'sl-si',
                             'sv': 'sv-se',
                             'tr': 'tr-tr'}
-
+__default_full_codes = dict(_DEFAULT_FULL_LANG_CODES)
 __default_lang = None
 __active_lang_code = None
 __loaded_langs = []
+__loaded_locs = []
 
 _localized_functions = {}
 
@@ -177,7 +178,6 @@ def load_language(lang):
                     whether 'primary' or 'full')
                     Case-insensitive.
     """
-    from lingua_franca.configuration import LangConfig
     from lingua_franca import config
     if not isinstance(lang, str):
         raise TypeError("lingua_franca.load_language expects 'str' "
@@ -186,7 +186,9 @@ def load_language(lang):
     if lang not in _SUPPORTED_LANGUAGES:
         if lang in _SUPPORTED_FULL_LOCALIZATIONS:
             loc = lang
+            
             lang = get_primary_lang_code(lang)
+            
     if lang not in __loaded_langs:
         __loaded_langs.append(lang)
     if not __default_lang:
@@ -194,8 +196,15 @@ def load_language(lang):
     _set_active_langs(__loaded_langs)
     if lang not in config.keys():
         config.load_lang(lang)
+        default_loc = get_default_loc(lang)
+        if default_loc not in __loaded_locs:
+            __loaded_locs.append(default_loc)
+        if all((loc, loc != default_loc)):
+            
+            set_default_loc(lang, loc)
     if all((loc, loc not in config[lang].keys())):
         config.load_lang(loc)
+        __loaded_locs.append(loc)
 
 
 def load_languages(langs):
@@ -252,7 +261,7 @@ def get_default_lang():
     return __default_lang
 
 
-def get_default_loc():
+def get_default_loc(lang=None):
     """ Return the current, localized BCP-47 language code, such as 'en-US'
         or 'es-ES'. For the default language *family* - which is passed to
         most parsers and formatters - call `get_default_lang`
@@ -260,8 +269,12 @@ def get_default_loc():
         The 'localized' portion conforms to ISO 3166-1 alpha-2
         https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
     """
-    return __active_lang_code
-
+    if not lang:
+        return __active_lang_code
+    elif lang.lower() not in _SUPPORTED_LANGUAGES:
+        
+        raise UnsupportedLanguageError(lang)
+    return __default_full_codes[lang.lower()]
 
 def set_default_lang(lang_code):
     """ Set the active BCP-47 language code to be used in formatting/parsing
@@ -298,9 +311,29 @@ def set_default_lang(lang_code):
     else:
         __active_lang_code = get_full_lang_code(__default_lang)
 
+def set_default_loc(lang: str=None, loc: str=None):
+    if not loc:
+        raise ValueError("set_default_loc expects a BCP-47 lang code")
+    if not lang:
+        lang = get_default_lang()
+    lang = lang.lower()
+    loc = loc.lower()
+    if lang not in _SUPPORTED_LANGUAGES or \
+        loc not in _SUPPORTED_FULL_LOCALIZATIONS:
+            raise UnsupportedLanguageError(f"{lang} - {loc}")
+
+    if get_primary_lang_code(loc) != lang:
+        raise ValueError(f"Localization '{loc}'' does not correspond to "
+                          "language '{lang}'")
+
+    __default_full_codes[lang] = loc
+    if lang == get_default_lang():
+        global __active_lang_code
+        __active_lang_code = loc
+
+
+
 # TODO remove this when invalid lang codes are removed (currently deprecated)
-
-
 def get_primary_lang_code(lang=''):
     if not lang:
         if lang is None:
@@ -386,8 +419,8 @@ def __get_full_lang_code_deprecation_warning(lang=''):
                         "got {}".format(type(lang)))
     if lang.lower() in _SUPPORTED_FULL_LOCALIZATIONS:
         return lang
-    elif lang in _DEFAULT_FULL_LANG_CODES:
-        return _DEFAULT_FULL_LANG_CODES[lang]
+    elif lang in __default_full_codes:
+        return __default_full_codes[lang]
     else:
         raise UnsupportedLanguageError(lang)
 
