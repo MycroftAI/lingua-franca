@@ -456,7 +456,7 @@ def localized_function(run_own_code_on=[type(None)]):
             from lingua_franca import config
 
             lang_code = None
-            load_langs_on_demand = config.load_langs_on_demand
+            load_langs_on_demand = config.get('load_langs_on_demand')
             unload_language_afterward = False
             func_signature = signature(func)
             func_params = list(func_signature.parameters)

@@ -2,7 +2,8 @@ import json
 from os import path
 
 from lingua_franca import get_active_langs, get_supported_locs, \
-        get_full_lang_code
+        get_supported_langs, get_primary_lang_code, get_full_lang_code, \
+            get_default_loc
 from lingua_franca.internal import UnsupportedLanguageError, resolve_resource_file
 
 default_global_values = \
@@ -48,3 +49,39 @@ class Config(dict):
             full_loc = lang if lang in get_supported_locs() else \
                 get_full_lang_code(lang)
             self[lang][full_loc] = LangConfig(lang)
+    
+    def get(self, setting=None, lang='global'):
+        if setting is None:
+            raise ValueError("lingua_franca.config.get() requires "
+                             "a setting parameter!")
+        
+        if lang is None:
+            lang = get_default_loc()
+        
+        setting_available_in = []
+        possible_locs = []
+
+        stop = False
+        while True:
+            if setting in self['global']:
+                setting_available_in.append('global')
+            if lang == 'global':
+                break
+
+            if lang in get_supported_langs():
+                possible_locs.append(self[lang]['universal'])
+                possible_locs.append(self[lang][get_full_lang_code(lang)])
+
+            if lang in get_supported_locs():
+                possible_locs.append(self[get_primary_lang_code(lang)]['universal'])
+                possible_locs.append(self[get_primary_lang_code(lang)][lang])
+            
+            for place in possible_locs:
+                if setting in place:
+                    setting_available_in.append(place)
+            break
+        try:
+            return self[setting_available_in[-1]][setting]
+        except KeyError as e:
+            # TODO: lots of sanity checking before PR is ready
+            raise e
