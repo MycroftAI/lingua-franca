@@ -193,14 +193,14 @@ def load_language(lang):
         __loaded_langs.append(lang)
     if not __default_lang:
         set_default_lang(lang)
-    _set_active_langs(__loaded_langs)
+    else:
+        _set_active_langs(__loaded_langs)
     if lang not in config.keys():
         config.load_lang(lang)
         default_loc = get_default_loc(lang)
         if default_loc not in __loaded_locs:
             __loaded_locs.append(default_loc)
         if all((loc, loc != default_loc)):
-            
             set_default_loc(lang, loc)
     if all((loc, loc not in config[lang].keys())):
         config.load_lang(loc)
@@ -298,18 +298,23 @@ def set_default_lang(lang_code):
     else:
         __default_lang = primary_lang_code
 
+    if lang_code not in __loaded_langs and lang_code not in __loaded_locs:
+        load_language(lang_code)
+
     # make sure the default language is loaded.
     # also make sure the default language is at the front.
     # position doesn't matter here, but it clarifies things while debugging.
-    if __default_lang in __loaded_langs:
-        __loaded_langs.remove(__default_lang)
+    if __default_lang not in __loaded_langs:
+        load_language(__default_lang)
+        
+    __loaded_langs.remove(__default_lang)
     __loaded_langs.insert(0, __default_lang)
     _refresh_function_dict()
 
     if is_supported_full_lang(lang_code):
-        __active_lang_code = lang_code
+        set_default_loc(get_primary_lang_code(lang_code), lang_code)
     else:
-        __active_lang_code = get_full_lang_code(__default_lang)
+        set_default_loc(lang_code, get_full_lang_code(lang_code))
 
 def set_default_loc(lang: str=None, loc: str=None):
     if not loc:
