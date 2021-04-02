@@ -45,14 +45,24 @@ class Config(dict):
 
                 and so forth.
             '''
-            if all((lang not in self.keys(), lang not in get_supported_locs())):
-                self[lang] = {}
-                self[lang]['universal'] = LangConfig(lang)
-            # begin portion that will need to adapt for the todo above
+            # if all((lang not in self.keys(), lang not in get_supported_locs())):
+            #     self[lang] = {}
+            #     self[lang]['universal'] = LangConfig(lang)
+            # # begin portion that will need to adapt for the todo above
+            # full_loc = lang if lang in get_supported_locs() else \
+            #     get_full_lang_code(lang)
+            # self[lang][full_loc] = LangConfig(lang)
+            load_lang(lang)
+    
+    def load_lang(self, lang):
+        if all((lang not in self.keys(), lang not in get_supported_locs())):
+            self[lang] = {}
+            self[lang]['universal'] = LangConfig(lang)
             full_loc = lang if lang in get_supported_locs() else \
                 get_full_lang_code(lang)
             self[lang][full_loc] = LangConfig(lang)
-    
+
+
     def _find_setting(self, setting=None, lang=None):
         if setting is None:
             raise ValueError("lingua_franca.config requires "

@@ -177,17 +177,25 @@ def load_language(lang):
                     whether 'primary' or 'full')
                     Case-insensitive.
     """
+    from lingua_franca.configuration import LangConfig
+    from lingua_franca import config
     if not isinstance(lang, str):
         raise TypeError("lingua_franca.load_language expects 'str' "
                         "(got " + type(lang) + ")")
+    loc = None
     if lang not in _SUPPORTED_LANGUAGES:
         if lang in _SUPPORTED_FULL_LOCALIZATIONS:
+            loc = lang
             lang = get_primary_lang_code(lang)
     if lang not in __loaded_langs:
         __loaded_langs.append(lang)
     if not __default_lang:
         set_default_lang(lang)
     _set_active_langs(__loaded_langs)
+    if lang not in config.keys():
+        config.load_lang(lang)
+    if all((loc, loc not in config[lang].keys())):
+        config.load_lang(loc)
 
 
 def load_languages(langs):
