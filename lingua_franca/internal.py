@@ -5,8 +5,6 @@ from inspect import signature
 from sys import version
 from warnings import warn
 
-from lingua_franca import config
-
 _SUPPORTED_LANGUAGES = ("ca", "cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sl", "sv")
 
@@ -87,6 +85,13 @@ def get_supported_langs():
         list(str)
     """
     return _SUPPORTED_LANGUAGES
+
+def get_supported_locs():
+    """
+    Returns:
+        list(str)
+    """
+    return _SUPPORTED_FULL_LOCALIZATIONS
 
 
 def get_active_langs():
@@ -448,6 +453,8 @@ def localized_function(run_own_code_on=[type(None)]):
     def localized_function_decorator(func):
         # Wrapper's logic
         def _call_localized_function(func, *args, **kwargs):
+            from lingua_franca import config
+
             lang_code = None
             load_langs_on_demand = config.load_langs_on_demand
             unload_language_afterward = False
