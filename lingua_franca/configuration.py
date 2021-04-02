@@ -23,10 +23,13 @@ class LangConfig(dict):
 
 
         resource_file = resolve_resource_file(f'text/{lang_code}/config.json')
-        with open(resource_file, 'r', encoding='utf-8') as i_file:
-            default_values = json.load(i_file)
-        for k in default_values:
-            self[k] = default_values[k]
+        try:
+            with open(resource_file, 'r', encoding='utf-8') as i_file:
+                default_values = json.load(i_file)
+            for k in default_values:
+                self[k] = default_values[k]
+        except (FileNotFoundError, TypeError):
+            self = {}
 
 class Config(dict):
     def __init__(self):
@@ -50,13 +53,11 @@ class Config(dict):
                 get_full_lang_code(lang)
             self[lang][full_loc] = LangConfig(lang)
     
-    def get(self, setting=None, lang='global'):
+    def _find_setting(self, setting=None, lang=None):
         if setting is None:
-            raise ValueError("lingua_franca.config.get() requires "
+            raise ValueError("lingua_franca.config requires "
                              "a setting parameter!")
         
-        if lang is None:
-            lang = get_default_loc()
         
         setting_available_in = []
         possible_locs = []
@@ -68,20 +69,47 @@ class Config(dict):
             if lang == 'global':
                 break
 
+            lang = lang or get_default_loc()
+
             if lang in get_supported_langs():
-                possible_locs.append(self[lang]['universal'])
-                possible_locs.append(self[lang][get_full_lang_code(lang)])
+                possible_locs.append((lang, 'universal'))
+                possible_locs.append((lang, get_full_lang_code(lang)))
 
             if lang in get_supported_locs():
-                possible_locs.append(self[get_primary_lang_code(lang)]['universal'])
-                possible_locs.append(self[get_primary_lang_code(lang)][lang])
-            
+                possible_locs.append((get_primary_lang_code(lang), 'universal'))
+                possible_locs.append((get_primary_lang_code(lang), lang))
+
             for place in possible_locs:
-                if setting in place:
+                if setting in self[place[0]][place[1]]:
                     setting_available_in.append(place)
+
             break
+        return setting_available_in[-1]
+    
+    def get(self, setting=None, lang=None):
+        if lang != 'global':
+            if all((lang,
+                get_primary_lang_code(lang) not in get_active_langs())):
+                raise ModuleNotFoundError(f"{lang} is not currently loaded")
+
         try:
-            return self[setting_available_in[-1]][setting]
+            setting_location = self._find_setting(setting, lang)
+            if setting_location == 'global':
+                return self['global'][setting]
+            return self[setting_location[0]][setting_location[1]][setting]
+
         except KeyError as e:
             # TODO: lots of sanity checking before PR is ready
             raise e
+
+    def set(self, setting=None, value=None, lang='global'):
+        if lang == 'global':
+            self['global'][setting] = value
+            return
+
+        setting_location = self._find_setting(setting, lang)
+        if setting_location != 'global':
+            self[setting_location[0]][setting_location[1]][setting] = value
+            return
+        
+        raise KeyError(f"{setting} is not available as a setting for language: '{lang}'")
