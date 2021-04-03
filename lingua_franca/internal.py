@@ -133,12 +133,14 @@ def _set_active_langs(langs=None, override_default=True):
     if __default_lang:
         if override_default or get_primary_lang_code(__default_lang) \
                 not in __loaded_langs:
-            if len(__loaded_langs):
+            if len(__loaded_langs) > 0:
                 set_default_lang(get_full_lang_code(__loaded_langs[0]))
             else:
                 __default_lang = None
     
-    if get_primary_lang_code(__active_lang_code) != __default_lang:
+    if not __default_lang:
+        __active_lang_code = None
+    elif get_primary_lang_code(__active_lang_code) != __default_lang:
         __cur_default = __default_full_codes[__default_lang]
         __active_lang_code = __cur_default if __cur_default in __loaded_locs \
             else _DEFAULT_FULL_LANG_CODES[__default_lang]
@@ -196,15 +198,14 @@ def load_language(lang):
     if lang not in _SUPPORTED_LANGUAGES:
         if lang in _SUPPORTED_FULL_LOCALIZATIONS:
             loc = lang
-            
             lang = get_primary_lang_code(lang)
-            
+
     if lang not in __loaded_langs:
         __loaded_langs.append(lang)
     if not __default_lang:
         set_default_lang(lang)
     else:
-        _set_active_langs(__loaded_langs)
+        _set_active_langs(__loaded_langs, override_default=False)
     if lang not in config.keys():
         config.load_lang(lang)
         default_loc = get_default_loc(lang)
@@ -246,9 +247,10 @@ def unload_language(lang):
     if lang in __loaded_locs:
         loc = lang
         lang = get_primary_lang_code(loc)
-        
+
         __loaded_locs.remove(loc)
-        config[lang].pop(loc)
+        if loc in config[lang]:
+            config[lang].pop(loc)
 
         only_remaining_loc_of_this_lang = True
         for _loc in __loaded_locs:
@@ -333,7 +335,12 @@ def set_default_lang(lang_code):
     else:
         __default_lang = primary_lang_code
 
-    if lang_code not in __loaded_langs and lang_code not in __loaded_locs:
+    if primary_lang_code != lang_code:
+        if primary_lang_code not in __loaded_langs:
+            load_language(primary_lang_code)
+        if lang_code not in __loaded_locs:
+            load_language(lang_code)
+    else:
         load_language(lang_code)
 
     # make sure the default language is loaded.
@@ -459,8 +466,8 @@ def __get_full_lang_code_deprecation_warning(lang=''):
                         "got {}".format(type(lang)))
     if lang.lower() in _SUPPORTED_FULL_LOCALIZATIONS:
         return lang
-    elif lang in __default_full_codes:
-        return __default_full_codes[lang]
+    elif lang in _DEFAULT_FULL_LANG_CODES:
+        return _DEFAULT_FULL_LANG_CODES[lang]
     else:
         raise UnsupportedLanguageError(lang)
 
@@ -669,11 +676,13 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
                 del kwargs['lang']
             args = tuple(arg for arg in list(args) if
                          arg not in (lang_code, full_lang_code))
-
             # Now let's substitute any values that are supposed to come from
             # lingua_franca.config
             for kwarg in loc_signature.parameters:
-                if all((kwarg not in kwargs, kwarg in config_vars)):
+                if all((kwarg not in kwargs,
+                        kwarg in config_vars,
+                        len(args) < \
+                            list(loc_signature.parameters).index(kwarg) + 1)):
                     config_var = config.get(kwarg, full_lang_code)
                     if config_var is not None:
                         kwargs[kwarg] = config_var

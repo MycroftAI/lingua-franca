@@ -29,8 +29,8 @@ from lingua_franca.parse import normalize
 
 def setUpModule():
     # TODO spin off English tests
-    load_language('en')
-    set_default_lang('en')
+    # load_language('en-us')
+    set_default_lang('en-us')
 
 
 def tearDownModule():

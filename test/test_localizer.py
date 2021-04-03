@@ -6,7 +6,8 @@ import lingua_franca
 import lingua_franca.parse
 import lingua_franca.format
 
-from lingua_franca.internal import localized_function, _SUPPORTED_LANGUAGES
+from lingua_franca.internal import localized_function, _SUPPORTED_LANGUAGES, \
+    unload_languages
 
 
 def unload_all_languages():
@@ -14,7 +15,7 @@ def unload_all_languages():
         your test util to run them in order. Sadly, spamming this function
         is easier and probably less onerous for most devs.
     """
-    lingua_franca._set_active_langs([])
+    unload_languages(_SUPPORTED_LANGUAGES)
 
 
 def setUpModule():
