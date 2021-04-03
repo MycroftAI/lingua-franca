@@ -125,11 +125,13 @@ class Config(dict):
 
     def set(self, setting=None, value=None, lang='global'):
         if lang == 'global':
-            self['global'][setting] = value
-            return
+            if setting in self['global']:
+                self['global'][setting] = value
+                return
 
-        setting_location = self._find_setting(setting, lang)
-        if setting_location != 'global':
+        setting_location = self._find_setting(setting, lang if lang != \
+                                              'global' else get_default_loc())
+        if all((setting_location, setting_location != 'global')):
             self[setting_location[0]][setting_location[1]][setting] = value
             return
         

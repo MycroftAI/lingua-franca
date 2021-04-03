@@ -1,5 +1,6 @@
 {
-    "ordinals": false,
     "short_scale": true,
-    "remove_articles": true
+    "remove_articles": true,
+    "use_24hour": false,
+    "use_ampm": false
 }

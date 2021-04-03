@@ -21,6 +21,7 @@ from collections import namedtuple
 from warnings import warn
 from os.path import join
 
+from lingua_franca import config
 
 from lingua_franca.bracket_expansion import SentenceTreeParser
 from lingua_franca.internal import localized_function, \
@@ -28,7 +29,7 @@ from lingua_franca.internal import localized_function, \
     get_full_lang_code, get_default_lang, get_default_loc, \
     is_supported_full_lang, _raise_unsupported_language, \
     UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning, \
-    FunctionNotLocalizedError
+    FunctionNotLocalizedError, ConfigVar
 
 
 _REGISTERED_FUNCTIONS = ("nice_number",
@@ -241,7 +242,7 @@ date_time_format = DateTimeFormat(os.path.join(os.path.dirname(__file__),
                                                'res/text'))
 
 
-@localized_function(run_own_code_on=[UnsupportedLanguageError])
+@localized_function(run_own_code_on=[UnsupportedLanguageError, TypeError])
 def nice_number(number, lang='', speech=True, denominators=None):
     """Format a float to human readable functions
 
@@ -255,12 +256,24 @@ def nice_number(number, lang='', speech=True, denominators=None):
     Returns:
         (str): The formatted string.
     """
+    args = locals()
+    if denominators:
+        try:
+            denominators.__iter__
+        except (AttributeError, TypeError):
+            print("substituting")
+            try:
+                args[denominators] = range(*denominators)
+            except TypeError:
+                raise ValueError("nice_number(denominators) must be "
+                                 "iterable, or a valid param for range()")
+            nice_number(**args)
     return str(number)
 
 
 @localized_function()
-def nice_time(dt, lang='', speech=True, use_24hour=False,
-              use_ampm=False, variant=None):
+def nice_time(dt, lang='', speech=True, use_24hour=ConfigVar,
+              use_ampm=ConfigVar, variant=ConfigVar):
     """
     Format a time to a comfortable human format
 
@@ -281,7 +294,7 @@ def nice_time(dt, lang='', speech=True, use_24hour=False,
 
 
 @localized_function()
-def pronounce_number(number, lang='', places=2, short_scale=True,
+def pronounce_number(number, lang='', places=2, short_scale=ConfigVar,
                      scientific=False, ordinals=False):
     """
     Convert a number to it's spoken equivalent
@@ -321,8 +334,8 @@ def nice_date(dt, lang='', now=None):
     return date_time_format.date_format(dt, full_code, now)
 
 
-def nice_date_time(dt, lang='', now=None, use_24hour=False,
-                   use_ampm=False):
+def nice_date_time(dt, lang='', now=None, use_24hour=ConfigVar,
+                   use_ampm=ConfigVar):
     """
         Format a datetime to a pronounceable date and time
 
@@ -343,8 +356,14 @@ def nice_date_time(dt, lang='', now=None, use_24hour=False,
             (str): The formatted date time string
     """
 
+
     full_code = get_full_lang_code(lang)
     date_time_format.cache(full_code)
+
+    if use_24hour is ConfigVar:
+        use_24hour = config.get(setting='use_24hour', lang=full_code)
+    if use_ampm is ConfigVar:
+        use_ampm = config.get(setting='use_ampm', lang=full_code)
 
     return date_time_format.date_time_format(dt, full_code, now, use_24hour,
                                              use_ampm)

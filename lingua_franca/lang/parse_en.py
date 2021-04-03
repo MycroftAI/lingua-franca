@@ -31,7 +31,7 @@ import json
 from lingua_franca.internal import resolve_resource_file, ConfigVar
 
 
-def _convert_words_to_numbers_en(text, short_scale=ConfigVar, ordinals=ConfigVar):
+def _convert_words_to_numbers_en(text, short_scale=ConfigVar, ordinals=False):
     """
     Convert words in a string into their equivalent numbers.
     Args:
@@ -67,7 +67,7 @@ def _convert_words_to_numbers_en(text, short_scale=ConfigVar, ordinals=ConfigVar
 
 
 def _extract_numbers_with_text_en(tokens, short_scale=ConfigVar,
-                                  ordinals=ConfigVar, fractional_numbers=True):
+                                  ordinals=False, fractional_numbers=True):
     """
     Extract all numbers from a list of Tokens, with the words that
     represent them.
@@ -109,7 +109,7 @@ def _extract_numbers_with_text_en(tokens, short_scale=ConfigVar,
 
 
 def _extract_number_with_text_en(tokens, short_scale=ConfigVar,
-                                 ordinals=ConfigVar, fractional_numbers=True):
+                                 ordinals=False, fractional_numbers=True):
     """
     This function extracts a number from a list of Tokens.
 
@@ -132,7 +132,7 @@ def _extract_number_with_text_en(tokens, short_scale=ConfigVar,
 
 
 def _extract_number_with_text_en_helper(tokens,
-                                        short_scale=ConfigVar, ordinals=ConfigVar,
+                                        short_scale=ConfigVar, ordinals=False,
                                         fractional_numbers=True):
     """
     Helper for _extract_number_with_text_en.
@@ -529,7 +529,7 @@ def _initialize_number_data_en(short_scale, speech=True):
     return multiplies, string_num_ordinal_en, string_num_scale_en
 
 
-def extract_number_en(text, short_scale=ConfigVar, ordinals=ConfigVar):
+def extract_number_en(text, short_scale=ConfigVar, ordinals=False):
     """
     This function extracts a number from a text string,
     handles pronunciations in long scale and short scale
@@ -1450,7 +1450,7 @@ def is_fractional_en(input_str, short_scale=ConfigVar, spoken=True):
     return False
 
 
-def extract_numbers_en(text, short_scale=ConfigVar, ordinals=ConfigVar):
+def extract_numbers_en(text, short_scale=ConfigVar, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 
