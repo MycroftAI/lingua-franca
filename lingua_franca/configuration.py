@@ -55,8 +55,8 @@ class Config(dict):
             self.load_lang(lang)
     
     def load_lang(self, lang):
-        if lang not in get_supported_locs():
-        # if all((lang not in self.keys(), lang not in get_supported_locs())):
+        if all((lang not in get_supported_locs(), \
+            lang in get_supported_langs())):
             if lang not in self.keys():
                 self[lang] = {}
                 self[lang]['universal'] = LangConfig(lang)
@@ -65,9 +65,8 @@ class Config(dict):
         else:
             full_loc = lang
             lang = get_primary_lang_code(lang)
-        
-        self[lang][full_loc] = LangConfig(full_loc)
 
+        self[lang][full_loc] = LangConfig(full_loc)
 
     def _find_setting(self, setting=None, lang=None):
         if setting is None:
@@ -104,8 +103,11 @@ class Config(dict):
                     setting_available_in.append(place)
 
             break
-        return setting_available_in[-1]
-    
+        try:
+            return setting_available_in[-1]
+        except IndexError:
+            return None
+
     def get(self, setting=None, lang=None):
         if lang != 'global':
             if all((lang,
@@ -119,9 +121,8 @@ class Config(dict):
                 return self['global'][setting]
             return self[setting_location[0]][setting_location[1]][setting]
 
-        except KeyError as e:
-            # TODO: lots of sanity checking before PR is ready
-            raise e
+        except TypeError:
+            return None
 
     def set(self, setting=None, value=None, lang='global'):
         if lang == 'global':

@@ -52,6 +52,10 @@ class UnsupportedLanguageError(NotImplementedError):
 class FunctionNotLocalizedError(NotImplementedError):
     pass
 
+class ConfigVar():
+    name: str
+    def __init__(self, name: str):
+        self.name = name
 
 NoneLangWarning = \
     DeprecationWarning("Lingua Franca is dropping support"
@@ -124,7 +128,7 @@ def _set_active_langs(langs=None, override_default=True):
     if not isinstance(langs, list):
         raise(TypeError("lingua_franca.internal._set_active_langs expects"
                         " 'str' or 'list'"))
-    global __loaded_langs, __default_lang
+    global __loaded_langs, __default_lang, __active_lang_code
     __loaded_langs = list(dict.fromkeys(langs))
     if __default_lang:
         if override_default or get_primary_lang_code(__default_lang) \
@@ -133,6 +137,12 @@ def _set_active_langs(langs=None, override_default=True):
                 set_default_lang(get_full_lang_code(__loaded_langs[0]))
             else:
                 __default_lang = None
+    
+    if get_primary_lang_code(__active_lang_code) != __default_lang:
+        __cur_default = __default_full_codes[__default_lang]
+        __active_lang_code = __cur_default if __cur_default in __loaded_locs \
+            else _DEFAULT_FULL_LANG_CODES[__default_lang]
+    
     _refresh_function_dict()
 
 
@@ -229,9 +239,35 @@ def unload_language(lang):
     Args:
         lang (str): language code to unload
     """
+    from lingua_franca import config
+    
+    lang = lang.lower()
+    # if passed full lang code, unload that locale
+    if lang in __loaded_locs:
+        loc = lang
+        lang = get_primary_lang_code(loc)
+        
+        __loaded_locs.remove(loc)
+        config[lang].pop(loc)
+
+        only_remaining_loc_of_this_lang = True
+        for _loc in __loaded_locs:
+            if get_primary_lang_code(_loc) == lang:
+                only_remaining_loc_of_this_lang = False
+                set_default_loc(lang, _loc)
+
+        if not only_remaining_loc_of_this_lang:
+            return
+    else:
+        locales = [_loc for _loc in __loaded_locs \
+            if get_primary_lang_code(_loc) == lang]
+        for _loc in locales:
+            unload_language(_loc)
+    # unload the whole language
     if lang in __loaded_langs:
         __loaded_langs.remove(lang)
         _set_active_langs(__loaded_langs)
+        config.pop(lang)
 
 
 def unload_languages(langs):
@@ -242,8 +278,7 @@ def unload_languages(langs):
         langs (list[str])
     """
     for lang in langs:
-        __loaded_langs.remove(lang)
-    _set_active_langs(__loaded_langs)
+        unload_language(lang)
 
 
 def get_default_lang():
@@ -430,7 +465,7 @@ def __get_full_lang_code_deprecation_warning(lang=''):
         raise UnsupportedLanguageError(lang)
 
 
-def localized_function(run_own_code_on=[type(None)]):
+def localized_function(run_own_code_on=[type(None)], config_vars=[]):
     """
     Decorator which finds localized functions, and calls them, from signatures
     defined in the top-level modules. See lingua_franca.format or .parse for
@@ -469,7 +504,10 @@ def localized_function(run_own_code_on=[type(None)]):
             If this argument is omitted, the function itself will never
             be run. Calls to the wrapped function will be passed to the
             appropriate, localized function.
-
+        config_vars(list(str), optional)
+            A list of variable names whose default values should be obtained
+            from lingua_franca.config, rather than specified in the top-level
+            function signature.
 
     """
     # Make sure everything in run_own_code_on is an Error or None
@@ -477,6 +515,10 @@ def localized_function(run_own_code_on=[type(None)]):
         ValueError("@localized_function(run_own_code_on=<>) expected an "
                    "Error type, or a list of Error types. Instead, it "
                    "received this value:\n" + str(run_own_code_on))
+    NotStringsError = \
+        ValueError("@localized_function(config_vars=<>) expected a string,"
+                   "or a list of strings. Instead, it received this value:\n"
+                   f"{str(config_vars)}") 
     # TODO deprecate these kwarg values 6-12 months after v0.3.0 releases
 
     def is_error_type(_type):
@@ -494,6 +536,14 @@ def localized_function(run_own_code_on=[type(None)]):
     if run_own_code_on != [None]:
         if not all((is_error_type(e) for e in run_own_code_on)):
             raise BadTypeError
+    if not isinstance(config_vars, list):
+        try:
+            config_vars = list(config_vars)
+        except TypeError:
+            raise NotStringsError
+    if config_vars != [None]:
+        if not all((isinstance(v, str) for v in config_vars)):
+            raise NotStringsError
 
     # Begin wrapper
     def localized_function_decorator(func):
@@ -512,7 +562,7 @@ def localized_function(run_own_code_on=[type(None)]):
             # Check if we're passing a lang as a kwarg
             if 'lang' in kwargs.keys():
                 lang_param = kwargs['lang']
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 else:
@@ -521,7 +571,7 @@ def localized_function(run_own_code_on=[type(None)]):
             # Check if we're passing a lang as a positional arg
             elif lang_param_index < len(args):
                 lang_param = args[lang_param_index]
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 elif lang_param in _SUPPORTED_LANGUAGES or \
@@ -568,6 +618,7 @@ def localized_function(run_own_code_on=[type(None)]):
                     full_lang_code = tmp
             else:
                 full_lang_code = get_full_lang_code(lang_code)
+
 
             # Here comes the ugly business.
             _module_name = func.__module__.split('.')[-1]
@@ -618,6 +669,14 @@ def localized_function(run_own_code_on=[type(None)]):
                 del kwargs['lang']
             args = tuple(arg for arg in list(args) if
                          arg not in (lang_code, full_lang_code))
+
+            # Now let's substitute any values that are supposed to come from
+            # lingua_franca.config
+            for kwarg in loc_signature.parameters:
+                if all((kwarg not in kwargs, kwarg in config_vars)):
+                    config_var = config.get(kwarg, full_lang_code)
+                    if config_var is not None:
+                        kwargs[kwarg] = config_var
 
             # Now we call the function, ignoring any kwargs from the
             # wrapped function that aren't in the localized function.
