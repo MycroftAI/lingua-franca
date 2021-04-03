@@ -107,3 +107,4 @@ venv.bak/
 .vscode/
 vscode/
 *.code-workspace
+.vscode-*

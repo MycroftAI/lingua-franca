@@ -511,10 +511,6 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             If this argument is omitted, the function itself will never
             be run. Calls to the wrapped function will be passed to the
             appropriate, localized function.
-        config_vars(list(str), optional)
-            A list of variable names whose default values should be obtained
-            from lingua_franca.config, rather than specified in the top-level
-            function signature.
 
     """
     # Make sure everything in run_own_code_on is an Error or None
@@ -522,10 +518,6 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
         ValueError("@localized_function(run_own_code_on=<>) expected an "
                    "Error type, or a list of Error types. Instead, it "
                    "received this value:\n" + str(run_own_code_on))
-    NotStringsError = \
-        ValueError("@localized_function(config_vars=<>) expected a string,"
-                   "or a list of strings. Instead, it received this value:\n"
-                   f"{str(config_vars)}") 
     # TODO deprecate these kwarg values 6-12 months after v0.3.0 releases
 
     def is_error_type(_type):
@@ -543,14 +535,7 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
     if run_own_code_on != [None]:
         if not all((is_error_type(e) for e in run_own_code_on)):
             raise BadTypeError
-    if not isinstance(config_vars, list):
-        try:
-            config_vars = list(config_vars)
-        except TypeError:
-            raise NotStringsError
-    if config_vars != [None]:
-        if not all((isinstance(v, str) for v in config_vars)):
-            raise NotStringsError
+
 
     # Begin wrapper
     def localized_function_decorator(func):
@@ -679,8 +664,8 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             # Now let's substitute any values that are supposed to come from
             # lingua_franca.config
             for kwarg in loc_signature.parameters:
-                if all((kwarg not in kwargs,
-                        kwarg in config_vars,
+                if all((loc_signature.parameters[kwarg].default is ConfigVar,
+                        kwarg not in kwargs,
                         len(args) < \
                             list(loc_signature.parameters).index(kwarg) + 1)):
                     config_var = config.get(kwarg, full_lang_code)

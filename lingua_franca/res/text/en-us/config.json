@@ -1,3 +1,5 @@
 {
-    "short_scale": true
+    "ordinals": false,
+    "short_scale": true,
+    "remove_articles": true
 }

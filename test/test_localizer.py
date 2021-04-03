@@ -1,7 +1,5 @@
 import unittest
 
-from sys import version
-
 import lingua_franca
 import lingua_franca.parse
 import lingua_franca.format

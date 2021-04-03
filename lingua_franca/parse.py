@@ -73,7 +73,10 @@ def match_one(query, choices):
 
 
 @localized_function()
-def extract_numbers(text, short_scale: bool=ConfigVar('short_scale'), ordinals=False, lang=''):
+def extract_numbers(text: str,
+                   short_scale: bool=ConfigVar,
+                   ordinals: bool=ConfigVar,
+                   lang: str=''):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -90,8 +93,11 @@ def extract_numbers(text, short_scale: bool=ConfigVar('short_scale'), ordinals=F
     """
 
 
-@localized_function(config_vars=['short_scale'])
-def extract_number(text, short_scale: bool, ordinals=False, lang=''):
+@localized_function()
+def extract_number(text: str,
+                   short_scale: bool=ConfigVar,
+                   ordinals: bool=ConfigVar,
+                   lang: str=''):
     """Takes in a string and extracts a number.
 
     Args:
@@ -192,7 +198,7 @@ def extract_datetime(text, anchorDate=None, lang='', default_time=None):
 
 
 @localized_function()
-def normalize(text, lang='', remove_articles=True):
+def normalize(text, lang='', remove_articles=ConfigVar):
     """Prepare a string for parsing
 
     This function prepares the given text for parsing by making
@@ -228,7 +234,7 @@ def get_gender(word, context="", lang=''):
 
 
 @localized_function()
-def is_fractional(input_str, short_scale=True, lang=''):
+def is_fractional(input_str, short_scale=ConfigVar, lang=''):
     """
     This function takes the given text and checks if it is a fraction.
     Used by most of the number exractors.

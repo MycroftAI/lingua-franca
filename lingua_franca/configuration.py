@@ -1,10 +1,9 @@
 import json
-from os import path
 
 from lingua_franca import get_active_langs, get_supported_locs, \
         get_supported_langs, get_primary_lang_code, get_full_lang_code, \
             get_default_loc
-from lingua_franca.internal import UnsupportedLanguageError, resolve_resource_file
+from lingua_franca.internal import resolve_resource_file
 
 default_global_values = \
     {
