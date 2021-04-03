@@ -356,7 +356,6 @@ def nice_date_time(dt, lang='', now=None, use_24hour=ConfigVar,
             (str): The formatted date time string
     """
 
-
     full_code = get_full_lang_code(lang)
     date_time_format.cache(full_code)
 

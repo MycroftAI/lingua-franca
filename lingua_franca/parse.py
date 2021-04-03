@@ -15,12 +15,8 @@
 #
 
 from difflib import SequenceMatcher
-from warnings import warn
-from lingua_franca import config
-from lingua_franca.time import now_local
 from lingua_franca.internal import populate_localized_function_dict, \
-    get_active_langs, get_full_lang_code, get_primary_lang_code, ConfigVar, \
-    get_default_lang, localized_function, _raise_unsupported_language
+    get_active_langs, ConfigVar, localized_function
 
 _REGISTERED_FUNCTIONS = ("extract_numbers",
                          "extract_number",
@@ -68,15 +64,14 @@ def match_one(query, choices):
 
     if isinstance(choices, dict):
         return (choices[best[0]], best[1])
-    else:
-        return best
+    return best
 
 
 @localized_function()
 def extract_numbers(text: str,
-                   short_scale: bool=ConfigVar,
-                   ordinals: bool=ConfigVar,
-                   lang: str=''):
+                    short_scale: bool = ConfigVar,
+                    ordinals: bool = ConfigVar,
+                    lang: str = ''):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -95,9 +90,9 @@ def extract_numbers(text: str,
 
 @localized_function()
 def extract_number(text: str,
-                   short_scale: bool=ConfigVar,
-                   ordinals: bool=ConfigVar,
-                   lang: str=''):
+                   short_scale: bool = ConfigVar,
+                   ordinals: bool = ConfigVar,
+                   lang: str = ''):
     """Takes in a string and extracts a number.
 
     Args:

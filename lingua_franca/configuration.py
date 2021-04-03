@@ -1,8 +1,8 @@
 import json
 
 from lingua_franca import get_active_langs, get_supported_locs, \
-        get_supported_langs, get_primary_lang_code, get_full_lang_code, \
-            get_default_loc
+    get_supported_langs, get_primary_lang_code, get_full_lang_code, \
+    get_default_loc
 from lingua_franca.internal import resolve_resource_file
 
 default_global_values = \
@@ -10,8 +10,10 @@ default_global_values = \
         'load_langs_on_demand': False
     }
 
+
 class LangConfig(dict):
     def __init__(self, lang_code):
+        super().__init__()
         if lang_code not in get_supported_locs():
             # DO NOT catch UnsupportedLanguageError!
             # If this fails, we want to crash. This can *only* result from
@@ -20,7 +22,6 @@ class LangConfig(dict):
             # to continue.
             lang_code = get_full_lang_code(lang_code)
 
-
         resource_file = resolve_resource_file(f'text/{lang_code}/config.json')
         try:
             with open(resource_file, 'r', encoding='utf-8') as i_file:
@@ -28,34 +29,19 @@ class LangConfig(dict):
             for k in default_values:
                 self[k] = default_values[k]
         except (FileNotFoundError, TypeError):
-            self = {}
+            pass
+
 
 class Config(dict):
     def __init__(self):
+        super().__init__()
         self['global'] = dict(default_global_values)
         for lang in get_active_langs():
-            '''
-            TODO proper full loc support here will handle languages similarly to global:
-
-                    self['en']['universal'] for 'default' English config
-                                            (all dialects if not overridden)
-                    self['en']['en-us'] for overrides specific to en-US
-                    self['en']['en-au'] for overrides specific to en-AU
-
-                and so forth.
-            '''
-            # if all((lang not in self.keys(), lang not in get_supported_locs())):
-            #     self[lang] = {}
-            #     self[lang]['universal'] = LangConfig(lang)
-            # # begin portion that will need to adapt for the todo above
-            # full_loc = lang if lang in get_supported_locs() else \
-            #     get_full_lang_code(lang)
-            # self[lang][full_loc] = LangConfig(lang)
             self.load_lang(lang)
-    
+
     def load_lang(self, lang):
-        if all((lang not in get_supported_locs(), \
-            lang in get_supported_langs())):
+        if all((lang not in get_supported_locs(),
+                lang in get_supported_langs())):
             if lang not in self.keys():
                 self[lang] = {}
                 self[lang]['universal'] = LangConfig(lang)
@@ -71,12 +57,10 @@ class Config(dict):
         if setting is None:
             raise ValueError("lingua_franca.config requires "
                              "a setting parameter!")
-        
-        
+
         setting_available_in = []
         possible_locs = []
 
-        stop = False
         while True:
             if setting in self['global']:
                 setting_available_in.append('global')
@@ -92,10 +76,9 @@ class Config(dict):
             if lang in get_supported_locs():
                 primary_lang_code = get_primary_lang_code(lang)
                 possible_locs.append((primary_lang_code, 'universal'))
-                possible_locs.append((primary_lang_code, get_default_loc(primary_lang_code)))
+                possible_locs.append(
+                    (primary_lang_code, get_default_loc(primary_lang_code)))
                 possible_locs.append((primary_lang_code, lang))
-                
-
 
             for place in possible_locs:
                 if setting in self[place[0]][place[1]]:
@@ -110,7 +93,7 @@ class Config(dict):
     def get(self, setting=None, lang=None):
         if lang != 'global':
             if all((lang,
-                get_primary_lang_code(lang) not in get_active_langs())):
+                    get_primary_lang_code(lang) not in get_active_langs())):
                 raise ModuleNotFoundError(f"{lang} is not currently loaded")
 
         try:
@@ -129,10 +112,11 @@ class Config(dict):
                 self['global'][setting] = value
                 return
 
-        setting_location = self._find_setting(setting, lang if lang != \
+        setting_location = self._find_setting(setting, lang if lang !=
                                               'global' else get_default_loc())
         if all((setting_location, setting_location != 'global')):
             self[setting_location[0]][setting_location[1]][setting] = value
             return
-        
-        raise KeyError(f"{setting} is not available as a setting for language: '{lang}'")
+
+        raise KeyError(
+            f"{setting} is not available as a setting for language: '{lang}'")

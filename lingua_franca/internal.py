@@ -52,10 +52,13 @@ class UnsupportedLanguageError(NotImplementedError):
 class FunctionNotLocalizedError(NotImplementedError):
     pass
 
+
 class ConfigVar():
     name: str
+
     def __init__(self, name: str):
         self.name = name
+
 
 NoneLangWarning = \
     DeprecationWarning("Lingua Franca is dropping support"
@@ -90,6 +93,7 @@ def get_supported_langs():
         list(str)
     """
     return _SUPPORTED_LANGUAGES
+
 
 def get_supported_locs():
     """
@@ -137,14 +141,14 @@ def _set_active_langs(langs=None, override_default=True):
                 set_default_lang(get_full_lang_code(__loaded_langs[0]))
             else:
                 __default_lang = None
-    
+
     if not __default_lang:
         __active_lang_code = None
     elif get_primary_lang_code(__active_lang_code) != __default_lang:
         __cur_default = __default_full_codes[__default_lang]
         __active_lang_code = __cur_default if __cur_default in __loaded_locs \
             else _DEFAULT_FULL_LANG_CODES[__default_lang]
-    
+
     _refresh_function_dict()
 
 
@@ -241,7 +245,7 @@ def unload_language(lang):
         lang (str): language code to unload
     """
     from lingua_franca import config
-    
+
     lang = lang.lower()
     # if passed full lang code, unload that locale
     if lang in __loaded_locs:
@@ -261,8 +265,8 @@ def unload_language(lang):
         if not only_remaining_loc_of_this_lang:
             return
     else:
-        locales = [_loc for _loc in __loaded_locs \
-            if get_primary_lang_code(_loc) == lang]
+        locales = [_loc for _loc in __loaded_locs
+                   if get_primary_lang_code(_loc) == lang]
         for _loc in locales:
             unload_language(_loc)
     # unload the whole language
@@ -309,9 +313,10 @@ def get_default_loc(lang=None):
     if not lang:
         return __active_lang_code
     elif lang.lower() not in _SUPPORTED_LANGUAGES:
-        
+
         raise UnsupportedLanguageError(lang)
     return __default_full_codes[lang.lower()]
+
 
 def set_default_lang(lang_code):
     """ Set the active BCP-47 language code to be used in formatting/parsing
@@ -348,7 +353,7 @@ def set_default_lang(lang_code):
     # position doesn't matter here, but it clarifies things while debugging.
     if __default_lang not in __loaded_langs:
         load_language(__default_lang)
-        
+
     __loaded_langs.remove(__default_lang)
     __loaded_langs.insert(0, __default_lang)
     _refresh_function_dict()
@@ -358,7 +363,8 @@ def set_default_lang(lang_code):
     else:
         set_default_loc(lang_code, get_full_lang_code(lang_code))
 
-def set_default_loc(lang: str=None, loc: str=None):
+
+def set_default_loc(lang: str = None, loc: str = None):
     if not loc:
         raise ValueError("set_default_loc expects a BCP-47 lang code")
     if not lang:
@@ -366,18 +372,17 @@ def set_default_loc(lang: str=None, loc: str=None):
     lang = lang.lower()
     loc = loc.lower()
     if lang not in _SUPPORTED_LANGUAGES or \
-        loc not in _SUPPORTED_FULL_LOCALIZATIONS:
-            raise UnsupportedLanguageError(f"{lang} - {loc}")
+            loc not in _SUPPORTED_FULL_LOCALIZATIONS:
+        raise UnsupportedLanguageError(f"{lang} - {loc}")
 
     if get_primary_lang_code(loc) != lang:
         raise ValueError(f"Localization '{loc}'' does not correspond to "
-                          "language '{lang}'")
+                         "language '{lang}'")
 
     __default_full_codes[lang] = loc
     if lang == get_default_lang():
         global __active_lang_code
         __active_lang_code = loc
-
 
 
 # TODO remove this when invalid lang codes are removed (currently deprecated)
@@ -536,8 +541,8 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
         if not all((is_error_type(e) for e in run_own_code_on)):
             raise BadTypeError
 
-
     # Begin wrapper
+
     def localized_function_decorator(func):
         # Wrapper's logic
         def _call_localized_function(func, *args, **kwargs):
@@ -611,7 +616,6 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             else:
                 full_lang_code = get_full_lang_code(lang_code)
 
-
             # Here comes the ugly business.
             _module_name = func.__module__.split('.')[-1]
             _module = import_module(".lang." + _module_name +
@@ -666,8 +670,8 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             for kwarg in loc_signature.parameters:
                 if all((loc_signature.parameters[kwarg].default is ConfigVar,
                         kwarg not in kwargs,
-                        len(args) < \
-                            list(loc_signature.parameters).index(kwarg) + 1)):
+                        len(args) <
+                        list(loc_signature.parameters).index(kwarg) + 1)):
                     config_var = config.get(kwarg, full_lang_code)
                     if config_var is not None:
                         kwargs[kwarg] = config_var
