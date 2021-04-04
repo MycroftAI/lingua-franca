@@ -208,7 +208,7 @@ def load_language(lang):
     if lang not in __loaded_langs:
         __loaded_langs.append(lang)
     if not __default_lang:
-        set_default_lang(lang)
+        set_default_lang(loc or lang)
     else:
         _set_active_langs(__loaded_langs, override_default=False)
     if lang not in config.keys():
