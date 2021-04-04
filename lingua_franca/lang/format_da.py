@@ -215,7 +215,7 @@ def pronounce_ordinal_da(number):
             return pronounce_number_da(number) + "ende"
 
 
-def nice_time_da(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_da(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
 

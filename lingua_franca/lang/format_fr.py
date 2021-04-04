@@ -152,7 +152,7 @@ def pronounce_number_fr(number, places=2):
     return result
 
 
-def nice_time_fr(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_fr(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
 

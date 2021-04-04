@@ -1,6 +1,6 @@
 {
     "short_scale": true,
     "remove_articles": true,
-    "use_24hour": false,
+    "use_24hour": true,
     "use_ampm": false
 }

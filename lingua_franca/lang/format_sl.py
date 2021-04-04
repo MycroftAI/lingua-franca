@@ -333,7 +333,7 @@ def pronounce_number_sl(num, places=2, short_scale=ConfigVar, scientific=False,
     return result
 
 
-def nice_time_sl(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_sl(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
     For example, generate 'pet trideset' for speech or '5:30' for

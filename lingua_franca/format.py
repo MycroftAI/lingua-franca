@@ -273,7 +273,7 @@ def nice_number(number, lang='', speech=True, denominators=None):
 
 @localized_function()
 def nice_time(dt, lang='', speech=True, use_24hour=ConfigVar,
-              use_ampm=ConfigVar, variant=ConfigVar):
+              use_ampm=ConfigVar, variant=ConfigVar("TimeVariant")):
     """
     Format a time to a comfortable human format
 

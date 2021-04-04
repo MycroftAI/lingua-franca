@@ -44,7 +44,7 @@ def set_active_lang(lang_code):
     set_default_lang(lang_code=lang_code)
 
 
-def get_primary_lang_code(lang=None):
+def get_primary_lang_code(lang=''):
     """ Get the primary language code
 
     Args:
@@ -58,7 +58,7 @@ def get_primary_lang_code(lang=None):
     return gplc(lang=lang)
 
 
-def get_full_lang_code(lang=None):
+def get_full_lang_code(lang=''):
     """ Get the full language code
 
     Args:

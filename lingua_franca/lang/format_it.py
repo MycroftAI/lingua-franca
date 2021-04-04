@@ -238,7 +238,7 @@ def pronounce_number_it(number, places=2, short_scale=ConfigVar, scientific=Fals
     return result
 
 
-def nice_time_it(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_it(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
     adapted to italian fron en version

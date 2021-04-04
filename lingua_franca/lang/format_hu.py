@@ -231,7 +231,7 @@ def pronounce_ordinal_hu(number):
         return root + "edik" if vtype == 1 else root + "adik"
 
 
-def nice_time_hu(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_hu(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
 

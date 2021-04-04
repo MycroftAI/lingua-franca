@@ -203,7 +203,7 @@ def pronounce_ordinal_nl(number):
     return pronounce_number_nl(number) + "ste"
 
 
-def nice_time_nl(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_nl(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
 

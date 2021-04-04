@@ -220,7 +220,7 @@ def pronounce_ordinal_sv(number):
     return result
 
 
-def nice_time_sv(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_sv(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
 
