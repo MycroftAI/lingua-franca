@@ -695,7 +695,7 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             if unload_language_afterward:
                 unload_language(full_lang_code)
                 unload_also = [language for language in \
-                    __loaded_langs + __loaded_locs]
+                    __loaded_langs + __loaded_locs if language not in old_langs]
                 unload_languages(unload_also)
             return r_val
 
