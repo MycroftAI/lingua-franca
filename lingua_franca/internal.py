@@ -588,6 +588,8 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
                 elif lang_param in _SUPPORTED_LANGUAGES or \
                         lang_param in _SUPPORTED_FULL_LOCALIZATIONS:
                     lang_code = args[lang_param_index]
+                else:
+                    lang_code = lang_param
                 args = args[:lang_param_index] + args[lang_param_index+1:]
 
             # Turns out, we aren't passing a lang code at all
@@ -623,6 +625,9 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
                         lang_code = get_default_lang()
                         full_lang_code = get_full_lang_code()
                         __use_tmp = False
+                # if the lang code is still invalid, abort directly
+                if lang_code not in _SUPPORTED_LANGUAGES:
+                    raise UnsupportedLanguageError(lang_param)
                 if __use_tmp:
                     full_lang_code = tmp
                     if full_lang_code not in __loaded_locs:
@@ -641,17 +646,22 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             if _module_name not in _localized_functions.keys():
                 raise ModuleNotFoundError("Module lingua_franca." +
                                           _module_name + " not recognized")
-            if lang_code not in get_active_langs() or full_lang_code not in \
-                get_active_locs():
+
+            # Check if language/loc loaded, handle load_langs_on_demand
+            load_full = full_lang_code not in get_active_locs()
+            load_primary = lang_code not in get_active_langs()
+            if load_full or load_primary:
                 if load_langs_on_demand:
                     old_langs = __loaded_langs + __loaded_locs
                     load_language(full_lang_code)
                     unload_language_afterward = True
                 else:
-                    raise ModuleNotFoundError(_module_name +
+                    if not load_full:
+                        raise ModuleNotFoundError(_module_name +
                                               " module of language '" +
                                               lang_code +
                                               "' is not currently loaded.")
+
             func_name = func.__name__.split('.')[-1]
             # At some point in the past, both the module and the language
             # were imported/loaded, respectively.
@@ -664,7 +674,14 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             # If we didn't find a localized function to correspond with
             # the wrapped function, we cached NotImplementedError in its
             # place.
-            loc_signature = _localized_functions[_module_name][lang_code][func_name]
+            try:
+                loc_signature = \
+                    _localized_functions[_module_name][lang_code][func_name]
+            except KeyError:
+               raise ModuleNotFoundError(_module_name +
+                                              " module of language '" +
+                                              lang_code +
+                                              "' is not currently loaded.") 
             if isinstance(loc_signature, type(NotImplementedError())):
                 raise loc_signature
 
