@@ -633,7 +633,8 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
                                           _module_name + " not recognized")
             if lang_code not in _localized_functions[_module_name].keys():
                 if load_langs_on_demand:
-                    load_language(lang_code)
+                    old_langs = __loaded_langs + __loaded_locs
+                    load_language(full_lang_code)
                     unload_language_afterward = True
                 else:
                     raise ModuleNotFoundError(_module_name +
@@ -692,7 +693,10 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             del localized_func
             del _module
             if unload_language_afterward:
-                unload_language(lang_code)
+                unload_language(full_lang_code)
+                unload_also = [language for language in \
+                    __loaded_langs + __loaded_locs]
+                unload_languages(unload_also)
             return r_val
 
         # Actual wrapper
