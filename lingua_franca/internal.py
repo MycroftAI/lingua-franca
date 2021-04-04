@@ -5,8 +5,6 @@ from inspect import signature
 from sys import version
 from warnings import warn
 
-from lingua_franca import config
-
 _SUPPORTED_LANGUAGES = ("ca", "cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sl", "sv")
 
@@ -31,10 +29,11 @@ _DEFAULT_FULL_LANG_CODES = {'ca': 'ca-es',
                             'sl': 'sl-si',
                             'sv': 'sv-se',
                             'tr': 'tr-tr'}
-
+__default_full_codes = dict(_DEFAULT_FULL_LANG_CODES)
 __default_lang = None
 __active_lang_code = None
 __loaded_langs = []
+__loaded_locs = []
 
 _localized_functions = {}
 
@@ -52,6 +51,13 @@ class UnsupportedLanguageError(NotImplementedError):
 
 class FunctionNotLocalizedError(NotImplementedError):
     pass
+
+
+class ConfigVar():
+    name: str
+
+    def __init__(self, name: str):
+        self.name = name
 
 
 NoneLangWarning = \
@@ -89,13 +95,29 @@ def get_supported_langs():
     return _SUPPORTED_LANGUAGES
 
 
+def get_supported_locs():
+    """
+    Returns:
+        list(str)
+    """
+    return _SUPPORTED_FULL_LOCALIZATIONS
+
+
 def get_active_langs():
-    """ Get the list of currently-loaded language codes
+    """ Get the list of currently-loaded languages
 
     Returns:
         list(str)
     """
     return __loaded_langs
+
+def get_active_locs():
+    """ Get the list of currently-loaded languages
+
+    Returns:
+        list(str)
+    """
+    return __loaded_locs
 
 
 def _set_active_langs(langs=None, override_default=True):
@@ -118,15 +140,24 @@ def _set_active_langs(langs=None, override_default=True):
     if not isinstance(langs, list):
         raise(TypeError("lingua_franca.internal._set_active_langs expects"
                         " 'str' or 'list'"))
-    global __loaded_langs, __default_lang
+    global __loaded_langs, __default_lang, __active_lang_code
     __loaded_langs = list(dict.fromkeys(langs))
     if __default_lang:
         if override_default or get_primary_lang_code(__default_lang) \
                 not in __loaded_langs:
-            if len(__loaded_langs):
+            if len(__loaded_langs) > 0:
                 set_default_lang(get_full_lang_code(__loaded_langs[0]))
             else:
                 __default_lang = None
+
+    if not __default_lang:
+        __active_lang_code = None
+    elif __active_lang_code is not None:
+        if get_primary_lang_code(__active_lang_code) != __default_lang:
+            __cur_default = __default_full_codes[__default_lang]
+            __active_lang_code = __cur_default if __cur_default in __loaded_locs \
+                else _DEFAULT_FULL_LANG_CODES[__default_lang]
+
     _refresh_function_dict()
 
 
@@ -172,17 +203,32 @@ def load_language(lang):
                     whether 'primary' or 'full')
                     Case-insensitive.
     """
+    from lingua_franca import config
     if not isinstance(lang, str):
         raise TypeError("lingua_franca.load_language expects 'str' "
                         "(got " + type(lang) + ")")
+    loc = None
     if lang not in _SUPPORTED_LANGUAGES:
         if lang in _SUPPORTED_FULL_LOCALIZATIONS:
+            loc = lang
             lang = get_primary_lang_code(lang)
+
     if lang not in __loaded_langs:
         __loaded_langs.append(lang)
     if not __default_lang:
-        set_default_lang(lang)
-    _set_active_langs(__loaded_langs)
+        set_default_lang(loc or lang)
+    else:
+        _set_active_langs(__loaded_langs, override_default=False)
+    if lang not in config.keys():
+        config.load_lang(lang)
+        default_loc = get_default_loc(lang)
+        if default_loc not in __loaded_locs:
+            __loaded_locs.append(default_loc)
+        if all((loc, loc != default_loc)):
+            set_default_loc(lang, loc)
+    if all((loc, loc not in config[lang].keys())):
+        config.load_lang(loc)
+        __loaded_locs.append(loc)
 
 
 def load_languages(langs):
@@ -207,9 +253,36 @@ def unload_language(lang):
     Args:
         lang (str): language code to unload
     """
+    from lingua_franca import config
+
+    lang = lang.lower()
+    # if passed full lang code, unload that locale
+    if lang in __loaded_locs:
+        loc = lang
+        lang = get_primary_lang_code(loc)
+
+        __loaded_locs.remove(loc)
+        if loc in config[lang]:
+            config[lang].pop(loc)
+
+        only_remaining_loc_of_this_lang = True
+        for _loc in __loaded_locs:
+            if get_primary_lang_code(_loc) == lang:
+                only_remaining_loc_of_this_lang = False
+                set_default_loc(lang, _loc)
+
+        if not only_remaining_loc_of_this_lang:
+            return
+    else:
+        locales = [_loc for _loc in __loaded_locs
+                   if get_primary_lang_code(_loc) == lang]
+        for _loc in locales:
+            unload_language(_loc)
+    # unload the whole language
     if lang in __loaded_langs:
         __loaded_langs.remove(lang)
         _set_active_langs(__loaded_langs)
+        config.pop(lang)
 
 
 def unload_languages(langs):
@@ -220,8 +293,7 @@ def unload_languages(langs):
         langs (list[str])
     """
     for lang in langs:
-        __loaded_langs.remove(lang)
-    _set_active_langs(__loaded_langs)
+        unload_language(lang)
 
 
 def get_default_lang():
@@ -239,7 +311,7 @@ def get_default_lang():
     return __default_lang
 
 
-def get_default_loc():
+def get_default_loc(lang=''):
     """ Return the current, localized BCP-47 language code, such as 'en-US'
         or 'es-ES'. For the default language *family* - which is passed to
         most parsers and formatters - call `get_default_lang`
@@ -247,10 +319,15 @@ def get_default_loc():
         The 'localized' portion conforms to ISO 3166-1 alpha-2
         https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
     """
-    return __active_lang_code
+    if not lang:
+        return __active_lang_code
+    elif lang.lower() not in _SUPPORTED_LANGUAGES:
+
+        raise UnsupportedLanguageError(lang)
+    return __default_full_codes[lang.lower()]
 
 
-def set_default_lang(lang_code):
+def set_default_lang(lang_code=''):
     """ Set the active BCP-47 language code to be used in formatting/parsing
         Will choose a default localization if passed a primary language family
         (ex: `set_default_lang("en")` will default to "en-US")
@@ -272,22 +349,52 @@ def set_default_lang(lang_code):
     else:
         __default_lang = primary_lang_code
 
+    if primary_lang_code != lang_code:
+        if primary_lang_code not in __loaded_langs:
+            load_language(primary_lang_code)
+        if lang_code not in __loaded_locs:
+            load_language(lang_code)
+    else:
+        load_language(lang_code)
+
     # make sure the default language is loaded.
     # also make sure the default language is at the front.
     # position doesn't matter here, but it clarifies things while debugging.
-    if __default_lang in __loaded_langs:
-        __loaded_langs.remove(__default_lang)
+    if __default_lang not in __loaded_langs:
+        load_language(__default_lang)
+
+    __loaded_langs.remove(__default_lang)
     __loaded_langs.insert(0, __default_lang)
     _refresh_function_dict()
 
     if is_supported_full_lang(lang_code):
-        __active_lang_code = lang_code
-    else:
-        __active_lang_code = get_full_lang_code(__default_lang)
+        set_default_loc(get_primary_lang_code(lang_code), lang_code)
+    elif lang_code:
+        set_default_loc(lang_code, get_full_lang_code(lang_code))
+
+
+def set_default_loc(lang: str = None, loc: str = None):
+    if not loc:
+        raise ValueError("set_default_loc expects a BCP-47 lang code")
+    if not lang:
+        lang = get_default_lang()
+    lang = lang.lower()
+    loc = loc.lower()
+    if lang not in _SUPPORTED_LANGUAGES or \
+            loc not in _SUPPORTED_FULL_LOCALIZATIONS:
+        raise UnsupportedLanguageError(f"{lang} - {loc}")
+
+    if get_primary_lang_code(loc) != lang:
+        raise ValueError(f"Localization '{loc}'' does not correspond to "
+                         "language '{lang}'")
+
+    __default_full_codes[lang] = loc
+    if lang == get_default_lang():
+        global __active_lang_code
+        __active_lang_code = loc
+
 
 # TODO remove this when invalid lang codes are removed (currently deprecated)
-
-
 def get_primary_lang_code(lang=''):
     if not lang:
         if lang is None:
@@ -366,9 +473,14 @@ def __get_full_lang_code_deprecation_warning(lang=''):
     Returns:
         str: A full language code, such as "en-us" or "de-de"
     """
-    if lang is None:
-        return __active_lang_code.lower()
-    elif not isinstance(lang, str):
+    if not lang:
+        if lang is None:
+            warn(NoneLangWarning)
+        if __active_lang_code:
+            return __active_lang_code.lower()
+        raise ModuleNotFoundError("No language module loaded!")
+
+    if not isinstance(lang, str):
         raise TypeError("get_full_lang_code expects str, "
                         "got {}".format(type(lang)))
     if lang.lower() in _SUPPORTED_FULL_LOCALIZATIONS:
@@ -379,7 +491,7 @@ def __get_full_lang_code_deprecation_warning(lang=''):
         raise UnsupportedLanguageError(lang)
 
 
-def localized_function(run_own_code_on=[type(None)]):
+def localized_function(run_own_code_on=[type(None)], config_vars=[]):
     """
     Decorator which finds localized functions, and calls them, from signatures
     defined in the top-level modules. See lingua_franca.format or .parse for
@@ -419,7 +531,6 @@ def localized_function(run_own_code_on=[type(None)]):
             be run. Calls to the wrapped function will be passed to the
             appropriate, localized function.
 
-
     """
     # Make sure everything in run_own_code_on is an Error or None
     BadTypeError = \
@@ -445,11 +556,14 @@ def localized_function(run_own_code_on=[type(None)]):
             raise BadTypeError
 
     # Begin wrapper
+
     def localized_function_decorator(func):
         # Wrapper's logic
         def _call_localized_function(func, *args, **kwargs):
+            from lingua_franca import config
+
             lang_code = None
-            load_langs_on_demand = config.load_langs_on_demand
+            load_langs_on_demand = config.get('load_langs_on_demand')
             unload_language_afterward = False
             func_signature = signature(func)
             func_params = list(func_signature.parameters)
@@ -459,7 +573,7 @@ def localized_function(run_own_code_on=[type(None)]):
             # Check if we're passing a lang as a kwarg
             if 'lang' in kwargs.keys():
                 lang_param = kwargs['lang']
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 else:
@@ -468,12 +582,14 @@ def localized_function(run_own_code_on=[type(None)]):
             # Check if we're passing a lang as a positional arg
             elif lang_param_index < len(args):
                 lang_param = args[lang_param_index]
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 elif lang_param in _SUPPORTED_LANGUAGES or \
                         lang_param in _SUPPORTED_FULL_LOCALIZATIONS:
                     lang_code = args[lang_param_index]
+                else:
+                    lang_code = lang_param
                 args = args[:lang_param_index] + args[lang_param_index+1:]
 
             # Turns out, we aren't passing a lang code at all
@@ -509,12 +625,17 @@ def localized_function(run_own_code_on=[type(None)]):
                         lang_code = get_default_lang()
                         full_lang_code = get_full_lang_code()
                         __use_tmp = False
+                # if the lang code is still invalid, abort directly
                 if lang_code not in _SUPPORTED_LANGUAGES:
-                    _raise_unsupported_language(lang_code)
+                    raise UnsupportedLanguageError(lang_param)
                 if __use_tmp:
                     full_lang_code = tmp
+                    if full_lang_code not in __loaded_locs:
+                        if load_langs_on_demand:
+                            load_language(full_lang_code)
             else:
-                full_lang_code = get_full_lang_code(lang_code)
+                full_lang_code = get_full_lang_code(lang_code) if lang_code \
+                    not in _SUPPORTED_FULL_LOCALIZATIONS else lang_code
 
             # Here comes the ugly business.
             _module_name = func.__module__.split('.')[-1]
@@ -525,15 +646,22 @@ def localized_function(run_own_code_on=[type(None)]):
             if _module_name not in _localized_functions.keys():
                 raise ModuleNotFoundError("Module lingua_franca." +
                                           _module_name + " not recognized")
-            if lang_code not in _localized_functions[_module_name].keys():
+
+            # Check if language/loc loaded, handle load_langs_on_demand
+            load_full = full_lang_code not in get_active_locs()
+            load_primary = lang_code not in get_active_langs()
+            if load_full or load_primary:
                 if load_langs_on_demand:
-                    load_language(lang_code)
+                    old_langs = __loaded_langs + __loaded_locs
+                    load_language(full_lang_code)
                     unload_language_afterward = True
                 else:
-                    raise ModuleNotFoundError(_module_name +
+                    if not load_full:
+                        raise ModuleNotFoundError(_module_name +
                                               " module of language '" +
                                               lang_code +
                                               "' is not currently loaded.")
+
             func_name = func.__name__.split('.')[-1]
             # At some point in the past, both the module and the language
             # were imported/loaded, respectively.
@@ -546,7 +674,14 @@ def localized_function(run_own_code_on=[type(None)]):
             # If we didn't find a localized function to correspond with
             # the wrapped function, we cached NotImplementedError in its
             # place.
-            loc_signature = _localized_functions[_module_name][lang_code][func_name]
+            try:
+                loc_signature = \
+                    _localized_functions[_module_name][lang_code][func_name]
+            except KeyError:
+               raise ModuleNotFoundError(_module_name +
+                                              " module of language '" +
+                                              lang_code +
+                                              "' is not currently loaded.") 
             if isinstance(loc_signature, type(NotImplementedError())):
                 raise loc_signature
 
@@ -565,6 +700,15 @@ def localized_function(run_own_code_on=[type(None)]):
                 del kwargs['lang']
             args = tuple(arg for arg in list(args) if
                          arg not in (lang_code, full_lang_code))
+            # Now let's substitute any values that are supposed to come from
+            # lingua_franca.config
+            for kwarg in loc_signature.parameters:
+                if all((kwarg not in kwargs,
+                        len(args) <
+                        list(loc_signature.parameters).index(kwarg) + 1)):
+                    config_var = config.get(kwarg, full_lang_code)
+                    if config_var is not None:
+                        kwargs[kwarg] = config_var
 
             # Now we call the function, ignoring any kwargs from the
             # wrapped function that aren't in the localized function.
@@ -577,7 +721,10 @@ def localized_function(run_own_code_on=[type(None)]):
             del localized_func
             del _module
             if unload_language_afterward:
-                unload_language(lang_code)
+                unload_language(full_lang_code)
+                unload_also = [language for language in \
+                    __loaded_langs + __loaded_locs if language not in old_langs]
+                unload_languages(unload_also)
             return r_val
 
         # Actual wrapper
@@ -719,7 +866,7 @@ def resolve_resource_file(res_name, data_dir=None):
     return None  # Resource cannot be resolved
 
 
-def lookup_variant(mappings, key="variant"):
+def lookup_variant(mappings, key="variant", config_name=None):
     """function decorator
     maps strings to Enums expected by language specific functions
     mappings can be used to translate values read from configuration files
@@ -744,12 +891,25 @@ def lookup_variant(mappings, key="variant"):
 
         @wraps(func)
         def call_function(*args, **kwargs):
-            if key in kwargs and isinstance(kwargs[key], str):
-                if kwargs[key] in mappings:
-                    kwargs[key] = mappings[kwargs[key]]
+            from lingua_franca import config
+            get_from_config = False
+            if key not in kwargs: 
+                get_from_config = True if config_name else False
+            elif isinstance(kwargs[key], ConfigVar):
+                get_from_config = True
+            if get_from_config:
+                if 'lang' in kwargs:
+                    lang = kwargs['lang']
                 else:
-                    raise ValueError("Unknown variant, mapping does not "
-                                     "exist for {v}".format(v=key))
+                    lang = get_default_loc()
+                kwargs[key] = config.get((config_name if config_name else key), lang)
+            if key in kwargs:
+                if isinstance(kwargs[key], str):
+                    if kwargs[key] in mappings:
+                        kwargs[key] = mappings[kwargs[key]]
+                    else:
+                        raise ValueError("Unknown variant, mapping does not "
+                                        "exist for {v}".format(v=key))
             return func(*args, **kwargs)
 
         return call_function

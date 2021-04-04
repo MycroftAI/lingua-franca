@@ -15,6 +15,8 @@
 # limitations under the License.
 #
 
+from lingua_franca.internal import ConfigVar
+
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_cs import _NUM_STRING_CS, \
     _FRACTION_STRING_CS, _LONG_SCALE_CS, _SHORT_SCALE_CS, _SHORT_ORDINAL_CS, _LONG_ORDINAL_CS
@@ -68,7 +70,7 @@ def nice_number_cs(number, speech=True, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_cs(number, places=2, short_scale=True, scientific=False,
+def pronounce_number_cs(number, places=2, short_scale=ConfigVar, scientific=False,
                         ordinals=False):
     """
     Convert a number to it's spoken equivalent
@@ -305,7 +307,7 @@ def pronounce_number_cs(number, places=2, short_scale=True, scientific=False,
     return result
 
 
-def nice_time_cs(dt, speech=True, use_24hour=True, use_ampm=False):
+def nice_time_cs(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
     For example, generate 'five thirty' for speech or '5:30' for

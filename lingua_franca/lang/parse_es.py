@@ -20,8 +20,10 @@ from lingua_franca.lang.format_es import pronounce_number_es
 from lingua_franca.lang.parse_common import *
 from lingua_franca.lang.common_data_es import _ARTICLES_ES, _STRING_NUM_ES
 
+from lingua_franca.internal import ConfigVar
 
-def is_fractional_es(input_str, short_scale=True):
+
+def is_fractional_es(input_str, short_scale=ConfigVar):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -55,7 +57,7 @@ def is_fractional_es(input_str, short_scale=True):
     return False
 
 
-def extract_number_es(text, short_scale=True, ordinals=False):
+def extract_number_es(text, short_scale=ConfigVar, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -267,7 +269,7 @@ def _es_number_parse(words, i):
     return es_number(i)
 
 
-def extract_numbers_es(text, short_scale=True, ordinals=False):
+def extract_numbers_es(text, short_scale=ConfigVar, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 

@@ -34,6 +34,9 @@ def tearDownModule():
 
 
 class TestParsing(unittest.TestCase):
+    def setUpClass():
+        load_language('nl-nl')
+        set_default_lang('nl-nl')
     def test_articles(self):
         self.assertEqual(
             normalize("dit is de test", LANG, remove_articles=True),

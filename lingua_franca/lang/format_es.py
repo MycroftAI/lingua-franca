@@ -17,6 +17,8 @@
 Format functions for castillian (es-es)
 
 """
+from lingua_franca.internal import ConfigVar
+
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_es import _NUM_STRING_ES, \
     _FRACTION_STRING_ES
@@ -153,7 +155,7 @@ def pronounce_number_es(number, places=2):
     return result
 
 
-def nice_time_es(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_es(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
 

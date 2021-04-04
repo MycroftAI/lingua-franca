@@ -1,12 +1,11 @@
 import unittest
 
-from sys import version
-
 import lingua_franca
 import lingua_franca.parse
 import lingua_franca.format
 
-from lingua_franca.internal import localized_function, _SUPPORTED_LANGUAGES
+from lingua_franca.internal import localized_function, _SUPPORTED_LANGUAGES, \
+    unload_languages
 
 
 def unload_all_languages():
@@ -14,7 +13,7 @@ def unload_all_languages():
         your test util to run them in order. Sadly, spamming this function
         is easier and probably less onerous for most devs.
     """
-    lingua_franca._set_active_langs([])
+    unload_languages(_SUPPORTED_LANGUAGES)
 
 
 def setUpModule():
@@ -100,14 +99,13 @@ class TestLanguageLoading(unittest.TestCase):
 
     def test_load_on_demand(self):
         unload_all_languages()
-        lingua_franca.load_language("en")
-        lingua_franca.config.load_langs_on_demand = True
+        lingua_franca.load_language("en-us")
+        lingua_franca.config.set(setting='load_langs_on_demand', value=True)
         self.assertEqual(lingua_franca.parse.extract_number("one", lang="en"),
                          1)
         self.assertEqual(lingua_franca.parse.extract_number("uno", lang="es"),
                          1)
-
-        lingua_franca.config.load_langs_on_demand = False
+        lingua_franca.config.set(setting='load_langs_on_demand', value=False)
         # English should still be loaded, but not Spanish
         self.assertEqual(lingua_franca.parse.extract_number("one", lang="en"),
                          1)
@@ -134,8 +132,6 @@ class TestLanguageLoading(unittest.TestCase):
         unload_all_languages()
 
     def test_auto_default_language(self):
-        lingua_franca.load_language('en')
-
         # Load two languages, ensure first is default
         lingua_franca.load_languages(['en', 'es'])
         self.assertEqual(lingua_franca.get_default_lang(), 'en')

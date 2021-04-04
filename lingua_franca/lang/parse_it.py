@@ -28,8 +28,9 @@ from lingua_franca.lang.format_it import _LONG_SCALE_IT, _SHORT_SCALE_IT, \
 from lingua_franca.lang.common_data_it import _SHORT_ORDINAL_STRING_IT, \
     _ARTICLES_IT, _LONG_ORDINAL_STRING_IT, _STRING_NUM_IT
 
+from lingua_franca.internal import ConfigVar
 
-def is_fractional_it(input_str, short_scale=False):
+def is_fractional_it(input_str, short_scale=ConfigVar):
     """
     This function takes the given text and checks if it is a fraction.
     Updated to italian from en version 18.8.9
@@ -223,7 +224,7 @@ def _extract_number_long_it(word):
     return value
 
 
-def extract_number_it(text, short_scale=False, ordinals=False):
+def extract_number_it(text, short_scale=ConfigVar, ordinals=False):
     """
     This function extracts a number from a text string,
     handles pronunciations in long scale and short scale
@@ -1147,7 +1148,7 @@ def get_gender_it(word, context=""):
     return gender
 
 
-def extract_numbers_it(text, short_scale=False, ordinals=False):
+def extract_numbers_it(text, short_scale=ConfigVar, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 

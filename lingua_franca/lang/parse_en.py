@@ -28,10 +28,10 @@ from lingua_franca.lang.common_data_en import _ARTICLES_EN, _NUM_STRING_EN, \
 
 import re
 import json
-from lingua_franca.internal import resolve_resource_file
+from lingua_franca.internal import resolve_resource_file, ConfigVar
 
 
-def _convert_words_to_numbers_en(text, short_scale=True, ordinals=False):
+def _convert_words_to_numbers_en(text, short_scale=ConfigVar, ordinals=False):
     """
     Convert words in a string into their equivalent numbers.
     Args:
@@ -66,7 +66,7 @@ def _convert_words_to_numbers_en(text, short_scale=True, ordinals=False):
     return ' '.join(results)
 
 
-def _extract_numbers_with_text_en(tokens, short_scale=True,
+def _extract_numbers_with_text_en(tokens, short_scale=ConfigVar,
                                   ordinals=False, fractional_numbers=True):
     """
     Extract all numbers from a list of Tokens, with the words that
@@ -108,7 +108,7 @@ def _extract_numbers_with_text_en(tokens, short_scale=True,
     return results
 
 
-def _extract_number_with_text_en(tokens, short_scale=True,
+def _extract_number_with_text_en(tokens, short_scale=ConfigVar,
                                  ordinals=False, fractional_numbers=True):
     """
     This function extracts a number from a list of Tokens.
@@ -132,7 +132,7 @@ def _extract_number_with_text_en(tokens, short_scale=True,
 
 
 def _extract_number_with_text_en_helper(tokens,
-                                        short_scale=True, ordinals=False,
+                                        short_scale=ConfigVar, ordinals=False,
                                         fractional_numbers=True):
     """
     Helper for _extract_number_with_text_en.
@@ -529,7 +529,7 @@ def _initialize_number_data_en(short_scale, speech=True):
     return multiplies, string_num_ordinal_en, string_num_scale_en
 
 
-def extract_number_en(text, short_scale=True, ordinals=False):
+def extract_number_en(text, short_scale=ConfigVar, ordinals=False):
     """
     This function extracts a number from a text string,
     handles pronunciations in long scale and short scale
@@ -1420,7 +1420,7 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
     return [extractedDate, resultStr]
 
 
-def is_fractional_en(input_str, short_scale=True, spoken=True):
+def is_fractional_en(input_str, short_scale=ConfigVar, spoken=True):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -1450,7 +1450,7 @@ def is_fractional_en(input_str, short_scale=True, spoken=True):
     return False
 
 
-def extract_numbers_en(text, short_scale=True, ordinals=False):
+def extract_numbers_en(text, short_scale=ConfigVar, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -1477,6 +1477,6 @@ class EnglishNormalizer(Normalizer):
         return _convert_words_to_numbers_en(utterance, ordinals=None)
 
 
-def normalize_en(text, remove_articles=True):
+def normalize_en(text, remove_articles=ConfigVar):
     """ English string normalization """
     return EnglishNormalizer().normalize(text, remove_articles)

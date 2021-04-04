@@ -16,7 +16,8 @@
 import unittest
 from datetime import datetime, time
 
-from lingua_franca import load_language, unload_language, set_default_lang
+from lingua_franca import load_language, unload_language, set_default_lang, \
+                          get_active_langs, config
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number
 from lingua_franca.parse import normalize
@@ -170,6 +171,8 @@ class TestNormalize(unittest.TestCase):
 
     def test_extractdatetime_no_time(self):
         """Check that None is returned if no time is found in sentence."""
+        if 'da' not in get_active_langs():
+            raise(ValueError(f"{get_active_langs()}"))
         with self.assertWarns(UserWarning):
             self.assertEqual(extract_datetime('ingen tid', lang='da-da'), None)
 

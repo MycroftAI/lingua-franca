@@ -26,6 +26,7 @@ from lingua_franca.lang.common_data_pl import _NUM_STRING_PL, \
 
 import re
 
+from lingua_franca.internal import ConfigVar
 
 def generate_plurals_pl(originals):
     """
@@ -109,7 +110,7 @@ _STRING_SHORT_ORDINAL_PL = invert_dict(_SHORT_ORDINAL_PL)
 _REV_FRACTITONS = generate_fractions_pl(invert_dict(_FRACTION_STRING_PL))
 
 
-def _convert_words_to_numbers_pl(text, short_scale=True, ordinals=False):
+def _convert_words_to_numbers_pl(text, short_scale=ConfigVar, ordinals=False):
     """
     Convert words in a string into their equivalent numbers.
     Args:
@@ -145,7 +146,7 @@ def _convert_words_to_numbers_pl(text, short_scale=True, ordinals=False):
     return ' '.join(results)
 
 
-def _extract_numbers_with_text_pl(tokens, short_scale=True,
+def _extract_numbers_with_text_pl(tokens, short_scale=ConfigVar,
                                   ordinals=False, fractional_numbers=True):
     """
     Extract all numbers from a list of Tokens, with the words that
@@ -187,7 +188,7 @@ def _extract_numbers_with_text_pl(tokens, short_scale=True,
     return results
 
 
-def _extract_number_with_text_pl(tokens, short_scale=True,
+def _extract_number_with_text_pl(tokens, short_scale=ConfigVar,
                                  ordinals=False, fractional_numbers=True):
     """
     This function extracts a number from a list of Tokens.
@@ -209,7 +210,7 @@ def _extract_number_with_text_pl(tokens, short_scale=True,
 
 
 def _extract_number_with_text_pl_helper(tokens,
-                                        short_scale=True, ordinals=False,
+                                        short_scale=ConfigVar, ordinals=False,
                                         fractional_numbers=True):
     """
     Helper for _extract_number_with_text_en.
@@ -576,7 +577,7 @@ def _initialize_number_data(short_scale):
     return multiplies, _STRING_SHORT_ORDINAL_PL, string_num_scale
 
 
-def extract_number_pl(text, short_scale=True, ordinals=False):
+def extract_number_pl(text, short_scale=ConfigVar, ordinals=False):
     """
     This function extracts a number from a text string,
     handles pronunciations in long scale and short scale
@@ -1314,7 +1315,7 @@ def extract_datetime_pl(string, dateNow=None, default_time=None):
     return [extractedDate, resultStr]
 
 
-def isFractional_pl(input_str, short_scale=True):
+def isFractional_pl(input_str, short_scale=ConfigVar):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -1332,7 +1333,7 @@ def isFractional_pl(input_str, short_scale=True):
     return False
 
 
-def extract_numbers_pl(text, short_scale=True, ordinals=False):
+def extract_numbers_pl(text, short_scale=ConfigVar, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 

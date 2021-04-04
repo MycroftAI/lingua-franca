@@ -17,6 +17,7 @@
     ├─ res/ (fully localized data, 'en-us' vs 'en-au' and etc.)
     │  ├─ text/
     │  │  ├─ <lang-code>/
+    |  |  |  ├─ config.json (locale-specific settings)
     │  │  │  ├─ date_time.json
     │  │  │  ├─ common words
 
@@ -26,6 +27,9 @@
 
 Ensure that all supported languages are registered in `lingua_franca.internal.py`, in the list
 `_SUPPORTED_LANGUAGES`.
+
+All locales must have a `config.json` in their resource folder. This can be copied and pasted
+from a similar locale, if Lingua Franca has already been localized in the same or a similar language, but must contain all of the settings present in that language's localized functions (see below.)
 
 ## Localizing functions
 
@@ -63,11 +67,27 @@ What you must do:
 - Name function arguments exactly as they are named in the top-level modules
   - You do not need to implement all arguments, but you must name them identically
   - All arguments must be keyword arguments (except the primary arguments)
+  - If an argument's default value should be read from `config`, rather than hardcoded, set its
+    default value to the *data type* `ConfigVar` (see below)
   - If you need to add new arguments,
         feel free, but MAKE SURE you add the argument to the top-level function, as a keyword arg.
         This is the only time you should need to modify the top-level functions while localizing.
         Ensure that any new arguments are at the end of the function signatures, both in the
         top-level function, and in your localized function.
+
+If a function argument's default value should be read from config, it should be set
+to the *data type* `ConfigVar` (not an instance.) For example, here is `parse.extract_number()`'s
+top-level signature:
+
+```python3
+    def extract_number(text: str,
+                       short_scale: bool = ConfigVar,
+                       ordinals: bool = ConfigVar,
+                       lang: str = '')
+```
+
+Again, take care to ensure that these arguments default to the data type `ConfigVar`, rather
+than an instance of `ConfigVar`.
 
 ## Adding new functions
 

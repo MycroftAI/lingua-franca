@@ -27,13 +27,13 @@ from lingua_franca.lang.common_data_ca import _NUMBERS_CA, \
     _FEMALE_DETERMINANTS_CA, _FEMALE_ENDINGS_CA, \
     _MALE_DETERMINANTS_CA, _MALE_ENDINGS_CA, _GENDERS_CA, \
     _TENS_CA, _AFTER_TENS_CA, _HUNDREDS_CA, _BEFORE_HUNDREDS_CA
-from lingua_franca.internal import resolve_resource_file
+from lingua_franca.internal import resolve_resource_file, ConfigVar
 from lingua_franca.lang.parse_common import Normalizer
 import json
 import re
 
 
-def is_fractional_ca(input_str, short_scale=True):
+def is_fractional_ca(input_str, short_scale=ConfigVar):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -90,7 +90,7 @@ def is_fractional_ca(input_str, short_scale=True):
     return False
 
 
-def extract_number_ca(text, short_scale=True, ordinals=False):
+def extract_number_ca(text, short_scale=ConfigVar, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.

@@ -15,11 +15,8 @@
 #
 
 from difflib import SequenceMatcher
-from warnings import warn
-from lingua_franca.time import now_local
 from lingua_franca.internal import populate_localized_function_dict, \
-    get_active_langs, get_full_lang_code, get_primary_lang_code, \
-    get_default_lang, localized_function, _raise_unsupported_language
+    get_active_langs, ConfigVar, localized_function
 
 _REGISTERED_FUNCTIONS = ("extract_numbers",
                          "extract_number",
@@ -67,12 +64,14 @@ def match_one(query, choices):
 
     if isinstance(choices, dict):
         return (choices[best[0]], best[1])
-    else:
-        return best
+    return best
 
 
 @localized_function()
-def extract_numbers(text, short_scale=True, ordinals=False, lang=''):
+def extract_numbers(text: str,
+                    short_scale: bool = ConfigVar,
+                    ordinals: bool = ConfigVar,
+                    lang: str = ''):
     """
         Takes in a string and extracts a list of numbers.
 
@@ -90,7 +89,10 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=''):
 
 
 @localized_function()
-def extract_number(text, short_scale=True, ordinals=False, lang=''):
+def extract_number(text: str,
+                   short_scale: bool = ConfigVar,
+                   ordinals: bool = ConfigVar,
+                   lang: str = ''):
     """Takes in a string and extracts a number.
 
     Args:
@@ -191,7 +193,7 @@ def extract_datetime(text, anchorDate=None, lang='', default_time=None):
 
 
 @localized_function()
-def normalize(text, lang='', remove_articles=True):
+def normalize(text, lang='', remove_articles=ConfigVar):
     """Prepare a string for parsing
 
     This function prepares the given text for parsing by making
@@ -227,7 +229,7 @@ def get_gender(word, context="", lang=''):
 
 
 @localized_function()
-def is_fractional(input_str, short_scale=True, lang=''):
+def is_fractional(input_str, short_scale=ConfigVar, lang=''):
     """
     This function takes the given text and checks if it is a fraction.
     Used by most of the number exractors.

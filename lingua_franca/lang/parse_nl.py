@@ -26,8 +26,9 @@ from .common_data_nl import _SHORT_ORDINAL_STRING_NL, _ARTICLES_NL, \
     _STRING_SHORT_ORDINAL_NL, _SUMS_NL
 import re
 
+from lingua_franca.internal import ConfigVar
 
-def _convert_words_to_numbers_nl(text, short_scale=True, ordinals=False):
+def _convert_words_to_numbers_nl(text, short_scale=ConfigVar, ordinals=False):
     """Convert words in a string into their equivalent numbers.
     Args:
         text str:
@@ -61,7 +62,7 @@ def _convert_words_to_numbers_nl(text, short_scale=True, ordinals=False):
     return ' '.join(results)
 
 
-def _extract_numbers_with_text_nl(tokens, short_scale=True,
+def _extract_numbers_with_text_nl(tokens, short_scale=ConfigVar,
                                   ordinals=False, fractional_numbers=True):
     """Extract all numbers from a list of _Tokens, with the representing words.
 
@@ -100,7 +101,7 @@ def _extract_numbers_with_text_nl(tokens, short_scale=True,
     return results
 
 
-def _extract_number_with_text_nl(tokens, short_scale=True,
+def _extract_number_with_text_nl(tokens, short_scale=ConfigVar,
                                  ordinals=False, fractional_numbers=True):
     """This function extracts a number from a list of _Tokens.
 
@@ -122,7 +123,7 @@ def _extract_number_with_text_nl(tokens, short_scale=True,
 
 
 def _extract_number_with_text_nl_helper(tokens,
-                                        short_scale=True, ordinals=False,
+                                        short_scale=ConfigVar, ordinals=False,
                                         fractional_numbers=True):
     """Helper for _extract_number_with_text_nl.
 
@@ -413,7 +414,7 @@ def _initialize_number_data_nl(short_scale):
     return multiplies, string_num_ordinal_nl, string_num_scale_nl
 
 
-def extract_number_nl(text, short_scale=True, ordinals=False):
+def extract_number_nl(text, short_scale=ConfigVar, ordinals=False):
     """Extract a number from a text string
 
     The function handles pronunciations in long scale and short scale
@@ -1268,7 +1269,7 @@ def extract_datetime_nl(text, anchorDate=None, default_time=None):
     return [extractedDate, resultStr]
 
 
-def is_fractional_nl(input_str, short_scale=True):
+def is_fractional_nl(input_str, short_scale=ConfigVar):
     """This function takes the given text and checks if it is a fraction.
 
     Args:
@@ -1292,7 +1293,7 @@ def is_fractional_nl(input_str, short_scale=True):
     return False
 
 
-def extract_numbers_nl(text, short_scale=True, ordinals=False):
+def extract_numbers_nl(text, short_scale=ConfigVar, ordinals=False):
     """Takes in a string and extracts a list of numbers.
 
     Args:

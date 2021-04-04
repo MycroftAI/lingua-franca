@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from lingua_franca.internal import ConfigVar
 
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_da import _EXTRA_SPACE_DA, \
@@ -59,7 +60,7 @@ def nice_number_da(number, speech=True, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_da(number, places=2, short_scale=True, scientific=False,
+def pronounce_number_da(number, places=2, short_scale=ConfigVar, scientific=False,
                         ordinals=False):
     """
     Convert a number to it's spoken equivalent
@@ -214,7 +215,7 @@ def pronounce_ordinal_da(number):
             return pronounce_number_da(number) + "ende"
 
 
-def nice_time_da(dt, speech=True, use_24hour=False, use_ampm=False):
+def nice_time_da(dt, speech=True, use_24hour=ConfigVar, use_ampm=False):
     """
     Format a time to a comfortable human format
 
