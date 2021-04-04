@@ -104,12 +104,20 @@ def get_supported_locs():
 
 
 def get_active_langs():
-    """ Get the list of currently-loaded language codes
+    """ Get the list of currently-loaded languages
 
     Returns:
         list(str)
     """
     return __loaded_langs
+
+def get_active_locs():
+    """ Get the list of currently-loaded languages
+
+    Returns:
+        list(str)
+    """
+    return __loaded_locs
 
 
 def _set_active_langs(langs=None, override_default=True):
@@ -615,12 +623,14 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
                         lang_code = get_default_lang()
                         full_lang_code = get_full_lang_code()
                         __use_tmp = False
-                if lang_code not in _SUPPORTED_LANGUAGES:
-                    _raise_unsupported_language(lang_code)
                 if __use_tmp:
                     full_lang_code = tmp
+                    if full_lang_code not in __loaded_locs:
+                        if load_langs_on_demand:
+                            load_language(full_lang_code)
             else:
-                full_lang_code = get_full_lang_code(lang_code)
+                full_lang_code = get_full_lang_code(lang_code) if lang_code \
+                    not in _SUPPORTED_FULL_LOCALIZATIONS else lang_code
 
             # Here comes the ugly business.
             _module_name = func.__module__.split('.')[-1]
@@ -631,7 +641,8 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             if _module_name not in _localized_functions.keys():
                 raise ModuleNotFoundError("Module lingua_franca." +
                                           _module_name + " not recognized")
-            if lang_code not in _localized_functions[_module_name].keys():
+            if lang_code not in get_active_langs() or full_lang_code not in \
+                get_active_locs():
                 if load_langs_on_demand:
                     old_langs = __loaded_langs + __loaded_locs
                     load_language(full_lang_code)

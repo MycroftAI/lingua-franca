@@ -99,7 +99,7 @@ class TestLanguageLoading(unittest.TestCase):
 
     def test_load_on_demand(self):
         unload_all_languages()
-        lingua_franca.load_language("en")
+        lingua_franca.load_language("en-us")
         lingua_franca.config.set(setting='load_langs_on_demand', value=True)
         self.assertEqual(lingua_franca.parse.extract_number("one", lang="en"),
                          1)
