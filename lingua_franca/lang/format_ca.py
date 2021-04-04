@@ -17,7 +17,7 @@
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_ca import _FRACTION_STRING_CA, \
     _NUM_STRING_CA
-from lingua_franca.internal import lookup_variant
+from lingua_franca.internal import lookup_variant, ConfigVar
 from enum import IntEnum
 
 

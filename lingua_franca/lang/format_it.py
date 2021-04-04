@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from lingua_franca.internal import ConfigVar
 
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_it import _NUM_STRING_IT, \
@@ -76,7 +77,7 @@ def nice_number_it(number, speech=True, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_it(number, places=2, short_scale=False, scientific=False):
+def pronounce_number_it(number, places=2, short_scale=ConfigVar, scientific=False):
     """
     Convert a number to it's spoken equivalent
     adapted to italian fron en version

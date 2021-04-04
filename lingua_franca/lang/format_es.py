@@ -17,6 +17,8 @@
 Format functions for castillian (es-es)
 
 """
+from lingua_franca.internal import ConfigVar
+
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_es import _NUM_STRING_ES, \
     _FRACTION_STRING_ES

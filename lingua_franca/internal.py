@@ -144,10 +144,11 @@ def _set_active_langs(langs=None, override_default=True):
 
     if not __default_lang:
         __active_lang_code = None
-    elif get_primary_lang_code(__active_lang_code) != __default_lang:
-        __cur_default = __default_full_codes[__default_lang]
-        __active_lang_code = __cur_default if __cur_default in __loaded_locs \
-            else _DEFAULT_FULL_LANG_CODES[__default_lang]
+    elif __active_lang_code is not None:
+        if get_primary_lang_code(__active_lang_code) != __default_lang:
+            __cur_default = __default_full_codes[__default_lang]
+            __active_lang_code = __cur_default if __cur_default in __loaded_locs \
+                else _DEFAULT_FULL_LANG_CODES[__default_lang]
 
     _refresh_function_dict()
 
@@ -302,7 +303,7 @@ def get_default_lang():
     return __default_lang
 
 
-def get_default_loc(lang=None):
+def get_default_loc(lang=''):
     """ Return the current, localized BCP-47 language code, such as 'en-US'
         or 'es-ES'. For the default language *family* - which is passed to
         most parsers and formatters - call `get_default_lang`
@@ -318,7 +319,7 @@ def get_default_loc(lang=None):
     return __default_full_codes[lang.lower()]
 
 
-def set_default_lang(lang_code):
+def set_default_lang(lang_code=''):
     """ Set the active BCP-47 language code to be used in formatting/parsing
         Will choose a default localization if passed a primary language family
         (ex: `set_default_lang("en")` will default to "en-US")
@@ -360,7 +361,7 @@ def set_default_lang(lang_code):
 
     if is_supported_full_lang(lang_code):
         set_default_loc(get_primary_lang_code(lang_code), lang_code)
-    else:
+    elif lang_code:
         set_default_loc(lang_code, get_full_lang_code(lang_code))
 
 
@@ -464,9 +465,14 @@ def __get_full_lang_code_deprecation_warning(lang=''):
     Returns:
         str: A full language code, such as "en-us" or "de-de"
     """
-    if lang is None:
-        return __active_lang_code.lower()
-    elif not isinstance(lang, str):
+    if not lang:
+        if lang is None:
+            warn(NoneLangWarning)
+        if __active_lang_code:
+            return __active_lang_code.lower()
+        raise ModuleNotFoundError("No language module loaded!")
+
+    if not isinstance(lang, str):
         raise TypeError("get_full_lang_code expects str, "
                         "got {}".format(type(lang)))
     if lang.lower() in _SUPPORTED_FULL_LOCALIZATIONS:
@@ -668,13 +674,18 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             # Now let's substitute any values that are supposed to come from
             # lingua_franca.config
             for kwarg in loc_signature.parameters:
-                if all((loc_signature.parameters[kwarg].default is ConfigVar,
-                        kwarg not in kwargs,
-                        len(args) <
-                        list(loc_signature.parameters).index(kwarg) + 1)):
-                    config_var = config.get(kwarg, full_lang_code)
-                    if config_var is not None:
-                        kwargs[kwarg] = config_var
+                default = loc_signature.parameters[kwarg].default
+                if default is ConfigVar or \
+                   isinstance(default,
+                              ConfigVar):
+                    if all((kwarg not in kwargs,
+                            len(args) <
+                            list(loc_signature.parameters).index(kwarg) + 1)):
+                        config_var = config.get(kwarg, full_lang_code) if \
+                            default is ConfigVar else \
+                                config.get(default.name, full_lang_code)
+                        if config_var is not None:
+                            kwargs[kwarg] = config_var
 
             # Now we call the function, ignoring any kwargs from the
             # wrapped function that aren't in the localized function.

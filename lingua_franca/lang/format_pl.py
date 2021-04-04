@@ -18,7 +18,7 @@
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_pl import _NUM_STRING_PL, \
     _FRACTION_STRING_PL, _SHORT_SCALE_PL, _SHORT_ORDINAL_PL, _ALT_ORDINALS_PL
-from lingua_franca.internal import FunctionNotLocalizedError
+from lingua_franca.internal import FunctionNotLocalizedError, ConfigVar
 
 
 def nice_number_pl(number, speech=True, denominators=range(1, 21)):
@@ -61,7 +61,7 @@ def nice_number_pl(number, speech=True, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_pl(num, places=2, short_scale=True, scientific=False,
+def pronounce_number_pl(num, places=2, short_scale=ConfigVar, scientific=False,
                         ordinals=False, scientific_run=False):
     """
     Convert a number to it's spoken equivalent

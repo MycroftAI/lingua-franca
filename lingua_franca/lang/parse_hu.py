@@ -16,6 +16,7 @@
 from datetime import datetime, timedelta
 from lingua_franca.lang.parse_common import Normalizer
 
+from lingua_franca.internal import ConfigVar
 
 class HungarianNormalizer(Normalizer):
     """ TODO implement language specific normalizer"""

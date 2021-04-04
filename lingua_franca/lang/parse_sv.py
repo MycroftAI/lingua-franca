@@ -16,9 +16,9 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from .parse_common import is_numeric, look_for_fractions, Normalizer
+from lingua_franca.internal import ConfigVar
 
-
-def extract_number_sv(text, short_scale=True, ordinals=False):
+def extract_number_sv(text, short_scale=ConfigVar, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -725,7 +725,7 @@ def extract_datetime_sv(text, anchorDate=None, default_time=None):
     return [extractedDate, resultStr]
 
 
-def is_fractional_sv(input_str, short_scale=True):
+def is_fractional_sv(input_str, short_scale=ConfigVar):
     """
     This function takes the given text and checks if it is a fraction.
 

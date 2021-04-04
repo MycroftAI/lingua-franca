@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from lingua_franca.internal import ConfigVar
 
 from lingua_franca.lang.common_data_sl import _NUM_STRING_SL, \
     _FRACTION_STRING_SL, _LONG_SCALE_SL, _SHORT_SCALE_SL, _SHORT_ORDINAL_SL
@@ -67,7 +68,7 @@ def nice_number_sl(number, speech=True, denominators=range(1, 21)):
     return return_string
 
 
-def pronounce_number_sl(num, places=2, short_scale=True, scientific=False,
+def pronounce_number_sl(num, places=2, short_scale=ConfigVar, scientific=False,
                         ordinals=False):
     """
     Convert a number to it's spoken equivalent

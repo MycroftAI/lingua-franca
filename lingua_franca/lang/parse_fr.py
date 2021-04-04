@@ -22,6 +22,8 @@ from lingua_franca.lang.format_fr import pronounce_number_fr
 from lingua_franca.lang.common_data_fr import _ARTICLES_FR, _NUMBERS_FR, \
     _ORDINAL_ENDINGS_FR
 
+from lingua_franca.internal import ConfigVar
+
 def extract_duration_fr(text):
     """
     Convert an french phrase into a number of seconds
@@ -366,7 +368,7 @@ def _number_ordinal_fr(words, i):
     return None
 
 
-def extract_number_fr(text, short_scale=True, ordinals=False):
+def extract_number_fr(text, short_scale=ConfigVar, ordinals=False):
     """Takes in a string and extracts a number.
     Args:
         text (str): the string to extract a number from
@@ -991,7 +993,7 @@ def extract_datetime_fr(text, anchorDate=None, default_time=None):
     return [extractedDate, resultStr]
 
 
-def is_fractional_fr(input_str, short_scale=True):
+def is_fractional_fr(input_str, short_scale=ConfigVar):
     """
     This function takes the given text and checks if it is a fraction.
     Args:
@@ -1061,7 +1063,7 @@ def normalize_fr(text, remove_articles=True):
     return normalized[1:]  # strip the initial space
 
 
-def extract_numbers_fr(text, short_scale=True, ordinals=False):
+def extract_numbers_fr(text, short_scale=ConfigVar, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 

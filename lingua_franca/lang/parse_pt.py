@@ -26,13 +26,13 @@ from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
 from lingua_franca.lang.common_data_pt import _NUMBERS_PT, \
     _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT, \
     _MALE_DETERMINANTS_PT, _MALE_ENDINGS_PT, _GENDERS_PT
-from lingua_franca.internal import resolve_resource_file
+from lingua_franca.internal import resolve_resource_file, ConfigVar
 from lingua_franca.lang.parse_common import Normalizer
 import json
 import re
 
 
-def is_fractional_pt(input_str, short_scale=True):
+def is_fractional_pt(input_str, short_scale=ConfigVar):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -66,7 +66,7 @@ def is_fractional_pt(input_str, short_scale=True):
     return False
 
 
-def extract_number_pt(text, short_scale=True, ordinals=False):
+def extract_number_pt(text, short_scale=ConfigVar, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.

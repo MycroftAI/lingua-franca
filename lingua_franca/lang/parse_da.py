@@ -15,13 +15,15 @@
 #
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic, Normalizer
 from lingua_franca.lang.common_data_da import _DA_NUMBERS
 from lingua_franca.lang.format_da import pronounce_number_da
 
+from lingua_franca.internal import ConfigVar
 
-def extract_number_da(text, short_scale=True, ordinals=False):
+def extract_number_da(text, short_scale=ConfigVar, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -768,7 +770,7 @@ def extract_datetime_da(text, anchorDate=None, default_time=None):
     return [extractedDate, resultStr]
 
 
-def is_fractional_da(input_str, short_scale=True):
+def is_fractional_da(input_str, short_scale=ConfigVar):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -864,7 +866,7 @@ def normalize_da(text, remove_articles=True):
     return normalized[1:]  # strip the initial space
 
 
-def extract_numbers_da(text, short_scale=True, ordinals=False):
+def extract_numbers_da(text, short_scale=ConfigVar, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 

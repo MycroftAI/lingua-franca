@@ -132,8 +132,6 @@ class TestLanguageLoading(unittest.TestCase):
         unload_all_languages()
 
     def test_auto_default_language(self):
-        lingua_franca.load_language('en')
-
         # Load two languages, ensure first is default
         lingua_franca.load_languages(['en', 'es'])
         self.assertEqual(lingua_franca.get_default_lang(), 'en')

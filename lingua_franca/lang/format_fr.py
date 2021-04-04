@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from lingua_franca.internal import ConfigVar
+
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_fr import _NUM_STRING_FR, \
     _FRACTION_STRING_FR

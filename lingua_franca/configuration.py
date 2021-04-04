@@ -53,7 +53,7 @@ class Config(dict):
 
         self[lang][full_loc] = LangConfig(full_loc)
 
-    def _find_setting(self, setting=None, lang=None):
+    def _find_setting(self, setting=None, lang=''):
         if setting is None:
             raise ValueError("lingua_franca.config requires "
                              "a setting parameter!")
@@ -90,7 +90,7 @@ class Config(dict):
         except IndexError:
             return None
 
-    def get(self, setting=None, lang=None):
+    def get(self, setting=None, lang=''):
         if lang != 'global':
             if all((lang,
                     get_primary_lang_code(lang) not in get_active_langs())):

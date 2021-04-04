@@ -21,6 +21,8 @@ from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
 from lingua_franca.lang.common_data_de import _DE_NUMBERS
 from lingua_franca.lang.format_de import pronounce_number_de
 
+from lingua_franca.internal import ConfigVar
+
 de_numbers = {
     'null': 0,
     'ein': 1,
@@ -141,7 +143,7 @@ def extract_duration_de(text):
     return (duration, text)
 
 
-def extract_number_de(text, short_scale=True, ordinals=False):
+def extract_number_de(text, short_scale=ConfigVar, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -894,7 +896,7 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
     return [extractedDate, resultStr]
 
 
-def is_fractional_de(input_str, short_scale=True):
+def is_fractional_de(input_str, short_scale=ConfigVar):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -997,7 +999,7 @@ def normalize_de(text, remove_articles=True):
     return normalized[1:]  # strip the initial space
 
 
-def extract_numbers_de(text, short_scale=True, ordinals=False):
+def extract_numbers_de(text, short_scale=ConfigVar, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
 
