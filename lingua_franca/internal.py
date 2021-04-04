@@ -674,18 +674,12 @@ def localized_function(run_own_code_on=[type(None)], config_vars=[]):
             # Now let's substitute any values that are supposed to come from
             # lingua_franca.config
             for kwarg in loc_signature.parameters:
-                default = loc_signature.parameters[kwarg].default
-                if default is ConfigVar or \
-                   isinstance(default,
-                              ConfigVar):
-                    if all((kwarg not in kwargs,
-                            len(args) <
-                            list(loc_signature.parameters).index(kwarg) + 1)):
-                        config_var = config.get(kwarg, full_lang_code) if \
-                            default is ConfigVar else \
-                                config.get(default.name, full_lang_code)
-                        if config_var is not None:
-                            kwargs[kwarg] = config_var
+                if all((kwarg not in kwargs,
+                        len(args) <
+                        list(loc_signature.parameters).index(kwarg) + 1)):
+                    config_var = config.get(kwarg, full_lang_code)
+                    if config_var is not None:
+                        kwargs[kwarg] = config_var
 
             # Now we call the function, ignoring any kwargs from the
             # wrapped function that aren't in the localized function.
@@ -840,7 +834,7 @@ def resolve_resource_file(res_name, data_dir=None):
     return None  # Resource cannot be resolved
 
 
-def lookup_variant(mappings, key="variant"):
+def lookup_variant(mappings, key="variant", config_name=None):
     """function decorator
     maps strings to Enums expected by language specific functions
     mappings can be used to translate values read from configuration files
@@ -865,12 +859,25 @@ def lookup_variant(mappings, key="variant"):
 
         @wraps(func)
         def call_function(*args, **kwargs):
-            if key in kwargs and isinstance(kwargs[key], str):
-                if kwargs[key] in mappings:
-                    kwargs[key] = mappings[kwargs[key]]
+            from lingua_franca import config
+            get_from_config = False
+            if key not in kwargs: 
+                get_from_config = True if config_name else False
+            elif isinstance(kwargs[key], ConfigVar):
+                get_from_config = True
+            if get_from_config:
+                if 'lang' in kwargs:
+                    lang = kwargs['lang']
                 else:
-                    raise ValueError("Unknown variant, mapping does not "
-                                     "exist for {v}".format(v=key))
+                    lang = get_default_loc()
+                kwargs[key] = config.get((config_name if config_name else key), lang)
+            if key in kwargs:
+                if isinstance(kwargs[key], str):
+                    if kwargs[key] in mappings:
+                        kwargs[key] = mappings[kwargs[key]]
+                    else:
+                        raise ValueError("Unknown variant, mapping does not "
+                                        "exist for {v}".format(v=key))
             return func(*args, **kwargs)
 
         return call_function

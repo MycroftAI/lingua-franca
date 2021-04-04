@@ -3,5 +3,5 @@
     "remove_articles": true,
     "use_24hour": false,
     "use_ampm": false,
-    "TimeVariant": "default"
+    "time_variant": "default"
 }

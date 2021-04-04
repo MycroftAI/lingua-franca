@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from lingua_franca import config
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_ca import _FRACTION_STRING_CA, \
     _NUM_STRING_CA
@@ -133,9 +134,11 @@ def pronounce_number_ca(number, places=2):
     "bell": TimeVariantCA.BELL,
     "full_bell": TimeVariantCA.FULL_BELL,
     "spanish": TimeVariantCA.SPANISH_LIKE
-})
+    },
+    key="variant",
+    config_name="time_variant")
 def nice_time_ca(dt, speech=True, use_24hour=ConfigVar, use_ampm=False,
-                 variant=ConfigVar("TimeVariant")):
+                 variant=ConfigVar):
     """
     Format a time to a comfortable human format
      For example, generate 'cinc trenta' for speech or '5:30' for
