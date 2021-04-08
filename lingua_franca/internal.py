@@ -428,19 +428,19 @@ def localized_function(run_own_code_on=[type(None)]):
                    "received this value:\n" + str(run_own_code_on))
     # TODO deprecate these kwarg values 6-12 months after v0.3.0 releases
 
-    def is_error_type(_type):
-        if not callable(_type):
-            return False
-        _instance = _type()
-        rval = isinstance(_instance, BaseException) if _instance else True
-        del _instance
-        return rval
-    if not isinstance(run_own_code_on, list):
-        try:
-            run_own_code_on = list(run_own_code_on)
-        except TypeError:
-            raise BadTypeError
     if run_own_code_on != [None]:
+        def is_error_type(_type):
+            if not callable(_type):
+                return False
+            _instance = _type()
+            rval = isinstance(_instance, BaseException) if _instance else True
+            del _instance
+            return rval
+        if not isinstance(run_own_code_on, list):
+            try:
+                run_own_code_on = list(run_own_code_on)
+            except TypeError:
+                raise BadTypeError
         if not all((is_error_type(e) for e in run_own_code_on)):
             raise BadTypeError
 
