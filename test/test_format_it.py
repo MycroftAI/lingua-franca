@@ -188,7 +188,7 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(1000000050, lang="it"),
                          "Un miliardo, cinquanta")
         self.assertEqual(pronounce_number(1000123456, lang="it"),
-                         "Un miliardo, cento ventri tre mila, "
+                         "Un miliardo, cento venti tre mila, "
                          "quattrocento cinquanta sei")
         self.assertEqual(pronounce_number(1234567890, lang="it"),
                          "Un miliardo, due cento trenta quattro milioni, "
