@@ -34,17 +34,13 @@ lookup_number = lookup_variant({
     "formal": NumberVariantFA.FORMAL,
 })
 
-def _applyVariant(text, variant):
+def _apply_number_variant(text, variant):
     if variant == NumberVariantFA.FORMAL:
-        print("Doing")
-        print(text)
         for key, value in _FORMAL_VARIANT.items():
-            print("xxx "+value+" "+key)
             text = text.replace(value, key)
-            print(text)
     return text
 
-def _handleVariant(func):
+def _handle_number_variant(func):
     
     @wraps(func)
     @lookup_variant({
@@ -54,14 +50,13 @@ def _handleVariant(func):
     })
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        print(kwargs, result)
         if 'variant' in kwargs:
-            return _applyVariant(result, kwargs['variant'])
+            return _apply_number_variant(result, kwargs['variant'])
         else:
             return result
     return wrapper
 
-@_handleVariant
+@_handle_number_variant
 def nice_number_fa(number, speech=True, denominators=range(1, 21), variant=None):
     """ Farsi helper for nice_number
 
@@ -188,7 +183,7 @@ def _to_cardinal(number, places):
         return _fractional(y, l)
     return _cardinalPos(x) + _FARSI_SEPERATOR + _fractional(y, l)
 
-@_handleVariant
+@_handle_number_variant
 def pronounce_number_fa(number, places=2, scientific=False,
                         ordinals=False, variant=None):
     """
@@ -227,7 +222,7 @@ def pronounce_number_fa(number, places=2, scientific=False,
         return _to_ordinal(number)
     return _to_cardinal(number, places)
     
-@_handleVariant
+@_handle_number_variant
 def nice_time_fa(dt, speech=True, use_24hour=False, use_ampm=False, variant=None):
     """
     Format a time to a comfortable human format
