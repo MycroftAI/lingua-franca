@@ -460,12 +460,19 @@ def localized_function(run_own_code_on=[type(None)]):
 
             # Check if we need to add timezone awareness to any datetime object
             if config.inject_timezones:
-                for k, v in kwargs.items():
-                    if isinstance(v, datetime) and v.tzinfo is None:
-                        kwargs[k] = to_local(v)
-                for idx, v in enumerate(args):
-                    if isinstance(v, datetime) and v.tzinfo is None:
-                        args = args[:idx] + (to_local(v),) + args[idx + 1:]
+                for name_of_the_keyword_argument, \
+                    value_of_the_keyword_argument in kwargs.items():
+                    if isinstance(value_of_the_keyword_argument, datetime) \
+                            and value_of_the_keyword_argument.tzinfo is None:
+                        kwargs[name_of_the_keyword_argument] = to_local(
+                            value_of_the_keyword_argument)
+                for index_of_the_argument, value_of_the_argument in \
+                        enumerate(args):
+                    if isinstance(value_of_the_argument, datetime) \
+                            and value_of_the_argument.tzinfo is None:
+                        args = args[:index_of_the_argument] + \
+                               (to_local(value_of_the_argument),) + \
+                               args[index_of_the_argument + 1:]
 
             # Check if we're passing a lang as a kwarg
             if 'lang' in kwargs.keys():
