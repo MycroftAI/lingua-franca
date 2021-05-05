@@ -33,11 +33,12 @@ _REGISTERED_FUNCTIONS = ("extract_numbers",
 populate_localized_function_dict("parse", langs=get_active_langs())
 
 
-def fuzzy_match(x, against):
+def fuzzy_match(x: str, against: str) -> float:
     """Perform a 'fuzzy' comparison between two strings.
+
     Returns:
-        float: match percentage -- 1.0 for perfect match,
-               down to 0.0 for no match at all.
+        match percentage -- 1.0 for perfect match,
+        down to 0.0 for no match at all.
     """
     return SequenceMatcher(None, x, against).ratio()
 
@@ -46,11 +47,12 @@ def match_one(query, choices):
     """
         Find best match from a list or dictionary given an input
 
-        Arguments:
-            query:   string to test
-            choices: list or dictionary of choices
+        Args:
+            query (str): string to test
+            choices (list): list or dictionary of choices
 
-        Returns: tuple with best match, score
+        Returns:
+            tuple: (best match, score)
     """
     if isinstance(choices, dict):
         _choices = list(choices.keys())
@@ -83,7 +85,8 @@ def extract_numbers(text, short_scale=True, ordinals=False, lang=''):
             is now common in most English speaking countries.
             See https://en.wikipedia.org/wiki/Names_of_large_numbers
         ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
-        lang (str): the BCP-47 code for the language to use, None uses default
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
     Returns:
         list: list of extracted numbers as floats, or empty list if none found
     """
@@ -100,7 +103,8 @@ def extract_number(text, short_scale=True, ordinals=False, lang=''):
             is now common in most English speaking countries.
             See https://en.wikipedia.org/wiki/Names_of_large_numbers
         ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
-        lang (str): the BCP-47 code for the language to use, None uses default
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
     Returns:
         (int, float or False): The number extracted or False if the input
                                text contains no numbers
@@ -112,20 +116,23 @@ def extract_duration(text, lang=''):
     """ Convert an english phrase into a number of seconds
 
     Convert things like:
-        "10 minute"
-        "2 and a half hours"
-        "3 days 8 hours 10 minutes and 49 seconds"
+
+    * "10 minute"
+    * "2 and a half hours"
+    * "3 days 8 hours 10 minutes and 49 seconds"
+
     into an int, representing the total number of seconds.
 
     The words used in the duration will be consumed, and
     the remainder returned.
 
     As an example, "set a timer for 5 minutes" would return
-    (300, "set a timer for").
+    ``(300, "set a timer for")``.
 
     Args:
         text (str): string containing a duration
-        lang (str): the BCP-47 code for the language to use, None uses default
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
 
     Returns:
         (timedelta, str):
@@ -199,7 +206,8 @@ def normalize(text, lang='', remove_articles=True):
 
     Args:
         text (str): the string to normalize
-        lang (str): the BCP-47 code for the language to use, None uses default
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
         remove_articles (bool): whether to remove articles (like 'a', or
                                 'the'). True by default.
 
@@ -218,7 +226,8 @@ def get_gender(word, context="", lang=''):
     Args:
         word (str): The word to look up
         context (str, optional): String containing word, for context
-        lang (str): the BCP-47 code for the language to use, None uses default
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
 
     Returns:
         str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
@@ -238,7 +247,8 @@ def is_fractional(input_str, short_scale=True, lang=''):
     Args:
         input_str (str): the string to check if fractional
         short_scale (bool): use short scale if True, long scale if False
-        lang (str): the BCP-47 code for the language to use, None uses default
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
     Returns:
         (bool) or (float): False if not a fraction, otherwise the fraction
     """
@@ -251,7 +261,8 @@ def is_ordinal(input_str, lang=''):
 
     Args:
         input_str (str): the string to check if ordinal
-        lang (str): the BCP-47 code for the language to use, None uses default
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
     Returns:
         (bool) or (float): False if not an ordinal, otherwise the number
         corresponding to the ordinal
