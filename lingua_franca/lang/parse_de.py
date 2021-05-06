@@ -14,70 +14,14 @@
 # limitations under the License.
 #
 import re
+import json
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     extract_numbers_generic, Normalizer
 from lingua_franca.lang.common_data_de import _DE_NUMBERS
 from lingua_franca.lang.format_de import pronounce_number_de
-
-de_numbers = {
-    'null': 0,
-    'ein': 1,
-    'eins': 1,
-    'eine': 1,
-    'einer': 1,
-    'einem': 1,
-    'einen': 1,
-    'eines': 1,
-    'zwei': 2,
-    'drei': 3,
-    'vier': 4,
-    'fünf': 5,
-    'sechs': 6,
-    'sieben': 7,
-    'acht': 8,
-    'neun': 9,
-    'zehn': 10,
-    'elf': 11,
-    'zwölf': 12,
-    'dreizehn': 13,
-    'vierzehn': 14,
-    'fünfzehn': 15,
-    'sechzehn': 16,
-    'siebzehn': 17,
-    'achtzehn': 18,
-    'neunzehn': 19,
-    'zwanzig': 20,
-    'einundzwanzig': 21,
-    'zweiundzwanzig': 22,
-    'dreiundzwanzig': 23,
-    'vierundzwanzig': 24,
-    'fünfundzwanzig': 25,
-    'sechsundzwanzig': 26,
-    'siebenundzwanzig': 27,
-    'achtundzwanzig': 28,
-    'neunundzwanzig': 29,
-    'dreißig': 30,
-    'einunddreißig': 31,
-    'vierzig': 40,
-    'fünfzig': 50,
-    'sechzig': 60,
-    'siebzig': 70,
-    'achtzig': 80,
-    'neunzig': 90,
-    'hundert': 100,
-    'zweihundert': 200,
-    'dreihundert': 300,
-    'vierhundert': 400,
-    'fünfhundert': 500,
-    'sechshundert': 600,
-    'siebenhundert': 700,
-    'achthundert': 800,
-    'neunhundert': 900,
-    'tausend': 1000,
-    'million': 1000000
-}
+from lingua_franca.internal import resolve_resource_file
 
 # TODO: short_scale and ordinals don't do anything here.
 # The parameters are present in the function signature for API compatibility
@@ -405,7 +349,8 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                 dayOffset -= 7
                 used += 1
                 start -= 1
-                # parse 15 of July, June 20th, Feb 18, 19 of February
+
+        # parse 15 Mai, Mai der 20ste, Dez 18
         elif word in months or word in monthsShort and not fromFlag:
             try:
                 m = months.index(word)
@@ -413,35 +358,38 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                 m = monthsShort.index(word)
             used += 1
             datestr = months[m]
+            #commonly spoken : 15(.=gets replaced) Mai <Year>/<time>
             if wordPrev and (wordPrev[0].isdigit() or
-                             (wordPrev == "of" and wordPrevPrev[0].isdigit())):
-                if wordPrev == "of" and wordPrevPrev[0].isdigit():
-                    datestr += " " + words[idx - 2]
+                             (((wordNext == "der") or (wordNext == "den")) and
+                             wordNextNext[0].isdigit())):
+                #Mai der fünfte(5)
+                if ((wordNext == "der") or (wordNext == "den")) and wordNextNext[0].isdigit():
+                    datestr += " " + words[idx + 2]
                     used += 1
                     start -= 1
                 else:
                     datestr += " " + wordPrev
                 start -= 1
                 used += 1
-                if wordNext and wordNext[0].isdigit():
+                if wordNext and wordNext[0].isdigit() and not ":" in wordNext:
                     datestr += " " + wordNext
                     used += 1
                     hasYear = True
                 else:
                     hasYear = False
-
+            # Mai <day> <Year>
             elif wordNext and wordNext[0].isdigit():
                 datestr += " " + wordNext
                 used += 1
-                if wordNextNext and wordNextNext[0].isdigit():
+                if wordNextNext and wordNextNext[0].isdigit() and not ":" in wordNextNext:
                     datestr += " " + wordNextNext
                     used += 1
                     hasYear = True
                 else:
                     hasYear = False
+
         # parse 5 days from tomorrow, 10 weeks from next thursday,
         # 2 months from July
-
         if (
                 word == "von" or word == "nach" or word == "ab") and wordNext \
                 in validFollowups:
@@ -485,7 +433,6 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
             daySpecified = True
 
     # parse time
-    timeStr = ""
     hrOffset = 0
     minOffset = 0
     secOffset = 0
@@ -816,10 +763,8 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
     # perform date manipulation
 
     extractedDate = dateNow
-    extractedDate = extractedDate.replace(microsecond=0,
-                                          second=0,
-                                          minute=0,
-                                          hour=0)
+    extractedDate = extractedDate.replace(microsecond=0)
+
     if datestr != "":
         en_months = ['january', 'february', 'march', 'april', 'may', 'june',
                      'july', 'august', 'september', 'october', 'november',
@@ -833,6 +778,7 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
+        extractedDate = extractedDate.replace(hour=0, minute=0, second=0)
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:
@@ -853,11 +799,10 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
                 month=int(temp.strftime("%m")),
                 day=int(temp.strftime("%d")))
 
-    if timeStr != "":
-        temp = datetime(timeStr)
-        extractedDate = extractedDate.replace(hour=temp.strftime("%H"),
-                                              minute=temp.strftime("%M"),
-                                              second=temp.strftime("%S"))
+    else:
+        # ignore the current HH:MM:SS if relative using days or greater
+        if hrOffset == 0 and minOffset == 0 and secOffset == 0:
+            extractedDate = extractedDate.replace(hour=0, minute=0, second=0)
 
     if yearOffset != 0:
         extractedDate = extractedDate + relativedelta(years=yearOffset)
@@ -866,17 +811,21 @@ def extract_datetime_de(text, anchorDate=None, default_time=None):
     if dayOffset != 0:
         extractedDate = extractedDate + relativedelta(days=dayOffset)
 
-    if hrAbs is None and minAbs is None and default_time:
-        hrAbs = default_time.hour
-        minAbs = default_time.minute
-
     if hrAbs != -1 and minAbs != -1:
+        # If no time was supplied in the string set the time to default
+        # time if it's available
+        if hrAbs is None and minAbs is None and default_time is not None:
+            hrAbs, minAbs = default_time.hour, default_time.minute
+        else:
+            hrAbs = hrAbs or 0
+            minAbs = minAbs or 0
 
-        extractedDate = extractedDate + relativedelta(hours=hrAbs or 0,
-                                                      minutes=minAbs or 0)
-        if (hrAbs or minAbs) and datestr == "":
-            if not daySpecified and dateNow > extractedDate:
+        extractedDate = extractedDate + relativedelta(hours=hrAbs,
+                                                      minutes=minAbs)
+        if (hrAbs != 0 or minAbs != 0) and datestr == "":
+            if not daySpecified and anchorDate > extractedDate:
                 extractedDate = extractedDate + relativedelta(days=1)
+
     if hrOffset != 0:
         extractedDate = extractedDate + relativedelta(hours=hrOffset)
     if minOffset != 0:
@@ -970,33 +919,6 @@ def is_ordinal_de(input_str):
 
     return False
 
-
-def normalize_de(text, remove_articles=True):
-    """ German string normalization """
-    # TODO return GermanNormalizer().normalize(text, remove_articles)
-    words = text.split()  # this also removed extra spaces
-    normalized = ""
-    for word in words:
-        if remove_articles and word in ["der", "die", "das", "des", "den",
-                                        "dem"]:
-            continue
-
-        # Expand common contractions, e.g. "isn't" -> "is not"
-        contraction = ["net", "nett"]
-        if word in contraction:
-            expansion = ["nicht", "nicht"]
-            word = expansion[contraction.index(word)]
-
-        # Convert numbers into digits, e.g. "two" -> "2"
-
-        if word in _DE_NUMBERS:
-            word = str(_DE_NUMBERS[word])
-
-        normalized += " " + word
-
-    return normalized[1:]  # strip the initial space
-
-
 def extract_numbers_de(text, short_scale=True, ordinals=False):
     """
         Takes in a string and extracts a list of numbers.
@@ -1014,6 +936,9 @@ def extract_numbers_de(text, short_scale=True, ordinals=False):
     return extract_numbers_generic(text, pronounce_number_de, extract_number_de,
                                    short_scale=short_scale, ordinals=ordinals)
 
-
 class GermanNormalizer(Normalizer):
-    """ TODO implement language specific normalizer"""
+    with open(resolve_resource_file("text/de-de/normalize.json")) as f:
+        _default_config = json.load(f)
+
+def normalize_de(text, remove_articles=True):
+    return GermanNormalizer().normalize(text, remove_articles)
