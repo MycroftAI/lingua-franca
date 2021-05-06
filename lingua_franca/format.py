@@ -18,30 +18,62 @@ import json
 import os
 import re
 from collections import namedtuple
-from warnings import warn
 from os.path import join
-
+from warnings import warn
 
 from lingua_franca.bracket_expansion import SentenceTreeParser
 from lingua_franca.internal import localized_function, \
     populate_localized_function_dict, get_active_langs, \
-    get_full_lang_code, get_default_lang, get_default_loc, \
-    is_supported_full_lang, _raise_unsupported_language, \
-    UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning, \
+    get_full_lang_code, get_default_loc, \
+    is_supported_full_lang, UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning, \
     FunctionNotLocalizedError
-
 
 _REGISTERED_FUNCTIONS = ("nice_number",
                          "nice_time",
                          "pronounce_number",
                          "nice_response",
-                         "nice_duration")
+                         "nice_duration",
+                         "get_plural_category",
+                         "get_plural_form")
 
 populate_localized_function_dict("format", langs=get_active_langs())
 
 
-def _translate_word(name, lang=''):
+def _translate_word(name, amount=1, lang=''):
     """ Helper to get word translations
+
+    Args:
+        name (str): Word name. Returned as the default value if not translated
+        amount (int): Amount of that word. Used for pluralization
+        lang (str): Language code, e.g. "en-us"
+
+    Returns:
+        str: translated version of resource name
+    """
+    from lingua_franca.internal import resolve_resource_file
+    if not lang:
+        if lang is None:
+            warn(NoneLangWarning)
+        lang = get_default_loc()
+
+    lang_code = lang if is_supported_full_lang(lang) else get_full_lang_code(lang)
+    filename = resolve_resource_file(join("text", lang_code, "pluralizations.json"))
+
+    if filename:
+        try:
+            with open(filename, 'r', encoding='utf8') as file:
+                translations = json.load(file)
+                return translations[name][get_plural_category(amount, lang=lang)]
+        except Exception:
+            pass
+    return _translate_word_legacy(name + ('s' if amount > 1 else ''), lang)  # fallback to legacy translation
+
+
+def _translate_word_legacy(name, lang=''):
+    """ Legacy helper to get word translations.
+
+    Do not use this function directly. Remove it once
+    all languages are migrated to the new format.
 
     Args:
         name (str): Word name. Returned as the default value if not translated
@@ -96,7 +128,7 @@ class DateTimeFormat:
             except FileNotFoundError:
                 # Fallback to English formatting
                 with open(self.config_path + '/en-us/date_time.json',
-                          'r') as lang_config_file:
+                          'r', encoding='utf8') as lang_config_file:
                     self.lang_config[lang] = json.loads(
                         lang_config_file.read())
 
@@ -416,35 +448,23 @@ def nice_duration(duration, lang='', speech=True):
         out = ""
         if days > 0:
             out += pronounce_number(days, lang) + " "
-            if days == 1:
-                out += _translate_word("day", lang)
-            else:
-                out += _translate_word("days", lang)
+            out += _translate_word("day", amount=days, lang=lang)
             out += " "
         if hours > 0:
             if out:
                 out += " "
             out += pronounce_number(hours, lang) + " "
-            if hours == 1:
-                out += _translate_word("hour", lang)
-            else:
-                out += _translate_word("hours", lang)
+            out += _translate_word("hour", amount=hours, lang=lang)
         if minutes > 0:
             if out:
                 out += " "
             out += pronounce_number(minutes, lang) + " "
-            if minutes == 1:
-                out += _translate_word("minute", lang)
-            else:
-                out += _translate_word("minutes", lang)
+            out += _translate_word("minute", amount=minutes, lang=lang)
         if seconds > 0:
             if out:
                 out += " "
             out += pronounce_number(seconds, lang) + " "
-            if seconds == 1:
-                out += _translate_word("second", lang)
-            else:
-                out += _translate_word("seconds", lang)
+            out += _translate_word("second", amount=seconds, lang=lang)
     else:
         # M:SS, MM:SS, H:MM:SS, Dd H:MM:SS format
         out = ""
@@ -487,7 +507,7 @@ def join_list(items, connector, sep=None, lang=''):
     else:
         sep += " "
     return (sep.join(str(item) for item in items[:-1]) +
-            " " + _translate_word(connector, lang) +
+            " " + _translate_word(connector, lang=lang) +
             " " + items[-1])
 
 
@@ -543,4 +563,54 @@ def nice_response(text, lang=''):
 
         assertEqual(nice_response_de("10 ^ 2"),
                          "10 hoch 2")
+    """
+
+
+@localized_function(run_own_code_on=[FunctionNotLocalizedError])
+def get_plural_category(amount, type="cardinal", lang=""):
+    """
+    Get plural category for the specified amount. Category can be one of
+    the categories specified by Unicode CLDR Plural Rules.
+
+    For more details:
+    http://cldr.unicode.org/index/cldr-spec/plural-rules
+    https://unicode-org.github.io/cldr-staging/charts/37/supplemental/language_plural_rules.html
+
+    Args:
+        amount(int or float or pair or list): The amount that is used to
+            determine the category. If type is range, it must contain
+            the start and end numbers.
+        type(str): Either cardinal (default), ordinal or range.
+        lang(str): The BCP-47 code for the language to use, None for default.
+    Returns:
+        (str): The plural category. Either zero, one, two, few, many or other.
+    """
+
+    if type == "cardinal":
+        warn(RuntimeWarning("Pluralization has not been implemented in the specified language. Falling back to "
+                            "basic singular and plural for compatibility with built-in functions."))
+
+        if amount == 1:
+            return "one"
+        else:
+            return "other"
+
+    else:
+        raise FunctionNotLocalizedError("This function has not been implemented in the specified language.")
+
+
+@localized_function()
+def get_plural_form(word, amount, type="cardinal", lang=""):
+    """
+    Get plural form of the specified word for the specified amount.
+
+    Args:
+        word(str): Word to be pluralized.
+        amount(int or float or pair or list): The amount that is used to
+            determine the category. If type is range, it must contain
+            the start and end numbers.
+        type(str): Either cardinal (default), ordinal or range.
+        lang(str): The BCP-47 code for the language to use, None for default.
+    Returns:
+        (str): Pluralized word.
     """

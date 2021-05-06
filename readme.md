@@ -17,6 +17,8 @@ Lingua Franca (_noun_)<br>
     - [Pronounce numbers](#pronounce-numbers)
     - [Pronounce datetime objects](#pronounce-datetime-objects)
     - [Pronounce durations](#pronounce-durations)
+    - [Get plural category](#get-plural-category)
+    - [Get plural form](#get-plural-form)
   - [Parsing](#parsing)
     - [Extract numbers](#extract-numbers)
     - [Extract durations](#extract-durations)
@@ -116,6 +118,29 @@ from datetime import timedelta
 
 assert nice_duration(timedelta(seconds=500000), speech=False) ==  "5d 18:53:20"
 ```
+
+### Get plural category
+
+get one of [Unicode CLDR plural categories](http://cldr.unicode.org/index/cldr-spec/plural-rules) according
+to the [pluralization rules](https://unicode-org.github.io/cldr-staging/charts/37/supplemental/language_plural_rules.html) of the language
+
+```python
+from lingua_franca.format import get_plural_category
+
+assert get_plural_category(1) == "one"
+assert get_plural_category(2) == "other"
+
+assert get_plural_category(1, type="ordinal") == "one"
+assert get_plural_category(2, type="ordinal") == "two"
+assert get_plural_category(3, type="ordinal") == "few"
+assert get_plural_category(4, type="ordinal") == "other"
+```
+
+### Get plural form
+
+pluralize the word
+
+*Note:* Not implemented yet in any language.
 
 ## Parsing
 

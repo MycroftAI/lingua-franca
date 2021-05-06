@@ -13,28 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import json
-import unittest
-import datetime
 import ast
-import warnings
+import datetime
+import json
 import sys
+import unittest
 from pathlib import Path
 
 # TODO either write a getter for lingua_franca.internal._SUPPORTED_LANGUAGES,
 # or make it public somehow
 from lingua_franca import load_languages, unload_languages, set_default_lang, \
-    get_primary_lang_code, get_active_langs, get_supported_langs
-from lingua_franca.internal import UnsupportedLanguageError
-from lingua_franca.format import nice_number
-from lingua_franca.format import nice_time
-from lingua_franca.format import nice_date
-from lingua_franca.format import nice_date_time
-from lingua_franca.format import nice_year
-from lingua_franca.format import nice_duration
-from lingua_franca.format import pronounce_number
+    get_active_langs, get_supported_langs
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
+from lingua_franca.format import nice_date
+from lingua_franca.format import nice_date_time
+from lingua_franca.format import nice_duration
+from lingua_franca.format import nice_number, get_plural_category
+from lingua_franca.format import nice_time
+from lingua_franca.format import nice_year
+from lingua_franca.format import pronounce_number
 
 
 def setUpModule():
@@ -398,7 +396,7 @@ class TestNiceDateFormat(unittest.TestCase):
             if (sub_dir / 'date_time_test.json').exists():
                 print("Getting test for " +
                       str(sub_dir / 'date_time_test.json'))
-                with (sub_dir / 'date_time_test.json').open() as f:
+                with (sub_dir / 'date_time_test.json').open(encoding='utf8') as f:
                     cls.test_config[sub_dir.parts[-1]] = json.loads(f.read())
 
     def test_convert_times(self):
@@ -635,6 +633,42 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(join_list(["a", "b", "c", "d"], "or"), "a, b, c or d")
 
         self.assertEqual(join_list([1, "b", 3, "d"], "or"), "1, b, 3 or d")
+
+
+class TestPluralCategory(unittest.TestCase):
+    def test_cardinal_numbers(self):
+        self.assertEqual(get_plural_category(0), "other")
+        self.assertEqual(get_plural_category(1), "one")
+        self.assertEqual(get_plural_category(2), "other")
+        self.assertEqual(get_plural_category(3), "other")
+        self.assertEqual(get_plural_category(10), "other")
+        self.assertEqual(get_plural_category(101), "other")
+
+    def test_ordinal_numbers(self):
+        self.assertEqual(get_plural_category(1, type="ordinal"), "one")
+        self.assertEqual(get_plural_category(21, type="ordinal"), "one")
+        self.assertEqual(get_plural_category(101, type="ordinal"), "one")
+
+        self.assertEqual(get_plural_category(2, type="ordinal"), "two")
+        self.assertEqual(get_plural_category(22, type="ordinal"), "two")
+        self.assertEqual(get_plural_category(102, type="ordinal"), "two")
+
+        self.assertEqual(get_plural_category(3, type="ordinal"), "few")
+        self.assertEqual(get_plural_category(23, type="ordinal"), "few")
+        self.assertEqual(get_plural_category(103, type="ordinal"), "few")
+
+        self.assertEqual(get_plural_category(4, type="ordinal"), "other")
+        self.assertEqual(get_plural_category(11, type="ordinal"), "other")
+        self.assertEqual(get_plural_category(12, type="ordinal"), "other")
+        self.assertEqual(get_plural_category(13, type="ordinal"), "other")
+        self.assertEqual(get_plural_category(45, type="ordinal"), "other")
+        self.assertEqual(get_plural_category(75, type="ordinal"), "other")
+        self.assertEqual(get_plural_category(155, type="ordinal"), "other")
+
+    def test_range_numbers(self):
+        self.assertEqual(get_plural_category((1, 2), type="range"), "other")
+        self.assertEqual(get_plural_category((0, 1), type="range"), "other")
+        self.assertEqual(get_plural_category((0, 2), type="range"), "other")
 
 
 if __name__ == "__main__":

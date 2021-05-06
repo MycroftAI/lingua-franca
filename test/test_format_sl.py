@@ -13,23 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import json
-import unittest
-import datetime
 import ast
+import datetime
+import json
 import sys
-from pathlib import Path
+import unittest
 
-from lingua_franca.format import nice_number
-from lingua_franca.format import nice_time
-from lingua_franca.format import nice_date
-from lingua_franca.format import nice_date_time
-from lingua_franca.format import nice_year
-from lingua_franca.format import nice_duration
-from lingua_franca.format import pronounce_number
+from lingua_franca import get_default_lang, set_default_lang, load_language, unload_language
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
-from lingua_franca import get_default_lang, set_default_lang
+from lingua_franca.format import nice_date
+from lingua_franca.format import nice_date_time
+from lingua_franca.format import nice_duration
+from lingua_franca.format import nice_number, get_plural_category
+from lingua_franca.format import nice_time
+from lingua_franca.format import nice_year
+from lingua_franca.format import pronounce_number
+
+
+def setUpModule():
+    load_language("sl-si")
+    set_default_lang("sl")
+
+
+def tearDownModule():
+    unload_language("sl")
+
 
 NUMBERS_FIXTURE_SL = {
     1.435634: '1.436',
@@ -521,13 +530,10 @@ class TestNiceDateFormat(unittest.TestCase):
 #                print(nice_year(dt, lang=lang))
 
     def test_nice_duration(self):
-        # TODO implement better plural support for nice_duration
-        # Correct results are in comments
-
         self.assertEqual(nice_duration(1), "ena sekunda")
-        self.assertEqual(nice_duration(2), "dve sekund")  # dve sekundi
-        self.assertEqual(nice_duration(3), "tri sekund")  # tri sekunde
-        self.assertEqual(nice_duration(4), "štiri sekund")  # štiri sekunde
+        self.assertEqual(nice_duration(2), "dve sekundi")
+        self.assertEqual(nice_duration(3), "tri sekunde")
+        self.assertEqual(nice_duration(4), "štiri sekunde")
         self.assertEqual(nice_duration(5), "pet sekund")
         self.assertEqual(nice_duration(6), "šest sekund")
 
@@ -562,6 +568,51 @@ class TestNiceDateFormat(unittest.TestCase):
             join_list(["a", "b", "c", "d"], "ali"), "a, b, c ali d")
 
         self.assertEqual(join_list([1, "b", 3, "d"], "ali"), "1, b, 3 ali d")
+
+
+class TestPluralCategory(unittest.TestCase):
+    def setUp(self):
+        self.old_lang = get_default_lang()
+        set_default_lang("sl-si")
+
+    def tearDown(self):
+        if self.old_lang:
+            set_default_lang(self.old_lang)
+
+    def test_cardinal_numbers(self):
+        self.assertEqual(get_plural_category(1), "one")
+        self.assertEqual(get_plural_category(101), "one")
+        self.assertEqual(get_plural_category(301), "one")
+
+        self.assertEqual(get_plural_category(2), "two")
+        self.assertEqual(get_plural_category(102), "two")
+        self.assertEqual(get_plural_category(302), "two")
+
+        self.assertEqual(get_plural_category(3), "few")
+        self.assertEqual(get_plural_category(4), "few")
+        self.assertEqual(get_plural_category(103), "few")
+        self.assertEqual(get_plural_category(104), "few")
+        self.assertEqual(get_plural_category(201.5), "few")
+        self.assertEqual(get_plural_category(505.9), "few")
+
+        self.assertEqual(get_plural_category(5), "other")
+        self.assertEqual(get_plural_category(6), "other")
+        self.assertEqual(get_plural_category(10), "other")
+        self.assertEqual(get_plural_category(127), "other")
+
+    def test_ordinal_numbers(self):
+        self.assertEqual(get_plural_category(1, type="ordinal"), "other")
+        self.assertEqual(get_plural_category(42, type="ordinal"), "other")
+        self.assertEqual(get_plural_category(125, type="ordinal"), "other")
+
+    def test_range_numbers(self):
+        self.assertEqual(get_plural_category((1, 2), type="range"), "two")
+        self.assertEqual(get_plural_category((1, 3), type="range"), "few")
+        self.assertEqual(get_plural_category((1, 5), type="range"), "other")
+
+        self.assertEqual(get_plural_category((2, 202), type="range"), "two")
+        self.assertEqual(get_plural_category((2, 203), type="range"), "few")
+        self.assertEqual(get_plural_category((2, 205), type="range"), "other")
 
 
 if __name__ == "__main__":

@@ -417,3 +417,34 @@ def nice_time_sl(dt, speech=True, use_24hour=False, use_ampm=False):
                 speak += " a.m."
 
         return speak
+
+
+def get_plural_category_sl(amount, type="cardinal"):
+    if type == "cardinal":
+        if amount % 100 == 1 and amount % 1 == 0:
+            return "one"
+        elif amount % 100 == 2 and amount % 1 == 0:
+            return "two"
+        elif amount % 100 == 3 or amount % 100 == 4 or amount % 1 != 0:
+            return "few"
+        else:
+            return "other"
+
+    elif type == "ordinal":
+        return "other"
+
+    elif type == "range":
+        if not (isinstance(amount, tuple) or isinstance(amount, list)) or len(amount) != 2:
+            raise ValueError("Argument \"number\" must be tuple|list type with the start and end numbers")
+
+        end = get_plural_category_sl(amount[1])
+
+        if end == "one" or end == "few":
+            return "few"
+        elif end == "two":
+            return "two"
+        elif end == "other":
+            return "other"
+
+    else:
+        return ValueError("Argument \"type\" must be cardinal|ordinal|range")
