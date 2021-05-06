@@ -23,7 +23,7 @@ from lingua_franca.lang.common_data_pl import _NUM_STRING_PL, \
     _SHORT_SCALE_PL, _SHORT_ORDINAL_PL, _FRACTION_STRING_PL, _TIME_UNITS_CONVERSION, \
     _TIME_UNITS_NORMALIZATION, _MONTHS_TO_EN, _DAYS_TO_EN, _ORDINAL_BASE_PL, \
     _ALT_ORDINALS_PL
-
+from lingua_franca.time import now_local
 import re
 
 
@@ -710,9 +710,10 @@ def extract_datetime_pl(string, dateNow=None, default_time=None):
                 minAbs or secOffset != 0
             )
 
-    if string == "" or not dateNow:
+    if string == "":
         return None
 
+    dateNow = dateNow or now_local()
     found = False
     daySpecified = False
     dayOffset = False

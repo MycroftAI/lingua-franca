@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 
 from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.internal import FunctionNotLocalizedError
+from lingua_franca.time import default_timezone
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_duration
 from lingua_franca.parse import extract_number, extract_numbers
@@ -338,7 +339,7 @@ class TestNormalize(unittest.TestCase):
 
     def test_extractdatetime_fractions_en(self):
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 13, 4)  # Tue June 27, 2017 @ 1:04pm
+            date = datetime(2017, 6, 27, 13, 4, tzinfo=default_timezone())  # Tue June 27, 2017 @ 1:04pm
             [extractedDate, leftover] = extract_datetime(text, date)
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
             return [extractedDate, leftover]
@@ -361,7 +362,7 @@ class TestNormalize(unittest.TestCase):
 
     def test_extractdatetime_en(self):
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 13, 4)  # Tue June 27, 2017 @ 1:04pm
+            date = datetime(2017, 6, 27, 13, 4, tzinfo=default_timezone())  # Tue June 27, 2017 @ 1:04pm
             [extractedDate, leftover] = extract_datetime(text, date)
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
             return [extractedDate, leftover]
@@ -709,9 +710,9 @@ class TestNormalize(unittest.TestCase):
                     "2017-07-04 22:00:00", "what is weather like night")
 
     def test_extract_ambiguous_time_en(self):
-        morning = datetime(2017, 6, 27, 8, 1, 2)
-        evening = datetime(2017, 6, 27, 20, 1, 2)
-        noonish = datetime(2017, 6, 27, 12, 1, 2)
+        morning = datetime(2017, 6, 27, 8, 1, 2, tzinfo=default_timezone())
+        evening = datetime(2017, 6, 27, 20, 1, 2, tzinfo=default_timezone())
+        noonish = datetime(2017, 6, 27, 12, 1, 2, tzinfo=default_timezone())
         self.assertEqual(
             extract_datetime('feed the fish'), None)
         self.assertEqual(
@@ -726,30 +727,30 @@ class TestNormalize(unittest.TestCase):
             extract_datetime(' '), None)
         self.assertEqual(
             extract_datetime('feed fish at 10 o\'clock', morning)[0],
-            datetime(2017, 6, 27, 10, 0, 0))
+            datetime(2017, 6, 27, 10, 0, 0, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('feed fish at 10 o\'clock', noonish)[0],
-            datetime(2017, 6, 27, 22, 0, 0))
+            datetime(2017, 6, 27, 22, 0, 0, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('feed fish at 10 o\'clock', evening)[0],
-            datetime(2017, 6, 27, 22, 0, 0))
+            datetime(2017, 6, 27, 22, 0, 0, tzinfo=default_timezone()))
 
     def test_extract_date_with_may_I_en(self):
-        now = datetime(2019, 7, 4, 8, 1, 2)
-        may_date = datetime(2019, 5, 2, 10, 11, 20)
+        now = datetime(2019, 7, 4, 8, 1, 2, tzinfo=default_timezone())
+        may_date = datetime(2019, 5, 2, 10, 11, 20, tzinfo=default_timezone())
         self.assertEqual(
             extract_datetime('May I know what time it is tomorrow', now)[0],
-            datetime(2019, 7, 5, 0, 0, 0))
+            datetime(2019, 7, 5, 0, 0, 0, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('May I when 10 o\'clock is', now)[0],
-            datetime(2019, 7, 4, 10, 0, 0))
+            datetime(2019, 7, 4, 10, 0, 0, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('On 24th of may I want a reminder', may_date)[0],
-            datetime(2019, 5, 24, 0, 0, 0))
+            datetime(2019, 5, 24, 0, 0, 0, tzinfo=default_timezone()))
 
     def test_extract_relativedatetime_en(self):
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 10, 1, 2)
+            date = datetime(2017, 6, 27, 10, 1, 2, tzinfo=default_timezone())
             [extractedDate, leftover] = extract_datetime(text, date)
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
             return [extractedDate, leftover]
@@ -820,16 +821,16 @@ class TestNormalize(unittest.TestCase):
                          'half hour')
 
     def test_extract_date_with_number_words(self):
-        now = datetime(2019, 7, 4, 8, 1, 2)
+        now = datetime(2019, 7, 4, 8, 1, 2, tzinfo=default_timezone())
         self.assertEqual(
             extract_datetime('What time will it be in 2 minutes', now)[0],
-            datetime(2019, 7, 4, 8, 3, 2))
+            datetime(2019, 7, 4, 8, 3, 2, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('What time will it be in two minutes', now)[0],
-            datetime(2019, 7, 4, 8, 3, 2))
+            datetime(2019, 7, 4, 8, 3, 2, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('What time will it be in two hundred minutes', now)[0],
-            datetime(2019, 7, 4, 11, 21, 2))
+            datetime(2019, 7, 4, 11, 21, 2, tzinfo=default_timezone()))
 
     def test_spaces(self):
         self.assertEqual(normalize("  this   is  a    test"),

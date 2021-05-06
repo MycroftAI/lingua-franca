@@ -17,6 +17,7 @@ import unittest
 from datetime import datetime, time
 
 from lingua_franca import load_language, unload_language, set_default_lang
+from lingua_franca.time import default_timezone
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number, extract_numbers
@@ -653,28 +654,28 @@ class TestNormalize(unittest.TestCase):
                        '2018-01-14 23:45:00', 'inserire appuntamento')
 
     def test_extract_ambiguous_time_it(self):
-        mattina = datetime(2017, 6, 27, 8, 1, 2)
-        sera = datetime(2017, 6, 27, 20, 1, 2)
-        mezzogiorno = datetime(2017, 6, 27, 12, 1, 2)
+        mattina = datetime(2017, 6, 27, 8, 1, 2, tzinfo=default_timezone())
+        sera = datetime(2017, 6, 27, 20, 1, 2, tzinfo=default_timezone())
+        mezzogiorno = datetime(2017, 6, 27, 12, 1, 2, tzinfo=default_timezone())
         self.assertEqual(
             extract_datetime('dai da mangiare ai pesci alle 10 in punto',
                              anchorDate=mattina, lang='it-it')[0],
-            datetime(2017, 6, 27, 10, 0, 0))
+            datetime(2017, 6, 27, 10, 0, 0, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('dai da mangiare ai pesci alle 10 in punto',
                              mezzogiorno, lang='it-it')[0],
-            datetime(2017, 6, 27, 22, 0, 0))
+            datetime(2017, 6, 27, 22, 0, 0, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('dai da mangiare ai pesci alle 10 in punto',
                              sera, lang='it-it')[0],
-            datetime(2017, 6, 27, 22, 0, 0))
+            datetime(2017, 6, 27, 22, 0, 0, tzinfo=default_timezone()))
 
     def test_extract_relativedatetime_it(self):
         """
         Test cases for relative datetime
         """
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 10, 1, 2)
+            date = datetime(2017, 6, 27, 10, 1, 2, tzinfo=default_timezone())
             [extractedDate, leftover] = extract_datetime(text, date,
                                                          lang='it-it')
             extractedDate = extractedDate.strftime('%Y-%m-%d %H:%M:%S')

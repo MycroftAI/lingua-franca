@@ -18,6 +18,7 @@ from datetime import datetime, time, timedelta
 
 from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.internal import FunctionNotLocalizedError
+from lingua_franca.time import default_timezone
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_duration
@@ -98,7 +99,7 @@ class TestNormalize_fr(unittest.TestCase):
 
     def test_extractdatetime_fr(self):
         def extractWithFormat_fr(text):
-            date = datetime(2017, 6, 27, 0, 0)
+            date = datetime(2017, 6, 27, 0, 0, tzinfo=default_timezone())
             [extractedDate, leftover] = extract_datetime(text, date,
                                                          lang="fr-fr")
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
@@ -110,7 +111,7 @@ class TestNormalize_fr(unittest.TestCase):
             self.assertEqual(res[1], expected_leftover)
 
         def extractWithFormatDate2_fr(text):
-            date = datetime(2017, 6, 30, 17, 0)
+            date = datetime(2017, 6, 30, 17, 0, tzinfo=default_timezone())
             [extractedDate, leftover] = extract_datetime(text, date,
                                                          lang="fr-fr")
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")

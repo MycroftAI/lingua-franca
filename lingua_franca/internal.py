@@ -2,10 +2,12 @@ import os.path
 from functools import wraps
 from importlib import import_module
 from inspect import signature
-from sys import version
-from warnings import warn
 
+from warnings import warn
+from datetime import datetime
 from lingua_franca import config
+from lingua_franca.time import to_local
+
 
 _SUPPORTED_LANGUAGES = ("ca", "cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sl", "sv")
@@ -456,10 +458,26 @@ def localized_function(run_own_code_on=[type(None)]):
             lang_param_index = func_params.index('lang')
             full_lang_code = None
 
+            # Check if we need to add timezone awareness to any datetime object
+            if config.inject_timezones:
+                for name_of_the_keyword_argument, \
+                    value_of_the_keyword_argument in kwargs.items():
+                    if isinstance(value_of_the_keyword_argument, datetime) \
+                            and value_of_the_keyword_argument.tzinfo is None:
+                        kwargs[name_of_the_keyword_argument] = to_local(
+                            value_of_the_keyword_argument)
+                for index_of_the_argument, value_of_the_argument in \
+                        enumerate(args):
+                    if isinstance(value_of_the_argument, datetime) \
+                            and value_of_the_argument.tzinfo is None:
+                        args = args[:index_of_the_argument] + \
+                               (to_local(value_of_the_argument),) + \
+                               args[index_of_the_argument + 1:]
+
             # Check if we're passing a lang as a kwarg
             if 'lang' in kwargs.keys():
                 lang_param = kwargs['lang']
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 else:
@@ -468,7 +486,7 @@ def localized_function(run_own_code_on=[type(None)]):
             # Check if we're passing a lang as a positional arg
             elif lang_param_index < len(args):
                 lang_param = args[lang_param_index]
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 elif lang_param in _SUPPORTED_LANGUAGES or \

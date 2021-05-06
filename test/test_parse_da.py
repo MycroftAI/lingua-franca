@@ -20,6 +20,7 @@ from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number
 from lingua_franca.parse import normalize
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -83,7 +84,7 @@ class TestNormalize(unittest.TestCase):
 
     def test_extractdatetime_da(self):
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 0, 0)
+            date = datetime(2017, 6, 27, 0, 0, tzinfo=default_timezone())
             [extractedDate, leftover] = extract_datetime(text, date,
                                                          lang="da-dk", )
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
