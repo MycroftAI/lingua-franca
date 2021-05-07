@@ -45,7 +45,8 @@ def _translate_word(name, lang=''):
 
     Args:
         name (str): Word name. Returned as the default value if not translated
-        lang (str): Language code, e.g. "en-us"
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
 
     Returns:
         str: translated version of resource name
@@ -59,7 +60,7 @@ def _translate_word(name, lang=''):
     lang_code = lang if is_supported_full_lang(lang) else \
         get_full_lang_code(lang)
 
-    filename = resolve_resource_file(join("text", lang_code, name+".word"))
+    filename = resolve_resource_file(join("text", lang_code, name + ".word"))
     if filename:
         # open the file
         try:
@@ -137,7 +138,7 @@ class DateTimeFormat:
         x_in_x000 = self.lang_config[lang]['number'].get(str(int(
             number % 10000 / 1000))) or str(int(number % 10000 / 1000))
         x0_in_x000 = self.lang_config[lang]['number'].get(str(int(
-            number % 10000 / 1000)*10)) or str(int(number % 10000 / 1000)*10)
+            number % 10000 / 1000) * 10)) or str(int(number % 10000 / 1000) * 10)
         x_in_0x00 = self.lang_config[lang]['number'].get(str(int(
             number % 1000 / 100)) or str(int(number % 1000 / 100)))
 
@@ -249,7 +250,8 @@ def nice_number(number, lang='', speech=True, denominators=None):
     4.5 becomes 4 and a half for speech and 4 1/2 for text
     Args:
         number (int or float): the float to format
-        lang (str): code for the language to use
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
         speech (bool): format for speech (True) or display (False)
         denominators (iter of ints): denominators to use, default [1 .. 20]
     Returns:
@@ -269,7 +271,8 @@ def nice_time(dt, lang='', speech=True, use_24hour=False,
 
     Args:
         dt (datetime): date to format (assumes already in local timezone)
-        lang (str): code for the language to use
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
         speech (bool): format for speech (default/True) or display (False)
         use_24hour (bool): output in 24-hour/military or 12-hour format
         use_ampm (bool): include the am/pm for 12-hour format
@@ -290,6 +293,9 @@ def pronounce_number(number, lang='', places=2, short_scale=True,
 
     Args:
         number: the number to pronounce
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
+        places (int): number of decimal places to express, default 2
         short_scale (bool) : use short (True) or long scale (False)
             https://en.wikipedia.org/wiki/Names_of_large_numbers
         scientific (bool) : convert and pronounce in scientific notation
@@ -304,14 +310,16 @@ def nice_date(dt, lang='', now=None):
     Format a datetime to a pronounceable date
 
     For example, generates 'tuesday, june the fifth, 2018'
+
     Args:
         dt (datetime): date to format (assumes already in local timezone)
-        lang (string): the language to use, use Mycroft default language if not
-            provided
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
         now (datetime): Current date. If provided, the returned date for speech
             will be shortened accordingly: No year is returned if now is in the
             same year as td, no month is returned if now is in the same month
             as td. If now and td is the same day, 'today' is returned.
+
     Returns:
         (str): The formatted date string
     """
@@ -330,8 +338,8 @@ def nice_date_time(dt, lang='', now=None, use_24hour=False,
 
         Args:
             dt (datetime): date to format (assumes already in local timezone)
-            lang (string): the language to use, use Mycroft default language if
-                not provided
+            lang (str, optional): an optional BCP-47 language code, if omitted
+                                  the default language will be used.
             now (datetime): Current date. If provided, the returned date for
                 speech will be shortened accordingly: No year is returned if
                 now is in the same year as td, no month is returned if now is
@@ -358,8 +366,8 @@ def nice_year(dt, lang='', bc=False):
 
         Args:
             dt (datetime): date to format (assumes already in local timezone)
-            lang (string): the language to use, use Mycroft default language if
-            not provided
+            lang (str, optional): an optional BCP-47 language code, if omitted
+                                  the default language will be used.
             bc (bool) pust B.C. after the year (python does not support dates
                 B.C. in datetime)
         Returns:
@@ -382,8 +390,10 @@ def nice_duration(duration, lang='', speech=True):
 
     Args:
         duration: time, in seconds
-        lang (str, optional): a BCP-47 language code, None for default
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
         speech (bool): format for speech (True) or display (False)
+
     Returns:
         str: timespan as a string
     """
@@ -392,7 +402,8 @@ def nice_duration(duration, lang='', speech=True):
             warn(NoneLangWarning)
         lang = get_default_loc()
     if not is_supported_full_lang(lang):
-        # TODO deprecated; delete when 'lang=None' and 'lang=invalid' are removed
+        # TODO deprecated; delete when 'lang=None' and 'lang=invalid' are
+        # removed
         try:
             lang = get_full_lang_code(lang)
         except UnsupportedLanguageError:
@@ -454,7 +465,7 @@ def nice_duration(duration, lang='', speech=True):
             out += str(hours) + ":"
         if minutes < 10 and (hours > 0 or days > 0):
             out += "0"
-        out += str(minutes)+":"
+        out += str(minutes) + ":"
         if seconds < 10:
             out += "0"
         out += str(seconds)
@@ -470,9 +481,11 @@ def join_list(items, connector, sep=None, lang=''):
         join_list([1,2,3], "and", ";") ->  "1; 2 and 3"
 
     Args:
-        items(array): items to be joined
-        connector(str): connecting word (resource name), like "and" or "or"
-        sep(str, optional): separator character, default = ","
+        items (array): items to be joined
+        connector (str): connecting word (resource name), like "and" or "or"
+        sep (str, optional): separator character, default = ","
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
     Returns:
         str: the connected list phrase
     """
@@ -503,8 +516,10 @@ def expand_parentheses(sent):
     Will it pour today?
     Will it pour tomorrow?
     Will it pour?
+
     Args:
         sent (list<str>): List of tokens in sentence
+
     Returns:
         list<list<str>>: Multiple possible sentences from original
     """
@@ -514,8 +529,10 @@ def expand_parentheses(sent):
 def expand_options(parentheses_line: str) -> list:
     """
     Convert 'test (a|b)' -> ['test a', 'test b']
+
     Args:
         parentheses_line: Input line to expand
+
     Returns:
         List of expanded possibilities
     """
@@ -536,6 +553,11 @@ def nice_response(text, lang=''):
     As of July 2020, this function sanitizes some dates and "x ^ y"-formatted
     exponents in the following primary language codes:
       da de nl sv
+
+    Args:
+        text (str): input text to sanitize
+        lang (str, optional): an optional BCP-47 language code, if omitted
+                              the default language will be used.
 
     Example:
         assertEqual(nice_response_de("dies ist der 31. mai"),
