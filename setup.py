@@ -27,7 +27,7 @@ with open("readme.md", "r") as fh:
 
 setup(
     name='lingua_franca',
-    version='0.4.1',
+    version='0.4.2',
     packages=['lingua_franca', 'lingua_franca.lang'],
     url='https://github.com/MycroftAI/lingua-franca',
     license='Apache2.0',
