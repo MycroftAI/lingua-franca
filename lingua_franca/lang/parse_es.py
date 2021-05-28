@@ -1023,7 +1023,6 @@ def extract_datetime_es(text, anchorDate=None, default_time=None):
         temp = datetime.strptime(datestr, "%B %d")
         if extractedDate.tzinfo:
             temp = temp.replace(tzinfo=extractedDate.tzinfo)
-        # temp = to_local(temp)
 
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)

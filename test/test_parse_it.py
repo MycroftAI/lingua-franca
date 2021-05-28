@@ -17,11 +17,11 @@ import unittest
 from datetime import datetime, time
 
 from lingua_franca import load_language, unload_language, set_default_lang
-from lingua_franca.time import default_timezone
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number, extract_numbers
 from lingua_franca.parse import normalize
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -221,7 +221,7 @@ class TestNormalize(unittest.TestCase):
 
         """
         def extractWithFormat_it(text):
-            date = datetime(2018, 1, 13, 13, 4)  # Sab 13 Gen, 2018 @ 13:04
+            date = datetime(2018, 1, 13, 13, 4, tzinfo=default_timezone())  # Sab 13 Gen, 2018 @ 13:04
             [extractedDate, leftover] = extract_datetime(text, date,
                                                          lang='it-it')
             extractedDate = extractedDate.strftime('%Y-%m-%d %H:%M:%S')
@@ -616,7 +616,7 @@ class TestNormalize(unittest.TestCase):
         """
 
         def extractWithFormat_it(text):
-            date = datetime(2018, 1, 13, 13, 4)  # Sab 13 Gen, 2018 @ 13:04
+            date = datetime(2018, 1, 13, 13, 4, tzinfo=default_timezone())  # Sab 13 Gen, 2018 @ 13:04
             [extractedDate, leftover] = extract_datetime(text, date,
                                                          lang='it-it')
             extractedDate = extractedDate.strftime('%Y-%m-%d %H:%M:%S')

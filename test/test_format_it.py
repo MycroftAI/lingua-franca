@@ -22,6 +22,7 @@ from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.format import nice_number
 from lingua_franca.format import nice_time
 from lingua_franca.format import pronounce_number
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -259,7 +260,7 @@ class TestPronounceNumber(unittest.TestCase):
             "uno milioni, novecento")
 
     def test_convert_times(self):
-        dt = datetime.datetime(2017, 1, 31, 13, 22, 3)
+        dt = datetime.datetime(2017, 1, 31, 13, 22, 3, tzinfo=default_timezone())
 
         # Verify defaults haven't changed
         self.assertEqual(nice_time(dt, lang="it-it"),
@@ -281,22 +282,22 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="it", use_24hour=True,
                                    use_ampm=False), "tredici e ventidue")
         # Verifica fasce orarie use_ampm = True
-        d_time = datetime.datetime(2017, 1, 31, 8, 22, 3)
+        d_time = datetime.datetime(2017, 1, 31, 8, 22, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(d_time, lang="it", use_ampm=True),
                          "otto e ventidue della mattina")
-        d_time = datetime.datetime(2017, 1, 31, 20, 22, 3)
+        d_time = datetime.datetime(2017, 1, 31, 20, 22, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(d_time, lang="it", use_ampm=True),
                          "otto e ventidue della sera")
-        d_time = datetime.datetime(2017, 1, 31, 23, 22, 3)
+        d_time = datetime.datetime(2017, 1, 31, 23, 22, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(d_time, lang="it", use_ampm=True),
                          "undici e ventidue della notte")
-        d_time = datetime.datetime(2017, 1, 31, 00, 00, 3)
+        d_time = datetime.datetime(2017, 1, 31, 00, 00, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(d_time, lang="it", use_ampm=True),
                          "mezzanotte")
-        d_time = datetime.datetime(2017, 1, 31, 12, 00, 3)
+        d_time = datetime.datetime(2017, 1, 31, 12, 00, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(d_time, lang="it", use_ampm=True),
                          "mezzogiorno")
-        dt = datetime.datetime(2017, 1, 31, 13, 0, 3)
+        dt = datetime.datetime(2017, 1, 31, 13, 0, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="it"),
                          "una in punto")
         self.assertEqual(nice_time(dt, lang="it", use_ampm=True),
@@ -314,7 +315,7 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="it", use_24hour=True,
                                    use_ampm=False), "tredici e zerozero")
 
-        dt = datetime.datetime(2017, 1, 31, 13, 2, 3)
+        dt = datetime.datetime(2017, 1, 31, 13, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="it", use_24hour=True),
                          "tredici e zero due")
         self.assertEqual(nice_time(dt, lang="it", use_ampm=True),
@@ -332,7 +333,7 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="it", use_24hour=True,
                                    use_ampm=False), "tredici e zero due")
 
-        dt = datetime.datetime(2017, 1, 31, 0, 2, 3)
+        dt = datetime.datetime(2017, 1, 31, 0, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="it"),
                          "mezzanotte e zero due")
         self.assertEqual(nice_time(dt, lang="it", use_ampm=True),
@@ -351,16 +352,16 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="it", use_24hour=True,
                                    use_ampm=False), "zerozero e zero due")
         # casi particolari
-        d_time = datetime.datetime(2017, 1, 31, 1, 2, 3)
+        d_time = datetime.datetime(2017, 1, 31, 1, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(d_time, lang="it", use_24hour=True,
                                    use_ampm=True), "una e zero due")
-        d_time = datetime.datetime(2017, 1, 31, 2, 2, 3)
+        d_time = datetime.datetime(2017, 1, 31, 2, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(d_time, lang="it", use_24hour=True,
                                    use_ampm=False), "zero due e zero due")
-        d_time = datetime.datetime(2017, 1, 31, 10, 15, 0)
+        d_time = datetime.datetime(2017, 1, 31, 10, 15, 0, tzinfo=default_timezone())
         self.assertEqual(nice_time(d_time, lang="it", use_24hour=False,
                                    use_ampm=False), "dieci e un quarto")
-        d_time = datetime.datetime(2017, 1, 31, 22, 45, 0)
+        d_time = datetime.datetime(2017, 1, 31, 22, 45, 0, tzinfo=default_timezone())
         self.assertEqual(nice_time(d_time, lang="it", use_24hour=False,
                                    use_ampm=False), "dieci e tre quarti")
 

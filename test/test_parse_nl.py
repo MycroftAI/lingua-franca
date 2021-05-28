@@ -19,6 +19,7 @@ from datetime import datetime, time, timedelta
 
 from lingua_franca import load_language, set_default_lang, unload_language
 from lingua_franca.parse import extract_datetime, extract_number, normalize, extract_duration
+from lingua_franca.time import default_timezone
 
 
 LANG = "nl-nl"
@@ -81,7 +82,7 @@ class TestParsing(unittest.TestCase):
 
     def test_extractdatetime_nl(self):
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 0, 0)
+            date = datetime(2017, 6, 27, 0, 0, tzinfo=default_timezone())
             [extractedDate, leftover] = extract_datetime(text, anchorDate=date,
                                                          lang=LANG)
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")

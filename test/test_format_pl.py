@@ -17,13 +17,14 @@ import unittest
 import datetime
 import sys
 
+from lingua_franca import get_default_lang, set_default_lang, \
+    load_language, unload_language
 from lingua_franca.format import nice_number
 from lingua_franca.format import nice_time
 from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
+from lingua_franca.time import default_timezone
 
-from lingua_franca import get_default_lang, set_default_lang, \
-    load_language, unload_language
 
 
 def setUpModule():
@@ -269,7 +270,7 @@ class TestPronounceNumber(unittest.TestCase):
 class TestNiceDateFormat(unittest.TestCase):
     def test_convert_times(self):
         dt = datetime.datetime(2017, 1, 31,
-                               13, 22, 3)
+                               13, 22, 3, tzinfo=default_timezone())
 
         self.assertEqual(nice_time(dt),
                          "trzynasta dwadzieścia dwa")
@@ -279,7 +280,7 @@ class TestNiceDateFormat(unittest.TestCase):
                          "trzynasta dwadzieścia dwa")
 
         dt = datetime.datetime(2017, 1, 31,
-                               13, 0, 3)
+                               13, 0, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "trzynasta zero zero")
         self.assertEqual(nice_time(dt, speech=False, use_24hour=True),
@@ -288,7 +289,7 @@ class TestNiceDateFormat(unittest.TestCase):
                          "trzynasta zero zero")
 
         dt = datetime.datetime(2017, 1, 31,
-                               13, 2, 3)
+                               13, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "trzynasta dwa")
         self.assertEqual(nice_time(dt, speech=False, use_24hour=True),
@@ -297,7 +298,7 @@ class TestNiceDateFormat(unittest.TestCase):
                          "trzynasta dwa")
 
         dt = datetime.datetime(2017, 1, 31,
-                               0, 2, 3)
+                               0, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "dwa po północy")
         self.assertEqual(nice_time(dt, speech=False, use_24hour=True),
@@ -306,7 +307,7 @@ class TestNiceDateFormat(unittest.TestCase):
                          "dwa po północy")
 
         dt = datetime.datetime(2018, 2, 8,
-                               1, 2, 33)
+                               1, 2, 33, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "pierwsza dwa")
         self.assertEqual(nice_time(dt, speech=False, use_24hour=True),
@@ -315,12 +316,12 @@ class TestNiceDateFormat(unittest.TestCase):
                          "pierwsza dwa")
 
         dt = datetime.datetime(2017, 1, 31,
-                               12, 15, 9)
+                               12, 15, 9, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "dwunasta piętnaście")
 
         dt = datetime.datetime(2017, 1, 31,
-                               1, 45, 00)
+                               1, 45, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "pierwsza czterdzieści pięć")
 

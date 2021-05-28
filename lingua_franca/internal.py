@@ -467,12 +467,12 @@ def localized_function(run_own_code_on=[type(None)]):
                         kwargs[key] = to_local(value)
                 for idx, value in enumerate(args):
                     if isinstance(value, datetime) and value.tzinfo is None:
-                        args = args[:idx] + (to_local(value),) + args[idx + 1:]
+                        args = (*args[:idx], to_local(value), *args[idx + 1:])
 
             # Check if we're passing a lang as a kwarg
             if 'lang' in kwargs.keys():
                 lang_param = kwargs['lang']
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 else:
@@ -481,7 +481,7 @@ def localized_function(run_own_code_on=[type(None)]):
             # Check if we're passing a lang as a positional arg
             elif lang_param_index < len(args):
                 lang_param = args[lang_param_index]
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 elif lang_param in _SUPPORTED_LANGUAGES or \

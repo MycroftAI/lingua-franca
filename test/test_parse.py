@@ -15,6 +15,7 @@
 #
 import unittest
 from datetime import datetime, timedelta
+from dateutil import tz
 
 from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.internal import FunctionNotLocalizedError
@@ -747,6 +748,27 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(
             extract_datetime('On 24th of may I want a reminder', may_date)[0],
             datetime(2019, 5, 24, 0, 0, 0, tzinfo=default_timezone()))
+
+    def test_extract_with_other_tzinfo(self):
+        local_tz = default_timezone()
+        local_dt = datetime(2019, 7, 4, 7, 1, 2, tzinfo=local_tz)
+        local_tz_offset = local_tz.utcoffset(local_dt)
+        not_local_offset = local_tz_offset + timedelta(hours=1)
+        not_local_tz = tz.tzoffset('TST', not_local_offset.total_seconds())
+        not_local_dt = datetime(2019, 7, 4, 8, 1, 2, tzinfo=not_local_tz)
+        test_dt, remainder = extract_datetime("now is the time", not_local_dt)
+        self.assertEqual((test_dt.year, test_dt.month, test_dt.day,
+                          test_dt.hour, test_dt.minute, test_dt.second,
+                          test_dt.tzinfo),
+                         (not_local_dt.year, not_local_dt.month, not_local_dt.day,
+                          not_local_dt.hour, not_local_dt.minute, not_local_dt.second,
+                          not_local_dt.tzinfo))
+        self.assertNotEqual((test_dt.year, test_dt.month, test_dt.day, 
+                             test_dt.hour, test_dt.minute, test_dt.second,
+                             test_dt.tzinfo),
+                            (local_dt.year, local_dt.month, local_dt.day,
+                             local_dt.hour, local_dt.minute, local_dt.second,
+                             local_dt.tzinfo))
 
     def test_extract_relativedatetime_en(self):
         def extractWithFormat(text):

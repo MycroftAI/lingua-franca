@@ -21,6 +21,7 @@ from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.format import nice_time
 from lingua_franca.format import pronounce_number
 from lingua_franca.lang.format_ca import TimeVariantCA
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -134,7 +135,7 @@ class TestPronounceNumber(unittest.TestCase):
 class TestNiceDateFormat(unittest.TestCase):
     def test_pm(self):
         dt = datetime.datetime(2017, 1, 31,
-                               13, 22, 3)
+                               13, 22, 3, tzinfo=default_timezone())
 
         # Verify defaults haven't changed
         self.assertEqual(nice_time(dt, lang="ca-es"),
@@ -155,7 +156,8 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False), "les tretze i vint-i-dos")
 
-        dt = datetime.datetime(2017, 1, 31, 13, 0, 3)
+        dt = datetime.datetime(2017, 1, 31, 
+                               13, 0, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca"), "la una en punt")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
                          "la una en punt de la tarda")
@@ -169,7 +171,8 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=True), "les tretze")
 
-        dt = datetime.datetime(2017, 1, 31,  13, 2, 3)
+        dt = datetime.datetime(2017, 1, 31, 
+                               13, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True),
                          "les tretze i dos")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
@@ -186,7 +189,8 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False), "les tretze i dos")
 
-        dt = datetime.datetime(2017, 1, 31, 12, 15, 0)
+        dt = datetime.datetime(2017, 1, 31,
+                               12, 15, 0, tzinfo=default_timezone())
         # Default Watch system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False), "les dotze i quinze")
@@ -204,7 +208,8 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_ampm=False, variant=TimeVariantCA.BELL),
                          "un quart d'una de la tarda")
 
-        dt = datetime.datetime(2017, 1, 31, 00, 14, 0)
+        dt = datetime.datetime(2017, 1, 31,
+                               00, 14, 0, tzinfo=default_timezone())
         # Default Watch system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False), "les zero i catorze")
@@ -225,7 +230,7 @@ class TestNiceDateFormat(unittest.TestCase):
 
     def test_midnight(self):
         dt = datetime.datetime(2017, 1, 31,
-                               0, 2, 3)
+                               0, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca"),
                          "les dotze i dos")
         self.assertEqual(nice_time(dt, lang="ca", use_ampm=True),
@@ -248,7 +253,7 @@ class TestNiceDateFormat(unittest.TestCase):
 
     def test_midday(self):
         dt = datetime.datetime(2017, 1, 31,
-                               12, 15, 9)
+                               12, 15, 9, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          "les dotze i quinze")
         self.assertEqual(nice_time(dt, lang="ca-es", use_ampm=True),
@@ -274,7 +279,7 @@ class TestNiceDateFormat(unittest.TestCase):
     def test_minutes_to_hour(self):
         # "twenty minutes to midnight"
         dt = datetime.datetime(2017, 1, 31,
-                               19, 40, 49)
+                               19, 40, 49, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          "les set i quaranta")
         self.assertEqual(nice_time(dt, lang="ca-es", use_ampm=True),
@@ -300,39 +305,39 @@ class TestNiceDateFormat(unittest.TestCase):
     def test_minutes_past_hour(self):
         # "quarter past ten"
         dt = datetime.datetime(2017, 1, 31,
-                               1, 15, 00)
+                               1, 15, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=True),
                          "la una i quinze")
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          "la una i quinze")
 
         dt = datetime.datetime(2017, 1, 31,
-                               1, 35, 00)
+                               1, 35, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          "la una i trenta-cinc")
 
         dt = datetime.datetime(2017, 1, 31,
-                               1, 45, 00)
+                               1, 45, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          "la una i quaranta-cinc")
 
         dt = datetime.datetime(2017, 1, 31,
-                               4, 50, 00)
+                               4, 50, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          "les quatre i cinquanta")
 
         dt = datetime.datetime(2017, 1, 31,
-                               5, 55, 00)
+                               5, 55, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca-es"),
                          "les cinc i cinquanta-cinc")
 
         dt = datetime.datetime(2017, 1, 31,
-                               5, 30, 00)
+                               5, 30, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca-es", use_ampm=True),
                          "les cinc i trenta de la matinada")
 
         dt = datetime.datetime(2017, 1, 31,
-                               23, 15, 9)
+                               23, 15, 9, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="ca-es", use_24hour=True,
                                    use_ampm=True),
                          "les vint-i-tres i quinze")
@@ -341,7 +346,8 @@ class TestNiceDateFormat(unittest.TestCase):
                          "les onze i quinze de la nit")
 
     def test_variant_strings(self):
-        dt = datetime.datetime(2017, 1, 31, 12, 15, 0)
+        dt = datetime.datetime(2017, 1, 31, 
+                               12, 15, 0, tzinfo=default_timezone())
         # Default variant
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False, variant="default"),
@@ -350,7 +356,8 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_ampm=False),
                          "les dotze i quinze")
 
-        dt = datetime.datetime(2017, 1, 31, 00, 14, 0)
+        dt = datetime.datetime(2017, 1, 31, 
+                               00, 14, 0, tzinfo=default_timezone())
         # Spanish-like time system
         self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
                                    use_ampm=False,

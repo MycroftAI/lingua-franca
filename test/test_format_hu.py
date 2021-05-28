@@ -21,6 +21,7 @@ from lingua_franca.format import nice_number
 from lingua_franca.format import nice_time
 from lingua_franca.format import pronounce_number
 from lingua_franca.lang.format_hu import pronounce_ordinal_hu
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -208,7 +209,7 @@ class TestPronounceNumber(unittest.TestCase):
 class TestNiceDateFormat_hu(unittest.TestCase):
     def test_convert_times_hu(self):
         dt = datetime.datetime(2017, 1, 31,
-                               13, 22, 3)
+                               13, 22, 3, tzinfo=default_timezone())
 
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "egy óra huszonkettő")
@@ -233,7 +234,7 @@ class TestNiceDateFormat_hu(unittest.TestCase):
                          "tizenhárom óra huszonkettő")
 
         dt = datetime.datetime(2017, 1, 31,
-                               13, 0, 3)
+                               13, 0, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "egy óra")
         self.assertEqual(nice_time(dt, lang="hu-hu", use_ampm=True),
@@ -257,7 +258,7 @@ class TestNiceDateFormat_hu(unittest.TestCase):
                          "tizenhárom óra")
 
         dt = datetime.datetime(2017, 1, 31,
-                               13, 2, 3)
+                               13, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "egy óra kettő")
         self.assertEqual(nice_time(dt, lang="hu-hu", use_ampm=True),
@@ -281,7 +282,7 @@ class TestNiceDateFormat_hu(unittest.TestCase):
                          "tizenhárom óra kettő")
 
         dt = datetime.datetime(2017, 1, 31,
-                               0, 2, 3)
+                               0, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "tizenkét óra kettő")
         self.assertEqual(nice_time(dt, lang="hu-hu", use_ampm=True),
@@ -305,7 +306,7 @@ class TestNiceDateFormat_hu(unittest.TestCase):
                          "nulla óra kettő")
 
         dt = datetime.datetime(2017, 1, 31,
-                               12, 15, 9)
+                               12, 15, 9, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "tizenkét óra tizenöt")
         self.assertEqual(nice_time(dt, lang="hu-hu", use_ampm=True),
@@ -329,7 +330,7 @@ class TestNiceDateFormat_hu(unittest.TestCase):
                          "tizenkét óra tizenöt")
 
         dt = datetime.datetime(2017, 1, 31,
-                               19, 40, 49)
+                               19, 40, 49, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "hét óra negyven")
         self.assertEqual(nice_time(dt, lang="hu-hu", use_ampm=True),
@@ -353,32 +354,32 @@ class TestNiceDateFormat_hu(unittest.TestCase):
                          "tizenkilenc óra negyven")
 
         dt = datetime.datetime(2017, 1, 31,
-                               1, 15, 00)
+                               1, 15, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu", use_24hour=True),
                          "egy óra tizenöt")
 
         dt = datetime.datetime(2017, 1, 31,
-                               1, 35, 00)
+                               1, 35, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "egy óra harmincöt")
 
         dt = datetime.datetime(2017, 1, 31,
-                               1, 45, 00)
+                               1, 45, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "egy óra negyvenöt")
 
         dt = datetime.datetime(2017, 1, 31,
-                               4, 50, 00)
+                               4, 50, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "négy óra ötven")
 
         dt = datetime.datetime(2017, 1, 31,
-                               5, 55, 00)
+                               5, 55, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu"),
                          "öt óra ötvenöt")
 
         dt = datetime.datetime(2017, 1, 31,
-                               5, 30, 00)
+                               5, 30, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="hu-hu", use_ampm=True),
                          "reggel öt óra harminc")
 
