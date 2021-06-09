@@ -25,6 +25,7 @@ from lingua_franca.parse import fuzzy_match
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import match_one
 from lingua_franca.parse import normalize
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -229,7 +230,8 @@ class TestNormalize(unittest.TestCase):
 
     def test_extractdatetime_cs(self):
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 13, 4)  # Tue June 27, 2017 @ 1:04pm
+            # Tue June 27, 2017 @ 1:04pm
+            date = datetime(2017, 6, 27, 13, 4, tzinfo=default_timezone())
             [extractedDate, leftover] = extract_datetime(text, date)
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
             return [extractedDate, leftover]
@@ -588,9 +590,9 @@ class TestNormalize(unittest.TestCase):
                     "2017-07-04 22:00:00", "jaké bude počasí v noci")
 
     def test_extract_ambiguous_time_cs(self):
-        morning = datetime(2017, 6, 27, 8, 1, 2)
-        večer = datetime(2017, 6, 27, 20, 1, 2)
-        noonish = datetime(2017, 6, 27, 12, 1, 2)
+        morning = datetime(2017, 6, 27, 8, 1, 2, tzinfo=default_timezone())
+        večer = datetime(2017, 6, 27, 20, 1, 2, tzinfo=default_timezone())
+        noonish = datetime(2017, 6, 27, 12, 1, 2, tzinfo=default_timezone())
         self.assertEqual(
             extract_datetime('krmení ryb'), None)
         self.assertEqual(
@@ -605,13 +607,13 @@ class TestNormalize(unittest.TestCase):
             extract_datetime(' '), None)
         self.assertEqual(
             extract_datetime('nakrmit ryby v 10 hodin', morning)[0],
-            datetime(2017, 6, 27, 10, 0, 0))
+            datetime(2017, 6, 27, 10, 0, 0, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('nakrmit ryby v 10 hodin', noonish)[0],
-            datetime(2017, 6, 27, 22, 0, 0))
+            datetime(2017, 6, 27, 22, 0, 0, tzinfo=default_timezone()))
         self.assertEqual(
             extract_datetime('nakrmit ryby v 10 hodin', večer)[0],
-            datetime(2017, 6, 27, 22, 0, 0))
+            datetime(2017, 6, 27, 22, 0, 0, tzinfo=default_timezone()))
 
     """
     In Czech is May and may have different format
@@ -631,7 +633,7 @@ class TestNormalize(unittest.TestCase):
 
     def test_extract_relativedatetime_cs(self):
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 10, 1, 2)
+            date = datetime(2017, 6, 27, 10, 1, 2, tzinfo=default_timezone())
             [extractedDate, leftover] = extract_datetime(text, date)
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
             return [extractedDate, leftover]

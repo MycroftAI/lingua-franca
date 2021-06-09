@@ -23,6 +23,7 @@ from lingua_franca.format import nice_number, nice_time, nice_response, \
 # from lingua_franca.format import pronounce_number
 # # from mycroft_parsers.lang.format_da import nice_response
 from lingua_franca.lang.format_da import pronounce_ordinal_da  # internal to da
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -205,7 +206,7 @@ class TestPronounceNumber(unittest.TestCase):
 #              use_ampm=False):
 class TestNiceDateFormat_da(unittest.TestCase):
     def test_convert_times_da(self):
-        dt = datetime.datetime(2017, 1, 31, 13, 22, 3)
+        dt = datetime.datetime(2017, 1, 31, 13, 22, 3, tzinfo=default_timezone())
 
         self.assertEqual(nice_time(dt, lang="da-dk"),
                          "et toogtyve")
@@ -229,7 +230,7 @@ class TestNiceDateFormat_da(unittest.TestCase):
                                    use_ampm=False),
                          "tretten toogtyve")
 
-        dt = datetime.datetime(2017, 1, 31, 13, 0, 3)
+        dt = datetime.datetime(2017, 1, 31, 13, 0, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk"), "et")
         self.assertEqual(nice_time(dt, lang="da-dk", use_ampm=True),
                          "et om eftermiddagen")
@@ -251,7 +252,7 @@ class TestNiceDateFormat_da(unittest.TestCase):
                                    use_ampm=False),
                          "tretten")
 
-        dt = datetime.datetime(2017, 1, 31, 13, 2, 3)
+        dt = datetime.datetime(2017, 1, 31, 13, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk"), "et nul to")
         self.assertEqual(nice_time(dt, lang="da-dk", use_ampm=True),
                          "et nul to om eftermiddagen")
@@ -273,7 +274,7 @@ class TestNiceDateFormat_da(unittest.TestCase):
                                    use_ampm=False),
                          "tretten nul to")
 
-        dt = datetime.datetime(2017, 1, 31, 0, 2, 3)
+        dt = datetime.datetime(2017, 1, 31, 0, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk"), "tolv nul to")
         self.assertEqual(nice_time(dt, lang="da-dk", use_ampm=True),
                          "tolv nul to om natten")
@@ -295,7 +296,7 @@ class TestNiceDateFormat_da(unittest.TestCase):
                                    use_ampm=False),
                          "nul nul to")
 
-        dt = datetime.datetime(2017, 1, 31, 12, 15, 9)
+        dt = datetime.datetime(2017, 1, 31, 12, 15, 9, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk"), "tolv femten")
         self.assertEqual(nice_time(dt, lang="da-dk", use_ampm=True),
                          "tolv femten om eftermiddagen")
@@ -317,7 +318,7 @@ class TestNiceDateFormat_da(unittest.TestCase):
                                    use_ampm=False),
                          "tolv femten")
 
-        dt = datetime.datetime(2017, 1, 31, 19, 40, 49)
+        dt = datetime.datetime(2017, 1, 31, 19, 40, 49, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk"), "syv fyrre")
         self.assertEqual(nice_time(dt, lang="da-dk", use_ampm=True),
                          "syv fyrre om aftenen")
@@ -339,24 +340,24 @@ class TestNiceDateFormat_da(unittest.TestCase):
                                    use_ampm=False),
                          "nitten fyrre")
 
-        dt = datetime.datetime(2017, 1, 31, 1, 15, 00)
+        dt = datetime.datetime(2017, 1, 31, 1, 15, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk", use_24hour=True),
                          "et femten")
 
-        dt = datetime.datetime(2017, 1, 31, 1, 35, 00)
+        dt = datetime.datetime(2017, 1, 31, 1, 35, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk"),
                          "et femogtredive")
 
-        dt = datetime.datetime(2017, 1, 31, 1, 45, 00)
+        dt = datetime.datetime(2017, 1, 31, 1, 45, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk"), "et femogfyrre")
 
-        dt = datetime.datetime(2017, 1, 31, 4, 50, 00)
+        dt = datetime.datetime(2017, 1, 31, 4, 50, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk"), "fire halvtres")
 
-        dt = datetime.datetime(2017, 1, 31, 5, 55, 00)
+        dt = datetime.datetime(2017, 1, 31, 5, 55, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk"), "fem femoghalvtres")
 
-        dt = datetime.datetime(2017, 1, 31, 5, 30, 00)
+        dt = datetime.datetime(2017, 1, 31, 5, 30, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="da-dk", use_ampm=True),
                          "fem tredive om morgenen")
 

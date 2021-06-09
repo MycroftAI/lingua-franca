@@ -19,6 +19,7 @@ import datetime
 from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.format import nice_number, nice_time, pronounce_number
 from lingua_franca.lang.format_sv import pronounce_ordinal_sv
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -205,7 +206,7 @@ class TestPronounceNumber(unittest.TestCase):
 #              use_ampm=False):
 class TestNiceDateFormat_sv(unittest.TestCase):
     def test_convert_times_sv(self):
-        dt = datetime.datetime(2017, 1, 31, 13, 22, 3)
+        dt = datetime.datetime(2017, 1, 31, 13, 22, 3, tzinfo=default_timezone())
 
         self.assertEqual(nice_time(dt, lang="sv-se"),
                          "tjugotvå minuter över ett")
@@ -229,7 +230,7 @@ class TestNiceDateFormat_sv(unittest.TestCase):
                                    use_ampm=False),
                          "tretton tjugotvå")
 
-        dt = datetime.datetime(2017, 1, 31, 13, 0, 3)
+        dt = datetime.datetime(2017, 1, 31, 13, 0, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se"), "ett")
         self.assertEqual(nice_time(dt, lang="sv-se", use_ampm=True),
                          "ett på eftermiddagen")
@@ -251,7 +252,7 @@ class TestNiceDateFormat_sv(unittest.TestCase):
                                    use_ampm=False),
                          "tretton")
 
-        dt = datetime.datetime(2017, 1, 31, 13, 2, 3)
+        dt = datetime.datetime(2017, 1, 31, 13, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se"), "två minuter över ett")
         self.assertEqual(nice_time(dt, lang="sv-se", use_ampm=True),
                          "två minuter över ett på eftermiddagen")
@@ -273,7 +274,7 @@ class TestNiceDateFormat_sv(unittest.TestCase):
                                    use_ampm=False),
                          "tretton noll två")
 
-        dt = datetime.datetime(2017, 1, 31, 0, 2, 3)
+        dt = datetime.datetime(2017, 1, 31, 0, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se"), "två minuter över tolv")
         self.assertEqual(nice_time(dt, lang="sv-se", use_ampm=True),
                          "två minuter över tolv på natten")
@@ -295,7 +296,7 @@ class TestNiceDateFormat_sv(unittest.TestCase):
                                    use_ampm=False),
                          "noll noll två")
 
-        dt = datetime.datetime(2017, 1, 31, 12, 15, 9)
+        dt = datetime.datetime(2017, 1, 31, 12, 15, 9, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se"), "kvart över tolv")
         self.assertEqual(nice_time(dt, lang="sv-se", use_ampm=True),
                          "kvart över tolv på eftermiddagen")
@@ -317,7 +318,7 @@ class TestNiceDateFormat_sv(unittest.TestCase):
                                    use_ampm=False),
                          "tolv femton")
 
-        dt = datetime.datetime(2017, 1, 31, 19, 40, 49)
+        dt = datetime.datetime(2017, 1, 31, 19, 40, 49, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se"), "tjugo minuter i åtta")
         self.assertEqual(nice_time(dt, lang="sv-se", use_ampm=True),
                          "tjugo minuter i åtta på kvällen")
@@ -339,24 +340,24 @@ class TestNiceDateFormat_sv(unittest.TestCase):
                                    use_ampm=False),
                          "nitton fyrtio")
 
-        dt = datetime.datetime(2017, 1, 31, 1, 15, 00)
+        dt = datetime.datetime(2017, 1, 31, 1, 15, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se", use_24hour=True),
                          "ett femton")
 
-        dt = datetime.datetime(2017, 1, 31, 1, 35, 00)
+        dt = datetime.datetime(2017, 1, 31, 1, 35, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se"),
                          "tjugofem minuter i två")
 
-        dt = datetime.datetime(2017, 1, 31, 1, 45, 00)
+        dt = datetime.datetime(2017, 1, 31, 1, 45, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se"), "kvart i två")
 
-        dt = datetime.datetime(2017, 1, 31, 4, 50, 00)
+        dt = datetime.datetime(2017, 1, 31, 4, 50, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se"), "tio i fem")
 
-        dt = datetime.datetime(2017, 1, 31, 5, 55, 00)
+        dt = datetime.datetime(2017, 1, 31, 5, 55, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se"), "fem i sex")
 
-        dt = datetime.datetime(2017, 1, 31, 5, 30, 00)
+        dt = datetime.datetime(2017, 1, 31, 5, 30, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, lang="sv-se", use_ampm=True),
                          "halv sex på morgonen")
 

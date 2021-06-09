@@ -2,10 +2,12 @@ import os.path
 from functools import wraps
 from importlib import import_module
 from inspect import signature
-from sys import version
-from warnings import warn
 
+from warnings import warn
+from datetime import datetime
 from lingua_franca import config
+from lingua_franca.time import to_local
+
 
 _SUPPORTED_LANGUAGES = ("ca", "cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sl", "sv", "fa")
@@ -458,10 +460,19 @@ def localized_function(run_own_code_on=[type(None)]):
             lang_param_index = func_params.index('lang')
             full_lang_code = None
 
+            # Check if we need to add timezone awareness to any datetime object
+            if config.inject_timezones:
+                for key, value in kwargs.items():
+                    if isinstance(value, datetime) and value.tzinfo is None:
+                        kwargs[key] = to_local(value)
+                for idx, value in enumerate(args):
+                    if isinstance(value, datetime) and value.tzinfo is None:
+                        args = (*args[:idx], to_local(value), *args[idx + 1:])
+
             # Check if we're passing a lang as a kwarg
             if 'lang' in kwargs.keys():
                 lang_param = kwargs['lang']
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 else:
@@ -470,7 +481,7 @@ def localized_function(run_own_code_on=[type(None)]):
             # Check if we're passing a lang as a positional arg
             elif lang_param_index < len(args):
                 lang_param = args[lang_param_index]
-                if lang_param == None:
+                if lang_param is None:
                     warn(NoneLangWarning)
                     lang_code = get_default_lang()
                 elif lang_param in _SUPPORTED_LANGUAGES or \

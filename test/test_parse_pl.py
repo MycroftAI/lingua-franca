@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 
 from lingua_franca import get_default_lang, set_default_lang, \
     load_language, unload_language
+from lingua_franca.time import default_timezone
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_duration
 from lingua_franca.parse import extract_number, extract_numbers
@@ -158,7 +159,7 @@ class TestNormalize(unittest.TestCase):
 
     def test_extractdatetime_pl(self):
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 13, 4)  # Tue June 27, 2017 @ 1:04pm
+            date = datetime(2017, 6, 27, 13, 4, tzinfo=default_timezone())  # Tue June 27, 2017 @ 1:04pm
             print(text) # TODO Remove me
             [extractedDate, leftover] = extract_datetime(text, date)
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
@@ -440,7 +441,7 @@ class TestNormalize(unittest.TestCase):
 
     def test_extract_relativedatetime_pl(self):
         def extractWithFormat(text):
-            date = datetime(2017, 6, 27, 10, 1, 2)
+            date = datetime(2017, 6, 27, 10, 1, 2, tzinfo=default_timezone())
             [extractedDate, leftover] = extract_datetime(text, date)
             extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
             return [extractedDate, leftover]

@@ -35,6 +35,7 @@ from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
+from lingua_franca.time import default_timezone
 
 
 def setUpModule():
@@ -402,8 +403,8 @@ class TestNiceDateFormat(unittest.TestCase):
                     cls.test_config[sub_dir.parts[-1]] = json.loads(f.read())
 
     def test_convert_times(self):
-        dt = datetime.datetime(2017, 1, 31,
-                               13, 22, 3)
+        dt = datetime.datetime(2017, 1, 31, 
+                               13, 22, 3, tzinfo=default_timezone())
 
         # Verify defaults haven't changed
         self.assertEqual(nice_time(dt),
@@ -411,6 +412,7 @@ class TestNiceDateFormat(unittest.TestCase):
 
         self.assertEqual(nice_time(dt),
                          "one twenty two")
+
         self.assertEqual(nice_time(dt, use_ampm=True),
                          "one twenty two p.m.")
         self.assertEqual(nice_time(dt, speech=False),
@@ -428,7 +430,7 @@ class TestNiceDateFormat(unittest.TestCase):
                          "thirteen twenty two")
 
         dt = datetime.datetime(2017, 1, 31,
-                               13, 0, 3)
+                               13, 0, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "one o'clock")
         self.assertEqual(nice_time(dt, use_ampm=True),
@@ -448,7 +450,7 @@ class TestNiceDateFormat(unittest.TestCase):
                          "thirteen hundred")
 
         dt = datetime.datetime(2017, 1, 31,
-                               13, 2, 3)
+                               13, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "one oh two")
         self.assertEqual(nice_time(dt, use_ampm=True),
@@ -468,7 +470,7 @@ class TestNiceDateFormat(unittest.TestCase):
                          "thirteen zero two")
 
         dt = datetime.datetime(2017, 1, 31,
-                               0, 2, 3)
+                               0, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "twelve oh two")
         self.assertEqual(nice_time(dt, use_ampm=True),
@@ -488,7 +490,7 @@ class TestNiceDateFormat(unittest.TestCase):
                          "zero zero zero two")
 
         dt = datetime.datetime(2018, 2, 8,
-                               1, 2, 33)
+                               1, 2, 33, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "one oh two")
         self.assertEqual(nice_time(dt, use_ampm=True),
@@ -508,19 +510,19 @@ class TestNiceDateFormat(unittest.TestCase):
                          "zero one zero two")
 
         dt = datetime.datetime(2017, 1, 31,
-                               12, 15, 9)
+                               12, 15, 9, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "quarter past twelve")
         self.assertEqual(nice_time(dt, use_ampm=True),
                          "quarter past twelve p.m.")
 
         dt = datetime.datetime(2017, 1, 31,
-                               5, 30, 00)
+                               5, 30, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt, use_ampm=True),
                          "half past five a.m.")
 
         dt = datetime.datetime(2017, 1, 31,
-                               1, 45, 00)
+                               1, 45, 00, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
                          "quarter to two")
 
@@ -562,9 +564,11 @@ class TestNiceDateFormat(unittest.TestCase):
                 dp = ast.literal_eval(p['datetime_param'])
                 np = ast.literal_eval(p['now'])
                 dt = datetime.datetime(
-                    dp[0], dp[1], dp[2], dp[3], dp[4], dp[5])
+                    dp[0], dp[1], dp[2], dp[3], dp[4], dp[5],
+                    tzinfo=default_timezone())
                 now = None if not np else datetime.datetime(
-                    np[0], np[1], np[2], np[3], np[4], np[5])
+                    np[0], np[1], np[2], np[3], np[4], np[5],
+                    tzinfo=default_timezone())
                 print('Testing for ' + lang + ' that ' + str(dt) +
                       ' is date time ' + p['assertEqual'])
                 self.assertEqual(
@@ -596,7 +600,7 @@ class TestNiceDateFormat(unittest.TestCase):
         for lang in self.test_config:
             print("Test all years in " + lang)
             for i in range(1, 9999):
-                dt = datetime.datetime(i, 1, 31, 13, 2, 3)
+                dt = datetime.datetime(i, 1, 31, 13, 2, 3, tzinfo=default_timezone())
                 self.assertTrue(len(nice_year(dt, lang=lang)) > 0)
                 # Looking through the date sequence can be helpful
 
