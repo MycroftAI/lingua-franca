@@ -33,6 +33,7 @@ from lingua_franca.format import nice_date_time
 from lingua_franca.format import nice_year
 from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
+from lingua_franca.format import pronounce_digits
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
 
@@ -386,6 +387,43 @@ class TestPronounceNumber(unittest.TestCase):
 
 # def nice_time(dt, lang="en-us", speech=True, use_24hour=False,
 #              use_ampm=False):
+
+class TestPronounceDigits(unittest.TestCase):
+    def test_integers(self):
+        self.assertEqual(pronounce_digits(0), "zero")
+        self.assertEqual(pronounce_digits(1), "one")
+        self.assertEqual(pronounce_digits(12345), "twelve three forty five")
+        self.assertEqual(pronounce_digits(7395), "seventy three ninety five")
+        self.assertEqual(pronounce_digits(286), "two eighty six")
+        self.assertEqual(pronounce_digits(2806), "twenty eight six")
+        #self.assertEqual(pronounce_digits(2806), "twenty eight zero six")
+        self.assertEqual(pronounce_digits(238513096), "two thirty eight five thirteen ninety six")
+        #self.assertEqual(pronounce_digits(238513096), "twenty three eighty five thirteen zero ninety six")
+        #self.assertEqual(pronounce_digits(238513696), "twenty three eighty five thirteen sixty nine six")
+
+    def test_integers_all_digits(self):
+        self.assertEqual(pronounce_digits(0, all_digits=True), "zero")
+        self.assertEqual(pronounce_digits(1, all_digits=True), "one")
+        self.assertEqual(pronounce_digits(12345, all_digits=True), "one two three four five")
+        self.assertEqual(pronounce_digits(7395, all_digits=True), "seven three nine five")
+
+    def test_floats(self):
+        self.assertEqual(pronounce_digits(0.1), "zero point one")
+        self.assertEqual(pronounce_digits(0.48), "zero point four eight")
+        self.assertEqual(pronounce_digits(56.92), "fifty six point nine two")
+
+    def test_floats_all_digits(self):
+        self.assertEqual(pronounce_digits(0.7, all_digits=True), "zero point seven")
+        self.assertEqual(pronounce_digits(6.04, all_digits=True), "six point four")
+        #self.assertEqual(pronounce_digits(6.04, all_digits=True), "six point zero four")
+        self.assertEqual(pronounce_digits(56.92, all_digits=True), "five six point nine two")
+
+    def test_decimal_places(self):
+        self.assertEqual(pronounce_digits(34.6912), "thirty four point six nine")
+        self.assertEqual(pronounce_digits(34.6912, places=3), "thirty four point six nine one")
+        self.assertEqual(pronounce_digits(34.6912, places=4), "thirty four point six nine one two")
+        self.assertEqual(pronounce_digits(34.6912, places=5), "thirty four point six nine one two")
+        self.assertEqual(pronounce_digits(34.6912, places=4, all_digits=True), "three four point six nine one two")
 
 
 class TestNiceDateFormat(unittest.TestCase):
