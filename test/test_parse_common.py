@@ -15,7 +15,7 @@
 
 import unittest
 
-from lingua_franca.lang.parse_common import tokenize, Token
+from lingua_franca.lang.parse_common import Normalizer, tokenize, Token
 
 
 class TestParseCommon(unittest.TestCase):
@@ -33,3 +33,18 @@ class TestParseCommon(unittest.TestCase):
 
         self.assertEqual(tokenize('hashtag #1world'),
                          [Token('hashtag', 0), Token('#1world', 1)])
+
+    def test_normalize(self):
+
+        normalizer = Normalizer()
+        self.assertEqual(normalizer.normalize('Set volume to 50%.'),
+                         'Set volume to 50%.')
+
+        self.assertEqual(normalizer.normalize('I am 100% sure.'), 
+                         'I am 100% sure.')
+
+        self.assertEqual(normalizer.normalize('Is current volume 42%?'),
+                         'Is current volume 42%?')
+
+        self.assertEqual(normalizer.normalize('42% is current volume!'),
+                         '42% is current volume!')
