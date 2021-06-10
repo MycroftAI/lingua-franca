@@ -168,7 +168,7 @@ def extract_datetime(text, anchorDate=None, lang='', default_time=None):
 
     Returns:
         [:obj:`datetime`, :obj:`str`]: 'datetime' is the extracted date
-            as a datetime object in the user's local timezone.
+            as a datetime object in the local timezone.
             'leftover_string' is the original phrase with all date and time
             related keywords stripped out. See examples for further
             clarification
