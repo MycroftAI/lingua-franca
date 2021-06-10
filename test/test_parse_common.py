@@ -48,3 +48,9 @@ class TestParseCommon(unittest.TestCase):
 
         self.assertEqual(normalizer.normalize('42% is current volume!'),
                          '42% is current volume!')
+
+        self.assertEqual(normalizer.normalize('It takes 12.34% of revenue.'),
+                         'It takes 12.34% of revenue.')
+
+        self.assertEqual(normalizer.normalize('Return on asset is 56.78%.'),
+                         'Return on asset is 56.78%.')
