@@ -298,7 +298,7 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
 
 
 @localized_function()
-def pronounce_digits(number, lang=None, places=2, all_digits=False, casual=False):
+def pronounce_digits(number, lang=None, places=2, all_digits=True, casual=False):
     """
     Pronounce a number's digits, either colloquially or in full
 

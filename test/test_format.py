@@ -390,19 +390,19 @@ class TestPronounceNumber(unittest.TestCase):
 
 class TestPronounceDigits(unittest.TestCase):
     def test_integers(self):
-        self.assertEqual(pronounce_digits(0), "zero")
-        self.assertEqual(pronounce_digits(1), "one")
-        self.assertEqual(pronounce_digits(12345), "twelve three forty five")
-        self.assertEqual(pronounce_digits(7395), "seventy three ninety five")
-        self.assertEqual(pronounce_digits(286), "two eighty six")
-        self.assertEqual(pronounce_digits(2806), "twenty eight zero six")
-        self.assertEqual(pronounce_digits(2806, casual=True), "twenty eight oh six")
-        self.assertEqual(pronounce_digits(20806), "two zero eight zero six")
-        self.assertEqual(pronounce_digits(20806, casual=True), "two oh eight oh six")
-        self.assertEqual(pronounce_digits(311412), "three eleven four twelve")
-        self.assertEqual(pronounce_digits(354808912), "three fifty four eight zero eight nine twelve")
-        self.assertEqual(pronounce_digits(238513096), "two thirty eight five thirteen zero nine six")
-        self.assertEqual(pronounce_digits(238513696), "two thirty eight five thirteen six ninety six")
+        self.assertEqual(pronounce_digits(0, all_digits=False), "zero")
+        self.assertEqual(pronounce_digits(1, all_digits=False), "one")
+        self.assertEqual(pronounce_digits(12345, all_digits=False), "twelve three forty five")
+        self.assertEqual(pronounce_digits(7395, all_digits=False), "seventy three ninety five")
+        self.assertEqual(pronounce_digits(286, all_digits=False), "two eighty six")
+        self.assertEqual(pronounce_digits(2806, all_digits=False), "twenty eight zero six")
+        self.assertEqual(pronounce_digits(2806, all_digits=False, casual=True), "twenty eight oh six")
+        self.assertEqual(pronounce_digits(20806, all_digits=False), "two zero eight zero six")
+        self.assertEqual(pronounce_digits(20806, all_digits=False, casual=True), "two oh eight oh six")
+        self.assertEqual(pronounce_digits(311412, all_digits=False), "three eleven four twelve")
+        self.assertEqual(pronounce_digits(354808912, all_digits=False), "three fifty four eight zero eight nine twelve")
+        self.assertEqual(pronounce_digits(238513096, all_digits=False), "two thirty eight five thirteen zero nine six")
+        self.assertEqual(pronounce_digits(238513696, all_digits=False), "two thirty eight five thirteen six ninety six")
 
     def test_integers_all_digits(self):
         self.assertEqual(pronounce_digits(0, all_digits=True), "zero")
@@ -411,10 +411,10 @@ class TestPronounceDigits(unittest.TestCase):
         self.assertEqual(pronounce_digits(7395, all_digits=True), "seven three nine five")
 
     def test_floats(self):
-        self.assertEqual(pronounce_digits(0.1), "zero point one")
-        self.assertEqual(pronounce_digits(0.48), "zero point four eight")
-        self.assertEqual(pronounce_digits(6.40), "six point four")
-        self.assertEqual(pronounce_digits(56.92), "fifty six point nine two")
+        self.assertEqual(pronounce_digits(0.1, all_digits=False), "zero point one")
+        self.assertEqual(pronounce_digits(0.48, all_digits=False), "zero point four eight")
+        self.assertEqual(pronounce_digits(6.40, all_digits=False), "six point four")
+        self.assertEqual(pronounce_digits(56.92, all_digits=False), "fifty six point nine two")
 
     def test_floats_all_digits(self):
         self.assertEqual(pronounce_digits(0.7, all_digits=True), "zero point seven")
@@ -423,11 +423,11 @@ class TestPronounceDigits(unittest.TestCase):
         self.assertEqual(pronounce_digits(56.92, all_digits=True), "five six point nine two")
 
     def test_decimal_places(self):
-        self.assertEqual(pronounce_digits(34.6912), "thirty four point six nine")
-        self.assertEqual(pronounce_digits(34.6912, places=3), "thirty four point six nine one")
-        self.assertEqual(pronounce_digits(34.6912, places=4), "thirty four point six nine one two")
-        self.assertEqual(pronounce_digits(34.6912, places=5), "thirty four point six nine one two")
-        self.assertEqual(pronounce_digits(34.6912, places=4, all_digits=True), "three four point six nine one two")
+        self.assertEqual(pronounce_digits(34.6912, all_digits=False), "thirty four point six nine")
+        self.assertEqual(pronounce_digits(34.6912, all_digits=False, places=3), "thirty four point six nine one")
+        self.assertEqual(pronounce_digits(34.6912, all_digits=False, places=4), "thirty four point six nine one two")
+        self.assertEqual(pronounce_digits(34.6912, all_digits=False, places=5), "thirty four point six nine one two")
+        self.assertEqual(pronounce_digits(34.6912, all_digits=True, places=4), "three four point six nine one two")
 
 
 class TestNiceDateFormat(unittest.TestCase):

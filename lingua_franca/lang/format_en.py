@@ -304,7 +304,7 @@ def pronounce_number_en(number, places=2, short_scale=True, scientific=False,
     return result
 
 
-def pronounce_digits_en(number, places=2, all_digits=False, casual=False):
+def pronounce_digits_en(number, places=2, all_digits=True, casual=False):
     decimal_part = ""
     integer_part = ""
     back_digits = ""
@@ -346,24 +346,6 @@ def pronounce_digits_en(number, places=2, all_digits=False, casual=False):
             front_zero = False
             mid_zero = False
             end_zero = False
-            # if all((idx == -2,
-            #        '0' in back_digits)):
-            #     if back_digits[0] == '0':
-            #         result.insert(0, pronounce_number_en(int(back_digits[1])))
-            #         result.insert(0, zero_word)
-            #     else: # 2-len chunk ends in 0
-            #         result.insert(0, zero_word)
-            #         result.insert(0, pronounce_number_en(int(back_digits[0])))
-            # elif idx == -3:
-            #     if back_digits[1] == '0':
-            #         result.insert(0, pronounce_number_en(int(back_digits[2])))
-            #         result.insert(0, zero_word)
-            #         result.insert(0, pronounce_number_en(int(back_digits[0])))
-            #     elif all((back_digits[0] == '0',
-            #               integer_part)):
-            #         result.insert(0, pronounce_number_en())
-            # else:
-            #     result = pronounce_number_en(int(back_digits)).split(" ") + result
             if '0' in back_digits:
                 front_zero = back_digits[0] == '0'
                 end_zero = back_digits[-1] == '0'
@@ -371,6 +353,7 @@ def pronounce_digits_en(number, places=2, all_digits=False, casual=False):
                 if idx == -3:
                     mid_zero = back_digits[1] == '0'
                     _result.append(f"{zero_word if mid_zero else pronounce_number_en(int(back_digits[1]))}")
+                    _result.append
                 _result.append(f"{zero_word if end_zero else pronounce_number_en(int(back_digits[-1]))}")
                 result = _result + result
             else:
