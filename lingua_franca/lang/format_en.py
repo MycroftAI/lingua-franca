@@ -304,10 +304,24 @@ def pronounce_number_en(number, places=2, short_scale=True, scientific=False,
     return result
 
 
-def pronounce_digits_en(number, places=2, all_digits=False):
+def pronounce_digits_en(number, places=2, all_digits=False, casual=False):
     decimal_part = ""
     integer_part = ""
+    back_digits = ""
     result = []
+    def _update_result_helper(_result, back_digits):
+        # if all((any((integer_part, result)), back_digits.startswith('0'))):
+        #     _result.insert(0, zero_word)
+        if back_digits.startswith('0'):
+            _result.insert(0, zero_word)
+            back_digits = back_digits[1:]
+        if back_digits.endswith('0'):
+            _result.insert(-1, zero_word)
+            back_digits = back_digits[:-1]
+        return pronounce_number_en(int(back_digits)).split(" ") + _result
+
+    # TODO make this part of common data?
+    zero_word = "zero" if not casual else "oh"
     is_float = isinstance(number, float)
     if is_float:
         integer_part, decimal_part = str(number).split(".")
@@ -315,7 +329,6 @@ def pronounce_digits_en(number, places=2, all_digits=False):
             float("." + decimal_part), places=places)
         if decimal_part.startswith("zero point"):
             decimal_part = decimal_part.lstrip("zero ")
-        print(decimal_part)
     else:
         integer_part = str(number)
 
@@ -329,15 +342,60 @@ def pronounce_digits_en(number, places=2, all_digits=False):
             idx = -2 if len(integer_part) in [2, 4] else -3
             back_digits = integer_part[idx:]
             integer_part = integer_part[:idx]
-            result = pronounce_number_en(
-                int(back_digits)).split(" ") + result
+
+            front_zero = False
+            mid_zero = False
+            end_zero = False
+            # if all((idx == -2,
+            #        '0' in back_digits)):
+            #     if back_digits[0] == '0':
+            #         result.insert(0, pronounce_number_en(int(back_digits[1])))
+            #         result.insert(0, zero_word)
+            #     else: # 2-len chunk ends in 0
+            #         result.insert(0, zero_word)
+            #         result.insert(0, pronounce_number_en(int(back_digits[0])))
+            # elif idx == -3:
+            #     if back_digits[1] == '0':
+            #         result.insert(0, pronounce_number_en(int(back_digits[2])))
+            #         result.insert(0, zero_word)
+            #         result.insert(0, pronounce_number_en(int(back_digits[0])))
+            #     elif all((back_digits[0] == '0',
+            #               integer_part)):
+            #         result.insert(0, pronounce_number_en())
+            # else:
+            #     result = pronounce_number_en(int(back_digits)).split(" ") + result
+            if '0' in back_digits:
+                front_zero = back_digits[0] == '0'
+                end_zero = back_digits[-1] == '0'
+                _result = [f"{zero_word if front_zero else pronounce_number_en(int(back_digits[0]))}"]
+                if idx == -3:
+                    mid_zero = back_digits[1] == '0'
+                    _result.append(f"{zero_word if mid_zero else pronounce_number_en(int(back_digits[1]))}")
+                _result.append(f"{zero_word if end_zero else pronounce_number_en(int(back_digits[-1]))}")
+                result = _result + result
+            else:
+                result = pronounce_number_en(int(back_digits)).split(" ") + result
+
         if integer_part:
-            result.insert(0, pronounce_number_en(int(integer_part)))
+            _int = int(integer_part)
+            if result:
+                if any((integer_part.startswith('0'), integer_part.endswith('0'))):
+                    result.insert(0, zero_word)
+            result.insert(0, pronounce_number_en(_int))
+
         if is_float:
             result.append(decimal_part)
-        no_no_words = (_SHORT_SCALE_EN[100], "and")
-        result = [word for word in result if word.strip() not in no_no_words]
-        result = " ".join(result)
+
+        no_no_words = ['and', '']
+        _result = list(result)
+        for index, word in enumerate(result):
+            if index < len(result) - 1:
+                if all((word == _SHORT_SCALE_EN[100],
+                        result[index + 1] == 'and')):
+                    _result[index] = 'and' # let the next pass remove this
+
+        result = " ".join([word for word in _result if word != 'and'])
+
     return result
 
 

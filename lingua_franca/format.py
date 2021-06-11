@@ -298,7 +298,7 @@ def pronounce_number(number, lang=None, places=2, short_scale=True,
 
 
 @localized_function()
-def pronounce_digits(number, lang=None, places=2, all_digits=False):
+def pronounce_digits(number, lang=None, places=2, all_digits=False, casual=False):
     """
     Pronounce a number's digits, either colloquially or in full
 
@@ -314,6 +314,7 @@ def pronounce_digits(number, lang=None, places=2, all_digits=False):
     Args:
         number (int|float)
         all_digits (bool): read every digit, rather than two digits at a time
+        casual (bool): in some languages, use a colloquialism for "zero", such as "oh"
     """
 
 
