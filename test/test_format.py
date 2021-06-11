@@ -410,12 +410,13 @@ class TestPronounceDigits(unittest.TestCase):
     def test_floats(self):
         self.assertEqual(pronounce_digits(0.1), "zero point one")
         self.assertEqual(pronounce_digits(0.48), "zero point four eight")
+        self.assertEqual(pronounce_digits(6.40), "six point four")
         self.assertEqual(pronounce_digits(56.92), "fifty six point nine two")
 
     def test_floats_all_digits(self):
         self.assertEqual(pronounce_digits(0.7, all_digits=True), "zero point seven")
-        self.assertEqual(pronounce_digits(6.04, all_digits=True), "six point four")
-        #self.assertEqual(pronounce_digits(6.04, all_digits=True), "six point zero four")
+        self.assertEqual(pronounce_digits(6.04, all_digits=True), "six point zero four")
+        self.assertEqual(pronounce_digits(6.40, all_digits=True), "six point four")
         self.assertEqual(pronounce_digits(56.92, all_digits=True), "five six point nine two")
 
     def test_decimal_places(self):

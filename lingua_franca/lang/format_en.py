@@ -313,8 +313,9 @@ def pronounce_digits_en(number, places=2, all_digits=False):
         integer_part, decimal_part = str(number).split(".")
         decimal_part = pronounce_number_en(
             float("." + decimal_part), places=places)
-        while decimal_part.endswith(" zero"):
-            decimal_part = decimal_part.rstrip(" zero")
+        if decimal_part.startswith("zero point"):
+            decimal_part = decimal_part.lstrip("zero ")
+        print(decimal_part)
     else:
         integer_part = str(number)
 
