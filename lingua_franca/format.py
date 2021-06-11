@@ -306,9 +306,9 @@ def pronounce_digits(number, lang=None, places=2, all_digits=False):
     treating each pair as a single number.
 
     Examples:
-        >>> pronounce_number(127, all_digits=False)
+        >>> pronounce_digits(127, all_digits=False)
         'one twenty seven'
-        >>> pronounce_number(127, all_digits=True)
+        >>> pronounce_digits(127, all_digits=True)
         'one two seven'
 
     Args:

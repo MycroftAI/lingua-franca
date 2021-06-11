@@ -306,36 +306,35 @@ def pronounce_number_en(number, places=2, short_scale=True, scientific=False,
 
 def pronounce_digits_en(number, places=2, all_digits=False):
     decimal_part = ""
-    op_val = ""
+    integer_part = ""
     result = []
     is_float = isinstance(number, float)
     if is_float:
-        op_val, decimal_part = [part for part in str(number).split(".")]
+        integer_part, decimal_part = str(number).split(".")
         decimal_part = pronounce_number_en(
-            float("." + decimal_part), places=places).replace("zero ", "")
+            float("." + decimal_part), places=places)
+        while decimal_part.endswith(" zero"):
+            decimal_part = decimal_part.rstrip(" zero")
     else:
-        op_val = str(number)
+        integer_part = str(number)
 
     if all_digits:
-        result = [pronounce_number_en(int(i)) for i in op_val]
+        result = [pronounce_number_en(int(i)) for i in integer_part]
         if is_float:
             result.append(decimal_part)
         result = " ".join(result)
     else:
-        while len(op_val) > 1:
-            idx = -2 if len(op_val) in [2, 4] else -3
-            back_digits = op_val[idx:]
-            op_val = op_val[:idx]
+        while len(integer_part) > 1:
+            idx = -2 if len(integer_part) in [2, 4] else -3
+            back_digits = integer_part[idx:]
+            integer_part = integer_part[:idx]
             result = pronounce_number_en(
                 int(back_digits)).split(" ") + result
-        if op_val:
-            result.insert(0, pronounce_number_en(int(op_val)))
+        if integer_part:
+            result.insert(0, pronounce_number_en(int(integer_part)))
         if is_float:
             result.append(decimal_part)
-        no_no_words = list(_SHORT_SCALE_EN.values())[:5]
-        no_no_words.append('and')
-        print(no_no_words)
-        print(result)
+        no_no_words = (_SHORT_SCALE_EN[100], "and")
         result = [word for word in result if word.strip() not in no_no_words]
         result = " ".join(result)
     return result
