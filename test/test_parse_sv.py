@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 import unittest
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 from lingua_franca import load_language, unload_language
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_number
+from lingua_franca.parse import extract_duration
 from lingua_franca.parse import normalize
 
 
@@ -126,6 +127,44 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(normalize("det är arton nitton tjugo test",
                                    lang='sv-se'),
                          "det är 18 19 20 test")
+
+class TestExtractDuration(unittest.TestCase):
+    def test_valid_extract_duration(self):
+        """Duration in sentence."""
+        td, remains = extract_duration("5 minuter", lang='sv-se')
+        self.assertEqual(td, timedelta(seconds=300))
+        self.assertEqual(remains, '')
+
+        td, remains = extract_duration("om 2 och en halv timme", lang='sv-se')
+        self.assertEqual(td, timedelta(hours=2, minutes=30))
+        self.assertEqual(remains, "om och")
+
+        td, remains = extract_duration("starta en 9 minuters timer",
+                                       lang='sv-se')
+        self.assertEqual(td, timedelta(minutes=9))
+        self.assertEqual(remains, "starta timer")
+
+        # Extraction of things like "kvart" and "halvtimme"
+        td, remains = extract_duration("i en kvart", lang='sv-se')
+        self.assertEqual(td, timedelta(minutes=15))
+        self.assertEqual(remains, "i")
+
+        td, remains = extract_duration("hämta mig om två timmar och en kvart",
+                                       lang='sv-se')
+        self.assertEqual(td, timedelta(hours=2, minutes=15))
+        self.assertEqual(remains, "hämta mig om och")
+        
+        td, remains = extract_duration("om en halvtimme", lang='sv-se')
+        self.assertEqual(td, timedelta(minutes=30))
+        self.assertEqual(remains, "om")
+        
+    def test_invalid_extract_duration(self):
+        """No duration in sentence."""
+        res = extract_duration("vad är en myrslok", lang='sv-se')
+        self.assertEqual(res, None)
+
+        res = extract_duration("svaret är 42", lang='sv-se')
+        self.assertEqual(res, None)
 
 
 if __name__ == "__main__":
