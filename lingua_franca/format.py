@@ -29,13 +29,15 @@ from lingua_franca.internal import localized_function, \
     is_supported_full_lang, _raise_unsupported_language, \
     UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning, \
     FunctionNotLocalizedError
+from mycroft.util.time import to_local, now_local
 
 
 _REGISTERED_FUNCTIONS = ("nice_number",
                          "nice_time",
                          "pronounce_number",
                          "nice_response",
-                         "nice_duration")
+                         "nice_duration",
+                         "nice_relative_time")
 
 populate_localized_function_dict("format", langs=get_active_langs())
 
@@ -566,3 +568,54 @@ def nice_response(text, lang=''):
         assertEqual(nice_response_de("10 ^ 2"),
                          "10 hoch 2")
     """
+
+
+@localized_function(run_own_code_on=[FunctionNotLocalizedError])
+@localized_function()
+def nice_relative_time(when, relative_to=None, lang=None):
+    """Create a relative phrase to roughly describe a datetime
+
+    Examples are "25 seconds", "tomorrow", "7 days".
+
+    Args:
+        when (datetime): Local timezone
+        relative_to (datetime): Baseline for relative time, default is now()
+        lang (str, optional): Defaults to "en-us".
+    Returns:
+        str: Relative description of the given time
+    """
+    if relative_to:
+        now = relative_to
+    else:
+        now = now_local()
+    delta = to_local(when) - now
+
+    if delta.total_seconds() < 1:
+        return "now"
+
+    if delta.total_seconds() < 90:
+        if delta.total_seconds() == 1:
+            return "one second"
+        else:
+            return "{} seconds".format(int(delta.total_seconds()))
+
+    minutes = int((delta.total_seconds() + 30) // 60)  # +30 to round minutes
+    if minutes < 90:
+        if minutes == 1:
+            return "one minute"
+        else:
+            return "{} minutes".format(minutes)
+
+    hours = int((minutes + 30) // 60)  # +30 to round hours
+    if hours < 36:
+        if hours == 1:
+            return "one hour"
+        else:
+            return "{} hours".format(hours)
+
+    # TODO: "2 weeks", "3 months", "4 years", etc
+    days = int((hours + 12) // 24)  # +12 to round days
+    if days == 1:
+        return "1 day"
+    else:
+        return "{} days".format(days)
