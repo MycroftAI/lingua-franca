@@ -32,7 +32,7 @@
     "12": {"match": "^([2-9]\\d{3})|(\\d0\\d{2})$", "format": "{formatted_thousand} {formatted_hundreds} {formatted_decade} {bc}"},
     "13": {"match": "^\\d{4}$", "format": "{formatted_thousand} {formatted_hundreds} {formatted_decade} {bc}"},
     "default": "{year} {bc}",
-    "bc": "d.c."
+    "bc": "a.C."
   },
     "date_format": {
     "date_full": "{weekday}, {day} {month}, {formatted_year}",
