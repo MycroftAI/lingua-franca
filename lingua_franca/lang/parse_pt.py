@@ -1020,7 +1020,7 @@ def _pt_pruning(text, symbols=True, accents=True, agressive=True):
              "esta", "deste", "desta", "neste", "nesta", "nesse",
              "nessa", "foi", "que"]
     if symbols:
-        symbols = [".", ",", ";", ":", "!", "?", "ï¿½", "ï¿½"]
+        symbols = [".", ",", ";", ":", "!", "?", "º", "ª"]
         for symbol in symbols:
             text = text.replace(symbol, "")
         text = text.replace("-", " ").replace("_", " ")

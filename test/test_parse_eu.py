@@ -42,8 +42,8 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(normalize("hau da lau bost sei froga",
                                    lang="eu"),
                          "hau da 4 5 6 froga")
-        self.assertEqual(normalize("zazpi mï¿½s zortzi mï¿½s bederatzi", lang="eu"),
-                         "7 mï¿½s 8 mï¿½s 9")
+        self.assertEqual(normalize("zazpi gehi zortzi gehi bederatzi", lang="eu"),
+                         "7 gehi 8 gehi 9")
         self.assertEqual(normalize("hamar hamaika hamabi hamahiru hamalau hamabost",
                                    lang="eu"),
                          "10 11 12 13 14 15")
@@ -59,9 +59,9 @@ class TestNormalize(unittest.TestCase):
                          "100 zaldi")
         self.assertEqual(normalize("ehun eta hamaika zaldi", lang="eu"),
                          "111 zaldi")
-        self.assertEqual(normalize("laurehun eta bat behi zeuï¿½en",
+        self.assertEqual(normalize("laurehun eta bat behi zeuden",
                                    lang="eu"),
-                         "401 behi zeuï¿½en")
+                         "401 behi zeuden")
         self.assertEqual(normalize("bi mila", lang="eu"),
                          "2000")
         self.assertEqual(normalize("bi mila hirurehun eta berrogeita bost",
