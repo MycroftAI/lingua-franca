@@ -944,8 +944,7 @@ def extract_datetime_fr(text, anchorDate=None, default_time=None):
         if not hasYear:
             temp = datetime.strptime(datestr, "%B %d")
             if extractedDate.tzinfo:
-                temp = temp.replace(tzinfo=gettz("UTC"))
-                temp = temp.astimezone(extractedDate.tzinfo)
+                temp = temp.replace(tzinfo=extractedDate.tzinfo)
             temp = temp.replace(year=extractedDate.year)
             if extractedDate < temp:
                 extractedDate = extractedDate.replace(year=int(currentYear),
