@@ -1,7 +1,7 @@
 { "test_nice_year": {
-    "1": {"datetime_param": "1, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "uno d.c." },
-    "2": {"datetime_param": "10, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "dieci d.c." },
-    "3": {"datetime_param": "92, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "novantadue d.c." },
+    "1": {"datetime_param": "1, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "uno a.C." },
+    "2": {"datetime_param": "10, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "dieci a.C." },
+    "3": {"datetime_param": "92, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "novantadue a.C." },
     "4": {"datetime_param": "100, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "cento" },
     "5": {"datetime_param": "811, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ottocento undici" },
     "6": {"datetime_param": "454, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "quattrocento cinquantaquattro" },
@@ -19,8 +19,8 @@
     "18": {"datetime_param": "2100, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "duemila cento" },
     "19": {"datetime_param": "1000, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "mille" },
     "20": {"datetime_param": "2000, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "duemila" },
-    "21": {"datetime_param": "3120, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "tremila cento venti d.c." },
-    "22": {"datetime_param": "3241, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "tremila duecento quarantuno d.c." },
+    "21": {"datetime_param": "3120, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "tremila cento venti a.C." },
+    "22": {"datetime_param": "3241, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "tremila duecento quarantuno a.C." },
     "23": {"datetime_param": "5200, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "cinquemila duecento" },
     "24": {"datetime_param": "1100, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "mille cento" }
   },
