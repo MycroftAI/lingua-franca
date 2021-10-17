@@ -9,16 +9,17 @@ from lingua_franca import config
 from lingua_franca.time import to_local
 
 
-_SUPPORTED_LANGUAGES = ("ca", "cs", "da", "de", "en", "es", "fr", "hu",
+_SUPPORTED_LANGUAGES = ("az", "ca", "cs", "da", "de", "en", "es", "fr", "hu",
                         "it", "nl", "pl", "pt", "sl", "sv", "fa")
 
-_SUPPORTED_FULL_LOCALIZATIONS = ("ca-es", "cs-cz", "da-dk", "de-de",
+_SUPPORTED_FULL_LOCALIZATIONS = ("az-az", "ca-es", "cs-cz", "da-dk", "de-de",
                                  "en-au", "en-us", "es-es", "fr-fr",
                                  "hu-hu", "it-it", "nl-nl", "pl-pl",
                                  "fa-ir", "pt-pt", "ru-ru", "sl-si",
                                  "sv-se", "tr-tr")
 
-_DEFAULT_FULL_LANG_CODES = {'ca': 'ca-es',
+_DEFAULT_FULL_LANG_CODES = {'az': 'az-az',
+                            'ca': 'ca-es',
                             'cs': 'cs-cz',
                             'da': 'da-dk',
                             'de': 'de-de',
