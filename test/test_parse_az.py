@@ -163,25 +163,25 @@ class TestNormalize(unittest.TestCase):
                                           " doqquz saniyə"),
                          (timedelta(days=8.5, seconds=39), ""))
         self.assertEqual(extract_duration("üç həftə, dörd yüz doxsan yeddi gün, "
-                                          "və üç yüz 91.6 saniyə sonra məni oyandır"),
+                                          "üç yüz 91.6 saniyə sonra məni oyandır"),
                          (timedelta(weeks=3, days=497, seconds=391.6),
-                          ", , və  sonra məni oyandır"))
+                          "sonra məni oyandır"))
         self.assertEqual(extract_duration("10-saniyə"),
                          (timedelta(seconds=10.0), ""))
         self.assertEqual(extract_duration("5-dəqiqə"),
                          (timedelta(minutes=5), ""))
 
     def test_extract_duration_case_az(self):
-        self.assertEqual(extract_duration("taymeri 30 dəqiqə qur"),
-                         (timedelta(minutes=30), "taymeri  qur"))
+        self.assertEqual(extract_duration("taymeri 30 dəqiqəyə qur"),
+                         (timedelta(minutes=30), "taymeri qur"))
         self.assertEqual(extract_duration("Film bir saat, əlli yeddi"
                                           " yarım dəqiqə davam edir"),
                          (timedelta(hours=1, minutes=57.5),
-                             "Film ,  davam edir"))
-        self.assertEqual(extract_duration("Gün batana dörd yarım dəqiqə qaldı"),
+                             "Film davam edir"))
+        self.assertEqual(extract_duration("Gün batana dörd dəqiqə yarım qaldı"),
                          (timedelta(minutes=4.5), "Gün batana  qaldı"))
         self.assertEqual(extract_duration("Saatı on doqquz dəqiqə keçir"),
-                         (timedelta(minutes=19), "Saatı  keçir"))
+                         (timedelta(minutes=19), "Saatı keçir"))
 
     def test_extractdatetime_fractions_az(self):
         def extractWithFormat(text):
@@ -370,15 +370,11 @@ class TestNormalize(unittest.TestCase):
 
         testExtract("5 dəqiqəyə görüşək",
                     "2017-06-27 10:06:02", "görüşək")
-        testExtract("5 dəqiqəyə görüşək",
-                    "2017-06-27 10:06:02", "görüşək")
         testExtract("5 saniyədə görüşək",
                     "2017-06-27 10:01:07", "görüşək")
         testExtract("1 saatda görüşək",
                     "2017-06-27 11:01:02", "görüşək")
-        testExtract("2 saatda görüşək",
-                    "2017-06-27 12:01:02", "görüşək")
-        testExtract("2 saatda görüşək",
+        testExtract("2 saata görüşək",
                     "2017-06-27 12:01:02", "görüşək")
 
     def test_spaces(self):

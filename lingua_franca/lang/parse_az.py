@@ -603,12 +603,12 @@ def extract_duration_az(text):
         'həftə': 'weeks'
     }
 
-    pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}?"
+    pattern = r"(?P<value>\d+(?:\.?\d+)?)(?:\s+|\-){unit}?(?:yə|a|ə)?(?:(?:\s|,)+)?(?P<half>yarım|0\.5)?(?:a)?"
     text = _convert_words_to_numbers_az(text)
     for unit_az in time_units_az:
         unit_pattern = pattern.format(unit=unit_az)
         def repl(match):
-            time_units[time_units_az[unit_az]] += float(match.group(1))
+            time_units[time_units_az[unit_az]] += float(match.group(1)) + (0.5 if match.group(2) else 0)
             return ''
         text = re.sub(unit_pattern, repl, text)
 
@@ -624,7 +624,7 @@ def extract_datetime_az(text, anchorDate=None, default_time=None):
     Convert things like
         "bu gün"
         "sabah günortadan sonra"
-        "gələn çərşənbə axşamı günortadan 4 də"
+        "gələn çərşənbə axşamı günorta 4 də"
         "3 avqust"
     into a datetime.  If a reference date is not provided, the current
     local time is used.  Also consumes the words used to define the date
