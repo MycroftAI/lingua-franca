@@ -17,7 +17,7 @@ from datetime import datetime
 from dateutil.tz import gettz, tzlocal
 
 
-__default_tz = None
+__default_tz = gettz("UTC")
 
 
 def set_default_tz(tz):
@@ -62,16 +62,6 @@ def now_local(tz=None):
         tz = default_timezone()
     return datetime.now(tz)
 
-def now_system():
-    """ Retrieve the current time in system timezone
-    Args:
-        tz (datetime.tzinfo, optional): Timezone, default to user's settings
-    Returns:
-        (datetime): The current time
-    """
-    return datetime.now(tzlocal())
-
-
 def to_utc(dt):
     """ Convert a datetime with timezone info to a UTC datetime
 
@@ -110,22 +100,3 @@ def to_local(dt):
         # the user means "my timezone" and that LN was configured to use it
         # beforehand, if unconfigured default == tzlocal()
         return dt.replace(tzinfo=tz)
-
-def to_system(dt):
-    """Convert a datetime to the system's local timezone
-    Arguments:
-        dt (datetime): A datetime (if no timezone, assumed to be UTC)
-    Returns:
-        (datetime): time converted to the operation system's timezone
-    """
-    tz = tzlocal()
-    if dt.tzinfo:
-        return dt.astimezone(tz)
-    else:
-        # naive datetimes assumed to be in default timezone already!
-        # in the case of datetime.now this corresponds to tzlocal()
-        # otherwise timezone is undefined and can not be guessed, we assume
-        # the user means "my timezone" and that LN was configured to use it
-        # beforehand, if unconfigured default == tzlocal()
-        return dt.replace(tzinfo=default_timezone()).astimezone(tz)
-
