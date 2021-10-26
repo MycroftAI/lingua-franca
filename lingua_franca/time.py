@@ -17,7 +17,7 @@ from datetime import datetime
 from dateutil.tz import gettz, tzlocal
 
 
-__default_tz = gettz("UTC")
+__default_tz = None
 
 
 def set_default_tz(tz):
