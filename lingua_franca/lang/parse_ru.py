@@ -98,9 +98,9 @@ _STRING_NUM_RU.update({
 })
 
 _WORDS_NEXT_RU = [
-    "будущая", "будущее", "будущий", "будущую",
-    "новая", "новое", "новый",
-    "следующая", "следующее", "следующий", "следующую",
+    "будущая", "будущее", "будущей", "будущий", "будущим", "будущую",
+    "новая", "новое", "новой", "новый", "новым",
+    "следующая", "следующее", "следующей", "следующем", "следующий", "следующую",
 ]
 _WORDS_PREV_RU = [
     "предыдущая", "предыдущем", "предыдущей", "предыдущий", "предыдущим", "предыдущую",
@@ -117,10 +117,10 @@ _WORDS_NOW_RU = [
     "сейчас",
     "это", "этой", "этом", "этот", "эту",
 ]
-_WORDS_MORNING_RU = ["утра", "утро", "утром"]
-_WORDS_DAY_RU = ["днём", "дня"]
-_WORDS_EVENING_RU = ["вечер", "вечера", "вечером"]
-_WORDS_NIGHT_RU = ["ночи", "ночь", "ночью"]
+_WORDS_MORNING_RU = ["утро", "утром"]
+_WORDS_DAY_RU = ["днём"]
+_WORDS_EVENING_RU = ["вечер", "вечером"]
+_WORDS_NIGHT_RU = ["ночь", "ночью"]
 
 _STRING_SHORT_ORDINAL_RU = invert_dict(_SHORT_ORDINAL_RU)
 _STRING_LONG_ORDINAL_RU = invert_dict(_LONG_ORDINAL_RU)
@@ -492,8 +492,6 @@ def _extract_whole_number_with_text_ru(tokens, short_scale, ordinals):
             a_pieces = word.split('/')
             if look_for_fractions(a_pieces):
                 val = float(a_pieces[0]) / float(a_pieces[1])
-                current_val = val
-
         else:
             if all([
                 prev_word in _SUMS,
@@ -660,7 +658,7 @@ def extract_duration_ru(text):
         return None
 
     # Russian inflection for time: минута, минуты, минут - safe to use минута as pattern
-    # For day: день, дня, дней - short patern not applicable, list all
+    # For day: день, дня, дней - short pattern not applicable, list all
 
     time_units = {
         'microseconds': 0,
@@ -687,7 +685,7 @@ def extract_duration_ru(text):
     text = text.strip()
     duration = timedelta(**time_units) if any(time_units.values()) else None
 
-    return (duration, text)
+    return duration, text
 
 
 def extract_datetime_ru(text, anchor_date=None, default_time=None):
@@ -742,12 +740,12 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                 count_ordinals = 3
             elif word.endswith("ого"):
                 tmp = word[:-3]
-                tmp += ("ый")
+                tmp += "ый"
                 for nr, name in _ORDINAL_BASE_RU.items():
                     if name == tmp:
                         count_ordinals = nr
 
-            # If number is bigger than 19 chceck if next word is also ordinal
+            # If number is bigger than 19 check if next word is also ordinal
             #  and count them together
             if count_ordinals > 19:
                 if word_list[idx + 1] == "первого":
@@ -756,7 +754,7 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                     count_ordinals += 3
                 elif word_list[idx + 1].endswith("ого"):
                     tmp = word_list[idx + 1][:-3]
-                    tmp += ("ый")
+                    tmp += "ый"
                     for nr, name in _ORDINAL_BASE_RU.items():
                         if name == tmp and nr < 10:
                             # write only if sum makes acceptable count of days in month
@@ -802,7 +800,7 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
     time_qualifier = ""
 
     time_qualifiers_am = _WORDS_MORNING_RU
-    time_qualifiers_pm = []
+    time_qualifiers_pm = ['дня', 'вечера']
     time_qualifiers_pm.extend(_WORDS_DAY_RU)
     time_qualifiers_pm.extend(_WORDS_EVENING_RU)
     time_qualifiers_pm.extend(_WORDS_NIGHT_RU)
@@ -812,18 +810,20 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
     days = ['понедельник', 'вторник', 'среда',
             'четверг', 'пятница', 'суббота', 'воскресенье']
     months = _MONTHS_RU
-    recur_markers = days + [d + 'ho' for d in days] + \
-                    ['выходные', 'викенд']  # Check this
+    recur_markers = days + ['выходные', 'викенд']
     months_short = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг',
                     'сен', 'окт', 'ноя', 'дек']
-    year_multiples = ["десятилетие", "столетие", "тысячелетие"]
-    day_multiples = ["неделя", "месяц", "год"]
+    year_multiples = ["десятилетие", "век", "тысячелетие"]
 
     words = clean_string(text)
+    preposition = ""
 
     for idx, word in enumerate(words):
         if word == "":
             continue
+
+        if word in markers:
+            preposition = word
 
         word = _text_ru_inflection_normalize(word, 2)
         word_prev_prev = _text_ru_inflection_normalize(
@@ -836,13 +836,8 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
             words[idx + 2], 2) if idx + 2 < len(words) else ""
 
         # this isn't in clean string because I don't want to save back to words
-        # word = word.rstrip('s')
         start = idx
         used = 0
-        # save time qualifier for later
-        # if word in _STRING_PREV_RU and day_offset:
-        #    day_offset = - day_offset
-        #    used += 1
         if word in _WORDS_NOW_RU and not date_string:
             result_str = " ".join(words[idx + 1:])
             result_str = ' '.join(result_str.split())
@@ -861,7 +856,7 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                 year_offset = multiplier * 100
             elif word_next == "тысячелетие":
                 year_offset = multiplier * 1000
-        elif word in time_qualifiers_list:
+        elif word in time_qualifiers_list and preposition != "через":
             time_qualifier = word
         # parse today, tomorrow, day after tomorrow
         elif word == "сегодня" and not from_flag:
@@ -870,10 +865,10 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
         elif word == "завтра" and not from_flag:
             day_offset = 1
             used += 1
-        elif word == "день" and word_next == "позавчера" and not from_flag:
+        elif word in ["день", "дня"] and word_next == "позавчера" and not from_flag:
             day_offset = -2
             used += 3
-        elif word == "день" and word_next == "поза" and word_next_next == "вчера" and not from_flag:
+        elif word in ["день", "дня"] and word_next == "поза" and word_next_next == "вчера" and not from_flag:
             day_offset = -2
             used += 3
         elif word == "позавчера" and not from_flag:
@@ -885,18 +880,14 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
         elif word == "вчера" and not from_flag:
             day_offset = -1
             used += 1
-        elif (word == "день" and
+        elif (word in ["день", "дня"] and
               word_next == "после" and
               word_next_next == "завтра" and
               not from_flag and
               (not word_prev or not word_prev[0].isdigit())):
             day_offset = 2
             used = 3
-            if word_prev == "ten":
-                start -= 1
-                used += 1
-                # parse 5 days, 10 weeks, last week, next week
-        elif word == "день":
+        elif word in ["день", "дня"] and is_numeric(word_prev) and preposition == "через":
             if word_prev and word_prev[0].isdigit():
                 day_offset += int(word_prev)
                 start -= 1
@@ -905,7 +896,6 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                     day_offset = -day_offset
                     used += 1
                     start -= 1
-
         elif word == "сегодня" and not from_flag and word_prev:
             if word_prev[0].isdigit():
                 day_offset += int(word_prev) * 7
@@ -920,7 +910,20 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                 start -= 1
                 used = 2
                 # parse 10 months, next month, last month
-        elif word == "месяц" and not from_flag and word_prev:
+        elif word == "неделя" and not from_flag and preposition in ["через", "на"]:
+            if word_prev[0].isdigit():
+                day_offset = int(word_prev) * 7
+                start -= 1
+                used = 2
+            elif word_prev in _WORDS_NEXT_RU:
+                day_offset = 7
+                start -= 1
+                used = 2
+            elif word_prev in _WORDS_PREV_RU:
+                day_offset = -7
+                start -= 1
+                used = 2
+        elif word == "месяц" and not from_flag and preposition in ["через", "на"]:
             if word_prev[0].isdigit():
                 month_offset = int(word_prev)
                 start -= 1
@@ -934,7 +937,7 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                 start -= 1
                 used = 2
         # parse 5 years, next year, last year
-        elif word == "год" and not from_flag and word_prev:
+        elif word == "год" and not from_flag and preposition in ["через", "на"]:
             if word_prev[0].isdigit():
                 year_offset = int(word_prev)
                 start -= 1
@@ -1029,25 +1032,25 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                 day_offset -= 1
             elif word_next in days:
                 d = days.index(word_next)
-                tmpOffset = (d + 1) - int(today)
+                tmp_offset = (d + 1) - int(today)
                 used = 2
-                if tmpOffset < 0:
-                    tmpOffset += 7
-                day_offset += tmpOffset
+                if tmp_offset < 0:
+                    tmp_offset += 7
+                day_offset += tmp_offset
             elif word_next_next and word_next_next in days:
                 d = days.index(word_next_next)
-                tmpOffset = (d + 1) - int(today)
+                tmp_offset = (d + 1) - int(today)
                 used = 3
                 if word_next in _WORDS_NEXT_RU:
                     if day_offset <= 2:
-                        tmpOffset += 7
+                        tmp_offset += 7
                     used += 1
                     start -= 1
                 elif word_next in _WORDS_PREV_RU:
-                    tmpOffset -= 7
+                    tmp_offset -= 7
                     used += 1
                     start -= 1
-                day_offset += tmpOffset
+                day_offset += tmp_offset
         if used > 0:
             if start - 1 > 0 and (words[start - 1] in _WORDS_NOW_RU):
                 start -= 1
@@ -1068,10 +1071,14 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
     hr_abs = None
     min_abs = None
     military = False
+    preposition = ""
 
     for idx, word in enumerate(words):
         if word == "":
             continue
+
+        if word in markers:
+            preposition = word
 
         word = _text_ru_inflection_normalize(word, 2)
         word_prev_prev = _text_ru_inflection_normalize(
@@ -1103,17 +1110,11 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
             if hr_abs is None:
                 hr_abs = 19
             used += 1
-            if (word_next != "" and word_next[0].isdigit() and ":" in word_next):
+            if word_next != "" and word_next[0].isdigit() and ":" in word_next:
                 used -= 1
         elif word in _WORDS_NIGHT_RU:
             if hr_abs is None:
                 hr_abs = 22
-            # used += 1
-            # if ((word_next !='' and not word_next[0].isdigit()) or word_next =='') and \
-            #    ((word_next_next !='' and not word_next_next[0].isdigit())or word_next_next =='')  :
-            #    used += 1
-            # used += 1 ## NOTE this breaks other tests, TODO refactor me!
-
         # parse half an hour, quarter hour
         elif word == "час" and \
                 (word_prev in markers or word_prev_prev in markers):
@@ -1149,13 +1150,13 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
             str_hh = ""
             str_mm = ""
             remainder = ""
-            wordNextNextNext = words[idx + 3] \
+            word_next_next_next = words[idx + 3] \
                 if idx + 3 < len(words) else ""
             if word_next in _WORDS_EVENING_RU or word_next in _WORDS_NIGHT_RU or word_next_next in _WORDS_EVENING_RU \
                     or word_next_next in _WORDS_NIGHT_RU or word_prev in _WORDS_EVENING_RU \
                     or word_prev in _WORDS_NIGHT_RU or word_prev_prev in _WORDS_EVENING_RU \
-                    or word_prev_prev in _WORDS_NIGHT_RU or wordNextNextNext in _WORDS_EVENING_RU \
-                    or wordNextNextNext in _WORDS_NIGHT_RU:
+                    or word_prev_prev in _WORDS_NIGHT_RU or word_next_next_next in _WORDS_EVENING_RU \
+                    or word_next_next_next in _WORDS_NIGHT_RU:
                 remainder = "pm"
                 used += 1
                 if word_prev in _WORDS_EVENING_RU or word_prev in _WORDS_NIGHT_RU:
@@ -1164,7 +1165,7 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                     words[idx - 2] = ""
                 if word_next_next in _WORDS_EVENING_RU or word_next_next in _WORDS_NIGHT_RU:
                     used += 1
-                if wordNextNextNext in _WORDS_EVENING_RU or wordNextNextNext in _WORDS_NIGHT_RU:
+                if word_next_next_next in _WORDS_EVENING_RU or word_next_next_next in _WORDS_NIGHT_RU:
                     used += 1
 
             if ':' in word:
@@ -1191,10 +1192,13 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                         remainder = word[i:].replace(".", "")
                         break
                 if remainder == "":
-                    nextWord = word_next.replace(".", "")
-                    if nextWord == "am" or nextWord == "pm":
-                        remainder = nextWord
+                    next_word = word_next.replace(".", "")
+                    if next_word in ["am", "pm", "ночи", "утра", "дня", "вечера"]:
+                        remainder = next_word
                         used += 1
+                    elif next_word == "часа" and word_next_next in ["am", "pm", "ночи", "утра", "дня", "вечера"]:
+                        remainder = word_next_next
+                        used += 2
                     elif word_next in _WORDS_MORNING_RU:
                         remainder = "am"
                         used += 2
@@ -1234,11 +1238,11 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                 # try to parse numbers without colons
                 # 5 hours, 10 minutes etc.
                 length = len(word)
-                strNum = ""
+                str_num = ""
                 remainder = ""
                 for i in range(length):
                     if word[i].isdigit():
-                        strNum += word[i]
+                        str_num += word[i]
                     else:
                         remainder += word[i]
 
@@ -1248,16 +1252,36 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                         remainder == "pm" or
                         word_next == "pm" or
                         remainder == "p.m." or
-                        word_next == "p.m."):
-                    str_hh = strNum
+                        word_next == "p.m." or
+                        (remainder == "дня" and preposition != 'через') or
+                        (word_next == "дня" and preposition != 'через') or
+                        remainder == "вечера" or
+                        word_next == "вечера"):
+                    str_hh = str_num
                     remainder = "pm"
                     used = 1
+                    if (
+                            remainder == "pm" or
+                            word_next == "pm" or
+                            remainder == "p.m." or
+                            word_next == "p.m." or
+                            (remainder == "дня" and preposition != 'через') or
+                            (word_next == "дня" and preposition != 'через') or
+                            remainder == "вечера" or
+                            word_next == "вечера"):
+                        str_hh = str_num
+                        remainder = "pm"
+                        used = 1
                 elif (
                         remainder == "am" or
                         word_next == "am" or
                         remainder == "a.m." or
-                        word_next == "a.m."):
-                    str_hh = strNum
+                        word_next == "a.m." or
+                        remainder == "ночи" or
+                        word_next == "ночи" or
+                        remainder == "утра" or
+                        word_next == "утра"):
+                    str_hh = str_num
                     remainder = "am"
                     used = 1
                 elif (
@@ -1267,17 +1291,12 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                     # Ex: "7 on mondays" or "3 this friday"
                     # Set str_hh so that is_time == True
                     # when am or pm is not specified
-                    str_hh = strNum
+                    str_hh = str_num
                     used = 1
                 else:
-                    if (int(strNum) > 100):  # and  #Check this
-                        # (
-                        #    wordPrev == "o" or
-                        #    wordPrev == "oh"
-                        # )):
-                        # 0800 hours (pronounced oh-eight-hundred)
-                        str_hh = str(int(strNum) // 100)
-                        str_mm = str(int(strNum) % 100)
+                    if int(str_num) > 100:
+                        str_hh = str(int(str_num) // 100)
+                        str_mm = str(int(str_num) % 100)
                         military = True
                         if word_next == "час":
                             used += 1
@@ -1289,12 +1308,12 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                             word_prev == "через"
                             and
                             (
-                                    int(strNum) < 100 or
-                                    int(strNum) > 2400
+                                    int(str_num) < 100 or
+                                    int(str_num) > 2400
                             )):
                         # ignores military time
                         # "in 3 hours"
-                        hr_offset = int(strNum)
+                        hr_offset = int(str_num)
                         used = 2
                         is_time = False
                         hr_abs = -1
@@ -1302,7 +1321,7 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                     elif word_next == "минута" or \
                             remainder == "минута":
                         # "in 10 minutes"
-                        min_offset = int(strNum)
+                        min_offset = int(str_num)
                         used = 2
                         is_time = False
                         hr_abs = -1
@@ -1310,22 +1329,22 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                     elif word_next == "секунда" \
                             or remainder == "секунда":
                         # in 5 seconds
-                        sec_offset = int(strNum)
+                        sec_offset = int(str_num)
                         used = 2
                         is_time = False
                         hr_abs = -1
                         min_abs = -1
-                    elif int(strNum) > 100:
+                    elif int(str_num) > 100:
                         # military time, eg. "3300 hours"
-                        str_hh = str(int(strNum) // 100)
-                        str_mm = str(int(strNum) % 100)
+                        str_hh = str(int(str_num) // 100)
+                        str_mm = str(int(str_num) % 100)
                         military = True
                         if word_next == "час" or \
                                 remainder == "час":
                             used += 1
                     elif word_next and word_next[0].isdigit():
                         # military time, e.g. "04 38 hours"
-                        str_hh = strNum
+                        str_hh = str_num
                         str_mm = word_next
                         military = True
                         used += 1
@@ -1342,7 +1361,7 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                             ) or word_next in _WORDS_EVENING_RU or
                             word_next_next in _WORDS_EVENING_RU):
 
-                        str_hh = strNum
+                        str_hh = str_num
                         str_mm = "00"
                         if word_next == "час":
                             used += 1
@@ -1350,18 +1369,18 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                                 or word_next_next == "в" or word_next_next == "на"):
                             used += (1 if (word_next ==
                                            "в" or word_next == "на") else 2)
-                            wordNextNextNext = words[idx + 3] \
+                            word_next_next_next = words[idx + 3] \
                                 if idx + 3 < len(words) else ""
 
                             if (word_next_next and
                                     (word_next_next in time_qualifier or
-                                     wordNextNextNext in time_qualifier)):
+                                     word_next_next_next in time_qualifier)):
                                 if (word_next_next in time_qualifiers_pm or
-                                        wordNextNextNext in time_qualifiers_pm):
+                                        word_next_next_next in time_qualifiers_pm):
                                     remainder = "pm"
                                     used += 1
                                 if (word_next_next in time_qualifiers_am or
-                                        wordNextNextNext in time_qualifiers_am):
+                                        word_next_next_next in time_qualifiers_am):
                                     remainder = "am"
                                     used += 1
 
@@ -1378,7 +1397,14 @@ def extract_datetime_ru(text, anchor_date=None, default_time=None):
                                 used += 1
                                 military = True
                         elif remainder == "час":
-                            remainder = ""
+                            if word_next_next in ["ночи", "утра"]:
+                                remainder = "am"
+                                used += 1
+                            elif word_next_next in ["дня", "вечера"]:
+                                remainder = "pm"
+                                used += 1
+                            else:
+                                remainder = ""
 
                     else:
                         is_time = False
@@ -1533,14 +1559,14 @@ def is_fractional_ru(input_str, short_scale=True):
     """
     if input_str[-3:] in ["тые", "тых"]:  # leading number is bigger than one (две четвёртые, три пятых)
         input_str = input_str[-3:] + "тая"
-    fracts = {"целая": 1}  # first four numbers have little different format
+    fractions = {"целая": 1}  # first four numbers have little different format
 
     for num in _FRACTION_STRING_RU:  # Numbers from 2 to 1 hundred, more is not usually used in common speech
         if num > 1:
-            fracts[_FRACTION_STRING_RU[num]] = num
+            fractions[_FRACTION_STRING_RU[num]] = num
 
-    if input_str.lower() in fracts:
-        return 1.0 / fracts[input_str.lower()]
+    if input_str.lower() in fractions:
+        return 1.0 / fractions[input_str.lower()]
     return False
 
 
@@ -1604,9 +1630,9 @@ def _text_ru_inflection_normalize(word, arg):
             return "минута"
         if word in ["секунд", "секундам", "секундами", "секунду", "секунды"]:
             return "секунда"
-        if word in ["дней", "дни", "дня"]:
+        if word in ["дней", "дни"]:
             return "день"
-        if word in ["недели", "недель"]:
+        if word in ["неделе", "недели", "недель"]:
             return "неделя"
         if word in ["месяца", "месяцев"]:
             return "месяц"
@@ -1622,6 +1648,8 @@ def _text_ru_inflection_normalize(word, arg):
             return "ночь"
         if word in ["викенд", "выходным", "выходных"]:
             return "выходные"
+        if word in ["столетие", "столетий", "столетия"]:
+            return "век"
 
         # Week days
         if word in ["среду", "среды"]:

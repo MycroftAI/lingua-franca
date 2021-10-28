@@ -322,7 +322,15 @@ def nice_time_ru(dt, speech=True, use_24hour=True, use_ampm=False):
     else:
         if use_ampm:
             # e.g. "3:01 AM" or "2:22 PM"
-            string = dt.strftime("%I:%M %p")
+            string = dt.strftime("%I:%M")
+            if dt.hour < 4:
+                string += " ночи"
+            elif dt.hour < 12:
+                string += " утра"
+            elif dt.hour < 18:
+                string += " дня"
+            else:
+                string += " вечера"
         else:
             # e.g. "3:01" or "2:22"
             string = dt.strftime("%I:%M")
@@ -381,10 +389,14 @@ def nice_time_ru(dt, speech=True, use_24hour=True, use_ampm=False):
                 speak += " " + pronounce_number_ru(dt.minute)
 
         if use_ampm:
-            if dt.hour > 11:
-                speak += " p.m."
+            if dt.hour < 4:
+                speak += " ночи"
+            elif dt.hour < 12:
+                speak += " утра"
+            elif dt.hour < 18:
+                speak += " дня"
             else:
-                speak += " a.m."
+                speak += " вечера"
 
         return speak
 
