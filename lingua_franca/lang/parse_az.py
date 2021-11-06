@@ -17,7 +17,7 @@
 from typing import List
 from datetime import datetime, timedelta
 import locale
-locale.setlocale(locale.LC_TIME, "az_AZ")
+
 from dateutil.relativedelta import relativedelta
 
 from lingua_franca.time import now_local
@@ -32,7 +32,7 @@ from lingua_franca.lang.common_data_az import _NUM_STRING_AZ, \
 
 import re
 import json
-from lingua_franca.internal import resolve_resource_file
+from lingua_franca.internal import get_default_lang, resolve_resource_file
 
 def _remove_ak():
     pass
@@ -1104,7 +1104,9 @@ def extract_datetime_az(text, anchorDate=None, default_time=None):
     # perform date manipulation
 
     extractedDate = anchorDate.replace(microsecond=0)
-
+    if get_default_lang() == "az":
+        prev_locale = locale.getlocale()
+        locale.setlocale(locale.LC_TIME, "az_AZ")
     if datestr != "":
         # date included an explicit date, e.g. "june 5" or "june 2, 2017"
         try:
@@ -1172,6 +1174,9 @@ def extract_datetime_az(text, anchorDate=None, default_time=None):
 
     resultStr = " ".join(words)
     resultStr = ' '.join(resultStr.split())
+    if get_default_lang() == "az":
+        prev_locale = locale.getlocale()
+        locale.setlocale(locale.LC_TIME, prev_locale)
     return [extractedDate, resultStr]
 
 
