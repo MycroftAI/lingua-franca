@@ -37,9 +37,6 @@ _REGISTERED_FUNCTIONS = ("nice_number",
                          "nice_response",
                          "nice_duration")
 
-populate_localized_function_dict("format", langs=get_active_langs())
-
-
 def _translate_word(name, lang=''):
     """ Helper to get word translations
 
@@ -566,3 +563,5 @@ def nice_response(text, lang=''):
         assertEqual(nice_response_de("10 ^ 2"),
                          "10 hoch 2")
     """
+
+populate_localized_function_dict("format", langs=get_active_langs())
