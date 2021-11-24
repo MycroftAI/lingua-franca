@@ -28,6 +28,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest
         pip install -r requirements.txt
+    - name: Install language packs
+      run: |
+        sudo apt-get install language-pack-az
     - name: Test with pytest
       run: |
         pytest
