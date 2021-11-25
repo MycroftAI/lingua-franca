@@ -21,6 +21,7 @@ from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     invert_dict, ReplaceableNumber, partition_list, tokenize, Token, Normalizer
 from lingua_franca.lang.common_data_fa import _FARSI_BIG, \
     _FARSI_ONES, _FARSI_TENS, _FARSI_HUNDREDS, _FORMAL_VARIANT
+from lingua_franca.time import now_local
 
 import re
 import json
@@ -215,7 +216,7 @@ def extract_datetime_fa(text, anchorDate=None, default_time=None):
         
         
     if not anchorDate:
-        anchorDate = datetime.now()
+        anchorDate = now_local()
     today = anchorDate.replace(hour=0, minute=0, second=0, microsecond=0)
     today_weekday = int(anchorDate.strftime("%w"))
     weekday_names = [
