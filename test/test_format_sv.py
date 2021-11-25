@@ -202,8 +202,6 @@ class TestPronounceNumber(unittest.TestCase):
                          "minus tjugoen komma två tre fyra noll noll")
 
 
-# def nice_time(dt, lang="sv-se", speech=True, use_24hour=False,
-#              use_ampm=False):
 class TestNiceDateFormat_sv(unittest.TestCase):
     def test_convert_times_sv(self):
         dt = datetime.datetime(2017, 1, 31, 13, 22, 3, tzinfo=default_timezone())

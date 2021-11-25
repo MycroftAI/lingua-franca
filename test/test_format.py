@@ -385,9 +385,6 @@ class TestPronounceNumber(unittest.TestCase):
                                           short_scale=False), "eighteen "
                                                               "trillionth")
 
-# def nice_time(dt, lang="en-us", speech=True, use_24hour=False,
-#              use_ampm=False):
-
 
 class TestNiceDateFormat(unittest.TestCase):
     @classmethod

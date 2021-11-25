@@ -204,8 +204,6 @@ class TestPronounceNumber(unittest.TestCase):
                          "huszonháromezer-négyszáz százezred")
 
 
-# def nice_time(dt, lang="hu-hu", speech=True, use_24hour=False,
-#              use_ampm=False):
 class TestNiceDateFormat_hu(unittest.TestCase):
     def test_convert_times_hu(self):
         dt = datetime.datetime(2017, 1, 31,

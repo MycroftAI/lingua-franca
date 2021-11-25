@@ -208,8 +208,6 @@ class TestPronounceNumber(unittest.TestCase):
                          "minus einundzwanzig Komma zwei drei vier null null")
 
 
-# def nice_time(dt, lang="de-de", speech=True, use_24hour=False,
-#              use_ampm=False):
 class TestNiceDateFormat_de(unittest.TestCase):
     def setUp(self):
         self.old_lang = get_default_lang()
