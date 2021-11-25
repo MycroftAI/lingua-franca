@@ -384,11 +384,11 @@ def extract_number_fa(text, ordinals=False):
         return False
     return x[0]
 
-class EnglishNormalizer(Normalizer):
-    with open(resolve_resource_file("text/en-us/normalize.json")) as f:
+class FarsiNormalizer(Normalizer):
+    with open(resolve_resource_file("text/fa-ir/normalize.json")) as f:
         _default_config = json.load(f)
 
 
 def normalize_fa(text, remove_articles=True):
-    """ English string normalization """
-    return EnglishNormalizer().normalize(text, remove_articles)
+    """ Farsi string normalization """
+    return FarsiNormalizer().normalize(text, remove_articles)
