@@ -19,6 +19,7 @@ import datetime
 import ast
 import warnings
 import sys
+from dateutil import tz
 from pathlib import Path
 
 # TODO either write a getter for lingua_franca.internal._SUPPORTED_LANGUAGES,
@@ -35,7 +36,9 @@ from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
-from lingua_franca.time import default_timezone
+from lingua_franca.time import default_timezone, set_default_tz, now_local, \
+    to_local
+
 
 
 def setUpModule():
@@ -385,8 +388,34 @@ class TestPronounceNumber(unittest.TestCase):
                                           short_scale=False), "eighteen "
                                                               "trillionth")
 
-# def nice_time(dt, lang="en-us", speech=True, use_24hour=False,
-#              use_ampm=False):
+class TestTimezones(unittest.TestCase):
+    def test_default_tz(self):
+        set_default_tz("America/Chicago")
+
+        local_time = now_local()
+        local_tz = default_timezone()
+        us_time = datetime.datetime.now(tz=tz.gettz("America/Chicago"))
+        self.assertEqual(nice_date_time(local_time),
+                         nice_date_time(us_time))
+        self.assertEqual(local_time.tzinfo, local_tz)
+
+        # naive datetimes assumed to be in default timezone already!
+        # in the case of datetime.now this corresponds to tzlocal()
+        # otherwise timezone is undefined and can not be guessed, we assume
+        # the user means "my timezone" and that LN was configured to use it
+        # beforehand, if unconfigured default == tzlocal()
+        dt = datetime.datetime(2021, 6, 23, 00, 43, 39)
+        dt_local = to_local(dt)
+        self.assertEqual(nice_time(dt), nice_time(dt_local))
+
+    def test_tz_conversion(self):
+        naive = datetime.datetime.now()
+        system_time = datetime.datetime.now(tz.tzlocal())
+        # naive == datetime.now() == tzlocal() internally
+        # NOTE nice_date_time is not a localized function, it just formats
+        # the datetime object directly
+        self.assertEqual(nice_date_time(naive),
+                         nice_date_time(system_time))
 
 
 class TestNiceDateFormat(unittest.TestCase):

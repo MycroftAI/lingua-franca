@@ -46,7 +46,7 @@ def now_utc():
     Returns:
         (datetime): The current time in Universal Time, aka GMT
     """
-    return to_utc(datetime.utcnow())
+    return datetime.now(gettz("UTC"))
 
 
 def now_local(tz=None):
@@ -62,7 +62,6 @@ def now_local(tz=None):
         tz = default_timezone()
     return datetime.now(tz)
 
-
 def to_utc(dt):
     """ Convert a datetime with timezone info to a UTC datetime
 
@@ -71,11 +70,16 @@ def to_utc(dt):
     Returns:
         (datetime): time converted to UTC
     """
-    tzUTC = gettz("UTC")
+    tz = gettz("UTC")
     if dt.tzinfo:
-        return dt.astimezone(tzUTC)
+        return dt.astimezone(tz)
     else:
-        return dt.replace(tzinfo=gettz("UTC")).astimezone(tzUTC)
+        # naive datetimes assumed to be in default timezone already!
+        # in the case of datetime.now this corresponds to tzlocal()
+        # otherwise timezone is undefined and can not be guessed, we assume
+        # the user means "my timezone" and that LN was configured to use it
+        # beforehand, if unconfigured default == tzlocal()
+        return dt.replace(tzinfo=default_timezone()).astimezone(tz)
 
 
 def to_local(dt):
@@ -90,5 +94,9 @@ def to_local(dt):
     if dt.tzinfo:
         return dt.astimezone(tz)
     else:
-        return dt.replace(tzinfo=gettz("UTC")).astimezone(tz)
-
+        # naive datetimes assumed to be in default timezone already!
+        # in the case of datetime.now this corresponds to tzlocal()
+        # otherwise timezone is undefined and can not be guessed, we assume
+        # the user means "my timezone" and that LN was configured to use it
+        # beforehand, if unconfigured default == tzlocal()
+        return dt.replace(tzinfo=tz)

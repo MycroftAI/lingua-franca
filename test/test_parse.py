@@ -19,7 +19,7 @@ from dateutil import tz
 
 from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.internal import FunctionNotLocalizedError
-from lingua_franca.time import default_timezone
+from lingua_franca.time import default_timezone, now_local, set_default_tz
 from lingua_franca.parse import extract_datetime
 from lingua_franca.parse import extract_duration
 from lingua_franca.parse import extract_number, extract_numbers
@@ -37,6 +37,43 @@ def setUpModule():
 
 def tearDownModule():
     unload_language('en')
+
+class TestTimezones(unittest.TestCase):
+    def test_default_tz(self):
+        naive = datetime.now()
+
+        # convert to default tz
+        set_default_tz("Europe/London")
+        dt = extract_datetime("tomorrow", anchorDate=naive)[0]
+        self.assertEqual(dt.tzinfo, tz.gettz("Europe/London"))
+
+        set_default_tz("America/Chicago")
+        dt = extract_datetime("tomorrow", anchorDate=naive)[0]
+        self.assertEqual(dt.tzinfo, tz.gettz("America/Chicago"))
+
+    def test_convert_to_anchorTZ(self):
+        naive = datetime.now()
+        local = now_local()
+        london_time = datetime.now(tz=tz.gettz("Europe/London"))
+        us_time = datetime.now(tz=tz.gettz("America/Chicago"))
+
+        # convert to anchor date
+        dt = extract_datetime("tomorrow", anchorDate=naive)[0]
+        self.assertEqual(dt.tzinfo, default_timezone())
+        dt = extract_datetime("tomorrow", anchorDate=local)[0]
+        self.assertEqual(dt.tzinfo, local.tzinfo)
+        dt = extract_datetime("tomorrow", anchorDate=london_time)[0]
+        self.assertEqual(dt.tzinfo, london_time.tzinfo)
+        dt = extract_datetime("tomorrow", anchorDate=us_time)[0]
+        self.assertEqual(dt.tzinfo, us_time.tzinfo)
+
+        # test naive == default tz
+        set_default_tz("America/Chicago")
+        dt = extract_datetime("tomorrow", anchorDate=naive)[0]
+        self.assertEqual(dt.tzinfo, default_timezone())
+        set_default_tz("Europe/London")
+        dt = extract_datetime("tomorrow", anchorDate=naive)[0]
+        self.assertEqual(dt.tzinfo, default_timezone())
 
 
 class TestFuzzyMatch(unittest.TestCase):
