@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Mycroft AI Inc.
+# Copyright 2021 Mycroft AI Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 #
 from collections import OrderedDict
 from .parse_common import invert_dict
-# from parse_common import invert_dict
 
 _FUNCTION_NOT_IMPLEMENTED_WARNING = "Tələb olunan funksiya Azərbaycan dilində yerinə yetirilmir."
 
@@ -180,7 +179,7 @@ _LONG_ORDINAL_AZ.update(_ORDINAL_BASE_AZ)
 # negate next number (-2 = 0 - 2)
 _NEGATIVES_AZ = {"mənfi", "minus"}
 
-# sum the next number (twenty two = 20 + 2)
+# sum the next number (iyirmi iki = 20 + 2)
 _SUMS_AZ = {'on', '10', 'iyirmi', '20', 'otuz', '30', 'qırx', '40', 'əlli', '50',
             'altmış', '60', 'yetmiş', '70', 'səksən', '80', 'doxsan', '90'}
 

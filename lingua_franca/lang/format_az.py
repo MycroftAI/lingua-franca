@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2017 Mycroft AI Inc.
+# Copyright 2021 Mycroft AI Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -317,10 +317,6 @@ def nice_time_az(dt, speech=True, use_24hour=False, use_ampm=False):
             speak += pronounce_number_az(int(string[3:5]))
         return speak
     else:
-        # if dt.hour == 0 and dt.minute == 0:
-        #     return "gecə yarısı"
-        # elif dt.hour == 12 and dt.minute == 0:
-        #     return "günorta"
         
         hour = dt.hour % 12 or 12  # 12 hour clock and 0 is spoken as 12
         next_hour = (dt.hour + 1) % 12 or 12

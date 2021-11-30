@@ -23,9 +23,8 @@ from dateutil.relativedelta import relativedelta
 from lingua_franca.time import now_local
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions, \
     invert_dict, ReplaceableNumber, partition_list, tokenize, Token, Normalizer
-from lingua_franca.lang.common_data_az import _NUM_STRING_AZ, \
-    _LONG_ORDINAL_AZ, _LONG_SCALE_AZ, _SHORT_SCALE_AZ, _SHORT_ORDINAL_AZ, \
-    _NEGATIVES_AZ, _SUMS_AZ, _MULTIPLIES_LONG_SCALE_AZ, \
+from lingua_franca.lang.common_data_az import _LONG_SCALE_AZ, \
+    _SHORT_SCALE_AZ, _NEGATIVES_AZ, _SUMS_AZ, _MULTIPLIES_LONG_SCALE_AZ, \
     _MULTIPLIES_SHORT_SCALE_AZ, _FRACTION_MARKER_AZ, _DECIMAL_MARKER_AZ, \
     _STRING_NUM_AZ, _STRING_SHORT_ORDINAL_AZ, _STRING_LONG_ORDINAL_AZ, \
     _FRACTION_STRING_AZ, _generate_plurals_az, _SPOKEN_EXTRA_NUM_AZ
@@ -33,9 +32,6 @@ from lingua_franca.lang.common_data_az import _NUM_STRING_AZ, \
 import re
 import json
 from lingua_franca.internal import resolve_resource_file
-
-def _remove_ak():
-    pass
 
 def _convert_words_to_numbers_az(text, short_scale=True, ordinals=False):
     """
@@ -907,7 +903,7 @@ def extract_datetime_az(text, anchorDate=None, default_time=None):
                 words[start - 1] = ""
             found = True
             daySpecified = True
-    # print(words)
+
     # parse time
     hrOffset = 0
     minOffset = 0
@@ -1106,7 +1102,7 @@ def extract_datetime_az(text, anchorDate=None, default_time=None):
     extractedDate = anchorDate.replace(microsecond=0)
 
     if datestr != "":
-        # date included an explicit date, e.g. "june 5" or "june 2, 2017"
+        # date included an explicit date, e.g. "iyun 5" or "iyun 2, 2017"
         try:
             temp = datetime.strptime(datestr, "%B %d")
         except ValueError:

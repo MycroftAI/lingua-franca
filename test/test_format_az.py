@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Mycroft AI Inc.
+# Copyright 2021 Mycroft AI Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import warnings
 import sys
 from pathlib import Path
 
-# TODO either write a getter for lingua_franca.internal._SUPPORTED_LANGUAGES,
-# or make it public somehow
 from lingua_franca import load_languages, unload_languages, set_default_lang, \
     get_primary_lang_code, get_active_langs, get_supported_langs
 from lingua_franca.internal import UnsupportedLanguageError
@@ -218,17 +216,6 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(
             pronounce_number(1.1e-150), "bir nöqtə bir vurulsun "
                                         "on üstü mənfi yüz əlli")
-        # value is platform dependent so better not use in tests?
-        # self.assertEqual(
-        #    pronounce_number(sys.float_info.min), "iki nöqtə iki iki times "
-        #                                          "on to the power of "
-        #                                          "mənfi üç yüz "
-        #                                          "və səkkiz")
-        # self.assertEqual(
-        #    pronounce_number(sys.float_info.max), "bir nöqtə yeddi doqquz "
-        #                                          "times on to the power of"
-        #                                          " üç yüz və səkkiz")
-
 
     def test_large_numbers(self):
         self.assertEqual(
@@ -255,7 +242,6 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(
             pronounce_number(1000000000000, short_scale=True),
             "bir trilyon")
-        # TODO maybe beautify this
         self.assertEqual(
             pronounce_number(1000001, short_scale=True),
             "bir milyon, bir")
@@ -313,9 +299,6 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(18e18, ordinals=True,
                                           short_scale=False), "on səkkiz "
                                                               "trilyonuncu")
-
-# def nice_time(dt, lang="en-us", speech=True, use_24hour=False,
-#              use_ampm=False):
 
 
 class TestNiceDateFormat(unittest.TestCase):
@@ -520,13 +503,12 @@ class TestNiceDateFormat(unittest.TestCase):
                 dt, lang=lang, bc=ast.literal_eval(p['bc'])))
             i = i + 1
 
-        # Test all years from 0 to 9999 for all languages,
+        # Test all years from 0 to 9999 for az,
         # that some output is produced
         print("Test all years in " + lang)
         for i in range(1, 9999):
             dt = datetime.datetime(i, 1, 31, 13, 2, 3, tzinfo=default_timezone())
             self.assertTrue(len(nice_year(dt, lang=lang)) > 0)
-            # Looking through the date sequence can be helpful
 
     def test_nice_duration(self):
         self.assertEqual(nice_duration(1), "bir saniyə")
