@@ -379,12 +379,3 @@ def extract_number_fa(text, ordinals=False):
     if (len(x) == 0):
         return False
     return x[0]
-
-class FarsiNormalizer(Normalizer):
-    with open(resolve_resource_file("text/fa-ir/normalize.json")) as f:
-        _default_config = json.load(f)
-
-
-def normalize_fa(text, remove_articles=True):
-    """ Farsi string normalization """
-    return FarsiNormalizer().normalize(text, remove_articles)

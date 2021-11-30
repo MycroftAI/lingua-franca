@@ -108,7 +108,7 @@ class TestNormalize(unittest.TestCase):
             return [extractedDate, leftover]
 
         def testExtract(text, expected_date, expected_leftover):
-            res = extractWithFormat(normalize(text))
+            res = extractWithFormat(text)
             self.assertEqual(res[0], expected_date, "for=" + text)
             self.assertEqual(res[1], expected_leftover, "for=" + text)
 
