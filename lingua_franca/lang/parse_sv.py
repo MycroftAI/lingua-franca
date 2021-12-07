@@ -166,8 +166,8 @@ def extract_number_sv(text, short_scale=True, ordinals=False):
         (int) or (float): The value of extracted number
     """
     # TODO: short_scale and ordinals don't do anything here.
-    # The parameters are present in the function signature for API compatibility
-    # reasons.
+    # The parameters are present in the function signature for API
+    # compatibility reasons.
     text = text.lower()
     aWords = text.split()
     and_pass = False
