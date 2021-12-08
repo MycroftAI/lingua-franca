@@ -121,8 +121,9 @@ _date_units = {
 }
 
 def extract_duration_fa(text):
-    """
-    Convert an english phrase into a number of seconds
+    """Convert a Farsi phrase into a number of seconds.
+
+    The function handles durations from seconds up to days.
 
     Convert things like:
         "10 minute"

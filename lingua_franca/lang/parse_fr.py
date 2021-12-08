@@ -26,16 +26,21 @@ from lingua_franca.time import now_local
 
 
 def extract_duration_fr(text):
-    """
-    Convert an french phrase into a number of seconds
+    """Convert a French phrase into a number of seconds.
+
+    The function handles durations from seconds up to days.
+
     Convert things like:
         "10 minutes"
         "3 jours 8 heures 10 minutes und 49 secondes"
     into an int, representing the total number of seconds.
+
     The words used in the duration will be consumed, and
     the remainder returned.
+
     As an example, "set a timer for 5 minutes" would return
     (300, "set a timer for").
+
     Args:
         text (str): string containing a duration
     Returns:

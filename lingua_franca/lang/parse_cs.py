@@ -31,10 +31,7 @@ from lingua_franca.time import now_local
 
 
 def generate_plurals_cs(originals):
-    """
-    Return a new set or dict containing the plural form of the original values,
-
-    In English this means all with 's' appended to them.
+    """Return a new set or dict containing the plural form of the original values.
 
     Args:
         originals set(str) or dict(str, any): values to pluralize
@@ -600,8 +597,9 @@ def extract_number_cs(text, short_scale=True, ordinals=False):
 
 
 def extract_duration_cs(text):
-    """
-    Convert an english phrase into a number of seconds
+    """Convert a Czech phrase into a number of seconds.
+
+    The function handles durations from seconds up to days.
 
     Convert things like:
         "10 minute"
