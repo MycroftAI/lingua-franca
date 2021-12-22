@@ -1,0 +1,43 @@
+{
+  "test_nice_year": {
+    "1": {"datetime_param": "1, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "un a.C." },
+    "2": {"datetime_param": "10, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "dez a.C." },
+    "3": {"datetime_param": "92, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "noventa-e-dous a.C." },
+    "4": {"datetime_param": "803, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "oitocentos tres" },
+    "5": {"datetime_param": "811, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "oitocentos once" },
+    "6": {"datetime_param": "454, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "catrocentos cincuenta-e-catro" },
+    "7": {"datetime_param": "1005, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "mil cinco" },
+    "8": {"datetime_param": "1012, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "mil doce" },
+    "9": {"datetime_param": "1046, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "mil corenta-e-seis" },
+    "10": {"datetime_param": "1807, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "mil oitocentos sete" },
+    "11": {"datetime_param": "1717, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "mil setecentos dezasete" },
+    "12": {"datetime_param": "1988, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "mil novecentos oitenta-e-oito"},
+    "13": {"datetime_param": "2009, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "dous mil nove"},
+    "14": {"datetime_param": "2018, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "dous mil dezaoito"},
+    "15": {"datetime_param": "2021, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "dous mil vinte-e-un"},
+    "16": {"datetime_param": "2030, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "dous mil trinta"},
+    "17": {"datetime_param": "2100, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "dous mil cen" },
+    "18": {"datetime_param": "1000, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "mil" },
+    "19": {"datetime_param": "2000, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "dous mil" },
+    "20": {"datetime_param": "3120, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "tres mil cento vinte a.C." },
+    "21": {"datetime_param": "3241, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "tres mil douscentos corenta-e-un a.C." },
+    "22": {"datetime_param": "5200, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "cinco mil douscentos" },
+    "23": {"datetime_param": "1100, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "mil cen" },
+    "24": {"datetime_param": "2100, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "dous mil cen" }
+  },
+  "test_nice_date": {
+    "1": {"datetime_param": "2017, 1, 31, 0, 2, 3", "now": "None", "assertEqual": "martes, trinta-e-un de xaneiro de dous mil dezasete"},
+    "2": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2017, 1, 1, 0, 2, 3", "assertEqual": "domingo, catro de febreiro de dous mil dezaoito"},
+    "3": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 1, 1, 0, 2, 3", "assertEqual": "domingo, catro de febreiro"},
+    "4": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 1, 0, 2, 3", "assertEqual": "domingo, día catro"},
+    "5": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 3, 0, 2, 3", "assertEqual": "mañá"},
+    "6": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 4, 0, 2, 3", "assertEqual": "hoxe"},
+    "7": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 5, 0, 2, 3", "assertEqual": "onte"},
+    "8": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 6, 0, 2, 3", "assertEqual": "domingo, catro de febreiro"},
+    "9": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2019, 2, 6, 0, 2, 3", "assertEqual": "domingo, catro de febreiro de dous mil dezaoito"}
+  },
+  "test_nice_date_time": {
+    "1": {"datetime_param": "2017, 1, 31, 13, 22, 3", "now": "None", "use_24hour": "False", "use_ampm": "True", "assertEqual": "martes, trinta-e-un de xaneiro de dous mil dezasete á unha e vinte-e-dous da tarde"},
+    "2": {"datetime_param": "2017, 1, 31, 13, 22, 3", "now": "None", "use_24hour": "True", "use_ampm": "False", "assertEqual": "martes, trinta-e-un de xaneiro de dous mil dezasete ás trece e vinte-e-dous"}
+  }
+}
