@@ -16,8 +16,6 @@
 
 from typing import List
 from datetime import datetime, timedelta
-import locale
-locale.setlocale(locale.LC_TIME, "az_AZ")
 from dateutil.relativedelta import relativedelta
 
 from lingua_franca.time import now_local
@@ -719,6 +717,9 @@ def extract_datetime_az(text, anchorDate=None, default_time=None):
     months = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
               'iyul', 'avqust', 'sentyabr', 'oktyabr', 'moyabr',
               'dekabr']
+    eng_months = ['january', 'february', 'march', 'april', 'may', 'june',
+                  'july', 'august', 'september', 'october', 'november',
+                  'december']
     word_list += days + months
     recur_markers = days + [_generate_plurals_az(d) for d in days] + ['həftə sonu', 'iş günü',
                                                       'həftə sonları', 'iş günləri']
@@ -859,7 +860,7 @@ def extract_datetime_az(text, anchorDate=None, default_time=None):
             except ValueError:
                 m = monthsShort.index(word)
             used += 1
-            datestr = months[m]
+            datestr = eng_months[m]
             if wordPrev and wordPrev[0].isdigit():
                 datestr += " " + wordPrev
                 start -= 1
@@ -1162,7 +1163,7 @@ def extract_datetime_az(text, anchorDate=None, default_time=None):
     if secOffset != 0:
         extractedDate = extractedDate + relativedelta(seconds=secOffset)
     for idx, word in enumerate(words):
-        if words[idx] == "and" and \
+        if words[idx] == "və" and \
                 words[idx - 1] == "" and words[idx + 1] == "":
             words[idx] = ""
 
