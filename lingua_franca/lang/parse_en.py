@@ -694,7 +694,8 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
     timeQualifiersAM = ['morning']
     timeQualifiersPM = ['afternoon', 'evening', 'night', 'tonight']
     timeQualifiersList = set(timeQualifiersAM + timeQualifiersPM)
-    markers = ['at', 'in', 'on', 'by', 'this', 'around', 'for', 'of', "within"]
+    year_markers = ['in', 'on', 'of']
+    markers = year_markers + ['at', 'by', 'this', 'around', 'for', "within"]
     days = ['monday', 'tuesday', 'wednesday',
             'thursday', 'friday', 'saturday', 'sunday']
     months = ['january', 'february', 'march', 'april', 'may', 'june',
@@ -743,6 +744,10 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
                 yearOffset = multiplier * 100
             elif wordNext == "millennium":
                 yearOffset = multiplier * 1000
+        elif word in year_markers and is_numeric(wordNext) and len(wordNext) == 4:
+            yearOffset = int(wordNext) - int(currentYear)
+            used += 2
+            hasYear = True
         # couple of
         elif word == "2" and wordNext == "of" and \
                 wordNextNext in year_multiples:
@@ -792,7 +797,7 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
             if wordPrev == "the":
                 start -= 1
                 used += 1
-                # parse 5 days, 10 weeks, last week, next week
+        # parse 5 days, 10 weeks, last week, next week
         elif word == "day":
             if wordPrev and wordPrev[0].isdigit():
                 dayOffset += int(wordPrev)
@@ -811,7 +816,7 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
                 dayOffset = -7
                 start -= 1
                 used = 2
-                # parse 10 months, next month, last month
+        # parse 10 months, next month, last month
         elif word == "month" and not fromFlag and wordPrev:
             if wordPrev[0].isdigit():
                 monthOffset = int(wordPrev)
@@ -856,7 +861,7 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
                 dayOffset -= 7
                 used += 1
                 start -= 1
-                # parse 15 of July, June 20th, Feb 18, 19 of February
+        # parse 15 of July, June 20th, Feb 18, 19 of February
         elif word in months or word in monthsShort and not fromFlag:
             try:
                 m = months.index(word)
