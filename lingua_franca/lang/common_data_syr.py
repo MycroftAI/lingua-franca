@@ -1,4 +1,4 @@
-#
+·#
 # Copyright 2017 Mycroft AI Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +42,7 @@ _FRACTION_STRING_SYR = {
 
 _SYRIAC_ONES = [
     "",
-    "ܚܕ̄",
+    "ܚܕ",
     "ܬܪܝܢ",
     "ܬܠܬܐ",
     "ܐܪܒܥܐ",
@@ -100,7 +100,7 @@ _SYRIAC_LARGE = [
 ]
 
 _SYRIAC_ORDINALS = [
-    "ܩܕ̄ܡܝܐ",
+    "ܩܕܡܝܐ",
     "ܬܪܝܢܐ",
     "ܬܠܝܬܝܐ",
     "ܪܒܝܥܝܐ",
@@ -135,4 +135,4 @@ _SYRIAC_FRAC = ["", "ܥܣܪܐ", "ܡܐܐ"]
 _SYRIAC_FRAC_BIG = ["", "ܐܠܦܐ", "ܡܠܝܘܢ", "ܒܠܝܘܢ" ]
 
 # fraction separator
-_SYRIAC_SEPARATOR = "ܡ̣ܢ"
+_SYRIAC_SEPARATOR = "ܡܢ"

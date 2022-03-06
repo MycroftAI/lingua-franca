@@ -217,7 +217,7 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
         'ܐܬܡܠܝ': today + timedelta(days= -1),
         'ܝܘܡܢܐ': today,
         'ܠܡܚܪ': today + timedelta(days= 1),
-        'ܠܡܚܪ ܐ̄ܚܪ̄ܢܐ': today + timedelta(days= 2),
+        'ܠܡܚܪ ܐܚܪܢܐ': today + timedelta(days= 2),
     }
     timesDict = {
         'ܩܕܡ ܛܗܪܐ': timedelta(hours=8),
@@ -226,8 +226,8 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
     exactDict = {
         'ܗܫܐ': anchorDate,
     }
-    nextWords = ["ܒܬ̄ܪ", "ܡܢ ܒܬ̄ܪ", "ܒܬ̄ܪ ܗܕܐ", "ܒܬ̄ܪܝܐ"]
-    prevWords = ["ܩܕܝܡܐܝܬ", "ܡܩܕ̄ܡ ܕ", "ܩܕܡ", "ܡܢ ܩܕ̄ܡ", "ܩܘܼܕܡܐܝܬ", "ܩܕ̄ܡ ܐܕܝܐ"]
+    nextWords = ["ܒܬܪ", "ܡܢ ܒܬܪ", "ܒܬܪ ܗܕܐ", "ܒܬܪܝܐ"]
+    prevWords = ["ܩܕܝܡܐܝܬ", "ܡܩܕܡ ܕ", "ܩܕܡ", "ܡܢ ܩܕܡ", "ܩܘܼܕܡܐܝܬ", "ܩܕܡ ܐܕܝܐ"]
     ar = _parse_sentence(text)
     mode = 'none'
     number_seen = None

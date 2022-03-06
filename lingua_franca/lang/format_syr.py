@@ -58,11 +58,11 @@ def nice_number_syr(number, speech=True, denominators=range(1, 21), variant=None
     den_str = _FRACTION_STRING_SYR[den]
     if whole == 0:
         if num == 1:
-            return_string = 'ܚܕ̄ {}'.format(den_str)
+            return_string = 'ܚܕ {}'.format(den_str)
         else:
             return_string = '{} {}'.format(num, den_str)
     elif num == 1:
-        return_string = '{} ܘ ܚܕ̄ {}'.format(whole, den_str)
+        return_string = '{} ܘ ܚܕ {}'.format(whole, den_str)
     else:
         return_string = '{} ܘ {} {}'.format(whole, num, den_str)
     return return_string
@@ -141,7 +141,7 @@ def _to_ordinal_num(value):
 
 def _to_cardinal(number, places):
     if number < 0:
-        return "ܡܪܝܡܢܐ " + _to_cardinal(-number, places)
+        return "ܣܚܘܦܐ " + _to_cardinal(-number, places)
     if (number == 0):
         return "ܣܝܦܪ"
     x, y, l = _float2tuple(number, places)
@@ -171,7 +171,7 @@ def pronounce_number_syr(number, places=2, scientific=False,
     if num == float("inf"):
         return "ܠܐ ܡܬܚܡܐ"
     elif num == float("-inf"):
-        return "ܡܪܝܡܢܐ ܠܐ ܡܬܚܡܐ"
+        return "ܣܚܘܦܐ ܠܐ ܡܬܚܡܐ"
     if scientific:
         if number == 0:
             return "ܣܝܦܪ"
@@ -180,10 +180,10 @@ def pronounce_number_syr(number, places=2, scientific=False,
         power = int(power)
         if power != 0:
             return '{}{} ܫܪܬܚ ܥܣܪܐ ܒܚܝܠܐ {}{}'.format(
-                'ܡܪܝܡܢܐ ' if float(n) < 0 else '',
+                'ܣܚܘܦܐ ' if float(n) < 0 else '',
                 pronounce_number_syr(
                     abs(float(n)), places, False, ordinals=False),
-                'ܡܪܝܡܢܐ ' if power < 0 else '',
+                'ܣܚܘܦܐ ' if power < 0 else '',
                 pronounce_number_syr(abs(power), places, False, ordinals=False))
     if ordinals:
         return _to_ordinal(number)

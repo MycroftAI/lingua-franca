@@ -65,17 +65,17 @@ NUMBERS_FIXTURE_EN = {
     12.5714: '12 ܘ4 ܡ̣ܢ ܫܒ̣ܥܐ',
     9.625: '9 ܘ5 ܡ̣ܢ ܬܡܢܝܐ',
     6.777: '6 ܘ7 ܡ̣ܢ ܬܫܥܐ',
-    3.1: '3 ܘܚ̄ܕ ܡ̣ܢ ܥܣܪܐ',
-    2.272: '2 ܘ3 ܡ̣ܢ ܚ̄ܕܥܣܝܪܝܐ',
+    3.1: '3 ܘܚܕ ܡ̣ܢ ܥܣܪܐ',
+    2.272: '2 ܘ3 ܡ̣ܢ ܚܕܥܣܝܪܝܐ',
     5.583: '5 ܘ7 ܡ̣ܢ ܬܪܥܣܝܪܝܐ',
     8.384: '8 ܘ5 ܡ̣ܢ ܬܠܬܥܣܝܪܝܐ',
-    0.071: 'ܚ̄ܕ ܡ̣ܢ ܐܪܒܥܣܝܪܝܐ',
+    0.071: 'ܚܕ ܡ̣ܢ ܐܪܒܥܣܝܪܝܐ',
     6.466: '6 ܘ7 ܡ̣ܢ ܚܡܫܥܣܝܪܝܐ',
     8.312: '8 ܘ5 ܡ̣ܢ ܫܬܥܣܝܪܝܐ',
     2.176: '2 ܘ3 ܡ̣ܢ ܫܒܥܣܝܪܝܐ',
     200.722: '200 ܘ13 ܡ̣ܢ ܬܡܢܥܣܝܪܝܐ',
     7.421: '7 ܘ8 ܡ̣ܢ ܬܫܥܣܝܪܝܐ',
-    0.05: 'ܚ̄ܕ ܡ̣ܢ ܥܣܪܝܢܝܐ'
+    0.05: 'ܚܕ ܡ̣ܢ ܥܣܪܝܢܝܐ'
 }
 
 
@@ -116,7 +116,7 @@ class TestNiceNumberFormat(unittest.TestCase):
 class TestPronounceNumber(unittest.TestCase):
     def test_convert_int(self):
         self.assertEqual(pronounce_number(0),  "ܣܝܦܪ")
-        self.assertEqual(pronounce_number(1),  "ܚ̄ܕ")
+        self.assertEqual(pronounce_number(1),  "ܚܕ")
         self.assertEqual(pronounce_number(10), "ܥܣܪܐ")
         self.assertEqual(pronounce_number(15), "ܚܡܫܥܣܪ")
         self.assertEqual(pronounce_number(20), "ܥܣܪܝܢ")
@@ -125,40 +125,40 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(33), "ܬܠܬܝܢ ܘܬܠܬܐ")
 
     def test_convert_negative_int(self):
-        self.assertEqual(pronounce_number(-1),  "ܡܪܥܡܢܐ ܚ̄ܕ")
-        self.assertEqual(pronounce_number(-10), "ܡܪܝܡܢܐ ܥܣܪܐ")
-        self.assertEqual(pronounce_number(-15), "ܡܪܝܡܢܐ ܚܡܫܝܣܪ")
-        self.assertEqual(pronounce_number(-20), "ܡܪܝܡܢܐ ܥܣܪܝܢ")
-        self.assertEqual(pronounce_number(-27), "ܡܪܝܡܢܐ ܥܣܪܝܢ ܘܫܒܥܐ")
+        self.assertEqual(pronounce_number(-1),  "ܣܚܘܦܐ ܚܕ")
+        self.assertEqual(pronounce_number(-10), "ܣܚܘܦܐ ܥܣܪܐ")
+        self.assertEqual(pronounce_number(-15), "ܣܚܘܦܐ ܚܡܫܝܣܪ")
+        self.assertEqual(pronounce_number(-20), "ܣܚܘܦܐ ܥܣܪܝܢ")
+        self.assertEqual(pronounce_number(-27), "ܣܚܘܦܐ ܥܣܪܝܢ ܘܫܒܥܐ")
     
     def test_convert_decimals(self):
-        self.assertEqual(pronounce_number(0.05), "ܚܡܫܐ ܐܡܝ̈ܐ")
-        self.assertEqual(pronounce_number(-0.05), "ܡܪܝܡܢܐ ܚܡܫܐ ܐܡܝ̈ܐ")
+        self.assertEqual(pronounce_number(0.05), "ܚܡܫܐ ܡܢ ܡܐܐ")
+        self.assertEqual(pronounce_number(-0.05), "ܣܚܘܦܐ ܚܡܫܐ ܡܢ ܡܐܐ")
         self.assertEqual(pronounce_number(1.234),
-                         "یک و بیست و سه صدم")
+                         "ܚܕ̄ ܘܥܣܪܝܢ ܘܬܠܬܐ ܡܢ ܡܐܐ")
         self.assertEqual(pronounce_number(21.234),
-                         "بیست و یک و بیست و سه صدم")
+                         "ܥܣܪܝܢ ܘܚܕ̄ ܘܥܣܪܝܢ ܘܬܠܬܐ ܡܢ ܡܐܐ")
         self.assertEqual(pronounce_number(21.234, places=1),
-                         "بیست و یک و دو دهم")
+                         "ܥܣܪܝܢ ܘܚܕ̄ ܘܥܣܪܝܢ ܘܬܪܝܢ ܡܢ ܥܣܪܐ")
         self.assertEqual(pronounce_number(21.234, places=0),
-                         "بیست و یک")
+                         "ܥܣܪܝܢ ܘܚܕ̄")
         self.assertEqual(pronounce_number(21.234, places=3),
-                         "بیست و یک و دویست و سی و چهار هزارم")
+                         "ܥܣܪܝܢ ܘܚܕ̄ ܘܬܪܝܡܐܐ ܘܬܠܬܝܢ ܘܐܪܒܥܐ ܡܢ ܐܠܦܐ")
         self.assertEqual(pronounce_number(21.234, places=4),
-                         "بیست و یک و دویست و سی و چهار هزارم")
+                         "ܥܣܪܝܢ ܘܚܕ̄ ܘܬܪܝܡܐܐ ܘܬܠܬܝܢ ܘܐܪܒܥܐ ܡܢ ܐܠܦܐ")
         self.assertEqual(pronounce_number(21.234, places=5),
-                         "بیست و یک و دویست و سی و چهار هزارم")
+                         "ܥܣܪܝܢ ܘܚܕ̄ ܘܬܪܝܡܐܐ ܘܬܠܬܝܢ ܘܐܪܒܥܐ ܡܢ ܐܠܦܐ")
         self.assertEqual(pronounce_number(-1.234),
-                         "منفی یک و بیست و سه صدم")
+                         "ܣܚܘܦܐ ܚܕ̄ ܘܥܣܪܝܢ ܘܬܠܬܐ ܡܢ ܡܐܐ")
         self.assertEqual(pronounce_number(-21.234),
-                         "منفی بیست و یک و بیست و سه صدم")
+                         "ܣܚܘܦܐ ܥܣܪܝܢ ܘܚܕ̄ ܘܥܣܪܝܢ ܘܬܠܬܐ ܡܢ ܡܐܐ")
         self.assertEqual(pronounce_number(-21.234, places=1),
-                         "منفی بیست و یک و دو دهم")
+                         "ܣܚܘܦܐ ܥܣܪܝܢ ܘܚܕ̄ ܘܥܣܪܝܢ ܘܬܪܝܢ ܡܢ ܥܣܪܐ")
 
     def test_convert_hundreds(self):
-        self.assertEqual(pronounce_number(100), "صد")
-        self.assertEqual(pronounce_number(666), "ششصد و شصت و شش")
-        self.assertEqual(pronounce_number(1456), "هزار و چهارصد و پنجاه و شش")
+        self.assertEqual(pronounce_number(100), "ܡܐܐ")
+        self.assertEqual(pronounce_number(666), "ܫܬܡܐܐ ܘ ܫܬܝܢ ܘܫܬܐ")
+        self.assertEqual(pronounce_number(1456), "ܐܠܦܐ ܘܐܪܒܥܡܐܐ ܘܚܡܫܝܢ ܘܫܬܐ")
         self.assertEqual(pronounce_number(103254654), "صد و سه میلیون و "
                                                       "دویست و پنجاه و چهار "
                                                       "هزار و ششصد و پنجاه و چهار")
