@@ -61,7 +61,7 @@ def _parse_sentence(text):
             else:
                 finish_num()
                 result.append(x)
-        elif x == "ܦܠܓܗ":
+        elif x == "ܦܲܠܓܵܐ":
             current_words.append(x)
             current_number += 0.5
             finish_num()
@@ -107,14 +107,14 @@ def _parse_sentence(text):
 
 
 _time_units = {
-    'ܪ̈ܦܦܐ': timedelta(seconds=1),
-    'ܩܛܝܢ̈ܬ̣ܐ': timedelta(minutes=1),
-    'ܫܥ̈ܐ': timedelta(hours=1),
+    'ܪ̈ܦܵܦܹܐ': timedelta(seconds=1),
+    'ܩܲܛܝܼܢ̈ܬܸܐ': timedelta(minutes=1),
+    'ܫܵܥܸ̈ܐ': timedelta(hours=1),
 }
 
 _date_units = {
-    'ܝܘܡܐ': timedelta(days=1),
-    'ܫܒܼܘܥܐ': timedelta(weeks=1),
+    'ܝܵܘܡܵܐ': timedelta(days=1),
+    'ܫܵܒܼܘܼܥܹܐ': timedelta(weeks=1),
 }
 
 def extract_duration_syr(text):
@@ -204,30 +204,30 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
     today = anchorDate.replace(hour=0, minute=0, second=0, microsecond=0)
     today_weekday = int(anchorDate.strftime("%w"))
     weekday_names = [
-        'ܬܪܝܢܒܫܒܐ',
-        'ܬܠܬܒܫܒܐ',
-        'ܐܪܒܥܒܫܒܐ',
-        'ܚܡܫܒܫܒܐ',
-        'ܥܪܘܒ݂ܬܐ',
-        'ܫܒܬܐ',
-        'ܚܕܒܫܒܐ',
+        'ܬܪܸܝܢܒܫܲܒܵܐ',
+        'ܬܠܵܬܒܫܲܒܵܐ',
+        'ܐܲܪܒܲܥܒܫܲܒܵܐ',
+        'ܚܲܡܸܫܒܫܲܒܵܐ',
+        'ܥܪܘܼܒ݂ܬܵܐ',
+        'ܫܲܒܬܵܐ',
+        'ܚܕܒܫܲܒܵܐ',
     ]
     daysDict = {
-        'ܐܬܡܠܝ': today + timedelta(days= -2),
-        'ܐܬܡܠܝ': today + timedelta(days= -1),
-        'ܝܘܡܢܐ': today,
-        'ܠܡܚܪ': today + timedelta(days= 1),
-        'ܠܡܚܪ ܐܚܪܢܐ': today + timedelta(days= 2),
+        'ܐܸܬ݂ܡܵܠܝ': today + timedelta(days= -2),
+        'ܐܸܬ݂ܡܵܠܝ': today + timedelta(days= -1),
+        'ܝܵܘܡܵܢܵܐ': today,
+        'ܠܲܡܚܵܪ': today + timedelta(days= 1),
+        'ܠܲܡܚܵܪ ܐܚܪܹܢܵܐ': today + timedelta(days= 2),
     }
     timesDict = {
-        'ܩܕܡ ܛܗܪܐ': timedelta(hours=8),
-        'ܒܬܪ ܛܗܪܐ': timedelta(hours=15),
+        'ܩܕܡ ܛܲܗܪܵܐ': timedelta(hours=8),
+        'ܒܵܬܵܪ ܛܲܗܪܵܐ': timedelta(hours=15),
     }
     exactDict = {
-        'ܗܫܐ': anchorDate,
+        'ܗܵܫܵܐ': anchorDate,
     }
-    nextWords = ["ܒܬܪ", "ܡܢ ܒܬܪ", "ܒܬܪ ܗܕܐ", "ܒܬܪܝܐ"]
-    prevWords = ["ܩܕܝܡܐܝܬ", "ܡܩܕܡ ܕ", "ܩܕܡ", "ܡܢ ܩܕܡ", "ܩܘܼܕܡܐܝܬ", "ܩܕܡ ܐܕܝܐ"]
+    nextWords = ["ܒܵܬܲܪ", "ܡܸܢ ܒܵܬܲܪ", "ܒܵܬܲܪ ܗܵܕܵܐ", "ܒܵܬܪܵܝܵܐ"]
+    prevWords = ["ܩܲܕܝܼܡܵܐܝܼܬ", "ܡܩܵܕܸܡ ܕ", "ܩܕܡ", "ܡܸܢ ܩܕܡ", "ܩܘܼܕܡܵܐܝܼܬ", "ܩܕܡ ܐܵܕܝܼܵܐ"]
     ar = _parse_sentence(text)
     mode = 'none'
     number_seen = None

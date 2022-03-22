@@ -112,7 +112,7 @@ def _cardinalPos(number):
         if (y == 0):
             continue
         yx = _cardinal3(y)
-        if y == 1 and b == 'ܐܠܦܐ':
+        if y == 1 and b == 'ܐܲܠܦܵܐ':
             yx = b
         elif b != '':
             yx += ' ' + b
@@ -124,12 +124,13 @@ def _cardinalPos(number):
 
 def _fractional(number, l):
     if (number / 10**l == 0.5):
-        return "ܦܠܓܗ"
+        return "ܦܲܠܓܵܐ"
     x = _cardinalPos(number)
     ld3, lm3 = divmod(l, 3)
-    ltext = (_SYRIAC_FRAC[lm3] + " " + _SYRIAC_FRAC_BIG[ld3]).strip() + 'م'
+    ltext = (_SYRIAC_FRAC[lm3] + " " + _SYRIAC_FRAC_BIG[ld3]).strip() + 'ܡܢ'
     return x + " " + ltext
 
+# NOTE: Look into these functions
 def _to_ordinal(number):
     r = _to_cardinal(number, 0)
     if (r[-1] == 'ه' and r[-2] == 'ܫ'):
@@ -141,9 +142,9 @@ def _to_ordinal_num(value):
 
 def _to_cardinal(number, places):
     if number < 0:
-        return "ܣܚܘܦܐ " + _to_cardinal(-number, places)
+        return "ܣܲܚܘܼܦܵܐ " + _to_cardinal(-number, places)
     if (number == 0):
-        return "ܣܝܦܪ"
+        return "ܣܝܼܦܵܪ"
     x, y, l = _float2tuple(number, places)
     if y == 0:
         return _cardinalPos(x)
@@ -169,21 +170,21 @@ def pronounce_number_syr(number, places=2, scientific=False,
     num = number
     # deal with infinity
     if num == float("inf"):
-        return "ܠܐ ܡܬܚܡܐ"
+        return "ܠܵܐ ܡܬܲܚܡܵܐ"
     elif num == float("-inf"):
-        return "ܣܚܘܦܐ ܠܐ ܡܬܚܡܐ"
+        return "ܣܲܚܘܼܦܵܐ ܠܵܐ ܡܬܲܚܡܵܐ"
     if scientific:
         if number == 0:
-            return "ܣܝܦܪ"
+            return "ܣܝܼܦܵܪ"
         number = '%E' % num
         n, power = number.replace("+", "").split("E")
         power = int(power)
         if power != 0:
-            return '{}{} ܫܪܬܚ ܥܣܪܐ ܒܚܝܠܐ {}{}'.format(
-                'ܣܚܘܦܐ ' if float(n) < 0 else '',
+            return '{}{} ܫܲܪܬܸܚ ܥܸܣܪܵܐ ܒܚܲܝܠܵܐ {}{}'.format(
+                'ܣܲܚܘܼܦܵܐ ' if float(n) < 0 else '',
                 pronounce_number_syr(
                     abs(float(n)), places, False, ordinals=False),
-                'ܣܚܘܦܐ ' if power < 0 else '',
+                'ܣܲܚܘܼܦܵܐ ' if power < 0 else '',
                 pronounce_number_syr(abs(power), places, False, ordinals=False))
     if ordinals:
         return _to_ordinal(number)
@@ -233,22 +234,22 @@ def nice_time_syr(dt, speech=True, use_24hour=False, use_ampm=False, variant=Non
                 speak += pronounce_number_syr(int(string[4]))
             else:
                 speak += pronounce_number_syr(int(string[3:5]))
-            speak += ' ܩܛܝܢ̈ܬ̣ܐ'
+            speak += ' ܩܲܛܝܼܢ̈ܬ̣ܐ'
         return speak
     else:
         if dt.hour == 0 and dt.minute == 0:
-            return "ܛܗܪ̈ܝ ܠܠܝܐ"
+            return "ܛܲܗܪ̈ܝ ܠܸܠܝܵܐ"
         elif dt.hour == 12 and dt.minute == 0:
-            return "ܛܗܪܐ"
+            return "ܛܲܗܪܵܐ"
 
         hour = dt.hour % 12 or 12  # 12 hour clock and 0 is spoken as 12
         if dt.minute == 15:
-            speak = pronounce_number_syr(hour) + " ܘܪܘܒܥܐ"
+            speak = pronounce_number_syr(hour) + " ܘܪܘܼܒܥܵܐ"
         elif dt.minute == 30:
-            speak = pronounce_number_syr(hour) + " ܘܦܠܓܗ"
+            speak = pronounce_number_syr(hour) + " ܘܦܲܠܓܵܐ"
         elif dt.minute == 45:
             next_hour = (dt.hour + 1) % 12 or 12
-            speak = " ܪܘܒܥܐ ܩܐ" + pronounce_number_syr(next_hour)
+            speak = " ܪܘܼܒܥܵܐ ܩܵܐ" + pronounce_number_syr(next_hour)
         else:
             speak = pronounce_number_syr(hour)
 
@@ -256,12 +257,12 @@ def nice_time_syr(dt, speech=True, use_24hour=False, use_ampm=False, variant=Non
                 if not use_ampm:
                     return speak
             else:
-                speak += " ܘ " + pronounce_number_syr(dt.minute) + ' ܩܛܝܢ̈ܬ̣ܐ'
+                speak += " ܘ " + pronounce_number_syr(dt.minute) + ' ܩܲܛܝܼܢ̈ܬ̣ܐ'
 
         if use_ampm:
             if dt.hour > 11:
-                speak += " ܒܬܪ ܛܗܪܝܐ"
+                speak += " ܒܵܬܲܪ ܛܲܗܪܵܐ"
             else:
-                speak += " ܩܕܡ ܛܗܪܐ"
+                speak += " ܩܕܡ ܛܲܗܪܵܐ"
 
         return speak

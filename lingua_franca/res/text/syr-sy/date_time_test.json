@@ -1,36 +1,36 @@
 {
   "test_nice_year": {
-    "1": {"datetime_param": "1, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "ܚܕ̄ ܩܕܡ ܡܫܝܚܐ" },
-    "2": {"datetime_param": "10, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "ܥܣܪܐ ܩܕܡ ܡܫܝܚܐ" },
-    "8": {"datetime_param": "1012, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "ܐܠܦܐ ܘܬܪܥܣܪ" },
-    "9": {"datetime_param": "1046, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "ܐܠܦܐ ܘܥܪܒܥܝܢ ܘܫܬܐ" },
-    "10": {"datetime_param": "1807, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܐܠܦܐ ܘܬܡܢܡܐܐ ܘܫܒܥܐ" },
-    "11": {"datetime_param": "1717, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܐܠܦܐ ܘܫܒܥܡܐܐ ܘܫܒܥܣܪ" },
-    "12": {"datetime_param": "1988, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܐܠܦܐ ܘܬܫܥܡܐܐ ܘܬܡܢܝܢ ܘܬܡܢܝܐ"},
-    "13": {"datetime_param": "2009, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܝܢ ܐܠܦ̈ܐ ܘܬܫܥܐ"},
-    "14": {"datetime_param": "2018, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܝܢ ܐܠܦ̈ܐ ܘܬܡܢܥܣܪ"},
-    "15": {"datetime_param": "2021, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܝܢ ܐܠܦ̈ܐ ܘܥܣܪܝܢ ܘܚܕ̄"},
-    "16": {"datetime_param": "2030, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܝܢ ܐܠܦ̈ܐ ܘܬܠܬܝܢ"},
-    "17": {"datetime_param": "2100, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "ܬܪܝܢ ܐܠܦ̈ܐ ܘܡܐܐ" },
-    "18": {"datetime_param": "1000, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܐܠܦܐ" },
-    "19": {"datetime_param": "2000, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܝܢ ܐܠܦ̈ܐ" },
-    "20": {"datetime_param": "3120, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "ܬܠܬܐ ܐܠܦ̈ܐ ܘܡܐܐ ܘܥܣܪܝܢ ܩܕܡ ܡܫܝܚܐ" },
-    "21": {"datetime_param": "3241, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "ܬܠܬܐ ܐܠܦ̈ܐ ܘ ܬܪܝܡܐܐ ܘܥܪܒܥܝܢ ܘܚܕ ܩܕܡ ܡܫܝܚܐ" },
-    "22": {"datetime_param": "5200, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "ܚܡܫܐ ܐܠܦ̈ܐ ܘܬܪܝܡܐܐ" }
+    "1": {"datetime_param": "1, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "ܚܕ ܩܕܡ ܡܫܝܼܚܵܐ" },
+    "2": {"datetime_param": "10, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "ܥܸܣܪܵܐ ܩܕܡ ܡܫܝܼܚܵܐ" },
+    "8": {"datetime_param": "1012, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "ܐܲܠܦܵܐ ܘܬܪܸܥܣܲܪ" },
+    "9": {"datetime_param": "1046, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "ܐܲܠܦܵܐ ܘܐܲܪܒܥܝܼܢ ܘܫܬܵܐ" },
+    "10": {"datetime_param": "1807, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܐܲܠܦܵܐ ܘܬܡܵܢܹܡܵܐܐ ܘܫܲܒ݂ܥܵܐ" },
+    "11": {"datetime_param": "1717, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܐܲܠܦܵܐ ܘܫܒܲܥܡܵܐܐ ܘܫܒܲܥܣܲܪ" },
+    "12": {"datetime_param": "1988, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܐܲܠܦܵܐ ܘܬܫܲܥܡܵܐܐ ܘܬܡܵܢܝܼܢ ܘܬܡܵܢܝܵܐ"},
+    "13": {"datetime_param": "2009, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܬܸܫܥܵܐ"},
+    "14": {"datetime_param": "2018, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܬܡܵܢܲܥܣܲܪ"},
+    "15": {"datetime_param": "2021, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܥܸܣܪܝܼܢ ܘܚܕ"},
+    "16": {"datetime_param": "2030, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܬܠܵܬܝܼܢ"},
+    "17": {"datetime_param": "2100, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܡܵܐܐ" },
+    "18": {"datetime_param": "1000, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܐܲܠܦܵܐ" },
+    "19": {"datetime_param": "2000, 1, 31, 13, 22, 3", "bc": "None", "assertEqual": "ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ" },
+    "20": {"datetime_param": "3120, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "ܬܠܵܬܵܐ ܐܲܠܦܸ̈ܐ ܘܡܵܐܐ ܘܥܸܣܪܝܼܢ ܩܕܡ ܡܫܝܼܚܵܐ" },
+    "21": {"datetime_param": "3241, 1, 31, 13, 22, 3", "bc": "True", "assertEqual": "ܬܠܵܬܵܐ ܐܲܠܦܸ̈ܐ ܘܬܪܹܝܢܡܵܐܐ ܘܐܲܪܒܥܝܼܢ ܘܚܕ ܩܕܡ ܡܫܝܼܚܵܐ" },
+    "22": {"datetime_param": "5200, 1, 31, 13, 22, 3", "bc": "False", "assertEqual": "ܚܲܡܫܵܐ ܐܲܠܦܸ̈ܐ ܘܬܪܹܝܢܡܵܐܐ" }
   },
   "test_nice_date": {
-    "1": {"datetime_param": "2017, 1, 31, 0, 2, 3", "now": "None", "assertEqual": "ܬܠܬܒܫܒܐ، ܬܠܬܝܢ ܩܕ̄ܡܝܐ ܟܢܘܢ ܐܚܪܝܐ ܬܪܝܢ ܐܠܦ̈ܐ ܘܫܒܥܣܪ"},
-    "2": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2017, 1, 1, 0, 2, 3", "assertEqual": "ܚܕܒܫܒܐ، ܪܒܝܥܝܐ ܫܒܛ ܬܪܝܢ ܐܠܦ̈ܐ ܘܬܡܢܥܣܪ"},
-    "3": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 1, 1, 0, 2, 3", "assertEqual": "ܚܕܒܫܒܐ، ܪܒܝܥܝܐ ܫܒܛ"},
-    "4": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 1, 0, 2, 3", "assertEqual": "ܚܕܒܫܒܐ، ܪܒܝܥܝܐ"},
-    "5": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 3, 0, 2, 3", "assertEqual": "ܠܡܚܪ"},
-    "6": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 4, 0, 2, 3", "assertEqual": "ܝܘܡܢܐ"},
-    "7": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 5, 0, 2, 3", "assertEqual": "ܐܬܡܠܝ"},
-    "8": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 6, 0, 2, 3", "assertEqual": "ܚܕܒܫܒܐ، ܪܒܝܥܝܐ ܫܒܛ"},
-    "9": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2019, 2, 6, 0, 2, 3", "assertEqual": "ܚܕܒܫܒܐ، ܪܒܝܥܝܐ ܫܒܛ ܬܪܝܢ ܐܠܦ̈ܐ ܘܬܡܢܥܣܪ"}
+    "1": {"datetime_param": "2017, 1, 31, 0, 2, 3", "now": "None", "assertEqual": "ܬܠܵܬܒܫܲܒܵܐ، ܬܠܵܬܝܼܢ ܩܕ̄ܡܝܐ ܟܵܢܘܿܢ ܐ݇ܚܵܪܵܝܵܐ ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܫܒܲܥܣܲܪ"},
+    "2": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2017, 1, 1, 0, 2, 3", "assertEqual": "ܚܕܒܫܲܒܵܐ ܪܒ݂ܝܼܥܵܝܵܐ ܫܒ݂ܲܛ ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܬܡܵܢܲܥܣܲܪ"},
+    "3": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 1, 1, 0, 2, 3", "assertEqual": "ܚܕܒܫܒܐ، ܪܒ݂ܝܼܥܵܝܵܐ ܫܒ݂ܲܛ"},
+    "4": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 1, 0, 2, 3", "assertEqual": "ܚܕܒܫܲܒܵܐ ܪܒ݂ܝܼܥܵܝܵܐ"},
+    "5": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 3, 0, 2, 3", "assertEqual": "ܠܲܡܚܵܪ"},
+    "6": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 4, 0, 2, 3", "assertEqual": "ܝܵܘܡܵܢܵܐ"},
+    "7": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 5, 0, 2, 3", "assertEqual": "ܐܸܬ݂ܡܵܠܝ"},
+    "8": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2018, 2, 6, 0, 2, 3", "assertEqual": "ܚܕܒܫܲܒܵܐ ܪܒ݂ܝܼܥܵܝܵܐ ܫܒ݂ܲܛ"},
+    "9": {"datetime_param": "2018, 2, 4, 0, 2, 3", "now": "2019, 2, 6, 0, 2, 3", "assertEqual": "ܚܕܒܫܲܒܵܐ، ܪܒ݂ܝܼܥܵܝܵܐ ܫܒ݂ܲܛ ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܬܡܵܢܲܥܣܲܪ"}
   },
   "test_nice_date_time": {
-    "1": {"datetime_param": "2017, 1, 31, 13, 22, 3", "now": "None", "use_24hour": "False", "use_ampm": "True", "assertEqual": "ܬܠܬܒܫܒܐ، ܬܠܬܝܢ ܘܩܕ̄ܡܝܐ ܟܢܘܢ ܐܚܪܝܐ ܬܪܝܢ ܐܠܦ̈ܐ ܘܫܒܥܣܪܐ ܒܚܕ ܫܥܬܐ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢ̈ܬ̣ܐ ܒܬܪ ܛܗܪܝܐ"},
-    "2": {"datetime_param": "2017, 1, 31, 13, 22, 3", "now": "None", "use_24hour": "True", "use_ampm": "False", "assertEqual": "ܬܠܬܒܫܒܐ، ܬܠܬܝܢ ܘܩܕ̄ܡܝܐ ܟܢܘܢ ܐܚܪܝܐ ܬܪܝܢ ܐܠܦ̈ܐ ܘܫܒܥܣܪܐ ܒܬܠܬܥܣܪ ܫܥܬ݂ܐ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢ̈ܬ̣ܐ"}
+    "1": {"datetime_param": "2017, 1, 31, 13, 22, 3", "now": "None", "use_24hour": "False", "use_ampm": "True", "assertEqual": "ܬܠܵܬܒܫܲܒܵܐ، ܬܠܵܬܝܼܢ ܘܩܲܕ݂ܡܵܝܵܐ ܟܵܢܘܿܢ ܐܚܵܪܵܝܵܐ ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܫܒܲܥܣܲܪܐ ܒܚܕ ܫܵܥܬܵܐ ܘܥܸܣܪܝܼܢ ܘܬܪܹܝܢ ܩܲܛܝܼܢ̈ܬ̣ܐ ܒܵܬܲܪ ܛܲܗܪܵܐ"},
+    "2": {"datetime_param": "2017, 1, 31, 13, 22, 3", "now": "None", "use_24hour": "True", "use_ampm": "False", "assertEqual": "ܬܠܵܬܒܫܲܒܵܐ، ܬܠܵܬܝܼܢ ܘܩܲܕ݂ܡܵܝܵܐ ܟܵܢܘܿܢ ܐܚܵܪܵܝܵܐ ܬܪܹܝܢ ܐܲܠܦܸ̈ܐ ܘܫܒܲܥܣܲܪܐ ܒܫܵܥܬܵܐ ܫܵܥܬܵܐ ܘܥܸܣܪܝܼܢ ܘܬܪܹܝܢ ܩܲܛܝܼܢ̈ܬ̣ܐ"}
   }
 }
