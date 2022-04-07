@@ -162,6 +162,28 @@ class Normalizer:
         utterance = " ".join(words)
         return utterance
 
+    @staticmethod
+    def _is_number(string):
+        try:
+            number = float(string)
+        except:
+            return False
+        return True
+
+    def tying_percentage(self, utterance):
+        words = self.tokenize(utterance)
+        output = []
+        for idx, w in enumerate(words):
+            if w.startswith('%') and idx > 0:
+                if self._is_number(output[-1]) is False:
+                    output.append(w)
+                else:
+                    output[-1] += w
+            else:
+                output.append(w)
+        utterance = " ".join(output)
+        return utterance
+
     def normalize(self, utterance="", remove_articles=None):
         # mutations
         if self.should_lowercase:
@@ -186,6 +208,7 @@ class Normalizer:
             utterance = self.remove_stopwords(utterance)
         # remove extra spaces
         utterance = " ".join([w for w in utterance.split(" ") if w])
+        utterance = self.tying_percentage(utterance)
         return utterance
 
 
