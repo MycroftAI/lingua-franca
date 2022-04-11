@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from dateutil import tz
 
 from lingua_franca import load_language, unload_language, set_default_lang
@@ -161,7 +161,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("2 fifth",
                                         ordinals=True), 5)
         self.assertEqual(extract_number("2 fifths",
-                                        ordinals=False), 2/5)
+                                        ordinals=False), 2 / 5)
         self.assertEqual(extract_number("2 fifths",
                                         ordinals=None), 2)
 
@@ -213,7 +213,6 @@ class TestNormalize(unittest.TestCase):
                                         ordinals=None), 8)
 
     def test_extract_number(self):
-
         self.assertEqual(extract_number("this is 2 test"), 2)
         self.assertEqual(extract_number("this is test number 4"), 4)
         self.assertEqual(extract_number("three cups"), 3)
@@ -331,7 +330,7 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_duration("The movie is one hour, fifty seven"
                                           " and a half minutes long"),
                          (timedelta(hours=1, minutes=57.5),
-                             "The movie is ,  long"))
+                          "The movie is ,  long"))
         self.assertEqual(extract_duration("Four and a Half minutes until"
                                           " sunset"),
                          (timedelta(minutes=4.5), "until sunset"))
@@ -713,7 +712,67 @@ class TestNormalize(unittest.TestCase):
     def test_extract_date_years(self):
         date = datetime(2017, 6, 27, tzinfo=default_timezone())  # Tue June 27, 2017
         self.assertEqual(extract_datetime('in 2007', date)[0],
-            datetime(2007, 6, 27, tzinfo=date.tzinfo))
+                         datetime(2007, 6, 27, tzinfo=date.tzinfo))
+
+
+    def test_extractdatetime_with_default_time_en(self):
+        def extractWithFormat(text):
+            default_time = time(15, 4, tzinfo=default_timezone())
+            date = datetime(2017, 6, 27, 13, 4, tzinfo=default_timezone())  # Tue June 27, 2017 @ 1:04pm
+            [extractedDate, leftover] = extract_datetime(text, date, default_time=default_time)
+            extractedDate = extractedDate.strftime("%Y-%m-%d %H:%M:%S")
+            return [extractedDate, leftover]
+
+        def testExtract(text, expected_date, expected_leftover):
+            res = extractWithFormat(normalize(text))
+            self.assertEqual(res[0], expected_date, "for=" + text)
+            self.assertEqual(res[1], expected_leftover, "for=" + text)
+
+        # ignore default time arg
+        testExtract("in a second",
+                    "2017-06-27 13:04:01", "")
+        testExtract("in a minute",
+                    "2017-06-27 13:05:00", "")
+        testExtract("in an hour",
+                    "2017-06-27 14:04:00", "")
+
+        # use default time
+        testExtract("in a couple weeks",
+                    "2017-07-11 15:04:00", "")
+        testExtract("in a couple of weeks",
+                    "2017-07-11 15:04:00", "")
+        testExtract("in a couple months",
+                    "2017-08-27 15:04:00", "")
+        testExtract("in a couple years",
+                    "2019-06-27 15:04:00", "")
+        testExtract("in a couple of months",
+                    "2017-08-27 15:04:00", "")
+        testExtract("in a couple of years",
+                    "2019-06-27 15:04:00", "")
+        testExtract("in a decade",
+                    "2027-06-27 15:04:00", "")
+        testExtract("in a couple of decades",
+                    "2037-06-27 15:04:00", "")
+        testExtract("next decade",
+                    "2027-06-27 15:04:00", "")
+        testExtract("in a century",
+                    "2117-06-27 15:04:00", "")
+        testExtract("in a millennium",
+                    "3017-06-27 15:04:00", "")
+        testExtract("in a couple decades",
+                    "2037-06-27 15:04:00", "")
+        testExtract("in 5 decades",
+                    "2067-06-27 15:04:00", "")
+        testExtract("in a couple centuries",
+                    "2217-06-27 15:04:00", "")
+        testExtract("in a couple of centuries",
+                    "2217-06-27 15:04:00", "")
+        testExtract("in 2 centuries",
+                    "2217-06-27 15:04:00", "")
+        testExtract("in a couple millenniums",
+                    "4017-06-27 15:04:00", "")
+        testExtract("in a couple of millenniums",
+                    "4017-06-27 15:04:00", "")
 
     def test_extract_ambiguous_time_en(self):
         morning = datetime(2017, 6, 27, 8, 1, 2, tzinfo=default_timezone())
@@ -768,7 +827,7 @@ class TestNormalize(unittest.TestCase):
                          (not_local_dt.year, not_local_dt.month, not_local_dt.day,
                           not_local_dt.hour, not_local_dt.minute, not_local_dt.second,
                           not_local_dt.tzinfo))
-        self.assertNotEqual((test_dt.year, test_dt.month, test_dt.day, 
+        self.assertNotEqual((test_dt.year, test_dt.month, test_dt.day,
                              test_dt.hour, test_dt.minute, test_dt.second,
                              test_dt.tzinfo),
                             (local_dt.year, local_dt.month, local_dt.day,
