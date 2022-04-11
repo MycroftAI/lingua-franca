@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 
 from dateutil.relativedelta import relativedelta
 
@@ -678,7 +678,7 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
 
     if text == "":
         return None
-
+    default_time = default_time or time(0, 0, 0)
     found = False
     daySpecified = False
     dayOffset = False
@@ -1390,7 +1390,9 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
     else:
         # ignore the current HH:MM:SS if relative using days or greater
         if hrOffset == 0 and minOffset == 0 and secOffset == 0:
-            extractedDate = extractedDate.replace(hour=0, minute=0, second=0)
+            extractedDate = extractedDate.replace(hour=default_time.hour,
+                                                  minute=default_time.minute,
+                                                  second=default_time.second)
 
     if yearOffset != 0:
         extractedDate = extractedDate + relativedelta(years=yearOffset)
@@ -1398,7 +1400,15 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
         extractedDate = extractedDate + relativedelta(months=monthOffset)
     if dayOffset != 0:
         extractedDate = extractedDate + relativedelta(days=dayOffset)
-    if hrAbs != -1 and minAbs != -1:
+    if hrOffset != 0:
+        extractedDate = extractedDate + relativedelta(hours=hrOffset)
+    if minOffset != 0:
+        extractedDate = extractedDate + relativedelta(minutes=minOffset)
+    if secOffset != 0:
+        extractedDate = extractedDate + relativedelta(seconds=secOffset)
+
+
+    if hrAbs != -1 and minAbs != -1 and not hrOffset and not minOffset and not secOffset:
         # If no time was supplied in the string set the time to default
         # time if it's available
         if hrAbs is None and minAbs is None and default_time is not None:
@@ -1407,17 +1417,13 @@ def extract_datetime_en(text, anchorDate=None, default_time=None):
             hrAbs = hrAbs or 0
             minAbs = minAbs or 0
 
-        extractedDate = extractedDate + relativedelta(hours=hrAbs,
-                                                      minutes=minAbs)
+        extractedDate = extractedDate.replace(hour=hrAbs,
+                                              minute=minAbs)
+
         if (hrAbs != 0 or minAbs != 0) and datestr == "":
             if not daySpecified and anchorDate > extractedDate:
                 extractedDate = extractedDate + relativedelta(days=1)
-    if hrOffset != 0:
-        extractedDate = extractedDate + relativedelta(hours=hrOffset)
-    if minOffset != 0:
-        extractedDate = extractedDate + relativedelta(minutes=minOffset)
-    if secOffset != 0:
-        extractedDate = extractedDate + relativedelta(seconds=secOffset)
+
     for idx, word in enumerate(words):
         if words[idx] == "and" and \
                 words[idx - 1] == "" and words[idx + 1] == "":
