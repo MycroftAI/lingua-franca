@@ -710,6 +710,11 @@ class TestNormalize(unittest.TestCase):
         testExtract("what's the weather like next tuesday night",
                     "2017-07-04 22:00:00", "what is weather like night")
 
+    def test_extract_date_years(self):
+        date = datetime(2017, 6, 27, tzinfo=default_timezone())  # Tue June 27, 2017
+        self.assertEqual(extract_datetime('in 2007', date)[0],
+            datetime(2007, 6, 27, tzinfo=date.tzinfo))
+
     def test_extract_ambiguous_time_en(self):
         morning = datetime(2017, 6, 27, 8, 1, 2, tzinfo=default_timezone())
         evening = datetime(2017, 6, 27, 20, 1, 2, tzinfo=default_timezone())
