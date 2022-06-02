@@ -30,9 +30,6 @@ _REGISTERED_FUNCTIONS = ("extract_numbers",
                          "is_fractional",
                          "is_ordinal")
 
-populate_localized_function_dict("parse", langs=get_active_langs())
-
-
 def fuzzy_match(x: str, against: str) -> float:
     """Perform a 'fuzzy' comparison between two strings.
 
@@ -267,3 +264,5 @@ def is_ordinal(input_str, lang=''):
         (bool) or (float): False if not an ordinal, otherwise the number
         corresponding to the ordinal
     """
+
+populate_localized_function_dict("parse", langs=get_active_langs())
