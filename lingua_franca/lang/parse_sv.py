@@ -13,10 +13,147 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+
 from lingua_franca.time import now_local
-from .parse_common import is_numeric, look_for_fractions, Normalizer
+
+from .parse_common import (is_numeric, look_for_fractions, Normalizer,
+                           tokenize, Token)
+
+
+def _find_numbers_in_text(tokens):
+    """Finds duration related numbers in texts and makes a list of mappings.
+
+    The mapping will be for number to token that created it, if no number was
+    created from the token the mapping will be from None to the token.
+
+    The function is optimized to generate data that can be parsed to a duration
+    so it returns the list in reverse order to make the "size" (minutes/hours/
+    etc.) come first and the related numbers afterwards.
+
+    Args:
+        tokens: Tokens to parse
+
+    Returns:
+        list of (number, token) tuples
+    """
+    parts = []
+    for tok in tokens:
+        res = extract_number_sv(tok.word)
+        if res:
+            parts.insert(0, (res, tok))
+            # Special case for quarter of an hour
+            if tok.word == 'kvart':
+                parts.insert(0, (None, Token('timmar', index=-1)))
+        elif tok.word in ['halvtimme', 'halvtimma']:
+            parts.insert(0, (30, tok))
+            parts.insert(0, (None, Token('minuter', index=-1)))
+        else:
+            parts.insert(0, (None, tok))
+    return parts
+
+
+def _combine_adjacent_numbers(number_map):
+    """Combine adjacent numbers through multiplication.
+
+    Walks through a number map and joins adjasent numbers to handle cases
+    such as "en halvtimme" (one half hour).
+
+    Returns:
+        (list): simplified number_map
+    """
+    simplified = []
+    skip = False
+    for i in range(len(number_map) - 1):
+        if skip:
+            skip = False
+            continue
+        if number_map[i][0] and number_map[i + 1][0]:
+            combined_number = number_map[i][0] * number_map[i + 1][0]
+            combined_tokens = (number_map[i][1], number_map[i + 1][1])
+            simplified.append((combined_number, combined_tokens))
+            skip = True
+        else:
+            simplified.append((number_map[i][0], (number_map[i][1],)))
+
+    if not skip:
+        simplified.append((number_map[-1][0], (number_map[-1][1],)))
+    return simplified
+
+
+def extract_duration_sv(text):
+    """
+    Convert an swedish phrase into a number of seconds.
+
+    The function handles durations from seconds up to days.
+
+    Convert things like:
+        "10 minute"
+        "2 and a half hours"
+        "3 days 8 hours 10 minutes and 49 seconds"
+    into an int, representing the total number of seconds.
+
+    The words used in the duration will be consumed, and
+    the remainder returned.
+
+    As an example, "set a timer for 5 minutes" would return
+    (300, "set a timer for").
+
+    Args:
+        text (str): string containing a duration
+
+    Returns:
+        (timedelta, str):
+                    A tuple containing the duration and the remaining text
+                    not consumed in the parsing. The first value will
+                    be None if no duration is found. The text returned
+                    will have whitespace stripped from the ends.
+    """
+    tokens = tokenize(text)
+    number_tok_map = _find_numbers_in_text(tokens)
+    # Combine adjacent numbers
+    simplified = _combine_adjacent_numbers(number_tok_map)
+
+    states = {
+        'days': 0,
+        'hours': 0,
+        'minutes': 0,
+        'seconds': 0
+    }
+
+    # Parser state, mapping words that should set the parser to collect
+    # numbers to a specific time "size"
+    state_words = {
+        'days': ('dygn', 'dag', 'dagar', 'dags'),
+        'hours': ('timmar', 'timme', 'timma', 'timmes', 'timmas'),
+        'minutes': ('minuter', 'minuters', 'minut', 'minuts'),
+        'seconds': ('sekunder', 'sekunders', 'sekund', 'sekunds')
+    }
+    binding_words = ('och')
+
+    consumed = []
+    state = None
+    valid = False
+
+    for num, toks in simplified:
+        if state and num:
+            states[state] += num
+            consumed.extend(toks)
+            valid = True  # If a state field got set this is valid duration
+        elif num is None:
+            for s in state_words:
+                if toks[0].word in state_words[s]:
+                    state = s
+                    consumed.extend(toks)
+                    break
+            else:
+                if toks[0].word not in binding_words:
+                    state = None
+
+    td = timedelta(**states)
+    remainder = ' '.join([t.word for t in tokens if t not in consumed])
+    return (td, remainder) if valid else None
 
 
 def extract_number_sv(text, short_scale=True, ordinals=False):
@@ -29,8 +166,8 @@ def extract_number_sv(text, short_scale=True, ordinals=False):
         (int) or (float): The value of extracted number
     """
     # TODO: short_scale and ordinals don't do anything here.
-    # The parameters are present in the function signature for API compatibility
-    # reasons.
+    # The parameters are present in the function signature for API
+    # compatibility reasons.
     text = text.lower()
     aWords = text.split()
     and_pass = False

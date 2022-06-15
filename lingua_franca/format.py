@@ -29,7 +29,6 @@ from lingua_franca.internal import localized_function, \
     is_supported_full_lang, _raise_unsupported_language, \
     UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning, \
     FunctionNotLocalizedError
-from mycroft.util.time import to_local, now_local
 
 
 _REGISTERED_FUNCTIONS = ("nice_number",
@@ -568,7 +567,6 @@ def nice_response(text, lang=''):
         assertEqual(nice_response_de("10 ^ 2"),
                          "10 hoch 2")
     """
-
 
 @localized_function(run_own_code_on=[FunctionNotLocalizedError])
 @localized_function()
