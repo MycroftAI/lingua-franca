@@ -20,6 +20,7 @@ import ast
 import warnings
 import sys
 from pathlib import Path
+from mycroft.util.time import now_local
 
 # TODO either write a getter for lingua_franca.internal._SUPPORTED_LANGUAGES,
 # or make it public somehow
@@ -35,6 +36,7 @@ from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
+from lingua_franca.format import nice_relative_time
 from lingua_franca.time import default_timezone
 
 
@@ -639,6 +641,26 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(join_list(["a", "b", "c", "d"], "or"), "a, b, c or d")
 
         self.assertEqual(join_list([1, "b", 3, "d"], "or"), "1, b, 3 or d")
+
+
+class TestNiceRelativeTime(unittest.TestCase):
+    def test_format_nice_relative_time(self):
+        now = now_local()
+        two_hours_from_now = now + datetime.timedelta(hours=2)
+        self.assertEqual(
+            nice_relative_time(when=two_hours_from_now, relative_to=now),
+            "2 hours"
+        )
+        seconds_from_now = now + datetime.timedelta(seconds=47)
+        self.assertEqual(
+            nice_relative_time(when=seconds_from_now, relative_to=now),
+            "47 seconds"
+        )
+        days_from_now = now + datetime.timedelta(days=3)
+        self.assertEqual(
+            nice_relative_time(when=days_from_now, relative_to=now),
+            "3 days"
+        )
 
 
 if __name__ == "__main__":
