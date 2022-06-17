@@ -18,7 +18,6 @@
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
 from lingua_franca.lang.common_data_en import _NUM_STRING_EN, \
     _FRACTION_STRING_EN, _LONG_SCALE_EN, _SHORT_SCALE_EN, _SHORT_ORDINAL_EN, _LONG_ORDINAL_EN
-from mycroft.util.time import to_local, now_local
 
 
 def nice_number_en(number, speech=True, denominators=range(1, 21)):
