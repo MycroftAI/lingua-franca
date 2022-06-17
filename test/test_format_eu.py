@@ -19,6 +19,7 @@ import datetime
 
 from lingua_franca.format import nice_number
 from lingua_franca.format import nice_time
+from lingua_franca.format import nice_relative_time
 from lingua_franca.format import pronounce_number
 
 # https://www.euskaltzaindia.eus/index.php?&option=com_ebe&view=bilaketa&Itemid=1161&task=bilaketa&lang=eu&id=1392
@@ -340,6 +341,26 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt, lang="eu-eu", use_24hour=False,
                                    use_ampm=True),
                          "gaueko hamaikak eta laurden")
+
+
+class TestNiceRelativeTime(unittest.TestCase):
+    def test_format_nice_relative_time(self):
+        now = now_local()
+        two_hours_from_now = now + datetime.timedelta(hours=2)
+        self.assertEqual(
+            nice_relative_time(when=two_hours_from_now, relative_to=now),
+            "2 ordu"
+        )
+        seconds_from_now = now + datetime.timedelta(seconds=47)
+        self.assertEqual(
+            nice_relative_time(when=seconds_from_now, relative_to=now),
+            "47 segundo"
+        )
+        days_from_now = now + datetime.timedelta(days=3)
+        self.assertEqual(
+            nice_relative_time(when=days_from_now, relative_to=now),
+            "3 egun"
+        )
 
 
 if __name__ == "__main__":
