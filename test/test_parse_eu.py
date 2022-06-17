@@ -17,8 +17,7 @@ from datetime import datetime
 import unittest
 
 from lingua_franca.parse import (normalize, extract_numbers, extract_number,
-                                 extract_datetime, extract_datetime_eu,
-                                 isFractional_eu)
+                                 extract_datetime, isFractional_eu)
 
 
 class TestNormalize(unittest.TestCase):
@@ -120,8 +119,6 @@ class TestDatetime_eu(unittest.TestCase):
         _now = datetime.now()
         relative_year = _now.year if (_now.month == 1 and _now.day < 11) else \
             (_now.year + 1)
-        self.assertEqual(extract_datetime_eu("11 urt")[0],
-                         datetime(relative_year, 1, 11))
 
         # test months
         self.assertEqual(extract_datetime(
