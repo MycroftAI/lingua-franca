@@ -29,6 +29,7 @@ from lingua_franca.internal import localized_function, \
     is_supported_full_lang, _raise_unsupported_language, \
     UnsupportedLanguageError, NoneLangWarning, InvalidLangWarning, \
     FunctionNotLocalizedError
+from lingua_franca.time import now_local, to_utc
 
 
 _REGISTERED_FUNCTIONS = ("nice_number",
@@ -36,7 +37,7 @@ _REGISTERED_FUNCTIONS = ("nice_number",
                          "pronounce_number",
                          "nice_response",
                          "nice_duration",
-                         "nice_realtive_time")
+                         "nice_relative_time")
 
 populate_localized_function_dict("format", langs=get_active_langs())
 
@@ -569,11 +570,14 @@ def nice_response(text, lang=''):
     """
 
 @localized_function(run_own_code_on=[FunctionNotLocalizedError])
-@localized_function()
 def nice_relative_time(when, relative_to=None, lang=None):
-    """Create a relative phrase to roughly describe a datetime
+    """Create a relative phrase to roughly describe the period between two
+    datetimes.
 
     Examples are "25 seconds", "tomorrow", "7 days".
+
+    Note: The reported period is currently limited to a number of days. Longer
+          periods such as multiple weeks or months will be reported in days.
 
     Args:
         when (datetime): Local timezone
@@ -586,7 +590,7 @@ def nice_relative_time(when, relative_to=None, lang=None):
         now = relative_to
     else:
         now = now_local()
-    delta = to_local(when) - now
+    delta = to_utc(when) - to_utc(now)
 
     if delta.total_seconds() < 1:
         return "now"
