@@ -20,7 +20,6 @@ import ast
 import warnings
 import sys
 from pathlib import Path
-from mycroft.util.time import now_local
 
 # TODO either write a getter for lingua_franca.internal._SUPPORTED_LANGUAGES,
 # or make it public somehow
@@ -645,21 +644,37 @@ class TestNiceDateFormat(unittest.TestCase):
 
 class TestNiceRelativeTime(unittest.TestCase):
     def test_format_nice_relative_time(self):
-        now = now_local()
-        two_hours_from_now = now + datetime.timedelta(hours=2)
+        base_datetime = datetime.datetime(2017, 1, 31, 13, 22, 3,
+                            tzinfo=default_timezone())
+        two_hours_from_base = base_datetime + datetime.timedelta(hours=2)
         self.assertEqual(
-            nice_relative_time(when=two_hours_from_now, relative_to=now),
+            nice_relative_time(when=two_hours_from_base, relative_to=base_datetime),
             "2 hours"
         )
-        seconds_from_now = now + datetime.timedelta(seconds=47)
+        twoish_hours_from_base = base_datetime + datetime.timedelta(hours=2, minutes=27)
         self.assertEqual(
-            nice_relative_time(when=seconds_from_now, relative_to=now),
+            nice_relative_time(when=twoish_hours_from_base, relative_to=base_datetime),
+            "2 hours"
+        )
+        seconds_from_base = base_datetime + datetime.timedelta(seconds=47)
+        self.assertEqual(
+            nice_relative_time(when=seconds_from_base, relative_to=base_datetime),
             "47 seconds"
         )
-        days_from_now = now + datetime.timedelta(days=3)
+        three_days_from_base = base_datetime + datetime.timedelta(days=3)
         self.assertEqual(
-            nice_relative_time(when=days_from_now, relative_to=now),
+            nice_relative_time(when=three_days_from_base, relative_to=base_datetime),
             "3 days"
+        )
+        almost_four_days_from_base = base_datetime + datetime.timedelta(days=3, hours=20)
+        self.assertEqual(
+            nice_relative_time(when=almost_four_days_from_base, relative_to=base_datetime),
+            "4 days"
+        )
+        long_time_from_base = base_datetime + datetime.timedelta(days=957, hours=2, seconds=12)
+        self.assertEqual(
+            nice_relative_time(when=long_time_from_base, relative_to=base_datetime),
+            "957 days"
         )
 
 
