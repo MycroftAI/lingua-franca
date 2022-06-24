@@ -35,6 +35,7 @@ from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
+from lingua_franca.format import nice_relative_time
 from lingua_franca.time import default_timezone
 
 
@@ -639,6 +640,42 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(join_list(["a", "b", "c", "d"], "or"), "a, b, c or d")
 
         self.assertEqual(join_list([1, "b", 3, "d"], "or"), "1, b, 3 or d")
+
+
+class TestNiceRelativeTime(unittest.TestCase):
+    def test_format_nice_relative_time(self):
+        base_datetime = datetime.datetime(2017, 1, 31, 13, 22, 3,
+                            tzinfo=default_timezone())
+        two_hours_from_base = base_datetime + datetime.timedelta(hours=2)
+        self.assertEqual(
+            nice_relative_time(when=two_hours_from_base, relative_to=base_datetime),
+            "2 hours"
+        )
+        twoish_hours_from_base = base_datetime + datetime.timedelta(hours=2, minutes=27)
+        self.assertEqual(
+            nice_relative_time(when=twoish_hours_from_base, relative_to=base_datetime),
+            "2 hours"
+        )
+        seconds_from_base = base_datetime + datetime.timedelta(seconds=47)
+        self.assertEqual(
+            nice_relative_time(when=seconds_from_base, relative_to=base_datetime),
+            "47 seconds"
+        )
+        three_days_from_base = base_datetime + datetime.timedelta(days=3)
+        self.assertEqual(
+            nice_relative_time(when=three_days_from_base, relative_to=base_datetime),
+            "3 days"
+        )
+        almost_four_days_from_base = base_datetime + datetime.timedelta(days=3, hours=20)
+        self.assertEqual(
+            nice_relative_time(when=almost_four_days_from_base, relative_to=base_datetime),
+            "4 days"
+        )
+        long_time_from_base = base_datetime + datetime.timedelta(days=957, hours=2, seconds=12)
+        self.assertEqual(
+            nice_relative_time(when=long_time_from_base, relative_to=base_datetime),
+            "957 days"
+        )
 
 
 if __name__ == "__main__":
