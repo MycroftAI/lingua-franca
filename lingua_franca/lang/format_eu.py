@@ -18,7 +18,7 @@ Format functions for Euskara (eu-eu)
 
 """
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
-from mycroft.util.time import to_local, now_local
+from lingua_franca.time import to_local, now_local
 
 HOUR_STRING_EU = {
     1: 'ordubata',
