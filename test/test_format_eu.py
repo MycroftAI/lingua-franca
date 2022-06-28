@@ -17,12 +17,24 @@
 import unittest
 import datetime
 
+from lingua_franca import load_language, unload_language, set_default_lang
+from lingua_franca.time import now_local
 from lingua_franca.format import nice_number
 from lingua_franca.format import nice_time
 from lingua_franca.format import nice_relative_time
 from lingua_franca.format import pronounce_number
 
 # https://www.euskaltzaindia.eus/index.php?&option=com_ebe&view=bilaketa&Itemid=1161&task=bilaketa&lang=eu&id=1392
+
+
+def setUpModule():
+    load_language('eu')
+    set_default_lang('eu')
+
+
+def tearDownModule():
+    unload_language('eu')
+
 
 NUMBERS_FIXTURE_EU = {
     1.435634: '1,436',

@@ -324,7 +324,7 @@ def normalize_eu(text, remove_articles=True):
 
 
 # TODO MycroftAI/mycroft-core#2348
-def extract_datetime_eu(input_str, currentDate=None, default_time=None):
+def extract_datetime_eu(input_str, anchorDate=None, default_time=None):
     def clean_string(s):
         # cleans the input string of unneeded punctuation and capitalization
         # among other things
@@ -374,15 +374,16 @@ def extract_datetime_eu(input_str, currentDate=None, default_time=None):
 
     if input_str == "":
         return None
-    if currentDate is None:
-        currentDate = datetime.now()
+    if anchorDate is None:
+        anchorDate = datetime.now()
 
     found = False
     daySpecified = False
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
-    dateNow = currentDate
+    dateNow = anchorDate
+    dateNow = dateNow.replace(tzinfo=None)
     today = dateNow.strftime("%w")
     currentYear = dateNow.strftime("%Y")
     fromFlag = False
@@ -1016,6 +1017,7 @@ def extract_datetime_eu(input_str, currentDate=None, default_time=None):
                                           second=0,
                                           minute=0,
                                           hour=0)
+    extractedDate = extractedDate.replace(tzinfo=None)
     if datestr != "":
         en_months = ['january', 'february', 'march', 'april', 'may', 'june',
                      'july', 'august', 'september', 'october', 'november',

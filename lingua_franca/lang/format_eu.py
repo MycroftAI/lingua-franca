@@ -18,7 +18,8 @@ Format functions for Euskara (eu-eu)
 
 """
 from lingua_franca.lang.format_common import convert_to_mixed_fraction
-from lingua_franca.time import to_local, now_local
+from lingua_franca import config
+from lingua_franca.time import to_local, now_local, to_utc
 
 HOUR_STRING_EU = {
     1: 'ordubata',
@@ -99,7 +100,7 @@ FRACTION_STRING_EU = {
 }
 
 
-def nice_number_eu(number, speech, denominators=range(1, 21)):
+def nice_number_eu(number, speech=True, denominators=range(1, 21)):
     """ Euskara helper for nice_number
 
     This function formats a float to human understandable functions. Like
@@ -243,6 +244,9 @@ def nice_time_eu(dt, speech=True, use_24hour=False, use_ampm=False):
     Returns:
         (str): The formatted time string
     """
+    if config.inject_timezones:
+        dt=to_utc(dt)
+
     if use_24hour:
         # e.g. "03:01" or "14:22"
         string = dt.strftime("%H:%M")

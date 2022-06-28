@@ -16,9 +16,20 @@
 from datetime import datetime
 import unittest
 
+from lingua_franca import load_language, unload_language, set_default_lang
 from lingua_franca.parse import (normalize, extract_numbers, extract_number,
                                  extract_datetime)
 from lingua_franca.lang.parse_eu import is_fractional_eu
+
+
+
+def setUpModule():
+    load_language('eu-eu')
+    set_default_lang('eu')
+
+
+def tearDownModule():
+    unload_language('eu')
 
 
 class TestNormalize(unittest.TestCase):
