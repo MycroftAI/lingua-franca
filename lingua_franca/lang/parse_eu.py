@@ -25,7 +25,7 @@ from lingua_franca.lang.parse_common import *
 from lingua_franca.lang.common_data_eu import _NUM_STRING_EU
 
 
-def isFractional_eu(input_str):
+def is_fractional_eu(input_str):
     """
     This function takes the given text and checks if it is a fraction.
 
@@ -93,7 +93,7 @@ def extract_number_eu(text, short_scale=True, ordinals=False):
             val = int(word)
         elif is_numeric(word):
             val = float(word)
-        elif isFractional_eu(word):
+        elif is_fractional_eu(word):
             if next_word in _NUM_STRING_EU:
                 # erdi bat, heren bat, etab
                 result = _NUM_STRING_EU[next_word]
@@ -103,7 +103,7 @@ def extract_number_eu(text, short_scale=True, ordinals=False):
             elif not result:
                 result = 1
                 count += 1
-            result = result * isFractional_eu(word)
+            result = result * is_fractional_eu(word)
             continue
 
         if not val:

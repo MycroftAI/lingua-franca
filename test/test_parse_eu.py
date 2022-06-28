@@ -17,7 +17,8 @@ from datetime import datetime
 import unittest
 
 from lingua_franca.parse import (normalize, extract_numbers, extract_number,
-                                 extract_datetime, isFractional_eu)
+                                 extract_datetime)
+from lingua_franca.lang.parse_eu import is_fractional_eu
 
 
 class TestNormalize(unittest.TestCase):
@@ -100,10 +101,10 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(extract_number("bi puntu zero bi", lang='eu'), 2.02)
 
     def test_isFraction_eu(self):
-        self.assertEqual(isFractional_eu("hogeirena"), 1.0 / 20)
-        self.assertEqual(isFractional_eu("hogeita hamarrena"), 1.0 / 30)
-        self.assertEqual(isFractional_eu("ehunena"), 1.0 / 100)
-        self.assertEqual(isFractional_eu("milarena"), 1.0 / 1000)
+        self.assertEqual(is_fractional_eu("hogeirena"), 1.0 / 20)
+        self.assertEqual(is_fractional_eu("hogeita hamarrena"), 1.0 / 30)
+        self.assertEqual(is_fractional_eu("ehunena"), 1.0 / 100)
+        self.assertEqual(is_fractional_eu("milarena"), 1.0 / 1000)
 
     @unittest.skip("unwritten logic")
     def test_comma_fraction_logic_eu(self):
