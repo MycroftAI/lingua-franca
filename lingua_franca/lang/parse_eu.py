@@ -14,32 +14,23 @@
 # limitations under the License.
 #
 """
-    Parse functions for Portuguese (PT-PT)
-
+    Parse functions for Basque (eu)
     TODO: numbers greater than 999999
-    TODO: date time pt
 """
-
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
-from lingua_franca.lang.common_data_pt import _NUMBERS_PT, \
-    _FEMALE_DETERMINANTS_PT, _FEMALE_ENDINGS_PT, \
-    _MALE_DETERMINANTS_PT, _MALE_ENDINGS_PT, _GENDERS_PT
-from lingua_franca.internal import resolve_resource_file
-from lingua_franca.lang.parse_common import Normalizer
-from lingua_franca.time import now_local
-import json
-import re
+from dateutil.tz import gettz
+from lingua_franca.lang.format_eu import pronounce_number_eu
+from lingua_franca.lang.parse_common import *
+from lingua_franca.lang.common_data_eu import _NUM_STRING_EU
 
 
-def is_fractional_pt(input_str, short_scale=True):
+def is_fractional_eu(input_str):
     """
     This function takes the given text and checks if it is a fraction.
 
     Args:
-        input_str (str): the string to check if fractional
-        short_scale (bool): use short scale if True, long scale if False
+        text (str): the string to check if fractional
     Returns:
         (bool) or (float): False if not a fraction, otherwise the fraction
 
@@ -47,27 +38,31 @@ def is_fractional_pt(input_str, short_scale=True):
     if input_str.endswith('s', -1):
         input_str = input_str[:len(input_str) - 1]  # e.g. "fifths"
 
-    aFrac = ["meio", "terço", "quarto", "quinto", "sexto",
-             "setimo", "oitavo", "nono", "décimo"]
+    aFrac = {"erdia": 2, "erdi": 2, "heren": 3, "laurden": 4,
+             "laurdena": 4, "bosten": 5, "bostena": 5, "seiren": 6, "seirena": 6,
+             "zazpiren": 7, "zapirena": 7, "zortziren": 8, "zortzirena": 8,
+             "bederatziren": 9, "bederatzirena": 9, "hamarren": 10, "hamarrena": 10,
+             "hamaikaren": 11, "hamaikarena": 11, "hamabiren": 12, "hamabirena": 12}
 
     if input_str.lower() in aFrac:
-        return 1.0 / (aFrac.index(input_str) + 2)
-    if input_str == "vigésimo":
+        return 1.0 / aFrac[input_str]
+    if (input_str == "hogeiren" or input_str == "hogeirena"):
         return 1.0 / 20
-    if input_str == "trigésimo":
+    if (input_str == "hogeita hamarren" or input_str == "hogeita hamarrena"):
         return 1.0 / 30
-    if input_str == "centésimo":
+    if (input_str == "ehunen" or input_str == "ehunena"):
         return 1.0 / 100
-    if input_str == "milésimo":
+    if (input_str == "milaren" or input_str == "milarena"):
         return 1.0 / 1000
-    if (input_str == "sétimo" or input_str == "septimo" or
-            input_str == "séptimo"):
-        return 1.0 / 7
-
     return False
 
 
-def extract_number_pt(text, short_scale=True, ordinals=False):
+# TODO: short_scale and ordinals don't do anything here.
+# The parameters are present in the function signature for API compatibility
+# reasons.
+#
+# Returns incorrect output on certain fractional phrases like, "cuarto de dos"
+def extract_number_eu(text, short_scale=True, ordinals=False):
     """
     This function prepares the given text for parsing by making
     numbers consistent, getting rid of contractions, etc.
@@ -77,11 +72,7 @@ def extract_number_pt(text, short_scale=True, ordinals=False):
         (int) or (float): The value of extracted number
 
     """
-    # TODO: short_scale and ordinals don't do anything here.
-    # The parameters are present in the function signature for API compatibility
-    # reasons.
-    text = text.lower()
-    aWords = text.split()
+    aWords = text.lower().split()
     count = 0
     result = None
     while count < len(aWords):
@@ -96,17 +87,23 @@ def extract_number_pt(text, short_scale=True, ordinals=False):
             next_word = None
 
         # is current word a number?
-        if word in _NUMBERS_PT:
-            val = _NUMBERS_PT[word]
+        if word in _NUM_STRING_EU:
+            val = _NUM_STRING_EU[word]
         elif word.isdigit():  # doesn't work with decimals
             val = int(word)
         elif is_numeric(word):
             val = float(word)
-        elif is_fractional_pt(word):
-            if not result:
+        elif is_fractional_eu(word):
+            if next_word in _NUM_STRING_EU:
+                # erdi bat, heren bat, etab
+                result = _NUM_STRING_EU[next_word]
+                # hurrengo hitza (bat, bi, ...) salto egin 
+                next_word = None
+                count += 2
+            elif not result:
                 result = 1
-            result = result * is_fractional_pt(word)
-            count += 1
+                count += 1
+            result = result * is_fractional_eu(word)
             continue
 
         if not val:
@@ -121,16 +118,16 @@ def extract_number_pt(text, short_scale=True, ordinals=False):
             if result is None:
                 result = 0
             # handle fractions
-            if next_word != "avos":
-                result += val
-            else:
+            if next_word == "en" or next_word == "ren":
                 result = float(result) / float(val)
+            else:
+                result = val
 
         if next_word is None:
             break
 
         # number word and fraction
-        ands = ["e"]
+        ands = ["eta"]
         if next_word in ands:
             zeros = 0
             if result is None:
@@ -141,7 +138,7 @@ def extract_number_pt(text, short_scale=True, ordinals=False):
             for word in newWords:
                 newText += word + " "
 
-            afterAndVal = extract_number_pt(newText[:-1])
+            afterAndVal = extract_number_eu(newText[:-1])
             if afterAndVal:
                 if result < afterAndVal or result < 20:
                     while afterAndVal > 1:
@@ -161,14 +158,14 @@ def extract_number_pt(text, short_scale=True, ordinals=False):
                 newText = ""
                 for word in newWords:
                     newText += word + " "
-                afterAndVal = extract_number_pt(newText[:-1])
+                afterAndVal = extract_number_eu(newText[:-1])
                 if afterAndVal:
                     if result is None:
                         result = 0
                     result += afterAndVal
                     break
 
-        decimals = ["ponto", "virgula", "vírgula", ".", ","]
+        decimals = ["puntu", "koma", ".", ","]
         if next_word in decimals:
             zeros = 0
             newWords = aWords[count + 2:]
@@ -180,7 +177,7 @@ def extract_number_pt(text, short_scale=True, ordinals=False):
                     zeros += 1
                 else:
                     break
-            afterDotVal = str(extract_number_pt(newText[:-1]))
+            afterDotVal = str(extract_number_eu(newText[:-1]))
             afterDotVal = zeros * "0" + afterDotVal
             result = float(str(result) + "." + afterDotVal)
             break
@@ -199,104 +196,194 @@ def extract_number_pt(text, short_scale=True, ordinals=False):
     return result or False
 
 
-class PortugueseNormalizer(Normalizer):
-    with open(resolve_resource_file("text/pt-pt/normalize.json")) as f:
-        _default_config = json.load(f)
+# TODO Not parsing 'cero'
+def eu_number_parse(words, i):
+    def eu_cte(i, s):
+        if i < len(words) and s == words[i]:
+            return s, i + 1
+        return None
 
-    @staticmethod
-    def tokenize(utterance):
-        # Split things like 12%
-        utterance = re.sub(r"([0-9]+)([\%])", r"\1 \2", utterance)
-        # Split things like #1
-        utterance = re.sub(r"(\#)([0-9]+\b)", r"\1 \2", utterance)
-        # Split things like amo-te
-        utterance = re.sub(r"([a-zA-Z]+)(-)([a-zA-Z]+\b)", r"\1 \2 \3",
-                           utterance)
-        tokens = utterance.split()
-        if tokens[-1] == '-':
-            tokens = tokens[:-1]
+    def eu_number_word(i, mi, ma):
+        if i < len(words):
+            v = _NUM_STRING_EU.get(words[i])
+            if v and v >= mi and v <= ma:
+                return v, i + 1
+        return None
 
-        return tokens
+    def eu_number_1_99(i):
+        if i >= len(words):
+            return None
+        r1 = eu_number_word(i, 1, 29)
+        if r1:
+            return r1
+
+        composed = False
+        if  words[i] != "eta" and words[i][-2:] == "ta":
+            composed = True
+            words[i] = words[i][:-2]
+
+        r1 = eu_number_word(i, 20, 90)
+
+        if r1:
+            v1, i1 = r1
+
+            if composed:
+                # i2 = r2[1]
+                r3 = eu_number_word(i1, 1, 19)
+                if r3:
+                    v3, i3 = r3
+                    return v1 + v3, i3
+            return r1
+        return None
+
+    def eu_number_1_999(i):
+        r1 = eu_number_word(i, 100, 900)
+        if r1:
+            v1, i1 = r1
+            r2 = eu_cte(i1, "eta")
+            if r2:
+                i2 = r2[1]
+                r3 = eu_number_1_99(i2)
+                if r3:
+                    v3, i3 = r3
+                    return v1 + v3, i3
+            else:
+                return r1
+
+        # [1-99]
+        r1 = eu_number_1_99(i)
+        if r1:
+            return r1
+
+        return None
+
+    def eu_number(i):
+        # check for cero
+        r1 = eu_number_word(i, 0, 0)
+        if r1:
+            return r1
+
+        # check for [1-999] (mil [0-999])?
+        r1 = eu_number_1_999(i)
+        if r1:
+            v1, i1 = r1
+            r2 = eu_cte(i1, "mila")
+            if r2:
+                i2 = r2[1]
+                r3 = eu_number_1_999(i2)
+                if r3:
+                    v3, i3 = r3
+                    return v1 * 1000 + v3, i3
+                else:
+                    return v1 * 1000, i2
+            else:
+                return r1
+        return None
+
+    return eu_number(i)
 
 
-def normalize_pt(text, remove_articles=True):
-    """ PT string normalization """
-    return PortugueseNormalizer().normalize(text, remove_articles)
+def extract_numbers_eu(text, short_scale=True, ordinals=False):
+    """
+        Takes in a string and extracts a list of numbers.
+
+    Args:
+        text (str): the string to extract a number from
+        short_scale (bool): Use "short scale" or "long scale" for large
+            numbers -- over a million.  The default is short scale, which
+            is now common in most English speaking countries.
+            See https://en.wikipedia.org/wiki/Names_of_large_numbers
+        ordinals (bool): consider ordinal numbers, e.g. third=3 instead of 1/3
+    Returns:
+        list: list of extracted numbers as floats
+    """
+    return extract_numbers_generic(text, pronounce_number_eu, extract_number_eu,
+                                   short_scale=short_scale, ordinals=ordinals)
 
 
-def extract_datetime_pt(text, anchorDate=None, default_time=None):
+def normalize_eu(text, remove_articles=True):
+    """ Basque string normalization """
+
+    words = text.split()  # this also removed extra spaces
+    normalized = ""
+    i = 0
+    while i < len(words):
+        word = words[i]
+        # Convert numbers into digits
+        r = eu_number_parse(words, i)
+        if r:
+            v, i = r
+            normalized += " " + str(v)
+            continue
+
+        normalized += " " + word
+        i += 1
+
+    return normalized[1:]  # strip the initial space
+    return text
+
+
+# TODO MycroftAI/mycroft-core#2348
+def extract_datetime_eu(input_str, anchorDate=None, default_time=None):
     def clean_string(s):
         # cleans the input string of unneeded punctuation and capitalization
         # among other things
-        symbols = [".", ",", ";", "?", "!", "º", "ª"]
-        noise_words = ["o", "os", "a", "as", "do", "da", "dos", "das", "de",
-                       "ao", "aos"]
+        symbols = [".", ",", ";", "?", "!", "."]
+        # noise_words = ["entre", "la", "del", "al", "el", "de",
+        #                "para", "una", "cualquier", "a",
+        #                "e'", "esta", "este"]
+        # TODO
+        noise_words = ["artean", "tartean", "edozein", "hau", "hontan", "honetan",
+                       "para", "una", "cualquier", "a",
+                       "e'", "esta", "este"]
 
         for word in symbols:
             s = s.replace(word, "")
         for word in noise_words:
             s = s.replace(" " + word + " ", " ")
         s = s.lower().replace(
-            "á",
-            "a").replace(
-            "ç",
-            "c").replace(
-            "à",
-            "a").replace(
-            "ã",
-            "a").replace(
-            "é",
-            "e").replace(
-            "è",
-            "e").replace(
-            "ê",
-            "e").replace(
-            "ó",
-            "o").replace(
-            "ò",
-            "o").replace(
             "-",
             " ").replace(
             "_",
             "")
-        # handle synonims and equivalents, "tomorrow early = tomorrow morning
-        synonims = {"manha": ["manhazinha", "cedo", "cedinho"],
-                    "tarde": ["tardinha", "tarde"],
-                    "noite": ["noitinha", "anoitecer"],
-                    "todos": ["ao", "aos"],
-                    "em": ["do", "da", "dos", "das", "de"]}
-        for syn in synonims:
-            for word in synonims[syn]:
+        # handle synonyms and equivalents, "tomorrow early = tomorrow morning
+        synonyms = {"goiza": ["egunsentia", "goiz", "oso goiz"],
+                    "arratsaldea": ["arratsa", "bazkalostea", "arratsalde", "arrats"],
+                    "gaua": ["iluntzea", "berandu", "gau", "gaba"]}
+        for syn in synonyms:
+            for word in synonyms[syn]:
                 s = s.replace(" " + word + " ", " " + syn + " ")
-        # relevant plurals, cant just extract all s in pt
-        wordlist = ["manhas", "noites", "tardes", "dias", "semanas", "anos",
-                    "minutos", "segundos", "nas", "nos", "proximas",
-                    "seguintes", "horas"]
+        # relevant plurals
+        wordlist = ["goizak", "arratsaldeak", "gauak", "egunak", "asteak",
+                    "urteak", "minutuak", "segunduak", "hurrengoak",
+                    "datozenak", "orduak", "hilabeteak"]
         for _, word in enumerate(wordlist):
-            s = s.replace(word, word.rstrip('s'))
-        s = s.replace("meses", "mes").replace("anteriores", "anterior")
+            s = s.replace(word, word.rstrip('ak'))
+        # s = s.replace("meses", "mes").replace("anteriores", "anterior")
         return s
 
     def date_found():
         return found or \
             (
-                datestr != "" or timeStr != "" or
+                datestr != "" or
                 yearOffset != 0 or monthOffset != 0 or
                 dayOffset is True or hrOffset != 0 or
                 hrAbs or minOffset != 0 or
                 minAbs or secOffset != 0
             )
 
-    if text == "":
+    if input_str == "":
         return None
+    if anchorDate is None:
+        anchorDate = datetime.now()
 
-    anchorDate = anchorDate or now_local()
     found = False
     daySpecified = False
     dayOffset = False
     monthOffset = 0
     yearOffset = 0
     dateNow = anchorDate
+    dateNow = dateNow.replace(tzinfo=None)
     today = dateNow.strftime("%w")
     currentYear = dateNow.strftime("%Y")
     fromFlag = False
@@ -304,27 +391,27 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
     hasYear = False
     timeQualifier = ""
 
-    words = clean_string(text).split(" ")
-    timeQualifiersList = ['manha', 'tarde', 'noite']
-    time_indicators = ["em", "as", "nas", "pelas", "volta", "depois", "estas",
-                       "no", "dia", "hora"]
-    days = ['segunda', 'terca', 'quarta',
-            'quinta', 'sexta', 'sabado', 'domingo']
-    months = ['janeiro', 'febreiro', 'marco', 'abril', 'maio', 'junho',
-              'julho', 'agosto', 'setembro', 'outubro', 'novembro',
-              'dezembro']
-    monthsShort = ['jan', 'feb', 'mar', 'abr', 'mai', 'jun', 'jul', 'ag',
-                   'set', 'out', 'nov', 'dec']
-    nexts = ["proximo", "proxima"]
-    suffix_nexts = ["seguinte", "subsequente", "seguir"]
-    lasts = ["ultimo", "ultima"]
-    suffix_lasts = ["passada", "passado", "anterior", "antes"]
-    nxts = ["depois", "seguir", "seguida", "seguinte", "proxima", "proximo"]
-    prevs = ["antes", "ante", "previa", "previamente", "anterior"]
-    froms = ["partir", "em", "para", "na", "no", "daqui", "seguir",
-             "depois", "por", "proxima", "proximo", "da", "do", "de"]
-    thises = ["este", "esta", "deste", "desta", "neste", "nesta", "nesse",
-              "nessa"]
+    words = clean_string(input_str).split(" ")
+    timeQualifiersList = ['goiza', 'arratsaldea', 'gaua']
+    time_indicators = ["en", "la", "al", "por", "pasados",
+                       "pasadas", "día", "hora"]
+    days = ['astelehena', 'asteartea', 'asteazkena',
+            'osteguna', 'ostirala', 'larunbata', 'igandea']
+    months = ['urtarrila', 'otsaila', 'martxoa', 'apirila', 'maiatza', 'ekaina',
+              'uztaila', 'abuztua', 'iraila', 'urria', 'azaroa',
+              'abendua']
+    monthsShort = ['urt', 'ots', 'mar', 'api', 'mai', 'eka', 'uzt', 'abu',
+                   'ira', 'urr', 'aza', 'abe']
+    nexts = ["hurrengo", "datorren", "ondorengo"]
+    suffix_nexts = ["barru"]
+    lasts = ["azken", "duela"]
+    suffix_lasts = ["aurreko"]
+    nxts = ["ondorengo", "hurrengo", "datorren"]
+    prevs = ["aurreko", "duela", "previo", "anterior"]
+    #  TODO
+    froms = ["desde", "en", "para", "después de", "por", "próximo",
+             "próxima", "de"]
+    thises = ["hau"]
     froms += thises
     lists = nxts + prevs + froms + time_indicators
     for idx, word in enumerate(words):
@@ -343,43 +430,41 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
             timeQualifier = word
 
         # parse today, tomorrow, yesterday
-        elif word == "hoje" and not fromFlag:
+        elif (word == "gaur" or word == "gaurko") and not fromFlag:
             dayOffset = 0
             used += 1
-        elif word == "amanha" and not fromFlag:
+        elif (word == "bihar" or word == "biharko") and not fromFlag:
             dayOffset = 1
             used += 1
-        elif word == "ontem" and not fromFlag:
+        elif (word == "atzo" or word == "atzoko") and not fromFlag:
             dayOffset -= 1
             used += 1
-        # "before yesterday" and "before before yesterday"
-        elif (word == "anteontem" or
-              (word == "ante" and wordNext == "ontem")) and not fromFlag:
+        # before yesterday
+        elif (word == "herenegun" or word == "herenegungo") and not fromFlag:
             dayOffset -= 2
             used += 1
-            if wordNext == "ontem":
-                used += 1
-        elif word == "ante" and wordNext == "ante" and wordNextNext == \
-                "ontem" and not fromFlag:
-            dayOffset -= 3
-            used += 3
-        elif word == "anteanteontem" and not fromFlag:
-            dayOffset -= 3
-            used += 1
+            # if wordNext == "ayer":
+            #     used += 1
+        # elif word == "ante" and wordNext == "ante" and wordNextNext == \
+        #         "ayer" and not fromFlag:
+        #     dayOffset -= 3
+        #     used += 3
+        # elif word == "ante anteayer" and not fromFlag:
+        #     dayOffset -= 3
+        #     used += 1
         # day after tomorrow
-        elif word == "depois" and wordNext == "amanha" and not fromFlag:
+        elif (word == "etzi" or word == "etziko") and not fromFlag:
             dayOffset += 2
-            used = 2
-        # day before yesterday
-        elif word == "antes" and wordNext == "ontem" and not fromFlag:
-            dayOffset -= 2
-            used = 2
+            used = 1
+        elif (word == "etzidamu" or word == "etzidamuko") and not fromFlag:
+            dayOffset += 3
+            used = 1
         # parse 5 days, 10 weeks, last week, next week, week after
-        elif word == "dia":
-            if wordNext == "depois" or wordNext == "antes":
+        elif word == "egun" or word == "eguna" or word == "eguneko":
+            if wordPrevPrev and wordPrevPrev == "duela":
                 used += 1
                 if wordPrev and wordPrev[0].isdigit():
-                    dayOffset += int(wordPrev)
+                    dayOffset -= int(wordPrev)
                     start -= 1
                     used += 1
             elif (wordPrev and wordPrev[0].isdigit() and
@@ -394,7 +479,7 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                 start -= 1
                 used += 2
 
-        elif word == "semana" and not fromFlag:
+        elif word == "aste" or word == "astea" or word == "asteko" and not fromFlag:
             if wordPrev[0].isdigit():
                 dayOffset += int(wordPrev) * 7
                 start -= 1
@@ -420,7 +505,7 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                     start -= 1
                     used = 2
         # parse 10 months, next month, last month
-        elif word == "mes" and not fromFlag:
+        elif word == "hilabete" or word == "hilabetea" or word == "hilabeteko" and not fromFlag:
             if wordPrev[0].isdigit():
                 monthOffset = int(wordPrev)
                 start -= 1
@@ -446,61 +531,52 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                     start -= 1
                     used = 2
         # parse 5 years, next year, last year
-        elif word == "ano" and not fromFlag:
+        elif word == "urte" or word == "urtea" or word == "urteko" and not fromFlag:
             if wordPrev[0].isdigit():
                 yearOffset = int(wordPrev)
                 start -= 1
                 used = 2
             for w in nexts:
                 if wordPrev == w:
-                    yearOffset = 7
+                    yearOffset = 1
                     start -= 1
                     used = 2
             for w in lasts:
                 if wordPrev == w:
-                    yearOffset = -7
+                    yearOffset = -1
                     start -= 1
                     used = 2
             for w in suffix_nexts:
                 if wordNext == w:
-                    yearOffset = 7
+                    yearOffset = 1
                     start -= 1
                     used = 2
             for w in suffix_lasts:
                 if wordNext == w:
-                    yearOffset = -7
+                    yearOffset = -1
                     start -= 1
                     used = 2
         # parse Monday, Tuesday, etc., and next Monday,
         # last Tuesday, etc.
         elif word in days and not fromFlag:
-
             d = days.index(word)
             dayOffset = (d + 1) - int(today)
             used = 1
             if dayOffset < 0:
                 dayOffset += 7
-            for w in nexts:
-                if wordPrev == w:
-                    dayOffset += 7
-                    used += 1
-                    start -= 1
-            for w in lasts:
-                if wordPrev == w:
-                    dayOffset -= 7
-                    used += 1
-                    start -= 1
-            for w in suffix_nexts:
-                if wordNext == w:
-                    dayOffset += 7
-                    used += 1
-                    start -= 1
-            for w in suffix_lasts:
-                if wordNext == w:
-                    dayOffset -= 7
-                    used += 1
-                    start -= 1
-            if wordNext == "feira":
+            if wordPrev == "hurrengo":
+                dayOffset += 7
+                used += 1
+                start -= 1
+            elif wordPrev == "aurreko":
+                dayOffset -= 7
+                used += 1
+                start -= 1
+            if wordNext == "hurrengo":
+                # dayOffset += 7
+                used += 1
+            elif wordNext == "aurreko":
+                # dayOffset -= 7
                 used += 1
         # parse 15 of July, June 20th, Feb 18, 19 of February
         elif word in months or word in monthsShort:
@@ -511,7 +587,7 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
             used += 1
             datestr = months[m]
             if wordPrev and wordPrev[0].isdigit():
-                # 13 maio
+                # 13 mayo
                 datestr += " " + wordPrev
                 start -= 1
                 used += 1
@@ -523,7 +599,7 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                     hasYear = False
 
             elif wordNext and wordNext[0].isdigit():
-                # maio 13
+                # mayo 13
                 datestr += " " + wordNext
                 used += 1
                 if wordNextNext and wordNextNext[0].isdigit():
@@ -534,7 +610,7 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                     hasYear = False
 
             elif wordPrevPrev and wordPrevPrev[0].isdigit():
-                # 13 dia maio
+                # 13 dia mayo
                 datestr += " " + wordPrevPrev
 
                 start -= 2
@@ -547,7 +623,7 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                     hasYear = False
 
             elif wordNextNext and wordNextNext[0].isdigit():
-                # maio dia 13
+                # mayo dia 13
                 datestr += " " + wordNextNext
                 used += 2
                 if wordNextNextNext and wordNextNextNext[0].isdigit():
@@ -563,38 +639,36 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
         # parse 5 days from tomorrow, 10 weeks from next thursday,
         # 2 months from July
         validFollowups = days + months + monthsShort
-        validFollowups.append("hoje")
-        validFollowups.append("amanha")
-        validFollowups.append("ontem")
-        validFollowups.append("anteontem")
-        validFollowups.append("agora")
-        validFollowups.append("ja")
-        validFollowups.append("ante")
+        validFollowups.append("gaur")
+        validFollowups.append("bihar")
+        validFollowups.append("atzo")
+        # validFollowups.append("atzoko")
+        validFollowups.append("herenegun")
+        validFollowups.append("orain")
+        validFollowups.append("oraintxe")
+        # validFollowups.append("ante")
 
-        # TODO debug word "depois" that one is failing for some reason
+        # TODO
         if word in froms and wordNext in validFollowups:
 
-            if not (wordNext == "amanha" and wordNext == "ontem") and not (
-                    word == "depois" or word == "antes" or word == "em"):
-                used = 2
+            if not (word == "bihar" or word == "herenegun" or word == "atzo"):
+                used = 1
                 fromFlag = True
-            if wordNext == "amanha" and word != "depois":
+            if wordNext == "bihar":
                 dayOffset += 1
-            elif wordNext == "ontem":
+            elif wordNext == "atzo" or wordNext == "atzoko":
                 dayOffset -= 1
-            elif wordNext == "anteontem":
+            elif wordNext == "herenegun":
                 dayOffset -= 2
-            elif wordNext == "ante" and wordNextNext == "ontem":
-                dayOffset -= 2
-            elif (wordNext == "ante" and wordNextNext == "ante" and
-                  wordNextNextNext == "ontem"):
-                dayOffset -= 3
+            # elif (wordNext == "ante" and wordNext == "ante" and
+            #       wordNextNextNext == "ayer"):
+            #     dayOffset -= 3
             elif wordNext in days:
                 d = days.index(wordNext)
                 tmpOffset = (d + 1) - int(today)
                 used = 2
-                if wordNextNext == "feira":
-                    used += 1
+                # if wordNextNext == "feira":
+                #     used += 1
                 if tmpOffset < 0:
                     tmpOffset += 7
                 if wordNextNext:
@@ -617,12 +691,11 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                         tmpOffset -= 7
                         used += 1
                 dayOffset += tmpOffset
-                if wordNextNextNext == "feira":
-                    used += 1
+                # if wordNextNextNext == "feira":
+                #     used += 1
         if wordNext in months:
             used -= 1
         if used > 0:
-
             if start - 1 > 0 and words[start - 1] in lists:
                 start -= 1
                 used += 1
@@ -636,13 +709,11 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
             daySpecified = True
 
     # parse time
-    timeStr = ""
     hrOffset = 0
     minOffset = 0
     secOffset = 0
     hrAbs = None
     minAbs = None
-    military = False
 
     for idx, word in enumerate(words):
         if word == "":
@@ -655,53 +726,60 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
         wordNextNextNext = words[idx + 3] if idx + 3 < len(words) else ""
         # parse noon, midnight, morning, afternoon, evening
         used = 0
-        if word == "meio" and wordNext == "dia":
+        if word == "eguerdi" or word == "eguerdia" or word == "eguerdian":
             hrAbs = 12
             used += 2
-        elif word == "meia" and wordNext == "noite":
+        elif word == "gauerdi" or word == "gauerdia" or word == "gauerdian":
             hrAbs = 0
             used += 2
-        elif word == "manha":
+        elif word == "goiza":
             if not hrAbs:
                 hrAbs = 8
             used += 1
-        elif word == "tarde":
+        elif word == "arratsaldea" or word == "arratsa" or word == "arratsean" or word == "arratsaldean":
             if not hrAbs:
                 hrAbs = 15
             used += 1
-        elif word == "meio" and wordNext == "tarde":
+        # TODO
+        # elif word == "media" and wordNext == "tarde":
+        #     if not hrAbs:
+        #         hrAbs = 17
+        #     used += 2
+        elif word == "iluntze" or word == "iluntzea" or word == "iluntzean":
             if not hrAbs:
-                hrAbs = 17
+                hrAbs = 20
             used += 2
-        elif word == "meio" and wordNext == "manha":
+        # TODO
+        # elif word == "media" and wordNext == "mañana":
+        #     if not hrAbs:
+        #         hrAbs = 10
+        #     used += 2
+        # elif word == "fim" and wordNext == "tarde":
+        #     if not hrAbs:
+        #         hrAbs = 19
+        #     used += 2
+        elif word == "egunsentia" or word == "egunsentian" or word == "egunsenti":
             if not hrAbs:
-                hrAbs = 10
-            used += 2
-        elif word == "fim" and wordNext == "tarde":
+                hrAbs = 6
+            used += 1
+        # elif word == "madrugada":
+        #     if not hrAbs:
+        #         hrAbs = 1
+        #     used += 2
+        elif word == "gaua" or word == "gauean" or word == "gau":
             if not hrAbs:
-                hrAbs = 19
-            used += 2
-        elif word == "fim" and wordNext == "manha":
-            if not hrAbs:
-                hrAbs = 11
-            used += 2
-        elif word == "tantas" and wordNext == "manha":
-            if not hrAbs:
-                hrAbs = 4
-            used += 2
-        elif word == "noite":
-            if not hrAbs:
-                hrAbs = 22
+                hrAbs = 21
             used += 1
         # parse half an hour, quarter hour
-        elif word == "hora" and \
+        # TODO
+        elif (word == "hora" and
                 (wordPrev in time_indicators or wordPrevPrev in
-                 time_indicators):
-            if wordPrev == "meia":
+                 time_indicators)):
+            if wordPrev == "media":
                 minOffset = 30
-            elif wordPrev == "quarto":
+            elif wordPrev == "cuarto":
                 minOffset = 15
-            elif wordPrevPrev == "quarto":
+            elif wordPrevPrev == "cuarto":
                 minOffset = 15
                 if idx > 2 and words[idx - 3] in time_indicators:
                     words[idx - 3] = ""
@@ -748,33 +826,33 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                     if nextWord == "am" or nextWord == "pm":
                         remainder = nextWord
                         used += 1
-                    elif wordNext == "manha":
+                    elif wordNext == "goiza" or wordNext == "egunsentia" or wordNext == "goizeko" or wordNext == "egunsentiko":
                         remainder = "am"
                         used += 1
-                    elif wordNext == "tarde":
+                    elif wordPrev == "arratsaldeko" or wordPrev == "arratsaldea" or wordPrev == "arratsaldean":
                         remainder = "pm"
                         used += 1
-                    elif wordNext == "noite":
+                    elif wordNext == "gaua" or wordNext == "gauean" or wordNext == "gaueko":
                         if 0 < int(word[0]) < 6:
                             remainder = "am"
                         else:
                             remainder = "pm"
                         used += 1
-                    elif wordNext in thises and wordNextNext == "manha":
+                    elif wordNext in thises and (wordNextNext == "goiza" or wordNextNext == "goizean" or wordNextNext == "goizeko"):
                         remainder = "am"
                         used = 2
-                    elif wordNext in thises and wordNextNext == "tarde":
+                    elif wordNext in thises and \
+                        (wordNextNext == "arratsaldea" or wordNextNext == "arratsaldean" or wordNextNext == "arratsaldeko"):
                         remainder = "pm"
                         used = 2
-                    elif wordNext in thises and wordNextNext == "noite":
+                    elif wordNext in thises and (wordNextNext == "gaua" or wordNextNext == "gauean" or wordNextNext == "gaueko"):
                         remainder = "pm"
                         used = 2
                     else:
                         if timeQualifier != "":
-                            military = True
                             if strHH <= 12 and \
-                                    (timeQualifier == "manha" or
-                                     timeQualifier == "tarde"):
+                                    (timeQualifier == "goiza" or
+                                     timeQualifier == "arratsaldea"):
                                 strHH += 12
 
             else:
@@ -811,30 +889,29 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                 else:
                     if (wordNext == "pm" or
                             wordNext == "p.m." or
-                            wordNext == "tarde"):
+                            wordPrev == "arratsaldeko"):
                         strHH = strNum
                         remainder = "pm"
-                        used = 1
+                        used = 0
                     elif (wordNext == "am" or
                           wordNext == "a.m." or
-                          wordNext == "manha"):
+                          wordPrev == "goizeko"):
                         strHH = strNum
                         remainder = "am"
-                        used = 1
+                        used = 0
                     elif (int(word) > 100 and
                           (
-                        wordPrev == "o" or
-                        wordPrev == "oh" or
+                        # wordPrev == "o" or
+                        # wordPrev == "oh" or
                         wordPrev == "zero"
                     )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = int(word) / 100
                         strMM = int(word) - strHH * 100
-                        military = True
-                        if wordNext == "hora":
+                        if wordNext == "orduak":
                             used += 1
                     elif (
-                            wordNext == "hora" and
+                            wordNext == "orduak" and
                             word[0] != '0' and
                             (
                                 int(word) < 100 and
@@ -848,14 +925,14 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                         hrAbs = -1
                         minAbs = -1
 
-                    elif wordNext == "minuto":
+                    elif wordNext == "minutu":
                         # "in 10 minutes"
                         minOffset = int(word)
                         used = 2
                         isTime = False
                         hrAbs = -1
                         minAbs = -1
-                    elif wordNext == "segundo":
+                    elif wordNext == "segundu":
                         # in 5 seconds
                         secOffset = int(word)
                         used = 2
@@ -865,24 +942,23 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                     elif int(word) > 100:
                         strHH = int(word) / 100
                         strMM = int(word) - strHH * 100
-                        military = True
-                        if wordNext == "hora":
+                        if wordNext == "ordu":
                             used += 1
 
                     elif wordNext == "" or (
-                            wordNext == "em" and wordNextNext == "ponto"):
+                            wordNext == "puntuan"):
                         strHH = word
                         strMM = 00
-                        if wordNext == "em" and wordNextNext == "ponto":
+                        if wordNext == "puntuan":
                             used += 2
-                            if wordNextNextNext == "tarde":
+                            if wordNextNextNext == "arratsaldea":
                                 remainder = "pm"
                                 used += 1
-                            elif wordNextNextNext == "manha":
+                            elif wordNextNextNext == "goiza":
                                 remainder = "am"
                                 used += 1
-                            elif wordNextNextNext == "noite":
-                                if 0 > int(strHH) > 6:
+                            elif wordNextNextNext == "gaua":
+                                if 0 > strHH > 6:
                                     remainder = "am"
                                 else:
                                     remainder = "pm"
@@ -891,9 +967,8 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                     elif wordNext[0].isdigit():
                         strHH = word
                         strMM = wordNext
-                        military = True
                         used += 1
-                        if wordNextNext == "hora":
+                        if wordNextNext == "orduak":
                             used += 1
                     else:
                         isTime = False
@@ -917,7 +992,7 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
             for i in range(used):
                 words[idx + i] = ""
 
-            if wordPrev == "em" or wordPrev == "ponto":
+            if wordPrev == "puntuan":
                 words[words.index(wordPrev)] = ""
 
             if idx > 0 and wordPrev in time_indicators:
@@ -929,7 +1004,7 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
             found = True
 
     # check that we found a date
-    if not date_found:
+    if not date_found():
         return None
 
     if dayOffset is False:
@@ -942,6 +1017,7 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                                           second=0,
                                           minute=0,
                                           hour=0)
+    extractedDate = extractedDate.replace(tzinfo=None)
     if datestr != "":
         en_months = ['january', 'february', 'march', 'april', 'may', 'june',
                      'july', 'august', 'september', 'october', 'november',
@@ -955,11 +1031,11 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
             datestr = datestr.replace(monthsShort[idx], en_month)
 
         temp = datetime.strptime(datestr, "%B %d")
-        if extractedDate.tzinfo:
-            temp = temp.replace(tzinfo=extractedDate.tzinfo)
-
+        temp = temp.replace(tzinfo=None)
         if not hasYear:
             temp = temp.replace(year=extractedDate.year)
+            print(gettz(temp.tzname()))
+            print(extractedDate.tzname(), temp.tzname())
             if extractedDate < temp:
                 extractedDate = extractedDate.replace(year=int(currentYear),
                                                       month=int(
@@ -978,22 +1054,18 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
                 month=int(temp.strftime("%m")),
                 day=int(temp.strftime("%d")))
 
-    if timeStr != "":
-        temp = datetime(timeStr)
-        extractedDate = extractedDate.replace(hour=temp.strftime("%H"),
-                                              minute=temp.strftime("%M"),
-                                              second=temp.strftime("%S"))
-
     if yearOffset != 0:
         extractedDate = extractedDate + relativedelta(years=yearOffset)
     if monthOffset != 0:
         extractedDate = extractedDate + relativedelta(months=monthOffset)
     if dayOffset != 0:
         extractedDate = extractedDate + relativedelta(days=dayOffset)
-    if (hrAbs or 0) != -1 and (minAbs or 0) != -1:
-        if hrAbs is None and minAbs is None and default_time:
-            hrAbs = default_time.hour
-            minAbs = default_time.minute
+
+    if hrAbs is None and minAbs is None and default_time:
+        hrAbs = default_time.hour
+        minAbs = default_time.minute
+
+    if hrAbs != -1 and minAbs != -1:
         extractedDate = extractedDate + relativedelta(hours=hrAbs or 0,
                                                       minutes=minAbs or 0)
         if (hrAbs or minAbs) and datestr == "":
@@ -1008,82 +1080,11 @@ def extract_datetime_pt(text, anchorDate=None, default_time=None):
 
     resultStr = " ".join(words)
     resultStr = ' '.join(resultStr.split())
-    resultStr = _pt_pruning(resultStr)
+    # resultStr = pt_pruning(resultStr)
     return [extractedDate, resultStr]
 
 
-def _pt_pruning(text, symbols=True, accents=True, agressive=True):
-    # agressive pt word pruning
-    words = ["a", "o", "os", "as", "de", "dos", "das",
-             "lhe", "lhes", "me", "e", "no", "nas", "na", "nos", "em", "para",
-             "este",
-             "esta", "deste", "desta", "neste", "nesta", "nesse",
-             "nessa", "foi", "que"]
-    if symbols:
-        symbols = [".", ",", ";", ":", "!", "?", "º", "ª"]
-        for symbol in symbols:
-            text = text.replace(symbol, "")
-        text = text.replace("-", " ").replace("_", " ")
-    if accents:
-        accents = {"a": ["á", "à", "ã", "â"],
-                   "e": ["ê", "è", "é"],
-                   "i": ["í", "ì"],
-                   "o": ["ò", "ó"],
-                   "u": ["ú", "ù"],
-                   "c": ["ç"]}
-        for char in accents:
-            for acc in accents[char]:
-                text = text.replace(acc, char)
-    if agressive:
-        text_words = text.split(" ")
-        for idx, word in enumerate(text_words):
-            if word in words:
-                text_words[idx] = ""
-        text = " ".join(text_words)
-        text = ' '.join(text.split())
-    return text
-
-
-def get_gender_pt(word, context=""):
-    """ Guess the gender of a word
-
-    Some languages assign genders to specific words.  This method will attempt
-    to determine the gender, optionally using the provided context sentence.
-
-    Args:
-        word (str): The word to look up
-        context (str, optional): String containing word, for context
-
-    Returns:
-        str: The code "m" (male), "f" (female) or "n" (neutral) for the gender,
-             or None if unknown/or unused in the given language.
-    """
-    # parse gender taking context into account
-    word = word.lower()
-    words = context.lower().split(" ")
-    for idx, w in enumerate(words):
-        if w == word and idx != 0:
-            # in portuguese usually the previous word (a determinant)
-            # assigns gender to the next word
-            previous = words[idx - 1].lower()
-            if previous in _MALE_DETERMINANTS_PT:
-                return "m"
-            elif previous in _FEMALE_DETERMINANTS_PT:
-                return "f"
-
-    # get gender using only the individual word
-    # see if this word has the gender defined
-    if word in _GENDERS_PT:
-        return _GENDERS_PT[word]
-    singular = word.rstrip("s")
-    if singular in _GENDERS_PT:
-        return _GENDERS_PT[singular]
-    # in portuguese the last vowel usually defines the gender of a word
-    # the gender of the determinant takes precedence over this rule
-    for end_str in _FEMALE_ENDINGS_PT:
-        if word.endswith(end_str):
-            return "f"
-    for end_str in _MALE_ENDINGS_PT:
-        if word.endswith(end_str):
-            return "m"
-    return None
+def get_gender_eu(word, raw_string=""):
+    # There is no gender in Basque
+    gender = False
+    return gender

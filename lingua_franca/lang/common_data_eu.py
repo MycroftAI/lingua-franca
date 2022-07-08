@@ -19,113 +19,59 @@
 from collections import OrderedDict
 
 
-_ARTICLES_ES = {'el', 'la', 'los', 'las'}
-
-_NUM_STRING_ES = {
-    0: 'cero',
-    1: 'uno',
-    2: 'dos',
-    3: 'tres',
-    4: 'cuatro',
-    5: 'cinco',
-    6: 'seis',
-    7: 'siete',
-    8: 'ocho',
-    9: 'nueve',
-    10: 'diez',
-    11: 'once',
-    12: 'doce',
-    13: 'trece',
-    14: 'catorce',
-    15: 'quince',
-    16: 'dieciséis',
-    17: 'diecisete',
-    18: 'dieciocho',
-    19: 'diecinueve',
-    20: 'veinte',
-    30: 'treinta',
-    40: 'cuarenta',
-    50: 'cincuenta',
-    60: 'sesenta',
-    70: 'setenta',
-    80: 'ochenta',
-    90: 'noventa'
-}
-
-_STRING_NUM_ES = {
-    "cero": 0,
-    "un": 1,
-    "uno": 1,
-    "una": 1,
-    "dos": 2,
-    "tres": 3,
-    "trés": 3,
-    "cuatro": 4,
-    "cinco": 5,
-    "seis": 6,
-    "siete": 7,
-    "ocho": 8,
-    "nueve": 9,
-    "diez": 10,
-    "once": 11,
-    "doce": 12,
-    "trece": 13,
-    "catorce": 14,
-    "quince": 15,
-    "dieciseis": 16,
-    "dieciséis": 16,
-    "diecisiete": 17,
-    "dieciocho": 18,
-    "diecinueve": 19,
-    "veinte": 20,
-    "veintiuno": 21,
-    "veintidos": 22,
-    "veintitres": 23,
-    "veintidós": 22,
-    "veintitrés": 23,
-    "veinticuatro": 24,
-    "veinticinco": 25,
-    "veintiséis": 26,
-    "veintiseis": 26,
-    "veintisiete": 27,
-    "veintiocho": 28,
-    "veintinueve": 29,
-    "treinta": 30,
-    "cuarenta": 40,
-    "cincuenta": 50,
-    "sesenta": 60,
-    "setenta": 70,
-    "ochenta": 80,
-    "noventa": 90,
-    "cien": 100,
-    "ciento": 100,
-    "doscientos": 200,
-    "doscientas": 200,
-    "trescientos": 300,
-    "trescientas": 300,
-    "cuatrocientos": 400,
-    "cuatrocientas": 400,
-    "quinientos": 500,
-    "quinientas": 500,
-    "seiscientos": 600,
-    "seiscientas": 600,
-    "setecientos": 700,
-    "setecientas": 700,
-    "ochocientos": 800,
-    "ochocientas": 800,
-    "novecientos": 900,
-    "novecientas": 900,
-    "mil": 1000}
+# _ARTICLES_ES = {'el', 'la', 'los', 'las'}
 
 
-_FRACTION_STRING_ES = {
-    2: 'medio',
-    3: 'tercio',
-    4: 'cuarto',
-    5: 'quinto',
-    6: 'sexto',
-    7: 'séptimo',
-    8: 'octavo',
+_NUM_STRING_EU = {
+    "zero": 0,
+    "bat": 1,
+    "bi": 2,
+    "hiru": 3,
+    "lau": 4,
+    "bost": 5,
+    "sei": 6,
+    "zazpi": 7,
+    "zortzi": 8,
+    "bederatzi": 9,
+    "hamar": 10,
+    "hamaika": 11,
+    "hamabi": 12,
+    "hamahiru": 13,
+    "hamalau": 14,
+    "hamabost": 15,
+    "hamasei": 16,
+    "hamazazpi": 17,
+    "hemezortzi": 18,
+    "hemeretzi": 19,
+    "hogei": 20,
+    "hogeita hamar": 30,
+    "hogeita hamaika": 31,
+    "berrogei": 40,
+    "berrogeita hamar": 50,
+    "hirurogei": 60,
+    "hirurogeita hamar": 70,
+    "laurogei": 80,
+    "laurogeita hamar": 90,
+    "ehun": 100,
+    "berrehun": 200,
+    "hirurehun": 300,
+    "laurehun": 400,
+    "bostehun": 500,
+    "seirehun": 600,
+    "zazpirehun": 700,
+    "zortzirehun": 800,
+    "bederatzirehun": 900,
+    "mila": 1000}
+
+
+_FRACTION_STRING_EU = {
+    2: 'erdia',
+    3: 'herena',
+    4: 'laurdena',
+    5: 'bostena',
+    6: 'seiena',
+    7: 'zazpiena',
+    8: 'zortziena',
     9: 'noveno',
     10: 'décimo',
     11: 'onceavo',
@@ -141,9 +87,9 @@ _FRACTION_STRING_ES = {
 }
 
 # https://www.grobauer.at/es_eur/zahlnamen.php
-_LONG_SCALE_ES = OrderedDict([
-    (100, 'centena'),
-    (1000, 'millar'),
+_LONG_SCALE_EU = OrderedDict([
+    (100, 'ehuneko'),
+    (1000, 'milaren'),
     (1000000, 'millón'),
     (1e9, "millardo"),
     (1e12, "billón"),
@@ -172,9 +118,9 @@ _LONG_SCALE_ES = OrderedDict([
 ])
 
 
-_SHORT_SCALE_ES = OrderedDict([
-    (100, 'centena'),
-    (1000, 'millar'),
+_SHORT_SCALE_EU = OrderedDict([
+    (100, 'ehuneko'),
+    (1000, 'milaren'),
     (1000000, 'millón'),
     (1e9, "billón"),
     (1e12, 'trillón'),
@@ -247,13 +193,13 @@ _SHORT_SCALE_ES = OrderedDict([
 ])
 
 # TODO: female forms.
-_ORDINAL_STRING_BASE_ES = {
-    1: 'primero',
-    2: 'segundo',
-    3: 'tercero',
-    4: 'cuarto',
-    5: 'quinto',
-    6: 'sexto',
+_ORDINAL_STRING_BASE_EU = {
+    1: 'lehenengo',
+    2: 'bigarren',
+    3: 'hirugarren',
+    4: 'laugarren',
+    5: 'bostgarren',
+    6: 'seigarren',
     7: 'séptimo',
     8: 'octavo',
     9: 'noveno',
@@ -280,7 +226,7 @@ _ORDINAL_STRING_BASE_ES = {
 }
 
 
-_SHORT_ORDINAL_STRING_ES = {
+_SHORT_ORDINAL_STRING_EU = {
     1e6: "millonésimo",
     1e9: "milmillonésimo",
     1e12: "billonésimo",
@@ -293,10 +239,10 @@ _SHORT_ORDINAL_STRING_ES = {
     1e33: "milquintillonésimo"
     # TODO > 1e-33
 }
-_SHORT_ORDINAL_STRING_ES.update(_ORDINAL_STRING_BASE_ES)
+_SHORT_ORDINAL_STRING_EU.update(_ORDINAL_STRING_BASE_EU)
 
 
-_LONG_ORDINAL_STRING_ES = {
+_LONG_ORDINAL_STRING_EU = {
     1e6: "millonésimo",
     1e12: "billionth",
     1e18: "trillonésimo",
@@ -309,4 +255,4 @@ _LONG_ORDINAL_STRING_ES = {
     1e60: "decillonésimo"
     # TODO > 1e60
 }
-_LONG_ORDINAL_STRING_ES.update(_ORDINAL_STRING_BASE_ES)
+_LONG_ORDINAL_STRING_EU.update(_ORDINAL_STRING_BASE_EU)

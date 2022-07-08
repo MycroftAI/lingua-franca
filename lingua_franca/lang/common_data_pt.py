@@ -76,7 +76,7 @@ _NUMBERS_PT = {
     "novecentos": 900,
     "novecentas": 900,
     "mil": 1000,
-    "milhï¿½o": 1000000}
+    "milhão": 1000000}
 
 _FRACTION_STRING_PT = {
     2: 'meio',
