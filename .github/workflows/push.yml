@@ -67,6 +67,7 @@ jobs:
         repository: MycroftAI/mycroft-core
 
     - name: Update mycroft-core
+      if: needs.tag-release-if-needed.outputs.version
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
