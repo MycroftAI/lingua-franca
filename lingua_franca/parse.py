@@ -113,7 +113,9 @@ def extract_number(text, short_scale=True, ordinals=False, lang=''):
 
 @localized_function()
 def extract_duration(text, lang=''):
-    """ Convert an english phrase into a number of seconds
+    """Convert an english phrase into a number of seconds.
+
+    The function handles durations from seconds up to days.
 
     Convert things like:
 

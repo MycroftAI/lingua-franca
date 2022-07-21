@@ -87,8 +87,10 @@ de_numbers = {
 
 
 def extract_duration_de(text):
-    """
-    Convert an german phrase into a number of seconds
+    """Convert a German phrase into a number of seconds.
+
+    The function handles durations from seconds up to days.
+
     Convert things like:
         "10 Minuten"
         "3 Tage 8 Stunden 10 Minuten und 49 Sekunden"

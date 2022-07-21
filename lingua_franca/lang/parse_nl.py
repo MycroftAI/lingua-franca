@@ -434,7 +434,9 @@ def extract_number_nl(text, short_scale=True, ordinals=False):
 
 
 def extract_duration_nl(text):
-    """Convert an english phrase into a number of seconds
+    """Convert an english phrase into a number of seconds.
+
+    The function handles durations from seconds up to days.
 
     Convert things like:
         "10 minute"
