@@ -195,8 +195,6 @@ class TestPronounceNumber(unittest.TestCase):
                          "min éénentwintig komma twee drie vier nul nul")
 
 
-# def nice_time(dt, lang="nl-nl", speech=True, use_24hour=False,
-#              use_ampm=False):
 class TestNiceDateFormat_nl(unittest.TestCase):
     def test_convert_times_nl(self):
         dt = datetime.datetime(2017, 1, 31,

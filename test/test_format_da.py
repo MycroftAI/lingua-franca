@@ -202,8 +202,6 @@ class TestPronounceNumber(unittest.TestCase):
                          "minus enogtyve komma to tre fire nul nul")
 
 
-# def nice_time(dt, lang="da-dk", speech=True, use_24hour=False,
-#              use_ampm=False):
 class TestNiceDateFormat_da(unittest.TestCase):
     def test_convert_times_da(self):
         dt = datetime.datetime(2017, 1, 31, 13, 22, 3, tzinfo=default_timezone())

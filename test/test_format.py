@@ -386,9 +386,6 @@ class TestPronounceNumber(unittest.TestCase):
                                           short_scale=False), "eighteen "
                                                               "trillionth")
 
-# def nice_time(dt, lang="en-us", speech=True, use_24hour=False,
-#              use_ampm=False):
-
 
 class TestNiceDateFormat(unittest.TestCase):
     @classmethod
@@ -604,8 +601,7 @@ class TestNiceDateFormat(unittest.TestCase):
                 dt = datetime.datetime(i, 1, 31, 13, 2, 3, tzinfo=default_timezone())
                 self.assertTrue(len(nice_year(dt, lang=lang)) > 0)
                 # Looking through the date sequence can be helpful
-
-#                print(nice_year(dt, lang=lang))
+                # print(nice_year(dt, lang=lang))
 
     def test_nice_duration(self):
         self.assertEqual(nice_duration(1), "one second")
