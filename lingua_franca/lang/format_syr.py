@@ -248,7 +248,6 @@ def _generate_numbers_string(number, places, ordinals=False):
     if whole == 0:
         return _generate_fractional_numbers(fractional, precision)
 
-    
     result = _generate_whole_numbers(whole) + _SYRIAC_CONJOINER + _generate_fractional_numbers(fractional, precision)
     #print(f'cardinal_string {number}: {cardinal_string}')
     #print(f'_generate_whole_numbers {whole}: {_generate_whole_numbers(whole)}, _generate_fractional_numbers {fractional, precision}: {_generate_fractional_numbers(fractional, precision)}')      
@@ -292,6 +291,7 @@ def pronounce_number_syr(number, places=2, scientific=False,
     if ordinals:
         #print(f'number: {number} // ordinals: {_generate_ordinal_numbers(number)}')
         return _generate_numbers_string(number, places, ordinals=True)
+    
 
     #print(f'number: {number} // ordinals: {_generate_numbers_string(number, places)}')    
     return _generate_numbers_string(number, places)

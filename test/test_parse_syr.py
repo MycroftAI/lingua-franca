@@ -26,7 +26,7 @@ from lingua_franca.parse import fuzzy_match
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import match_one
 from lingua_franca.parse import normalize
-from lingua_franca.lang.parse_syr import extract_datetime_syr
+from lingua_franca.lang.parse_syr import extract_datetime_syr, is_fractional_syr
 from lingua_franca.time import default_timezone
 
 
@@ -99,48 +99,66 @@ class TestNormalize(unittest.TestCase):
         testExtract("ܗܫܐ ܝܠܗ ܥܕܢܐ",
                     "2017-06-27 13:04:00", "ܝܠܗ ܥܕܢܐ")
         testExtract("ܚܕ ܪܦܦܐ ܝܬܝܪ",
-                    "2017-06-27 13:04:01", "ܚܕ ܝܬܝܪ")
+                    "2017-06-27 13:04:01", "ܝܬܝܪ")
         testExtract("ܝܠܗ ܚܕ ܩܛܝܢܐ",
-                    "2017-06-27 13:05:00", "ܚܕ")
+                    "2017-06-27 13:05:00", "ܝܠܗ")
         testExtract("ܬܪܝܢ ܩܛܝܢ̈ܬܐ",
-                    "2017-06-27 13:06:00", "ܬܪܝܢ")
-        testExtract("ܝܠܗ̇ ܥܕܢܐ ܚܫܝܚܬܐ",
-                    "2017-06-27 15:04:00", "")
+                    "2017-06-27 13:06:00", "")
+        testExtract("ܝܠܗ ܥܕܢܐ ܚܫܝܚܬܐ",
+                    "2017-06-27 13:04:00", "ܝܠܗ ܥܕܢܐ ܚܫܝܚܬܐ")
         testExtract("ܐܢܐ ܒܥܝܢ ܩܐ ܚܕ ܫܥܬܐ ܐܚܪܢܐ",
                     "2017-06-27 14:04:00", "ܐܢܐ ܒܥܝܢ ܩܐ ܐܚܪܢܐ")
         testExtract("1 ܪܦܦܐ ܐܚܪܢܐ",
-                    "2017-06-27 13:04:01", "1 ܐܚܪܢܐ")
-#        testExtract("2 ܪ̈ܦܦܐ ܐܚܪܢܐ",
-#                    "2017-06-27 13:04:02", "")
-#        testExtract("ܡܬܒ ܡܐܢܐ ܙܒ̣ܢܢܝܐ ܩܐ ܚܕ ܩܛܝܢܐ ܒܬܪ",
-#                    "2017-06-27 13:05:00", "ܡܬܒ ܡܐܢܐ ܙܒ̣ܢܢܝܐ")
-#        testExtract("ܡܬܒ ܡܐܢܐ ܙܒ̣ܢܢܝܐ ܩܐ ܦܠܓܐ ܫܥܬܐ ܐܚܪܢܐ",
-#                    "2017-06-27 13:34:00", "ܡܬܒ ܡܐܢܐ ܙܒ̣ܢܢܝܐ")
-#        testExtract("ܡܬܒ ܡܐܢܐ ܙܒ̣ܢܢܝܐ ܩܐ ܚܡܫܐ ܝܘ̈ܡܬܐ ܒܬܪ",
-#                    "2017-07-02 00:00:00", "ܡܬܒ ܡܐܢܐ ܙܒ̣ܢܢܝܐ")
-#        testExtract("ܒܝܘܡܐ ܐܚܖܢܐ",
-#                    "2017-06-29 00:00:00", "")
-#        testExtract("ܡܘܕܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ ܒܡܚܪ؟",
-#                    "2017-06-29 00:00:00", "ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ؟")
-#        testExtract("ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ ܥܪܘܒܬܐ ܨܦܪܐ؟",
-#                    "2017-06-30 08:00:00", "ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ؟")
-#        testExtract("ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ ܒܡܚܪ؟",
-#                    "2017-06-28 00:00:00", "ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ؟")
-#        testExtract("ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ ܝܘܡܢܐ ܒܬܪ ܛܗܪܐ؟",
-#                    "2017-06-27 15:00:00", "ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ؟")
-#        testExtract("ܕܟܪ ܩܖܝ ܩܐ ܝܡܝ ܒܬܡܢܝܐ ܫܒ̈ܘܥܐ ܘܬܪܝܢ ܝܘ̈ܡܬܐ",
-#                    "2017-08-24 00:00:00", "ܕܟܪ ܩܖܝ ܩܐ ܝܡܝ")
+                    "2017-06-27 13:04:01", "ܐܚܪܢܐ")
+        testExtract("2 ܪ̈ܦܦܐ ܐܚܪܢܐ",
+                    "2017-06-27 13:04:02", "ܐܚܪܢܐ")
+        testExtract("ܡܬܒ ܡܐܢܐ ܙܒܢܢܝܐ ܩܐ ܚܕ ܩܛܝܢܐ ܒܬܪ",
+                    "2017-06-27 13:05:00", "ܡܬܒ ܡܐܢܐ ܙܒܢܢܝܐ ܩܐ ܒܬܪ")
+        testExtract("ܡܬܒ ܡܐܢܐ ܙܒܢܢܝܐ ܩܐ ܦܠܓܐ ܫܥܬܐ ܐܚܪܢܐ",
+                    "2017-06-27 13:34:00", "ܡܬܒ ܡܐܢܐ ܙܒܢܢܝܐ ܩܐ ܐܚܪܢܐ")
+        testExtract("ܡܬܒ ܡܐܢܐ ܙܒܢܢܝܐ ܩܐ ܚܡܫܐ ܝܘܡܢ̈ܐ ܒܬܪ",
+                    "2017-07-02 13:04:00", "ܡܬܒ ܡܐܢܐ ܙܒܢܢܝܐ ܩܐ")
+        testExtract("ܝܘܡܐ ܐܚܪܢܐ",
+                    "2017-06-29 00:00:00", "")
+        testExtract("ܡܘܕܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ ܝܘܡܐ ܐܚܪܢܐ؟",
+                    "2017-06-29 00:00:00", "ܡܘܕܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ")
+        testExtract("ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ ܥܪܘܒܬܐ ܩܕܡ ܛܗܪܐ؟",
+                    "2017-06-30 08:00:00", "ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ")
+        testExtract("ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ ܩܘܕܡܐ ܕܐܬܐ؟",
+                    "2017-06-28 00:00:00", "ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ")
+        testExtract("ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ ܐܕܝܘܡ ܒܬܪ ܛܗܪܐ؟",
+                    "2017-06-27 15:00:00", "ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ")
+        testExtract("ܕܟܪ ܩܖܝ ܩܐ ܝܡܝ ܬܡܢܝܐ ܫܒ̈ܘܥܐ ܘܬܪܝܢ ܝܘܡܢ̈ܐ",
+                    "2017-08-24 00:00:00", "ܕܟܪ ܩܖܝ ܩܐ ܝܡܝ")
 
-#    def test_multiple_numbers(self):
-#        self.assertEqual(extract_numbers("ܚܕ ܬܪܝܢ ܬܠܬܐ"),
-#                         [1.0, 2.0, 3.0])
+    def test_multiple_numbers(self):
+        self.assertEqual(extract_numbers("ܚܕ ܬܪܝܢ ܬܠܬܐ"),
+                         [1.0, 2.0, 3.0])
+        self.assertEqual(extract_numbers("ܥܣܪܝܢ ܘܬܠܬܐ"),
+                         [23])
+        self.assertEqual(extract_numbers("ܥܣܪܝܢ ܬܠܬܐ"),
+                         [20, 3])
+        self.assertEqual(extract_numbers("ܥܣܪܐ ܥܣܪܝܢ ܬܠܬܐ ܚܡܫܥܣܪ ܐܠܦܐ ܘܫܬܝܢ ܫܬܥܣܪ"),
+                         [10, 20, 3, 15060, 16])                 
 
-        # BUG: It is read as 10, 20, 3, 15, 16 as it fails to recognize ܐܠܦ̈ܐ ܘܫܬܝܢ
-#        self.assertEqual(extract_numbers("ܥܣܪܐ ܥܣܪܝܢ ܬܠܬܐ ܚܡܫܥܣܪ ܐܠܦܐ ܘܫܬܝܢ ܫܬܥܣܪ"),
-#                         [10, 20, 3, 15060, 16])
-        
-        
-
+    def test_is_fraction_syr(self):
+        self.assertEqual(is_fractional_syr("ܦܠܓܐ"), 1.0 / 2)
+        self.assertEqual(is_fractional_syr("ܦܠܓܘܬ"), 1.0 / 2)
+        self.assertEqual(is_fractional_syr("ܬܘܠܬܐ"), 1.0 / 3)
+        self.assertEqual(is_fractional_syr("ܪܘܒܥܐ"), 1.0 / 4)
+        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܬܠܬܐ"), 1.0 / 3)
+        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܐܪܒܥܐ"), 1.0 / 4)
+        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܫܒܥܐ"), 1.0 / 7)
+        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܥܣܪܝܢ"), 1.0 / 20)
+        self.assertEqual(is_fractional_syr("ܚܕܐ ܡܢ ܥܣܪܝܢ"), 1.0 / 20)
+        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܬܠܬܝܢ"), 1.0 / 30)
+        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܡܐܐ"), 1.0 / 100)
+        self.assertEqual(is_fractional_syr("ܚܕܐ ܡܢ ܡܐܐ"), 1.0 / 100)
+        self.assertEqual(is_fractional_syr("ܚܕܐ ܡܢ ܐܠܦܐ"), 1.0 / 1000)
+        self.assertEqual(is_fractional_syr("ܬܠܬܐ ܡܢ ܐܪܒܥܐ"), 3.0 / 4)
+        self.assertEqual(is_fractional_syr("ܚܡܫܐ ܡܢ ܫܬܐ"), 5.0 / 6)
+        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܐܠܦܐ"), 1.0 / 1000) 
+        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܡܠܝܘܢܐ"), 1.0 / 1000000)                
 
 if __name__ == "__main__":
     unittest.main()
