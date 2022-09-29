@@ -24,16 +24,16 @@ _SYRIAC_MALE_ENDINGS = ["ܐ"]
 
 # Special cases, word lookup for words not covered by above rule
 
-# Masculine gender denotes names of: 
+# Masculine gender denotes names of:
 #	- rivers, islands, days of the week (except:Saturday and Sunday)
 #	- words where the letter ܬ does not appear as a suffix, but as part of
 #	  the root (ܒܝܬܐ، ܡܘܬܐ)
 #	- loanwords with penultimate letter ܬ referring to masculine gender
 #	  such as ܐܟܬܐ
-                                                                       
+
 _SYRIAC_GENDERED_NOUNS_EXCEPTIONS = {
-	"ܥܪܘܒܬܐ": "f",
-	"ܫܒܬܐ": "f",
+    "ܥܪܘܒܬܐ": "f",
+    "ܫܒܬܐ": "f",
     "ܕܩܠܬ": "m",
     "ܦܪܬ": "m",
     "ܒܝܬܐ": "m",
