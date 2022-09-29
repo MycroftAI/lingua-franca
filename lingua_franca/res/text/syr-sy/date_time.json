@@ -84,12 +84,12 @@
     "date_full": "{weekday}، {day} {month}، {formatted_year}",
     "date_full_no_year": "{weekday}، {day} {month}",
     "date_full_no_year_month": "{weekday}، {day}",
-    "today": "ܝܘܡܢܐ",
-    "tomorrow": "ܠܡܚܪ",
-    "yesterday": "ܐܬܡܠܝ"
+    "today": "ܐܕܝܘܡ",
+    "tomorrow": "ܝܘܡܐ ܕܐܬܐ",
+    "yesterday": "ܬܡܠ"
   },
   "date_time_format": {
-    "date_time": "{formatted_date}ܒ {formatted_time}"
+    "date_time": "{formatted_date} {formatted_time}"
   },
   "weekday": {
     "0": "ܬܪܝܢܒܫܒܐ",
@@ -130,7 +130,7 @@
     "27": "ܥܣܪܝܢ ܘܫܒܝܥܝܐ",
     "28": "ܥܣܪܝܢ ܘܬܡܝܢܝܐ",
     "29": "ܥܣܪܝܢ ܘܬܫܝܥܝܐ",
-    "30": "ܠܬܠܝܢܝܐ",
+    "30": "ܬܠܬܝܢܝܐ",
     "31": "ܬܠܬܝܢ ܘܩܕܡܝܐ"
   },
   "month": {

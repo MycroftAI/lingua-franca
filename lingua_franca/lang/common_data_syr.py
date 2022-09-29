@@ -183,33 +183,3 @@ _SYRIAC_SEPARATOR = " ܡܢ "
 
 # Conjoiner
 _SYRIAC_CONJOINER = " ܘ"
-
-# Time
-_TIME_UNITS_CONVERSION = {
-    'microseconds': 'ܡܝܟܪܘܪ̈ܦܦܐ',
-    'milliseconds': 'ܡܝܟܪܘܪܦܦܐ',
-    'seconds': 'ܪ̈ܦܦܐ',
-    'seconds': 'ܪܦܦܐ',
-    'minutes': 'ܩܛܝܢ̈ܬܐ',
-    'minutes': 'ܩܛܝܢܬܐ',
-    'minutes': 'ܩܛܝܢ̈ܐ',
-    'minutes': 'ܩܛܝܢܐ',
-    'minutes': 'ܕܩܝܩ̈ܬܐ',
-    'minutes': 'ܕܩܝܩܬܐ',
-    'minutes': 'ܕܩܝܩ̈ܐ',
-    'minutes': 'ܕܩܝܩܐ',
-    'hours': 'ܫܥܬܐ',
-    'hours': 'ܫܥ̈ܐ',
-    'hours': 'ܣܥܬ',
-    'hours': 'ܣܥܬ̈ܐ'
-   
-}
-# Date
-_DATE_UNITS_CONVERSION = {
-    'days': 'ܝܘܡܢ̈ܐ',
-    'days': 'ܝܘܡܐ',
-    'weeks': 'ܫܒ̈ܘܥܐ',
-    'weeks': 'ܫܒܘܥܐ',
-    'weeks': 'ܫܒ̈ܬܐ',
-    'weeks': 'ܫܒܬܐ'
-}

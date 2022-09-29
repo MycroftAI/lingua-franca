@@ -54,10 +54,7 @@ def _parse_sentence(text):
         current_words = []
         mode = 'init'
 
-    print(f'\nparse_sentence // word at top {text}')
-
     for word in words:
-        print(f'parse_sentence // word is {word} // mode is {mode}')
 
         # Keep a copy of the word as we will modify it below
         temp_word = word
@@ -68,19 +65,13 @@ def _parse_sentence(text):
             word = word[1:] # Remove the ܘ to make the logic easier to follow 
             
             if mode == 'num_ten' or mode == 'num_hundred' or mode == 'num_one':
-                print(f'parse_sentence // CONJOINER // word is {word} // mode is {mode}')
                 mode += '_conjoiner'
             elif mode == 'num':
-                print(f'parse_sentence // MODE NUM // word is {word} // mode is {mode}')
                 pass
-                #current_words.append(temp_word)
             else:
-                print(f'parse_sentence // ELSE // word is {word} // mode is {mode}')
                 finish_num()
-                #result.append(temp_word)
         
         if word == "ܦܠܓܐ":
-            print(f'parse_sentence // ܦܠܓܐ  // word is {word}')          
             current_words.append(temp_word)
             current_number += 0.5
             finish_num()        
@@ -89,21 +80,19 @@ def _parse_sentence(text):
                 temp_ones_number = _SYRIAC_ONES.index(word)
             elif word in _SYRIAC_ONES_FEM:
                 temp_ones_number = _SYRIAC_ONES_FEM.index(word)
-            print(f'parse_sentence // SYRIAC_ONES // {word}')
+
             if mode != 'init' and mode != 'num_hundred_conjoiner' and mode != 'num':
                 if not(temp_ones_number < 10 and mode == 'num_ten_conjoiner'):
                     finish_num()    
             current_words.append(temp_word)
             sum_number += temp_ones_number
             mode = 'num_one'
-            print(f'parse_sentence // SYRIAC_ONES // word {word} // mode {mode} // sum {sum_number}')
         elif word in _SYRIAC_TENS:
             if mode != 'init' and mode != 'num_hundred_conjoiner' and mode != 'num':
                 finish_num()           
             current_words.append(temp_word)
             sum_number += _SYRIAC_TENS.index(word)*10
             mode = 'num_ten'
-            print(f'parse_sentence // SYRIAC_TENS // word {word} // mode {mode} // sum {sum_number}')
         elif word in _SYRIAC_HUNDREDS:
             if mode != 'init' and mode != 'num':
                 finish_num()
@@ -120,7 +109,6 @@ def _parse_sentence(text):
             sum_number = 0
             mode = 'num'
         elif word in list(_SYRIAC_ORDINAL_BASE.values()):
-            print(f'parse_sentence // SYRIAC_ORDINAL // {word}')
             current_words.append(temp_word)
             sum_number = list(_SYRIAC_ORDINAL_BASE.values()).index(word)
             current_number = sum_number
@@ -128,29 +116,28 @@ def _parse_sentence(text):
             mode = 'num'
         elif _is_number(word):
             current_words.append(word)
-            print(f'parse_sentence // SYRIAC_IS_NUMBER // {word}')
             current_number = float(word)
             finish_num()
         elif is_fractional_syr(word):
-            print(f'parse_sentence // FRACTIONAL // {word}')
+            result = result + is_fractional_syr(word)
         else:
             finish_num()
-            print(f'parse_sentence // ELSE down there // {word}')
-            result.append(word)            
+            result.append(word)
+            
     if mode[:3] == 'num':
         finish_num()
-    print(f'parse_sentence // RESULT // {result}')   
+
     return result
 
 
 _time_units = {
     'ܪ̈ܦܦܐ': timedelta(seconds=1),
     'ܪܦܦܐ': timedelta(seconds=1),
-    'ܩܛܝܢ̈ܬܐ': timedelta(minutes=1),
+    'ܩܛܝܢܬ̈ܐ': timedelta(minutes=1),
     'ܩܛܝܢܬܐ': timedelta(minutes=1),
     'ܩܛܝܢ̈ܐ': timedelta(minutes=1),
     'ܩܛܝܢܐ': timedelta(minutes=1),
-    'ܕܩܝܩ̈ܬܐ': timedelta(minutes=1),
+    'ܕܩܝܩܬ̈ܐ': timedelta(minutes=1),
     'ܕܩܝܩܬܐ': timedelta(minutes=1),
     'ܕܩܝܩ̈ܐ': timedelta(minutes=1),
     'ܕܩܝܩܐ': timedelta(minutes=1),
@@ -163,9 +150,9 @@ _time_units = {
 _date_units = {
     'ܝܘܡܢ̈ܐ': timedelta(days=1),
     'ܝܘܡܐ': timedelta(days=1),
-    'ܫܒ̈ܘܥܐ': timedelta(weeks=1),
+    'ܫܒܘܥ̈ܐ': timedelta(weeks=1),
     'ܫܒܘܥܐ': timedelta(weeks=1),
-    'ܫܒ̈ܬܐ': timedelta(weeks=1),
+    'ܫܒܬ̈ܐ': timedelta(weeks=1),
     'ܫܒܬܐ': timedelta(weeks=1),
 }
 
@@ -200,39 +187,20 @@ def extract_duration_syr(text):
     current_number = None
     result = timedelta(0)
     for word in words:
-        print(f'extract_duration: sentence: {words}, word is {word}')
-        #if word[0] == "ܘ":
-            # Remove the first character, ܘ, from the word as it only signifies the word 'and'
-            # with the rest of the word subsequent
-            #
-            # word is used to lookup words in the lists
-            # word_with_conjoiner is used to append
-        
-        #    temp_word = word
-        #    word = word[1:]
-
-        if type(word) == tuple:
-            print(f'extract_duration: sentence: {words}, word is tuple, word {word}')
+        if type(word) == tuple:            
             current_number = word
         elif word in _time_units:
-            print(f'extract_duration: time_unit: {word}, current_number {current_number[0]}')
             result += _time_units[word] * current_number[0]
             current_number = None
         elif word in _date_units:
-            print(f'extract_duration: date_unit: {word}, and current_number {current_number[0]}')            
             result += _date_units[word] * current_number[0]
             current_number = None
         else:
-            print(f'other: {word}')
-            print(f'current number: {current_number}')
             if current_number:
-                remainder.extend(current_number[1])
-            print(f'remainder: {remainder}')
+                remainder.extend(current_number[1])            
             remainder.append(word)
             current_number = None
-    print(f'extract_duration // RESULT // {result} // REMAINDER // {remainder}')
     return (result, " ".join(remainder))
-
 
 def extract_datetime_syr(text, anchorDate=None, default_time=None):
     """ Convert a human date reference into an exact datetime
@@ -265,7 +233,6 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
                          date or time related text was found.
     """
     if text == "":
-        print(f'extract_datetime // NO TEXT')
         return None
     text = text.lower().replace('‌', ' ').replace('.', '').replace('،', '') \
         .replace('؟', '').replace("ܝܘܡܐ ܐܚܪܢܐ", "ܝܘܡܐܐܚܪܢܐ") \
@@ -325,20 +292,12 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
     remainder = []
     result = None
     for word in words:
-        print(f'HANDLED - BEGIN, mode {mode}')    
-        print(f'extract_datetime // word at top {word}')
         handled = 1
         
         if mode == 'finished':
-            print(f'extract_datetime // mode is finished: remainder {word}')
-            #remainder.append(word)
-        
-        #if word[1:] == 'ܘ' and mode[:5] == 'delta':
-        #    print(f'extract_datetime // ܘ and mode = {mode[:5]}')
-        #    word = word[1:]
-        
+            pass
+
         if type(word) == tuple:
-            print(f'extract_datetime // tuple {type(word)}, word is == {word}')
             number_seen = word
         elif word in weekday_names:
             dayOffset = (weekday_names.index(word) + 1) - today_weekday
@@ -348,20 +307,15 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
             mode = 'time'
         elif word in exactDict:
             result = exactDict[word]
-            print(f'extract_datetime // exactDict {result}')
             mode = 'finished'
         elif word in daysDict:
             result = daysDict[word]
-            print(f'extract_datetime // daysDict {result}')
             mode = 'time'
         elif word in timesDict and mode == 'time':
             result += timesDict[word]
-            print(f'extract_datetime // timesDict {result}')    
             mode = 'finished'
         elif word in _date_units:
-            print(f'extract_datetime // date_units {word}')
             k = 1
-            print(f'NUMBER_SEEN: _date_units: {number_seen[0]}, mode {mode}')
             if number_seen:
                 k = number_seen[0]
                 number_seen = None
@@ -369,18 +323,12 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
             if mode != 'delta_time':
                 mode = 'delta_date'
         elif word in _time_units:
-            print(f'extract_datetime // time_units {word}')
             k = 1
-            print(f'NUMBER SEEN: _time_units: {number_seen[0]}, mode {mode}')
             if number_seen:
-                print(f'extract_datetime // number_seen = yes')
                 k = number_seen[0]
-                print(f'extract_datetime // number_seen {k}')
                 number_seen = None
             delta_seen += _time_units[word] * k
-            #print(f'extract_datetime // number_seen[0] {number_seen[0]}, _time_units {_time_units[word]}')
             mode = 'delta_time'
-            print(f'extract_datetime // delta_seen {delta_seen}, mode {mode}')
         elif word in nextWords or word in prevWords:
             # Give up instead of incorrect result
             if mode == 'time':
@@ -400,35 +348,21 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
 
         if mode == 'delta_date':
             result = today + delta_seen
-            print(f'extract_datetime // delta_DATE // the result is {result} ')
             mode = 'delta_time'
         elif mode == 'delta_time':
             result = anchorDate + delta_seen
-            print(f'extract_datetime // delta_TIME // the result is {result} ')
             mode = 'finished'
-#        else:
-#            result = anchorDate
 
         if handled == 1:
-            print(f'extract_datetime // it is handled, mode {mode}')
-            print(f'HANDLED - END, mode {mode}')    
             continue   
         if number_seen:
-            print(f'extract_datetime // if number_seen (at end): {number_seen[1]} ')
             remainder.extend(number_seen[1])
             number_seen = None   
         if result == None:
             result = anchorDate 
-#        else:
-#            print(f'extract_datetime // it is not handled ')
-#            handled = 0
-#            result = anchorDate
 
-        # BUG? duplicates remainders
-        #print(f'extract_datetime // what is this remainder.append(word)? // {word}')
         remainder.append(word)
 
-    print(f'extract_datetime // result {result}, remainder {remainder}')    
     return (result, " ".join(remainder))
 
 def is_fractional_syr(text):
@@ -461,23 +395,25 @@ def is_fractional_syr(text):
         # [2] is the word after the separator
         parted_text = text.partition(_SYRIAC_SEPARATOR)
 
-        # This is not a fraction
-        if parted_text[1] != _SYRIAC_SEPARATOR:
+        # Numerator and denominator must exist
+        if len(parted_text[0]) != 0 and len(parted_text[2]) != 0:
+            # If it does not have ܡܢ then this is not a fraction
+            if parted_text[1] != _SYRIAC_SEPARATOR:
+                return False
+
+            for part in parted_text:
+                # Remove whitespace
+                part.replace(' ', '') 
+
+            dict_partition = {
+                'numerator' : parted_text[0], 
+                'denominator' : parted_text[2]
+            }
+        else:
             return False
-
-        for part in parted_text:
-            # Remove whitespace
-            part.replace(' ', '') 
-
-        dict_partition = {
-            'numerator' : parted_text[0], 
-            'denominator' : parted_text[2]
-        }
 
         return dict_partition
 
-
-    print(f'FRACTIONS // in here with word {text}')
     # Exception for half or ܦܠܓܐ
     if text in _SYRIAC_FRACTIONS_HALF:
         fraction = 0.5
@@ -495,7 +431,6 @@ def is_fractional_syr(text):
         return fraction
     # Otherwise, it will be in the form of [denominator ܡܢ numerator] or ܬܠܬܐ ܡܢ ܥܣܪܐ
     else:
-        print(f'FRACTIONS // at else {text}')
         
         if partition_text(text):
             # Just retrieve the dictionary containing the numerator and denominator
@@ -523,15 +458,12 @@ def is_fractional_syr(text):
                 else:
                     denominator = temp
 
-            print(f'BOTTOM: numerator {numerator}')
-            print(f'BOTTOM: denominator {denominator}')
             fraction = numerator/denominator
             return fraction
             #return False
         else:
             return False
         
-    print(f'FRACTIONS // got nothing')    
     return False     
 
 def get_gender_syr(word, context=""):
@@ -581,7 +513,6 @@ def extract_numbers_syr(text, short_scale=True, ordinals=False):
     words = _parse_sentence(text)    
     result = []
     for word in words:
-        print(f'extract_numbers_syr // word {word}')
         if type(word) == tuple:
             result.append(word[0])
     return result

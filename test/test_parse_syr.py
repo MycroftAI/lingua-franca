@@ -26,7 +26,8 @@ from lingua_franca.parse import fuzzy_match
 from lingua_franca.parse import get_gender
 from lingua_franca.parse import match_one
 from lingua_franca.parse import normalize
-from lingua_franca.lang.parse_syr import extract_datetime_syr, is_fractional_syr
+from lingua_franca.lang.parse_syr import extract_datetime_syr
+from lingua_franca.lang.parse_syr import is_fractional_syr
 from lingua_franca.time import default_timezone
 
 
@@ -60,13 +61,13 @@ class TestNormalize(unittest.TestCase):
     def test_extract_duration_syr(self):
         self.assertEqual(extract_duration("10 ܪ̈ܦܦܐ"),
                          (timedelta(seconds=10.0), ""))
-        self.assertEqual(extract_duration("5 ܩܛܝܢ̈ܬܐ"),
+        self.assertEqual(extract_duration("5 ܩܛܝܢܬ̈ܐ"),
                          (timedelta(minutes=5), ""))
         self.assertEqual(extract_duration("2 ܫܥ̈ܐ"),
                          (timedelta(hours=2), ""))
         self.assertEqual(extract_duration("3 ܝܘܡܢ̈ܐ"),
                          (timedelta(days=3), ""))
-        self.assertEqual(extract_duration("25 ܫܒ̈ܘܥܐ"),
+        self.assertEqual(extract_duration("25 ܫܒܘܥ̈ܐ"),
                          (timedelta(weeks=25), ""))
         self.assertEqual(extract_duration("ܫܒܥܐ ܫܥ̈ܐ"),
                          (timedelta(hours=7), ""))
@@ -74,11 +75,11 @@ class TestNormalize(unittest.TestCase):
                          (timedelta(seconds=7.5), ""))
         self.assertEqual(extract_duration("ܬܡܢܝܐ ܘܦܠܓܐ ܝܘܡܢ̈ܐ ܘܬܠܬܝܢ ܘܬܫܥܐ ܪ̈ܦܦܐ"),
                          (timedelta(days=8.5, seconds=39), ""))
-        self.assertEqual(extract_duration("ܡܬܒ ܡܐܢܐ ܙܒ̣ܢܢܝܐ ܩܐ ܬܠܬܝܢ ܩܛܝܢ̈ܬܐ ܐܚܪܢܐ"),
+        self.assertEqual(extract_duration("ܡܬܒ ܡܐܢܐ ܙܒ̣ܢܢܝܐ ܩܐ ܬܠܬܝܢ ܩܛܝܢܬ̈ܐ ܐܚܪܢܐ"),
                          (timedelta(minutes=30), "ܡܬܒ ܡܐܢܐ ܙܒ̣ܢܢܝܐ ܩܐ ܐܚܪܢܐ"))
-        self.assertEqual(extract_duration("ܡܬܒ ܥܕܢܐ ܐܪܒܥܐ ܘܦܠܓܐ ܩܛܝܢ̈ܬܐ ܠܙܪܩܬܐ ܕܫܡܫܐ"),
+        self.assertEqual(extract_duration("ܡܬܒ ܥܕܢܐ ܐܪܒܥܐ ܘܦܠܓܐ ܩܛܝܢܬ̈ܐ ܠܙܪܩܬܐ ܕܫܡܫܐ"),
                          (timedelta(minutes=4.5), "ܡܬܒ ܥܕܢܐ ܠܙܪܩܬܐ ܕܫܡܫܐ"))
-        self.assertEqual(extract_duration("ܐܗܐ ܨܘܪܬܐ ܙܝܘܥܬܐ ܟܐ ܓܪܫ ܥܕܢܐ ܚܕ ܫܥܬܐ ܘܚܡܫܝܢ ܘܫܒܥܐ ܘܦܠܓܐ ܩܛܝܢ̈ܬܐ"),
+        self.assertEqual(extract_duration("ܐܗܐ ܨܘܪܬܐ ܙܝܘܥܬܐ ܟܐ ܓܪܫ ܥܕܢܐ ܚܕ ܫܥܬܐ ܘܚܡܫܝܢ ܘܫܒܥܐ ܘܦܠܓܐ ܩܛܝܢܬ̈ܐ"),
                          (timedelta(hours=1, minutes=57.5),
                              "ܐܗܐ ܨܘܪܬܐ ܙܝܘܥܬܐ ܟܐ ܓܪܫ ܥܕܢܐ"))
 
@@ -102,7 +103,7 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-27 13:04:01", "ܝܬܝܪ")
         testExtract("ܝܠܗ ܚܕ ܩܛܝܢܐ",
                     "2017-06-27 13:05:00", "ܝܠܗ")
-        testExtract("ܬܪܝܢ ܩܛܝܢ̈ܬܐ",
+        testExtract("ܬܪܝܢ ܩܛܝܢܬ̈ܐ",
                     "2017-06-27 13:06:00", "")
         testExtract("ܝܠܗ ܥܕܢܐ ܚܫܝܚܬܐ",
                     "2017-06-27 13:04:00", "ܝܠܗ ܥܕܢܐ ܚܫܝܚܬܐ")
@@ -128,7 +129,7 @@ class TestNormalize(unittest.TestCase):
                     "2017-06-28 00:00:00", "ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ")
         testExtract("ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ ܐܕܝܘܡ ܒܬܪ ܛܗܪܐ؟",
                     "2017-06-27 15:00:00", "ܕܐܟܝ ܝܠܗ ܡܘܙܓܐ ܕܐܐܪ")
-        testExtract("ܕܟܪ ܩܖܝ ܩܐ ܝܡܝ ܬܡܢܝܐ ܫܒ̈ܘܥܐ ܘܬܪܝܢ ܝܘܡܢ̈ܐ",
+        testExtract("ܕܟܪ ܩܖܝ ܩܐ ܝܡܝ ܬܡܢܝܐ ܫܒܘܥ̈ܐ ܘܬܪܝܢ ܝܘܡܢ̈ܐ",
                     "2017-08-24 00:00:00", "ܕܟܪ ܩܖܝ ܩܐ ܝܡܝ")
 
     def test_multiple_numbers(self):
@@ -158,7 +159,8 @@ class TestNormalize(unittest.TestCase):
         self.assertEqual(is_fractional_syr("ܬܠܬܐ ܡܢ ܐܪܒܥܐ"), 3.0 / 4)
         self.assertEqual(is_fractional_syr("ܚܡܫܐ ܡܢ ܫܬܐ"), 5.0 / 6)
         self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܐܠܦܐ"), 1.0 / 1000) 
-        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܡܠܝܘܢܐ"), 1.0 / 1000000)                
+        self.assertEqual(is_fractional_syr("ܚܕ ܡܢ ܡܠܝܘܢܐ"), 1.0 / 1000000)
+   
 
 if __name__ == "__main__":
     unittest.main()

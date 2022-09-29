@@ -21,6 +21,7 @@ from lingua_franca.lang.common_data_syr import \
     _SYRIAC_ORDINAL_BASE, _SYRIAC_SEPARATOR, \
     _SYRIAC_CONJOINER, _SYRIAC_FRAC, _SYRIAC_FRAC_BIG
 import math
+import unicodedata
 from lingua_franca.internal import lookup_variant
 from enum import IntEnum
 from functools import wraps
@@ -63,26 +64,21 @@ def nice_number_syr(number, speech=True, denominators=range(1, 21), variant=None
     if num == 0:
         return str(whole)
 
-    #print(f'number: {number} - whole {whole}, numerator {num}, denominator {den}')
-
     # If the whole number is 0
     if whole == 0:
         # Special case for half for 0.5
         if num == 1 and den == 2:
             return_string = 'ܦܠܓܐ'
-            #print(f'return-ܦܠܓܐ {return_string}')
         else:
-            # 
             return_string = '{} ܡܢ {}'.format(_lookup_syriac_word(num), _lookup_syriac_word(den))
-            #print(f'return-1 {return_string}')
+
     # If the whole number is > 0        
     elif num == 1 and den == 2:
         # Special case for half for whole numbers with 0.5
         return_string = '{} ܘܦܠܓܐ'.format(whole)
-        #print(f'return-2 {return_string}')
     else:
         return_string = '{} ܘ{} ܡܢ {}'.format(whole, _lookup_syriac_word(num), _lookup_syriac_word(den))
-        #print(f'return-3 {return_string}')
+
     return return_string
 
 def _unpack_number_to_parts(value, _precision):
@@ -114,7 +110,6 @@ def _unpack_number_to_parts(value, _precision):
         post = x
         _precision -= 1
 
-    #print(f'_unpack_number_to_parts {value}: pre {pre}, post {post}, precision {_precision}')
     return pre, post, _precision
 
 def _lookup_syriac_word(number, ordinals=False):
@@ -140,26 +135,24 @@ def _lookup_syriac_word(number, ordinals=False):
                 return _SYRIAC_ORDINAL_BASE[number]
             return _SYRIAC_TENS[quotient] 
         if ordinals:
-            #print(f'_lookup_syriac_word <100 // number {number}: quotient {quotient}, remainder {remainder}')
             return _SYRIAC_TENS[quotient] + _SYRIAC_CONJOINER + _SYRIAC_ORDINAL_BASE[remainder]
-        return _SYRIAC_TENS[quotient] + _SYRIAC_CONJOINER + _SYRIAC_ONES[remainder]
-    
+        return _SYRIAC_TENS[quotient] + _SYRIAC_CONJOINER + _SYRIAC_ONES[remainder]    
+
+    if (number > 1000):
+        quotient, remainder = divmod(number, 1000)
+        if remainder == 0:
+            return _SYRIAC_ORDINAL_BASE[number]
+        if ordinals:
+            return _SYRIAC_LARGE[quotient] + _SYRIAC_CONJOINER + _SYRIAC_ORDINAL_BASE[remainder]            
+        return _SYRIAC_LARGE[quotient] + _SYRIAC_CONJOINER + _SYRIAC_HUNDREDS[remainder]
+
     quotient, remainder = divmod(number, 100)
-    
+
     if remainder == 0:
         if ordinals:
-            #print(f'number is {number} = quotient {quotient}, remainder {remainder}')
-            #print(f'number is {number} = ordinal is {_SYRIAC_ORDINAL_BASE[number]}')
             return _SYRIAC_ORDINAL_BASE[number]
-        #print(f'hundreds is {_SYRIAC_HUNDREDS[x]}')
         return _SYRIAC_HUNDREDS[quotient]
 
-    #print(f'_lookup_syriac_word >100 // number {number}: quotient {quotient}, remainder {remainder}')
-    #if ordinals:
-        #print(f'number is {number} = quotient {quotient}, remainder {remainder}')
-        #print(f'number is {number} = ordinal is {_SYRIAC_ORDINAL_BASE[number]}')
-        #_SYRIAC_HUNDREDS[quotient] + _SYRIAC_CONJOINER
-    #    pass
     return _SYRIAC_HUNDREDS[quotient] + _SYRIAC_CONJOINER + _lookup_syriac_word(remainder)
 
 def _generate_whole_numbers(number, ordinals=False):
@@ -190,7 +183,6 @@ def _generate_whole_numbers(number, ordinals=False):
         
         if ordinals:
             text = _lookup_syriac_word(number, ordinals)
-            #print(f'_generate_whole_numbers // number {number}: quotient {temp_number}, remainder {remainder}, text {text}')
         else:
             text = _lookup_syriac_word(remainder)
         
@@ -203,12 +195,10 @@ def _generate_whole_numbers(number, ordinals=False):
                 else:
                     text += ' ' + syriac_large_num
 
-        if (result == ''):
-            result = text
-        else:
+        if not ordinals and len(result) > 1:
             result = text + _SYRIAC_CONJOINER + result
-        #print(f'{number}: text {text}, remainder {remainder}, result {result}, syriac_large_num {syriac_large_num}')    
-        #print(f'_generate_whole_numbers {number}: quotient {temp_number}, remainder {remainder}, syriac_string {syriac_string}, result {result}')
+        else:
+            result = text
     return result
 
 def _generate_fractional_numbers(number, _precision):
@@ -223,7 +213,6 @@ def _generate_fractional_numbers(number, _precision):
 
     whole = _generate_whole_numbers(number)
     quotient, remainder = divmod(_precision, 3)
-    #print(f'_generate_fractional_numbers {number}: whole is {whole}, quotient is {quotient}, remainder is {remainder}')
     
     # String will either have part of the _SYRIAC_FRAC OR the _SYRIAC_FRAC_BIG list
     fractional = _SYRIAC_SEPARATOR + _SYRIAC_FRAC[remainder] + _SYRIAC_FRAC_BIG[quotient]
@@ -234,7 +223,7 @@ def _generate_fractional_numbers(number, _precision):
 def _generate_numbers_string(number, places, ordinals=False):
     if number < 0:
         return "ܣܚܘܦܐ " + _generate_numbers_string(-number, places)
-        #print(f'cardinal: {"ܣܚܘܦܐ " + _generate_numbers_string(-number, places)}')
+
     if (number == 0):
         return "ܣܝܦܪ"
 
@@ -249,8 +238,6 @@ def _generate_numbers_string(number, places, ordinals=False):
         return _generate_fractional_numbers(fractional, precision)
 
     result = _generate_whole_numbers(whole) + _SYRIAC_CONJOINER + _generate_fractional_numbers(fractional, precision)
-    #print(f'cardinal_string {number}: {cardinal_string}')
-    #print(f'_generate_whole_numbers {whole}: {_generate_whole_numbers(whole)}, _generate_fractional_numbers {fractional, precision}: {_generate_fractional_numbers(fractional, precision)}')      
     return result
 
 def pronounce_number_syr(number, places=2, scientific=False,
@@ -280,7 +267,7 @@ def pronounce_number_syr(number, places=2, scientific=False,
         number = '%E' % num
         n, power = number.replace("+", "").split("E")
         power = int(power)
-        #print(f'numbers is {number}: n is {n}, power is {power}')
+
         if power != 0:
             return '{}{} ܥܦܝܦ ܥܣܪܐ ܒܚܝܠܐ ܕ{}{}'.format(
                 'ܣܚܘܦܐ ' if float(n) < 0 else '',
@@ -289,11 +276,8 @@ def pronounce_number_syr(number, places=2, scientific=False,
                 'ܣܚܘܦܐ ' if power < 0 else '',
                 pronounce_number_syr(abs(power), places, False, ordinals=False))
     if ordinals:
-        #print(f'number: {number} // ordinals: {_generate_ordinal_numbers(number)}')
         return _generate_numbers_string(number, places, ordinals=True)
     
-
-    #print(f'number: {number} // ordinals: {_generate_numbers_string(number, places)}')    
     return _generate_numbers_string(number, places)
     
 def nice_time_syr(dt, speech=True, use_24hour=False, use_ampm=False, variant=None):
@@ -340,7 +324,7 @@ def nice_time_syr(dt, speech=True, use_24hour=False, use_ampm=False, variant=Non
                 speak += pronounce_number_syr(int(string[4]))
             else:
                 speak += pronounce_number_syr(int(string[3:5]))
-            speak += ' ܩܛܝܢ̈ܬܐ'
+            speak += ' ܩܛܝܢܬ̈ܐ'
         return speak
     else:
         if dt.hour == 0 and dt.minute == 0:
@@ -363,7 +347,7 @@ def nice_time_syr(dt, speech=True, use_24hour=False, use_ampm=False, variant=Non
                 if not use_ampm:
                     return speak
             else:
-                speak += " ܘ" + pronounce_number_syr(dt.minute) + ' ܩܛܝܢ̈ܬܐ'
+                speak += " ܘ" + pronounce_number_syr(dt.minute) + ' ܩܛܝܢܬ̈ܐ'
 
         if use_ampm:
             if dt.hour > 11:
@@ -372,3 +356,52 @@ def nice_time_syr(dt, speech=True, use_24hour=False, use_ampm=False, variant=Non
                 speak += " ܩܕܡ ܛܗܪܐ"
 
         return speak
+
+def _singularize_syr(word):
+    """
+    Normalize the word
+
+    The character category "Mn" stands for Nonspacing_Mark and therefore will remove
+    combining characters
+    """
+    return ''.join(char for char in unicodedata.normalize('NFD', word) 
+        if unicodedata.category(char) != 'Mn')
+
+def _pluralize_syr(word):
+
+    # The penultimate letter in the word usually receives the syameh (ܣܝܡ̈ܐ) unless
+    # there is letter ܪ in the word, independent of its place the syameh are written
+    # above the letter ܪ.
+    #
+    # If there are two or more letters ܪ in the word, then the syameh is written on
+    # the last letter ܪ.
+
+    # If the word has a ܪ, then find the last occurrence of ܪ and place the syameh
+    # above it
+    if 'ܪ' in word:        
+        index = word.rindex('ܪ')
+        word = word[:index] + 'ܪ̈' + word[index + 1:]
+    else:
+        penultimate_char = word[-2]
+        last_char = word[-1]
+        penultimate_char = penultimate_char + u'\u0308'        
+        word = word[:-2] + penultimate_char + word[-1:]
+
+    return word
+
+def get_plural_form_syr(word, amount):
+    """
+    Get plural form of the specified word for the specified amount.
+
+    Args:
+        word(str): Word to be pluralized.
+        amount(int or float or pair or list): The amount that is used to
+            determine the category. If type is range, it must contain
+            the start and end numbers.
+        type(str): Either cardinal (default), ordinal or range.
+    Returns:
+        (str): Pluralized word.
+    """
+    if amount == 1:
+        return _singularize_syr(word)
+    return _pluralize_syr(word)    

@@ -31,10 +31,10 @@ from lingua_franca.format import nice_time
 from lingua_franca.format import nice_date
 from lingua_franca.format import nice_date_time
 from lingua_franca.format import nice_year
-from lingua_franca.format import nice_duration
 from lingua_franca.format import pronounce_number
 from lingua_franca.format import date_time_format
 from lingua_franca.format import join_list
+from lingua_franca.lang.format_syr import get_plural_form_syr
 from lingua_franca.time import default_timezone
 
 
@@ -158,17 +158,17 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(-21.234, places=1),
                          "ܣܚܘܦܐ ܥܣܪܝܢ ܘܚܕ ܘܬܪܝܢ ܡܢ ܥܣܪܐ")
 
-#    def test_convert_hundreds(self):
-#        self.assertEqual(pronounce_number(100), "ܡܐܐ")
-#        self.assertEqual(pronounce_number(666), "ܫܬܡܐܐ ܘܫܬܝܢ ܘܫܬܐ")
-#        self.assertEqual(pronounce_number(1456), "ܐܠܦܐ ܘܐܪܒܥܡܐܐ ܘܚܡܫܝܢ ܘܫܬܐ")
-#        self.assertEqual(pronounce_number(1567), "ܐܠܦܐ ܘܚܡܫܡܐܐ ܘܫܬܝܢ ܘܫܒܥܐ")
-#        self.assertEqual(pronounce_number(3456), "ܬܠܬܐ ܐܠܦܐ ܘܐܪܒܥܡܐܐ ܘܚܡܫܝܢ ܘܫܬܐ")
-#        self.assertEqual(pronounce_number(18691), "ܬܡܢܥܣܪ ܐܠܦܐ ܘܫܬܡܐܐ ܘܬܫܥܝܢ ܘܚܕ")
-#        self.assertEqual(pronounce_number(103254654), 
-#        "ܡܐܐ ܘܬܠܬܐ ܡܠܝܘܢܐ ܘܬܪܝܢܡܐܐ ܘܚܡܫܝܢ ܘܐܪܒܥܐ ܐܠܦܐ ܘܫܬܡܐܐ ܘܚܡܫܝܢ ܘܐܪܒܥܐ")
-#        self.assertEqual(pronounce_number(1512457), "ܚܕ ܡܠܝܘܢܐ ܘܚܡܫܡܐܐ ܘܬܪܥܣܪ ܐܠܦܐ ܘܐܪܒܥܡܐܐ ܘܚܡܫܝܢ ܘܫܒܥܐ")
-#        self.assertEqual(pronounce_number(209996), "ܬܪܝܢܡܐܐ ܘܬܫܥܐ ܐܠܦܐ ܘܬܫܥܡܐܐ ܘܬܫܥܝܢ ܘܫܬܐ")
+    def test_convert_hundreds(self):
+        self.assertEqual(pronounce_number(100), "ܡܐܐ")
+        self.assertEqual(pronounce_number(666), "ܫܬܡܐܐ ܘܫܬܝܢ ܘܫܬܐ")
+        self.assertEqual(pronounce_number(1456), "ܐܠܦܐ ܘܐܪܒܥܡܐܐ ܘܚܡܫܝܢ ܘܫܬܐ")
+        self.assertEqual(pronounce_number(1567), "ܐܠܦܐ ܘܚܡܫܡܐܐ ܘܫܬܝܢ ܘܫܒܥܐ")
+        self.assertEqual(pronounce_number(3456), "ܬܠܬܐ ܐܠܦܐ ܘܐܪܒܥܡܐܐ ܘܚܡܫܝܢ ܘܫܬܐ")
+        self.assertEqual(pronounce_number(18691), "ܬܡܢܥܣܪ ܐܠܦܐ ܘܫܬܡܐܐ ܘܬܫܥܝܢ ܘܚܕ")
+        self.assertEqual(pronounce_number(103254654), 
+        "ܡܐܐ ܘܬܠܬܐ ܡܠܝܘܢܐ ܘܬܪܝܢܡܐܐ ܘܚܡܫܝܢ ܘܐܪܒܥܐ ܐܠܦܐ ܘܫܬܡܐܐ ܘܚܡܫܝܢ ܘܐܪܒܥܐ")
+        self.assertEqual(pronounce_number(1512457), "ܚܕ ܡܠܝܘܢܐ ܘܚܡܫܡܐܐ ܘܬܪܥܣܪ ܐܠܦܐ ܘܐܪܒܥܡܐܐ ܘܚܡܫܝܢ ܘܫܒܥܐ")
+        self.assertEqual(pronounce_number(209996), "ܬܪܝܢܡܐܐ ܘܬܫܥܐ ܐܠܦܐ ܘܬܫܥܡܐܐ ܘܬܫܥܝܢ ܘܫܬܐ")
 
     def test_convert_scientific_notation(self):
         self.assertEqual(pronounce_number(0, scientific=True), "ܣܝܦܪ")
@@ -177,26 +177,19 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(299792458, scientific=True),
                          "ܬܪܝܢ ܘܬܫܥܝܢ ܘܬܫܥܐ ܡܢ ܡܐܐ ܥܦܝܦ ܥܣܪܐ ܒܚܝܠܐ ܕܬܡܢܝܐ")        
 
-#    def test_ordinals(self):
-#        self.assertEqual(pronounce_number(1, ordinals=True), "ܩܕܡܝܐ")
-#        self.assertEqual(pronounce_number(10, ordinals=True), "ܥܣܝܪܝܐ")
-#        self.assertEqual(pronounce_number(15, ordinals=True), "ܚܡܫܥܣܝܪܝܐ")
-#        self.assertEqual(pronounce_number(20, ordinals=True), "ܥܣܪܝܢܝܐ")
-#        self.assertEqual(pronounce_number(27, ordinals=True), "ܥܣܪܝܢ ܘܫܒܝܥܝܐ")
-#        self.assertEqual(pronounce_number(30, ordinals=True), "ܬܠܬܝܢܝܐ")
-#        self.assertEqual(pronounce_number(33, ordinals=True), "ܬܠܬܝܢ ܘܬܠܝܬܝܐ")
-#        self.assertEqual(pronounce_number(55, ordinals=True), "ܚܡܫܝܢ ܘܚܡܝܫܝܐ")
-#        self.assertEqual(pronounce_number(100, ordinals=True), "ܐܡܝܐ")
-#        self.assertEqual(pronounce_number(1000, ordinals=True), "ܐܠܦܝܐ")
-#        self.assertEqual(pronounce_number(1500, ordinals=True), "ܐܠܦܐ ܘܚܡܝ")
-#        self.assertEqual(pronounce_number(1567, ordinals=True), "ܐܠܦܐ ܘܚܡܫܡܐܐ ܘܫܬܝܢ ܘܫܒܝܥܝܐ")
-        #self.assertEqual(pronounce_number(10000, ordinals=True), "ܪܒܘܬܢܝܐ")
-        #self.assertEqual(pronounce_number(18691, ordinals=True),
-        #                 "ܬܡܢܥܣܪ ܐܠܦܐ ܘܫܬܡܐܐ ܘܬܫܥܝܢ ܘܩܕܡܝܐ")
-        #self.assertEqual(pronounce_number(18e6, ordinals=True),
-        #                 "ܬܡܢܥܣܪ ܡܠܝܘܢܐ")
-        #self.assertEqual(pronounce_number(18e9, ordinals=True),
-        #                 "ܬܡܢܥܣܪ ܒܠܝܘܢܐ")       
+    def test_ordinals(self):
+        self.assertEqual(pronounce_number(1, ordinals=True), "ܩܕܡܝܐ")
+        self.assertEqual(pronounce_number(10, ordinals=True), "ܥܣܝܪܝܐ")
+        self.assertEqual(pronounce_number(15, ordinals=True), "ܚܡܫܥܣܝܪܝܐ")
+        self.assertEqual(pronounce_number(20, ordinals=True), "ܥܣܪܝܢܝܐ")
+        self.assertEqual(pronounce_number(27, ordinals=True), "ܥܣܪܝܢ ܘܫܒܝܥܝܐ")
+        self.assertEqual(pronounce_number(30, ordinals=True), "ܬܠܬܝܢܝܐ")
+        self.assertEqual(pronounce_number(33, ordinals=True), "ܬܠܬܝܢ ܘܬܠܝܬܝܐ")
+        self.assertEqual(pronounce_number(55, ordinals=True), "ܚܡܫܝܢ ܘܚܡܝܫܝܐ")
+        self.assertEqual(pronounce_number(100, ordinals=True), "ܐܡܝܐ")
+        self.assertEqual(pronounce_number(1000, ordinals=True), "ܐܠܦܝܐ")
+        self.assertEqual(pronounce_number(1500, ordinals=True), "ܐܠܦܐ ܘܚܡܫܡܝܐ")
+        self.assertEqual(pronounce_number(10000, ordinals=True), "ܪܒܘܬܢܝܐ")      
 
 
 # def nice_time(dt, lang="syr-sy", speech=True, use_24hour=False,
@@ -225,9 +218,9 @@ class TestNiceDateFormat(unittest.TestCase):
                          nice_time(dt, "syr-sy", True, False, False))
 
         self.assertEqual(nice_time(dt),
-                         "ܚܕ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܚܕ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
         self.assertEqual(nice_time(dt, use_ampm=True),
-                         "ܚܕ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ ܒܬܪ ܛܗܪܐ")
+                         "ܚܕ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ ܒܬܪ ܛܗܪܐ")
         self.assertEqual(nice_time(dt, speech=False),
                          "1:22")
         self.assertEqual(nice_time(dt, speech=False, use_ampm=True),
@@ -238,9 +231,9 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_ampm=True),
                          "13:22")
         self.assertEqual(nice_time(dt, use_24hour=True, use_ampm=True),
-                         "ܬܠܬܥܣܪ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܬܠܬܥܣܪ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
         self.assertEqual(nice_time(dt, use_24hour=True, use_ampm=False),
-                         "ܬܠܬܥܣܪ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܬܠܬܥܣܪ ܘܥܣܪܝܢ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
 
         dt = datetime.datetime(2017, 1, 31,
                                13, 0, 3, tzinfo=default_timezone())
@@ -265,9 +258,9 @@ class TestNiceDateFormat(unittest.TestCase):
         dt = datetime.datetime(2017, 1, 31,
                                13, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
-                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
         self.assertEqual(nice_time(dt, use_ampm=True),
-                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ ܒܬܪ ܛܗܪܐ")
+                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ ܒܬܪ ܛܗܪܐ")
         self.assertEqual(nice_time(dt, speech=False),
                          "1:02")
         self.assertEqual(nice_time(dt, speech=False, use_ampm=True),
@@ -278,16 +271,16 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_ampm=True),
                          "13:02")
         self.assertEqual(nice_time(dt, use_24hour=True, use_ampm=True),
-                         "ܬܠܬܥܣܪ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܬܠܬܥܣܪ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
         self.assertEqual(nice_time(dt, use_24hour=True, use_ampm=False),
-                         "ܬܠܬܥܣܪ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܬܠܬܥܣܪ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
 
         dt = datetime.datetime(2017, 1, 31,
                                0, 2, 3, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
-                         "ܬܪܥܣܪ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܬܪܥܣܪ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
         self.assertEqual(nice_time(dt, use_ampm=True),
-                         "ܬܪܥܣܪ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ ܩܕܡ ܛܗܪܐ")
+                         "ܬܪܥܣܪ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ ܩܕܡ ܛܗܪܐ")
         self.assertEqual(nice_time(dt, speech=False),
                          "12:02")
         self.assertEqual(nice_time(dt, speech=False, use_ampm=True),
@@ -298,16 +291,16 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_ampm=True),
                          "00:02")
         self.assertEqual(nice_time(dt, use_24hour=True, use_ampm=True),
-                         "ܣܝܦܪ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܣܝܦܪ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
         self.assertEqual(nice_time(dt, use_24hour=True, use_ampm=False),
-                         "ܣܝܦܪ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܣܝܦܪ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
 
         dt = datetime.datetime(2018, 2, 8,
                                1, 2, 33, tzinfo=default_timezone())
         self.assertEqual(nice_time(dt),
-                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
         self.assertEqual(nice_time(dt, use_ampm=True),
-                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ ܩܕܡ ܛܗܪܐ")
+                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ ܩܕܡ ܛܗܪܐ")
         self.assertEqual(nice_time(dt, speech=False),
                          "1:02")
         self.assertEqual(nice_time(dt, speech=False, use_ampm=True),
@@ -318,9 +311,9 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_ampm=True),
                          "01:02")
         self.assertEqual(nice_time(dt, use_24hour=True, use_ampm=True),
-                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
         self.assertEqual(nice_time(dt, use_24hour=True, use_ampm=False),
-                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢ̈ܬܐ")
+                         "ܚܕ ܘܬܪܝܢ ܩܛܝܢܬ̈ܐ")
 
         dt = datetime.datetime(2017, 1, 31,
                                12, 15, 9, tzinfo=default_timezone())
@@ -339,7 +332,6 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(nice_time(dt),
                          "ܪܘܒܥܐ ܩܐ ܬܪܝܢ")
 
-
     def test_join(self):
         self.assertEqual(join_list(None, "and"), "")
         self.assertEqual(join_list([], "and"), "")
@@ -354,6 +346,21 @@ class TestNiceDateFormat(unittest.TestCase):
         self.assertEqual(join_list(["ܐ", "ܒ", "ܓ", "ܕ"], "ܐܘ"), "ܐ, ܒ, ܓ ܐܘ ܕ")
 
         self.assertEqual(join_list([1, "ܒ", 3, "ܕ"], "ܐܘ"), "1, ܒ, 3 ܐܘ ܕ")
+
+class TestPluralForms(unittest.TestCase):
+    def test_pluralize(self):
+        self.assertEqual(get_plural_form_syr("ܫܪܪܐ", 1), "ܫܪܪܐ")
+        self.assertEqual(get_plural_form_syr("ܫܪܪܐ", 2), "ܫܪܪ̈ܐ") # Pluralize
+        self.assertEqual(get_plural_form_syr("ܫܪܪܬܐ", 1), "ܫܪܪܬܐ")
+        self.assertEqual(get_plural_form_syr("ܫܪܪܬܐ", 2), "ܫܪܪ̈ܬܐ") # Pluralize
+        self.assertEqual(get_plural_form_syr("ܒܝܬܐ", 1), "ܒܝܬܐ")
+        self.assertEqual(get_plural_form_syr("ܒܝܬܐ", 2), "ܒܝܬ̈ܐ") # Pluralize
+        self.assertEqual(get_plural_form_syr("ܝܠܘܦܐ", 2), "ܝܠܘܦ̈ܐ") # Pluralize        
+        self.assertEqual(get_plural_form_syr("ܟܠܒܐ", 2), "ܟܠܒ̈ܐ") # Pluralize
+
+        self.assertEqual(get_plural_form_syr("ܒܝܬ̈ܐ", 1), "ܒܝܬܐ") # Singularize
+        self.assertEqual(get_plural_form_syr("ܚܒܘܫ̈ܐ", 1), "ܚܒܘܫܐ") # Singularize
+        self.assertEqual(get_plural_form_syr("ܦܬܘܪ̈ܐ", 1), "ܦܬܘܪܐ") # Singularize
 
 
 if __name__ == "__main__":
