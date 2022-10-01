@@ -72,7 +72,7 @@ def nice_number_syr(number, speech=True, denominators=range(1, 21), variant=None
         else:
             return_string = '{} ܡܢ {}'.format(_lookup_syriac_word(num), _lookup_syriac_word(den))
 
-    # If the whole number is > 0        
+    # If the whole number is > 0
     elif num == 1 and den == 2:
         # Special case for half for whole numbers with 0.5
         return_string = '{} ܘܦܠܓܐ'.format(whole)
@@ -121,7 +121,7 @@ def _lookup_syriac_word(number, ordinals=False):
         num(float or int): the number to pronounce (under 100)
         ordinals (bool): pronounce in ordinal form "first" instead of "one"
 
-    Returns: Number string    
+    Returns: Number string
     """
     if (number < 20):
         if ordinals:
@@ -133,17 +133,17 @@ def _lookup_syriac_word(number, ordinals=False):
         if remainder == 0:
             if ordinals:
                 return _SYRIAC_ORDINAL_BASE[number]
-            return _SYRIAC_TENS[quotient] 
+            return _SYRIAC_TENS[quotient]
         if ordinals:
             return _SYRIAC_TENS[quotient] + _SYRIAC_CONJOINER + _SYRIAC_ORDINAL_BASE[remainder]
-        return _SYRIAC_TENS[quotient] + _SYRIAC_CONJOINER + _SYRIAC_ONES[remainder]    
+        return _SYRIAC_TENS[quotient] + _SYRIAC_CONJOINER + _SYRIAC_ONES[remainder]
 
     if (number > 1000):
         quotient, remainder = divmod(number, 1000)
         if remainder == 0:
             return _SYRIAC_ORDINAL_BASE[number]
         if ordinals:
-            return _SYRIAC_LARGE[quotient] + _SYRIAC_CONJOINER + _SYRIAC_ORDINAL_BASE[remainder]            
+            return _SYRIAC_LARGE[quotient] + _SYRIAC_CONJOINER + _SYRIAC_ORDINAL_BASE[remainder]
         return _SYRIAC_LARGE[quotient] + _SYRIAC_CONJOINER + _SYRIAC_HUNDREDS[remainder]
 
     quotient, remainder = divmod(number, 100)
@@ -180,12 +180,12 @@ def _generate_whole_numbers(number, ordinals=False):
         temp_number, remainder = divmod(temp_number, 1000)
         if (remainder == 0):
             continue
-        
+
         if ordinals:
             text = _lookup_syriac_word(number, ordinals)
         else:
             text = _lookup_syriac_word(remainder)
-        
+
         if not ordinals:
             if remainder == 1 and syriac_large_num == 'ܐܠܦܐ':
                     text = syriac_large_num
@@ -213,10 +213,10 @@ def _generate_fractional_numbers(number, _precision):
 
     whole = _generate_whole_numbers(number)
     quotient, remainder = divmod(_precision, 3)
-    
+
     # String will either have part of the _SYRIAC_FRAC OR the _SYRIAC_FRAC_BIG list
     fractional = _SYRIAC_SEPARATOR + _SYRIAC_FRAC[remainder] + _SYRIAC_FRAC_BIG[quotient]
-    
+
     result = whole + fractional
     return result
 
@@ -231,7 +231,7 @@ def _generate_numbers_string(number, places, ordinals=False):
 
     if fractional == 0:
         if ordinals:
-            return _generate_whole_numbers(whole, ordinals)    
+            return _generate_whole_numbers(whole, ordinals)
         else:
             return _generate_whole_numbers(whole)
     if whole == 0:
@@ -277,9 +277,9 @@ def pronounce_number_syr(number, places=2, scientific=False,
                 pronounce_number_syr(abs(power), places, False, ordinals=False))
     if ordinals:
         return _generate_numbers_string(number, places, ordinals=True)
-    
+
     return _generate_numbers_string(number, places)
-    
+
 def nice_time_syr(dt, speech=True, use_24hour=False, use_ampm=False, variant=None):
     """
     Format a time to a comfortable human format
@@ -357,6 +357,52 @@ def nice_time_syr(dt, speech=True, use_24hour=False, use_ampm=False, variant=Non
 
         return speak
 
+def nice_relative_time_syr(when, relative_to=None, lang=None):
+    """Create a relative phrase to roughly describe a datetime
+    Examples are "25 seconds", "tomorrow", "7 days".
+    Args:
+        when (datetime): Local timezone
+        relative_to (datetime): Baseline for relative time, default is now()
+        lang (str, optional): Defaults to "en-us".
+    Returns:
+        str: Relative description of the given time
+    """
+    if relative_to:
+        now = relative_to
+    else:
+        now = now_local()
+    delta = to_local(when) - now
+
+    if delta.total_seconds() < 1:
+        return "ܗܫܐ"
+
+    if delta.total_seconds() < 90:
+        if delta.total_seconds() == 1:
+            return "ܚܕ ܪܦܦܐ"
+        else:
+            return "{} ܪ̈ܦܦܐ".format(int(delta.total_seconds()))
+
+    minutes = int((delta.total_seconds() + 30) // 60)  # +30 to round minutes
+    if minutes < 90:
+        if minutes == 1:
+            return "ܚܕ ܩܛܝܢܬܐ"
+        else:
+            return "{} ܩܛܝܢܬ̈ܐ".format(minutes)
+
+    hours = int((minutes + 30) // 60)  # +30 to round hours
+    if hours < 36:
+        if hours == 1:
+            return "ܚܕ ܫܥܬܐ"
+        else:
+            return "{} ܫܥ̈ܐ".format(hours)
+
+    # TODO: "2 weeks", "3 months", "4 years", etc
+    days = int((hours + 12) // 24)  # +12 to round days
+    if days == 1:
+        return "ܚܕ ܝܘܡܐ"
+    else:
+        return "{} ܝܘܡܢ̈ܐ".format(days)
+
 def _singularize_syr(word):
     """
     Normalize the word
@@ -364,7 +410,7 @@ def _singularize_syr(word):
     The character category "Mn" stands for Nonspacing_Mark and therefore will remove
     combining characters
     """
-    return ''.join(char for char in unicodedata.normalize('NFD', word) 
+    return ''.join(char for char in unicodedata.normalize('NFD', word)
         if unicodedata.category(char) != 'Mn')
 
 def _pluralize_syr(word):
@@ -378,13 +424,13 @@ def _pluralize_syr(word):
 
     # If the word has a ܪ, then find the last occurrence of ܪ and place the syameh
     # above it
-    if 'ܪ' in word:        
+    if 'ܪ' in word:
         index = word.rindex('ܪ')
         word = word[:index] + 'ܪ̈' + word[index + 1:]
     else:
         penultimate_char = word[-2]
         last_char = word[-1]
-        penultimate_char = penultimate_char + u'\u0308'        
+        penultimate_char = penultimate_char + u'\u0308'
         word = word[:-2] + penultimate_char + word[-1:]
 
     return word
@@ -404,4 +450,4 @@ def get_plural_form_syr(word, amount):
     """
     if amount == 1:
         return _singularize_syr(word)
-    return _pluralize_syr(word)    
+    return _pluralize_syr(word)

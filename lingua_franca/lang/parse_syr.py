@@ -17,9 +17,9 @@ import json
 from datetime import timedelta
 
 from lingua_franca.internal import resolve_resource_file
-from lingua_franca.lang.common_data_syr import (_SYRIAC_ORDINAL_BASE, _SYRIAC_LARGE, 
+from lingua_franca.lang.common_data_syr import (_SYRIAC_ORDINAL_BASE, _SYRIAC_LARGE,
                                                 _SYRIAC_HUNDREDS, _SYRIAC_ONES,
-                                                _SYRIAC_ONES_FEM, _SYRIAC_TENS, 
+                                                _SYRIAC_ONES_FEM, _SYRIAC_TENS,
                                                 _SYRIAC_FRACTIONS, _SYRIAC_FRACTIONS_HALF,
                                                 _SYRIAC_SEPARATOR)
 from lingua_franca.lang.parse_common import Normalizer
@@ -62,19 +62,19 @@ def _parse_sentence(text):
         # If the first letter starts with ܘ then treat it specifically as a conjoining ܘ as in this
         # context it is a conjoining letter and there is most likely a number following it
         if word[0] == "ܘ":
-            word = word[1:] # Remove the ܘ to make the logic easier to follow 
-            
+            word = word[1:] # Remove the ܘ to make the logic easier to follow
+
             if mode == 'num_ten' or mode == 'num_hundred' or mode == 'num_one':
                 mode += '_conjoiner'
             elif mode == 'num':
                 pass
             else:
                 finish_num()
-        
+
         if word == "ܦܠܓܐ":
             current_words.append(temp_word)
             current_number += 0.5
-            finish_num()        
+            finish_num()
         elif word in _SYRIAC_ONES or word in _SYRIAC_ONES_FEM:
             if word in _SYRIAC_ONES:
                 temp_ones_number = _SYRIAC_ONES.index(word)
@@ -83,13 +83,13 @@ def _parse_sentence(text):
 
             if mode != 'init' and mode != 'num_hundred_conjoiner' and mode != 'num':
                 if not(temp_ones_number < 10 and mode == 'num_ten_conjoiner'):
-                    finish_num()    
+                    finish_num()
             current_words.append(temp_word)
             sum_number += temp_ones_number
             mode = 'num_one'
         elif word in _SYRIAC_TENS:
             if mode != 'init' and mode != 'num_hundred_conjoiner' and mode != 'num':
-                finish_num()           
+                finish_num()
             current_words.append(temp_word)
             sum_number += _SYRIAC_TENS.index(word)*10
             mode = 'num_ten'
@@ -104,7 +104,7 @@ def _parse_sentence(text):
             temp_large_number = _SYRIAC_LARGE.index(word)
             if mode == 'init' and temp_large_number == 1:
                 sum_number = 1
-            sum_number *= 10**(3*temp_large_number)            
+            sum_number *= 10**(3*temp_large_number)
             current_number += sum_number
             sum_number = 0
             mode = 'num'
@@ -123,7 +123,7 @@ def _parse_sentence(text):
         else:
             finish_num()
             result.append(word)
-            
+
     if mode[:3] == 'num':
         finish_num()
 
@@ -158,7 +158,7 @@ _date_units = {
 
 def extract_duration_syr(text):
     """
-    Convert an english phrase into a number of seconds
+    Convert a Syriac phrase into a number of seconds
 
     Convert things like:
         "10 minute"
@@ -187,7 +187,7 @@ def extract_duration_syr(text):
     current_number = None
     result = timedelta(0)
     for word in words:
-        if type(word) == tuple:            
+        if type(word) == tuple:
             current_number = word
         elif word in _time_units:
             result += _time_units[word] * current_number[0]
@@ -197,7 +197,7 @@ def extract_duration_syr(text):
             current_number = None
         else:
             if current_number:
-                remainder.extend(current_number[1])            
+                remainder.extend(current_number[1])
             remainder.append(word)
             current_number = None
     return (result, " ".join(remainder))
@@ -247,8 +247,7 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
         .replace('ܐܪܒܥܐ ܒܫܒܐ', 'ܐܪܒܥܒܫܒܐ') \
         .replace('ܚܡܫܐ ܒܫܒܐ', 'ܚܡܫܒܫܒܐ') \
         .replace('ܚܕ ܒܫܒܐ', 'ܚܕܒܫܒܐ') \
-        
-        
+
     if not anchorDate:
         anchorDate = now_local()
 
@@ -270,7 +269,7 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
         'ܬܡܠ': today + timedelta(days= -1),
         'ܐܕܝܘܡ': today,
         'ܝܘܡܐܕܐܬܐ': today + timedelta(days= 1),
-        'ܩܘܕܡܐܕܐܬܐ': today + timedelta(days= 1),        
+        'ܩܘܕܡܐܕܐܬܐ': today + timedelta(days= 1),
         'ܝܘܡܐܐܚܪܢܐ': today + timedelta(days= 2),
     }
     timesDict = {
@@ -279,7 +278,7 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
         'ܒܬܪܛܗܪܐ': timedelta(hours=15),
         'ܒܬܪܟܘܬܪܐ': timedelta(hours=15),
     }
-    
+
     exactDict = {
         'ܗܫܐ': anchorDate,
     }
@@ -293,7 +292,7 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
     result = None
     for word in words:
         handled = 1
-        
+
         if mode == 'finished':
             pass
 
@@ -354,12 +353,12 @@ def extract_datetime_syr(text, anchorDate=None, default_time=None):
             mode = 'finished'
 
         if handled == 1:
-            continue   
+            continue
         if number_seen:
             remainder.extend(number_seen[1])
-            number_seen = None   
+            number_seen = None
         if result == None:
-            result = anchorDate 
+            result = anchorDate
 
         remainder.append(word)
 
@@ -384,9 +383,9 @@ def is_fractional_syr(text):
         Args:
             text (str): the string to partition
         Returns:
-            (dict) or (bool): False if it does not have the separator, ܡܢ, 
+            (dict) or (bool): False if it does not have the separator, ܡܢ,
             otherwise return the dict
-                        
+
         """
         dict_partition = []
 
@@ -403,10 +402,10 @@ def is_fractional_syr(text):
 
             for part in parted_text:
                 # Remove whitespace
-                part.replace(' ', '') 
+                part.replace(' ', '')
 
             dict_partition = {
-                'numerator' : parted_text[0], 
+                'numerator' : parted_text[0],
                 'denominator' : parted_text[2]
             }
         else:
@@ -431,7 +430,7 @@ def is_fractional_syr(text):
         return fraction
     # Otherwise, it will be in the form of [denominator ܡܢ numerator] or ܬܠܬܐ ܡܢ ܥܣܪܐ
     else:
-        
+
         if partition_text(text):
             # Just retrieve the dictionary containing the numerator and denominator
             dict_partition = partition_text(text)
@@ -449,9 +448,9 @@ def is_fractional_syr(text):
                 elif text in _SYRIAC_LARGE:
                     if _SYRIAC_LARGE.index(text) == 1:
                         temp = 1
-                    temp *= 10**(3*_SYRIAC_LARGE.index(text))                   
+                    temp *= 10**(3*_SYRIAC_LARGE.index(text))
                 else:
-                    return False 
+                    return False
 
                 if fract_part == 'numerator':
                     numerator = temp
@@ -463,8 +462,8 @@ def is_fractional_syr(text):
             #return False
         else:
             return False
-        
-    return False     
+
+    return False
 
 def get_gender_syr(word, context=""):
     """ Guess the gender of a word
@@ -510,7 +509,7 @@ def extract_numbers_syr(text, short_scale=True, ordinals=False):
         list: list of extracted numbers as floats
     """
 
-    words = _parse_sentence(text)    
+    words = _parse_sentence(text)
     result = []
     for word in words:
         if type(word) == tuple:

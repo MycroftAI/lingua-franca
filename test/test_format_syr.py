@@ -113,7 +113,7 @@ class TestNiceNumberFormat(unittest.TestCase):
         self.assertEqual(nice_number(6.0, speech=False),
                          '6',
                          'should format 6.0 as 6 not {}'.format(
-                             nice_number(6.0, speech=False)))                   
+                             nice_number(6.0, speech=False)))
 
 
 class TestPronounceNumber(unittest.TestCase):
@@ -133,7 +133,7 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(-15), "ܣܚܘܦܐ ܚܡܫܥܣܪ")
         self.assertEqual(pronounce_number(-20), "ܣܚܘܦܐ ܥܣܪܝܢ")
         self.assertEqual(pronounce_number(-27), "ܣܚܘܦܐ ܥܣܪܝܢ ܘܫܒܥܐ")
-    
+
     def test_convert_decimals(self):
         self.assertEqual(pronounce_number(0.05), "ܚܡܫܐ ܡܢ ܡܐܐ")
         self.assertEqual(pronounce_number(-0.05), "ܣܚܘܦܐ ܚܡܫܐ ܡܢ ܡܐܐ")
@@ -165,7 +165,7 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(1567), "ܐܠܦܐ ܘܚܡܫܡܐܐ ܘܫܬܝܢ ܘܫܒܥܐ")
         self.assertEqual(pronounce_number(3456), "ܬܠܬܐ ܐܠܦܐ ܘܐܪܒܥܡܐܐ ܘܚܡܫܝܢ ܘܫܬܐ")
         self.assertEqual(pronounce_number(18691), "ܬܡܢܥܣܪ ܐܠܦܐ ܘܫܬܡܐܐ ܘܬܫܥܝܢ ܘܚܕ")
-        self.assertEqual(pronounce_number(103254654), 
+        self.assertEqual(pronounce_number(103254654),
         "ܡܐܐ ܘܬܠܬܐ ܡܠܝܘܢܐ ܘܬܪܝܢܡܐܐ ܘܚܡܫܝܢ ܘܐܪܒܥܐ ܐܠܦܐ ܘܫܬܡܐܐ ܘܚܡܫܝܢ ܘܐܪܒܥܐ")
         self.assertEqual(pronounce_number(1512457), "ܚܕ ܡܠܝܘܢܐ ܘܚܡܫܡܐܐ ܘܬܪܥܣܪ ܐܠܦܐ ܘܐܪܒܥܡܐܐ ܘܚܡܫܝܢ ܘܫܒܥܐ")
         self.assertEqual(pronounce_number(209996), "ܬܪܝܢܡܐܐ ܘܬܫܥܐ ܐܠܦܐ ܘܬܫܥܡܐܐ ܘܬܫܥܝܢ ܘܫܬܐ")
@@ -175,7 +175,7 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(33, scientific=True),
                          "ܬܠܬܐ ܘܬܠܬܐ ܡܢ ܥܣܪܐ ܥܦܝܦ ܥܣܪܐ ܒܚܝܠܐ ܕܚܕ")
         self.assertEqual(pronounce_number(299792458, scientific=True),
-                         "ܬܪܝܢ ܘܬܫܥܝܢ ܘܬܫܥܐ ܡܢ ܡܐܐ ܥܦܝܦ ܥܣܪܐ ܒܚܝܠܐ ܕܬܡܢܝܐ")        
+                         "ܬܪܝܢ ܘܬܫܥܝܢ ܘܬܫܥܐ ܡܢ ܡܐܐ ܥܦܝܦ ܥܣܪܐ ܒܚܝܠܐ ܕܬܡܢܝܐ")
 
     def test_ordinals(self):
         self.assertEqual(pronounce_number(1, ordinals=True), "ܩܕܡܝܐ")
@@ -189,11 +189,8 @@ class TestPronounceNumber(unittest.TestCase):
         self.assertEqual(pronounce_number(100, ordinals=True), "ܐܡܝܐ")
         self.assertEqual(pronounce_number(1000, ordinals=True), "ܐܠܦܝܐ")
         self.assertEqual(pronounce_number(1500, ordinals=True), "ܐܠܦܐ ܘܚܡܫܡܝܐ")
-        self.assertEqual(pronounce_number(10000, ordinals=True), "ܪܒܘܬܢܝܐ")      
+        self.assertEqual(pronounce_number(10000, ordinals=True), "ܪܒܘܬܢܝܐ")
 
-
-# def nice_time(dt, lang="syr-sy", speech=True, use_24hour=False,
-#              use_ampm=False):
 
 class TestNiceDateFormat(unittest.TestCase):
     @classmethod
@@ -207,10 +204,10 @@ class TestNiceDateFormat(unittest.TestCase):
                       str(sub_dir / 'date_time_test.json'))
                 with (sub_dir / 'date_time_test.json').open() as f:
                     cls.test_config[sub_dir.parts[-1]] = json.loads(f.read())
-    
+
 
     def test_convert_times(self):
-        dt = datetime.datetime(2017, 1, 31, 
+        dt = datetime.datetime(2017, 1, 31,
                                13, 22, 3, tzinfo=default_timezone())
 
         # Verify defaults haven't changed
@@ -355,7 +352,7 @@ class TestPluralForms(unittest.TestCase):
         self.assertEqual(get_plural_form_syr("ܫܪܪܬܐ", 2), "ܫܪܪ̈ܬܐ") # Pluralize
         self.assertEqual(get_plural_form_syr("ܒܝܬܐ", 1), "ܒܝܬܐ")
         self.assertEqual(get_plural_form_syr("ܒܝܬܐ", 2), "ܒܝܬ̈ܐ") # Pluralize
-        self.assertEqual(get_plural_form_syr("ܝܠܘܦܐ", 2), "ܝܠܘܦ̈ܐ") # Pluralize        
+        self.assertEqual(get_plural_form_syr("ܝܠܘܦܐ", 2), "ܝܠܘܦ̈ܐ") # Pluralize
         self.assertEqual(get_plural_form_syr("ܟܠܒܐ", 2), "ܟܠܒ̈ܐ") # Pluralize
 
         self.assertEqual(get_plural_form_syr("ܒܝܬ̈ܐ", 1), "ܒܝܬܐ") # Singularize
