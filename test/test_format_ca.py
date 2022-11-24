@@ -241,6 +241,13 @@ class TestNiceDateFormat(unittest.TestCase):
                                    use_ampm=False,
                                    variant=TimeVariantCA.FULL_BELL),
                          "dos quarts tocats de sis del matí")
+        # Catalan Full Bell time system: 19:19                 
+        dt = datetime.datetime(2017, 1, 31,
+                               19, 19, 0, tzinfo=default_timezone())                         
+        self.assertEqual(nice_time(dt, lang="ca", use_24hour=True,
+                                   use_ampm=False,
+                                   variant=TimeVariantCA.FULL_BELL),
+                         "un quart tocat de vuit del vespre")
 
 
     def test_midnight(self):
