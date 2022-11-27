@@ -247,20 +247,20 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
                 else:
                     speak += " de la matinada"
             elif next_hour == 2:
-                speak += "de dues"
+                speak += " de dues"
                 if dt.hour == 13:
                     speak += " de la tarda"
                 else:
                     speak += " de la nit"
 
             elif next_hour == 11:
-                speak += "d'onze"
+                speak += " d'onze"
                 if dt.hour == 22:
                     speak += " de la nit"
                 else:
                     speak += " del matí"
             else:
-                speak += "de " + pronounce_number_ca(next_hour)
+                speak += " de " + pronounce_number_ca(next_hour)
                 if dt.hour == 0 and dt.hour < 5:
                     speak += " de la matinada"
                 elif dt.hour >= 5 and dt.hour < 11:
@@ -406,20 +406,20 @@ def nice_time_ca(dt, speech=True, use_24hour=False, use_ampm=False,
                 else:
                     speak += " de la matinada"
             elif next_hour == 2:
-                speak += "de dues"
+                speak += " de dues"
                 if dt.hour == 13:
                     speak += " de la tarda"
                 else:
                     speak += " de la nit"
 
             elif next_hour == 11:
-                speak += "d'onze"
+                speak += " d'onze"
                 if dt.hour == 22:
                     speak += " de la nit"
                 else:
                     speak += " del matí"
             else:
-                speak += "de " + pronounce_number_ca(next_hour)
+                speak += " de " + pronounce_number_ca(next_hour)
                 if dt.hour == 0 and dt.hour < 5:
                     speak += " de la matinada"
                 elif dt.hour >= 5 and dt.hour < 11:
