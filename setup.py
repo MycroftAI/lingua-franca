@@ -30,7 +30,7 @@ setup(
     version='0.4.3',
     packages=['lingua_franca', 'lingua_franca.lang'],
     url='https://github.com/MycroftAI/lingua-franca',
-    license='Apache2.0',
+    license='Apache-2.0',
     package_data={'': extra_files},
     include_package_data=True,
     install_requires=required('requirements.txt'),
