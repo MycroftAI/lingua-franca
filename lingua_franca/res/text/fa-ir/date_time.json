@@ -1,84 +1,32 @@
 {
   "decade_format": {
-    "1": {
-      "match": "^\\d$",
-      "format": "{x}"
-    },
-    "2": {
-      "match": "^1\\d$",
-      "format": "{xx}"
-    },
-    "3": {
-      "match": "^\\d0$",
-      "format": "{x0}"
-    },
-    "4": {
-      "match": "^[2-9]\\d$",
-      "format": "{x0} {x}"
-    },
+    "1": {"match": "^\\d$", "format": "{x}"},
+    "2": {"match": "^1\\d$","format": "{xx}"},
+    "3": {"match": "^\\d0$","format": "{x0}"},
+    "4": {"match": "^[2-9]\\d$","format": "{x0} {x}"},
     "default": "{number}"
   },
   "hundreds_format": {
-    "1": {
-      "match": "^\\d{3}$",
-      "format": "{x_in_x00} hundred"
-    },
+    "1": {"match": "^\\d{3}$", "format": "{x_in_x00} hundred"},
     "default": "{number}"
   },
   "thousand_format": {
-    "1": {
-      "match": "^\\d00\\d$",
-      "format": "{x_in_x000} thousand"
-    },
-    "2": {
-      "match": "^1\\d00$",
-      "format": "{xx_in_xx00} hundred"
-    },
-    "3": {
-      "match": "^\\d{2}00$",
-      "format": "{x0_in_x000} {x_in_x00} hundred"
-    },
-    "4": {
-      "match": "^(1\\d{3})|(\\d0\\d{2})$",
-      "format": "{xx_in_xx00}"
-    },
-    "5": {
-      "match": "^\\d{4}$",
-      "format": "{x0_in_x000} {x_in_x00}"
-    },
+    "1": {"match": "^10\\d{2}$", "format": "هزار"},
+    "2": {"match": "^[2-9]0\\d{2}$", "format": "{x_in_x000} هزار"},
+    "3": {"match": "^11\\d{2}$", "format": "هزار و صد"},
+    "4": {"match": "^1\\d{3}$", "format": "هزار و  {x_in_x00}"},
+    "5": {"match": "^[2-9]1\\d{2}", "format": "{x_in_x000} هزار و صد"},
+    "6": {"match": "^[2-9]\\d{3}$", "format": "{x_in_x000} هزار و {x_in_x00}"},
     "default": "{number}"
   },
   "year_format": {
-    "1": {
-      "match": "^\\d\\d?$",
-      "format": "{formatted_decade} {bc}"
-    },
-    "2": {
-      "match": "^\\d00$",
-      "format": "{formatted_hundreds} {bc}"
-    },
-    "3": {
-      "match": "^\\d{3}$",
-      "format": "{formatted_hundreds} {formatted_decade} {bc}"
-    },
-    "4": {
-      "match": "^\\d{2}00$",
-      "format": "{formatted_thousand} {bc}"
-    },
-    "5": {
-      "match": "^\\d00\\d$",
-      "format": "{formatted_thousand} {formatted_decade} {bc}"
-    },
-    "6": {
-      "match": "^\\d{2}0\\d$",
-      "format": "{formatted_thousand} {formatted_decade} {bc}"
-    },
-    "7": {
-      "match": "^\\d{4}$",
-      "format": "{formatted_thousand} {formatted_decade} {bc}"
-    },
+    "1": {"match": "^\\d{1,2}$", "format": "{formatted_decade} {bc}"},
+    "2": {"match": "^\\d00$", "format": "{formatted_hundreds} {bc}"},
+    "3": {"match": "^\\d{3}$", "format": "{formatted_hundreds} {formatted_decade} {bc}"},
+    "4": {"match": "^\\d{2}00$", "format": "{formatted_thousand} {bc}"},
+    "5": {"match": "^\\d{4}$", "format": "{formatted_thousand} و {formatted_decade} {bc}"},
     "default": "{year} {bc}",
-    "bc": "بعد از میلاد"
+    "bc": "قبل از میلاد"
   },
   "date_format": {
     "date_full": "{weekday}, {day} {month} {formatted_year}",
@@ -115,10 +63,10 @@
     "12": "دوازدهم",
     "13": "سیزدهم",
     "14": "چهاردهم",
-    "15": "پونزدهم",
-    "16": "شونزدهم",
-    "17": "هیفدهم",
-    "18": "هیجدهم",
+    "15": "پانزدهم",
+    "16": "شانزدهم",
+    "17": "هفدهم",
+    "18": "هجدهم",
     "19": "نوزدهم",
     "20": "بیستم",
     "21": "بیست و یکم",
@@ -130,7 +78,7 @@
     "27": "بیست و هفتم",
     "28": "بیست و هشتم",
     "29": "بیست و نهم",
-    "30": "سیم",
+    "30": "سی ام",
     "31": "سی و یکم"
   },
   "month": {
@@ -139,8 +87,8 @@
     "3": "مارس",
     "4": "آوریل",
     "5": "مه",
-    "6": "جون",
-    "7": "جولای",
+    "6": "ژوئن",
+    "7": "ژوئیه",
     "8": "آگوست",
     "9": "سپتامبر",
     "10": "اکتبر",
@@ -163,10 +111,10 @@
     "12": "دوازده",
     "13": "سیزده",
     "14": "چهارده",
-    "15": "پونزده",
-    "16": "شونزده",
-    "17": "هیفده",
-    "18": "هیجده",
+    "15": "پانزده",
+    "16": "شانزده",
+    "17": "هفده",
+    "18": "هجده",
     "19": "نوزده",
     "20": "بیست",
     "30": "سی",
